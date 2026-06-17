@@ -31,7 +31,7 @@ class _RootScreenState extends State<RootScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      backgroundColor: ColorsManager.backgroundColorLight,
+      backgroundColor: ColorsManager.background,
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
@@ -55,7 +55,7 @@ class _PlaceholderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorsManager.backgroundColorLight,
+      backgroundColor: ColorsManager.background,
       body: Center(
         child: Text(
           'Tab $index',

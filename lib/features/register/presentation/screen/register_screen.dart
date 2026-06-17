@@ -11,6 +11,8 @@ import 'package:moean/features/register/presentation/widgets/register_form_widge
 import 'package:moean/features/register/presentation/widgets/register_header_widget.dart';
 import 'package:moean/features/register/presentation/widgets/register_illustration_widget.dart';
 import 'package:moean/features/register/presentation/widgets/register_terms_widget.dart';
+import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
+import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -21,54 +23,57 @@ class RegisterScreen extends StatelessWidget {
       create: (_) => RegisterCubit(),
       child: BlocListener<RegisterCubit, RegisterState>(
         listener: _onStateChanged,
-        child: Scaffold(
-          
-          appBar: AppBar(
-  leading: IconButton(
-    onPressed: () {
-      Navigator.pop(context);
-    },
-    icon: const Icon(
-      Icons.arrow_forward_ios_rounded,
-      size: 16,
-      color: ColorsManager.primaryColor,
-    ),
-  ),
-),
-          backgroundColor: ColorsManager.background,
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Builder(
-                builder: (context) {
-                  final cubit = RegisterCubit.get(context);
-                  return Form(
-                    key: cubit.formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        verticalSpace16,
-                        const RegisterHeaderWidget(),
-                        verticalSpace16,
-                        const RegisterIllustrationWidget(),
-                        verticalSpace24,
-                        const RegisterFormWidget(),
-                        verticalSpace20,
-                        const RegisterAccountTypeWidget(),
-                        verticalSpace16,
-                        const RegisterTermsWidget(),
-                        verticalSpace28,
-                        const RegisterActionButtonsWidget(),
-                        verticalSpace24,
-                        const RegisterFooterWidget(),
-                        verticalSpace32,
-                      ],
-                    ),
-                  );
-                },
+        child: BlocBuilder<ThemeCubit, ThemeState>(
+          builder: (context, themeState) {
+            return Scaffold(
+              appBar: AppBar(
+                leading: IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                    color: ColorsManager.primaryColor,
+                  ),
+                ),
               ),
-            ),
-          ),
+              backgroundColor: ColorsManager.background,
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Builder(
+                    builder: (context) {
+                      final cubit = RegisterCubit.get(context);
+                      return Form(
+                        key: cubit.formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            verticalSpace16,
+                            const RegisterHeaderWidget(),
+                            verticalSpace16,
+                            const RegisterIllustrationWidget(),
+                            verticalSpace24,
+                            const RegisterFormWidget(),
+                            verticalSpace20,
+                            const RegisterAccountTypeWidget(),
+                            verticalSpace16,
+                            const RegisterTermsWidget(),
+                            verticalSpace28,
+                            const RegisterActionButtonsWidget(),
+                            verticalSpace24,
+                            const RegisterFooterWidget(),
+                            verticalSpace32,
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

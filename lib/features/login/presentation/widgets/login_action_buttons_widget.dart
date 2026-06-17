@@ -16,7 +16,6 @@ class LoginActionButtonsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = LoginCubit.get(context);
 
     return Column(
       children: [
@@ -29,7 +28,10 @@ class LoginActionButtonsWidget extends StatelessWidget {
           builder: (context, state) {
             return PrimaryElevatedButton(
               text: appTranslation().get('login'),
-              onPressed: cubit.login,
+              onPressed: 
+              (){
+                context.push(Routes.schedule);
+              },
               isLoading: state is LoginLoadingState,
               icon: const Icon(
                 Icons.auto_awesome,
@@ -68,11 +70,11 @@ class LoginActionButtonsWidget extends StatelessWidget {
     color: ColorsManager.primaryColor,
     width: 2,
   ),
-          backgroundColor: ColorsManager.white,
+          backgroundColor: ColorsManager.surfacePrimary,
            icon: Image.asset(AssetsHelper.microsoft),
 
           textStyle: TextStylesManager.medium14.copyWith(
-            color: ColorsManager.textPrimaryLight,
+            color: ColorsManager.textPrimary,
           ),
         ),
       

@@ -21,7 +21,7 @@ class LoginScreen extends StatelessWidget {
       child: BlocListener<LoginCubit, LoginState>(
         listener: _onStateChanged,
         child: Scaffold(
-          backgroundColor: ColorsManager.backgroundColorLight,
+          backgroundColor: ColorsManager.background,
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -39,7 +39,7 @@ class LoginScreen extends StatelessWidget {
                      height: 300,
                       width: double.infinity,
                     decoration: BoxDecoration(
-                      color: ColorsManager.backgroundColorLight,
+                      color: ColorsManager.background,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     margin: const EdgeInsets.symmetric(vertical: 16),

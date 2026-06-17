@@ -19,7 +19,7 @@ class HomeScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => HomeCubit(),
       child: Scaffold(
-        backgroundColor: ColorsManager.backgroundColorLight,
+        backgroundColor: ColorsManager.background,
         body: SafeArea(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),

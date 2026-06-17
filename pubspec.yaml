@@ -88,8 +88,17 @@ flutter:
     - assets/fonts/
 
   fonts:
-    - family: Aldhabi
-      fonts:
-        - asset: assets/fonts/Aldhabi.ttf
+  - family: Tajawal
+    fonts:
+      - asset: assets/fonts/Tajawal-Regular.ttf
+        weight: 400
+      - asset: assets/fonts/Tajawal-Medium.ttf
+        weight: 500
+      - asset: assets/fonts/Tajawal-Bold.ttf
+        weight: 700
+
+  - family: Aldhabi
+    fonts:
+      - asset: assets/fonts/Aldhabi.ttf
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

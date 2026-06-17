@@ -35,7 +35,7 @@ class _MicrosoftLoginScreenState extends State<MicrosoftLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorsManager.backgroundColorLight,
+      backgroundColor: ColorsManager.background,
       appBar: AppBar(
         title: const Text('تسجيل الدخول باستخدام مايكروسوفت'),
         backgroundColor: ColorsManager.surfacePrimary,

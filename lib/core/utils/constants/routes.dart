@@ -3,6 +3,7 @@ import 'package:moean/features/home/presentation/screen/home_screen.dart';
 import 'package:moean/features/login/presentation/screen/login_screen.dart';
 import 'package:moean/features/login/presentation/screen/microsoft_login_screen.dart';
 import 'package:moean/features/register/presentation/screen/register_screen.dart';
+import 'package:moean/features/schedule/presentation/screen/schedule_screen.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -11,6 +12,7 @@ class Routes {
   static const String login = '/login';
   static const String register = '/register';
   static const String loginMicrosoft = '/login/microsoft';
+  static const String schedule = '/schedule';
 
 
   static Map<String, WidgetBuilder> get routes => {
@@ -18,5 +20,6 @@ class Routes {
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
     loginMicrosoft: (context) => const MicrosoftLoginScreen(),
+    schedule: (context) => const ScheduleScreen(),
   };
 }

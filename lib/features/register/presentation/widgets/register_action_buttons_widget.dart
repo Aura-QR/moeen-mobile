@@ -69,11 +69,11 @@ class RegisterActionButtonsWidget extends StatelessWidget {
     color: ColorsManager.primaryColor,
     width: 2,
   ),
-          backgroundColor: ColorsManager.white,
+          backgroundColor: ColorsManager.surfacePrimary,
            icon: Image.asset(AssetsHelper.microsoft),
 
           textStyle: TextStylesManager.medium14.copyWith(
-            color: ColorsManager.textPrimaryLight,
+            color: ColorsManager.textPrimary,
           ),
         ),
       ],

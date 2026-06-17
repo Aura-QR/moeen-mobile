@@ -1,0 +1,85 @@
+﻿Analyzing moean...                                              
+
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\core\widgets\logout_all_option.dart:36:38 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\core\widgets\logout_all_option.dart:43:38 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\guest\presentation\screen\guest_screen.dart:26:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\guest\presentation\screen\guest_screen.dart:46:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\guest\presentation\screen\guest_screen.dart:54:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\guest\presentation\screen\guest_screen.dart:62:38 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\guest\presentation\screen\guest_screen.dart:89:36 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_app_bar_widget.dart:22:34 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_app_bar_widget.dart:42:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_category_chips_widget.dart:34:39 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_featured_section_header_widget.dart:27:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_featured_section_header_widget.dart:42:34 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_hero_banner_widget.dart:54:42 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_hero_banner_widget.dart:62:42 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_hero_banner_widget.dart:69:42 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_resource_card_widget.dart:31:30 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_search_bar_widget.dart:19:35 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_tip_of_day_widget.dart:37:34 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\home\presentation\widgets\home_tip_of_day_widget.dart:44:34 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_action_buttons_widget.dart:31:36 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_action_buttons_widget.dart:52:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_action_buttons_widget.dart:63:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_footer_widget.dart:18:28 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_footer_widget.dart:27:26 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_form_widget.dart:22:26 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_form_widget.dart:29:26 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_form_widget.dart:41:30 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_form_widget.dart:51:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_form_widget.dart:57:37 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_form_widget.dart:68:30 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_form_widget.dart:82:36 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_form_widget.dart:97:41 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_header_widget.dart:32:38 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_header_widget.dart:38:38 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_header_widget.dart:57:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_remember_forgot_widget.dart:28:28 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\login\presentation\widgets\login_remember_forgot_widget.dart:42:34 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_account_type_widget.dart:21:26 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_account_type_widget.dart:34:41 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_account_type_widget.dart:42:41 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_action_buttons_widget.dart:31:36 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_action_buttons_widget.dart:52:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_action_buttons_widget.dart:63:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_footer_widget.dart:18:28 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_footer_widget.dart:27:26 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:22:26 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:30:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:36:37 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:43:26 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:51:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:57:37 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:61:37 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:68:26 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:77:26 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:89:36 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:104:41 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:113:26 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:125:36 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:140:41 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:143:41 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:167:34 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_form_widget.dart:173:39 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_header_widget.dart:33:34 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_header_widget.dart:39:34 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_illustration_widget.dart:37:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_illustration_widget.dart:44:32 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\register\presentation\widgets\register_terms_widget.dart:26:34 - not_enough_positional_arguments
+  error - 1 positional argument expected by 'appTranslation', but 0 found - lib\features\root\presentation\widgets\custom_bottom_nav_bar.dart:68:41 - not_enough_positional_arguments
+  error - Undefined class 'BuildContext' - lib\features\schedule\presentation\cubit\schedule_cubit.dart:8:28 - undefined_class
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:33:11 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:44:15 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:54:21 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:68:15 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:86:23 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:94:11 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:99:11 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:110:17 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:117:17 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:124:17 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:132:17 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:143:11 - undefined_identifier
+  error - Undefined name 'AppSpacing' - lib\features\schedule\presentation\widgets\schedule_bottom_sheet.dart:171:11 - undefined_identifier
+

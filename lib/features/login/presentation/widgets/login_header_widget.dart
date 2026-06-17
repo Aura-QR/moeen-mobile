@@ -48,7 +48,7 @@ class LoginHeaderWidget extends StatelessWidget {
 
             TextButton.icon(
               onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(
+              icon: Icon(
                 Icons.home_outlined,
                 size: 20,
                 color: ColorsManager.primaryColor,

@@ -1,7 +1,6 @@
 import 'package:moean/core/theme/colors.dart';
-import 'package:moean/core/theme/text_styles.dart';
-import 'package:moean/core/utils/constants/primary/conditional_builder.dart';
 import 'package:flutter/material.dart';
+import 'package:moean/core/utils/constants/primary/primary_elevated_button_label.dart';
 
 class PrimaryElevatedButton extends StatelessWidget {
   final String text;
@@ -22,7 +21,7 @@ final BorderSide? borderSide;
     this.isLoading = false,
     this.height = 52,
     this.radius = 24,
-    this.backgroundColor = ColorsManager.primaryColor,
+    this.backgroundColor,
     this.textStyle,
     this.icon,
     this.width,
@@ -38,7 +37,7 @@ final BorderSide? borderSide;
           ? ElevatedButton(
               onPressed: isLoading ? null : onPressed,
               style: ElevatedButton.styleFrom(
-                backgroundColor: backgroundColor,
+                backgroundColor: backgroundColor ?? ColorsManager.primaryColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shadowColor: Colors.black.withValues(alpha: 0.04),
@@ -52,12 +51,16 @@ final BorderSide? borderSide;
   side: borderSide ?? BorderSide.none,
 ),
               ),
-              child: _buildLabel(context),
+              child: PrimaryElevatedButtonLabel(
+                isLoading: isLoading,
+                text: text,
+                textStyle: textStyle,
+              ),
             )
           : ElevatedButton.icon(
               onPressed: isLoading ? null : onPressed,
               style: ElevatedButton.styleFrom(
-                backgroundColor: backgroundColor,
+                backgroundColor: backgroundColor ?? ColorsManager.primaryColor,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shadowColor: Colors.black.withValues(alpha: 0.04),
@@ -71,23 +74,13 @@ final BorderSide? borderSide;
   side: borderSide ?? BorderSide.none,
 ),
               ),
-              icon: icon,
-              label: _buildLabel(context),
+              icon: icon!,
+              label: PrimaryElevatedButtonLabel(
+                isLoading: isLoading,
+                text: text,
+                textStyle: textStyle,
+              ),
             ),
-    );
-  }
-
-  Widget _buildLabel(BuildContext context) {
-    return ConditionalBuilder(
-      loadingState: isLoading,
-      successBuilder: (context) => Text(
-        text,
-        style:
-            textStyle ??
-            TextStylesManager.bold14.copyWith(
-              color: Colors.white,
-            ),
-      ),
     );
   }
 }
