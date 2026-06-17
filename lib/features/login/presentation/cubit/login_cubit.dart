@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/features/login/presentation/cubit/login_state.dart';
 import 'package:moean/main.dart';
+import 'package:moean/core/network/remote/api_service.dart';
+import 'package:moean/core/models/login_request.dart';
+import 'package:moean/core/network/local/cache_helper.dart';
+import 'package:moean/core/utils/constants/constants.dart';
 
 LoginCubit get loginCubit =>
     LoginCubit.get(navigatorKey.currentContext!);
@@ -28,13 +32,27 @@ class LoginCubit extends Cubit<LoginState> {
     emit(LoginRememberMeChangedState());
   }
 
-  void login() {
+  Future<void> login() async {
     if (!(formKey.currentState?.validate() ?? false)) return;
     emit(LoginLoadingState());
 
-    Future.delayed(const Duration(seconds: 2), () {
-      emit(LoginSuccessState());
-    });
+    final request = LoginRequest(
+      email: emailController.text.trim(),
+      password: passwordController.text,
+    );
+
+    final result = await ApiService.loginUser(request);
+
+    result.fold(
+      (error) {
+        emit(LoginErrorState(message: error));
+      },
+      (response) async {
+        await CacheHelper.saveData(key: 'auth_token', value: response.token);
+        token = response.token;
+        emit(LoginSuccessState(madrasatiConnected: response.madrasatiConnected));
+      },
+    );
   }
 
   @override

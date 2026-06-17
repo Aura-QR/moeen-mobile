@@ -21,14 +21,14 @@ class LoginFormWidget extends StatelessWidget {
         Text(
           appTranslation().get('welcome_back'),
           style: TextStylesManager.bold26.copyWith(
-            color: ColorsManager.textPrimaryLight,
+            color: ColorsManager.mainText,
           ),
         ),
         verticalSpace8,
         Text(
           appTranslation().get('login_subtitle'),
           style: TextStylesManager.regular14.copyWith(
-            color: ColorsManager.textBody,
+            color: ColorsManager.mainText,
           ),
           textAlign: TextAlign.center,
         ),
@@ -40,7 +40,7 @@ class LoginFormWidget extends StatelessWidget {
             Text(
               appTranslation().get('email'),
               style: TextStylesManager.medium14.copyWith(
-                color: ColorsManager.textPrimaryLight,
+                color: ColorsManager.mainText,
               ),
             ),
           ],
@@ -67,7 +67,7 @@ class LoginFormWidget extends StatelessWidget {
             Text(
               appTranslation().get('password'),
               style: TextStylesManager.medium14.copyWith(
-                color: ColorsManager.textPrimaryLight,
+                color: ColorsManager.mainText,
               ),
             ),
           ],
@@ -89,7 +89,7 @@ class LoginFormWidget extends StatelessWidget {
                   cubit.isPasswordVisible
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: ColorsManager.textBody,
+                  color: ColorsManager.mainText,
                 ),
               ),
               validator: (value) {

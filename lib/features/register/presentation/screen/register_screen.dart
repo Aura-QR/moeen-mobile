@@ -13,6 +13,8 @@ import 'package:moean/features/register/presentation/widgets/register_illustrati
 import 'package:moean/features/register/presentation/widgets/register_terms_widget.dart';
 import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:moean/core/utils/cubit/theme/theme_state.dart';
+import 'package:moean/core/utils/constants/routes.dart';
+import 'package:moean/core/utils/extensions/context_extension.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -89,6 +91,7 @@ class RegisterScreen extends StatelessWidget {
       );
     }
     if (state is RegisterSuccessState) {
+      context.pushNamedAndRemoveUntil(Routes.loginMicrosoft, (route) => false);
     }
   }
 }

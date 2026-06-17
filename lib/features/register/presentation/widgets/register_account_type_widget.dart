@@ -20,7 +20,7 @@ class RegisterAccountTypeWidget extends StatelessWidget {
         Text(
           appTranslation().get('account_type'),
           style: TextStylesManager.medium14.copyWith(
-            color: ColorsManager.textPrimaryLight,
+            color: ColorsManager.mainText,
           ),
         ),
         verticalSpace8,
@@ -96,21 +96,21 @@ class _AccountTypeOptionWidget extends StatelessWidget {
                   size: 18,
                   color: ColorsManager.white,
                 ),
-                const SizedBox(width: 6),
+                horizontalSpace6,
               ] else ...[
                 Icon(
                   icon,
                   size: 18,
-                  color: ColorsManager.textBody,
+                  color: ColorsManager.mainText,
                 ),
-                const SizedBox(width: 6),
+                horizontalSpace6,
               ],
               Text(
                 label,
                 style: TextStylesManager.medium14.copyWith(
                   color: isSelected
                       ? ColorsManager.white
-                      : ColorsManager.textPrimaryLight,
+                      : ColorsManager.mainText,
                 ),
               ),
             ],

@@ -10,6 +10,8 @@ import 'package:moean/features/login/presentation/widgets/login_footer_widget.da
 import 'package:moean/features/login/presentation/widgets/login_form_widget.dart';
 import 'package:moean/features/login/presentation/widgets/login_header_widget.dart';
 import 'package:moean/features/login/presentation/widgets/login_remember_forgot_widget.dart';
+import 'package:moean/core/utils/constants/routes.dart';
+import 'package:moean/core/utils/extensions/context_extension.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -40,7 +42,7 @@ class LoginScreen extends StatelessWidget {
                       width: double.infinity,
                     decoration: BoxDecoration(
                       color: ColorsManager.background,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(24),
                     ),
                     margin: const EdgeInsets.symmetric(vertical: 16),
                     child:      Image.asset(
@@ -78,6 +80,11 @@ class LoginScreen extends StatelessWidget {
       );
     }
     if (state is LoginSuccessState) {
+      if (state.madrasatiConnected) {
+        context.pushNamedAndRemoveUntil(Routes.home, (route) => false);
+      } else {
+        context.pushNamedAndRemoveUntil(Routes.loginMicrosoft, (route) => false);
+      }
     }
   }
 }

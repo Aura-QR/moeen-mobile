@@ -31,13 +31,13 @@ class RegisterHeaderWidget extends StatelessWidget {
             Text(
               appTranslation().get('app_name'),
               style: TextStylesManager.bold22.copyWith(
-                color: ColorsManager.primaryColor,
+               color: ColorsManager.primaryColor,
               ),
             ),
             Text(
               appTranslation().get('smart_assistant'),
               style: TextStylesManager.medium14.copyWith(
-                color: ColorsManager.placeholder,
+                color: ColorsManager.mainText,
               ),
             ),
           ],

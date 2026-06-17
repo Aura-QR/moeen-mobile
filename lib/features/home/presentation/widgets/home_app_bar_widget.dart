@@ -4,7 +4,9 @@ import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
+import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/core/utils/extensions/context_extension.dart';
 
 class HomeAppBarWidget extends StatelessWidget {
   const HomeAppBarWidget({super.key});
@@ -23,7 +25,9 @@ class HomeAppBarWidget extends StatelessWidget {
           textStyle: TextStylesManager.bold14.copyWith(
                 color: ColorsManager.white,
               ),
- onPressed: (){},
+ onPressed: (){
+  context.push( Routes.register);
+ },
  width: 150,
  
  ),

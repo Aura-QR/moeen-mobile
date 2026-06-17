@@ -97,5 +97,12 @@
   "action_enrichment": "Enrichment",
   "action_choose_prep": "Choose what to prepare for this lesson",
   "arabic_language": "Arabic",
-  "islamic_education": "Islamic Education"
+  "islamic_education": "Islamic Education",
+  "login_success": "Logged in successfully",
+  "register_success": "Account created successfully",
+  "login_failed": "Login failed",
+  "register_failed": "Registration failed",
+  "network_error": "Network connection error",
+  "madrasati_connecting": "Connecting to Madrasati platform...",
+  "madrasati_connected_success": "Madrasati account connected successfully"
 }

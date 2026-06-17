@@ -97,5 +97,12 @@
   "action_enrichment": "إثراء",
   "action_choose_prep": "اختر ما تريد إعداده لهذا الدرس",
   "arabic_language": "اللغة العربية",
-  "islamic_education": "التربية الإسلامية"
+  "islamic_education": "التربية الإسلامية",
+  "login_success": "تم تسجيل الدخول بنجاح",
+  "register_success": "تم إنشاء الحساب بنجاح",
+  "login_failed": "فشل تسجيل الدخول",
+  "register_failed": "فشل إنشاء الحساب",
+  "network_error": "خطأ في الاتصال بالشبكة",
+  "madrasati_connecting": "جاري الربط مع منصة مدرستي...",
+  "madrasati_connected_success": "تم ربط حساب مدرستي بنجاح"
 }

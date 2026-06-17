@@ -17,6 +17,7 @@ void main() {
       isDark: false,
       isArabic: true,
       translation: '{}',
+      initialRoute: '/',
     ));
 
     // Verify that our counter starts at 0.

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/features/register/presentation/cubit/register_state.dart';
+import 'package:moean/core/network/remote/api_service.dart';
+import 'package:moean/core/models/register_request.dart';
+import 'package:moean/core/network/local/cache_helper.dart';
+import 'package:moean/core/utils/constants/constants.dart';
 
 enum AccountType { teacher, supervisor }
 
@@ -42,14 +46,33 @@ class RegisterCubit extends Cubit<RegisterState> {
     emit(RegisterAccountTypeChangedState());
   }
 
-  void register() {
+  Future<void> register() async {
     if (!(formKey.currentState?.validate() ?? false)) return;
     if (!agreeToTerms) return;
     emit(RegisterLoadingState());
 
-    Future.delayed(const Duration(seconds: 2), () {
-      emit(RegisterSuccessState());
-    });
+    final request = RegisterRequest(
+      name: fullNameController.text.trim(),
+      email: emailController.text.trim(),
+      phone: phoneController.text.trim(),
+      password: passwordController.text,
+      passwordConfirmation: confirmPasswordController.text,
+    );
+
+    final result = await ApiService.registerUser(request);
+
+    result.fold(
+      (error) {
+        emit(RegisterErrorState(message: error));
+        debugPrint('Register Error: $error');
+      },
+      (response) async {
+        await CacheHelper.saveData(key: 'auth_token', value: response.token);
+        token = response.token;
+        emit(RegisterSuccessState());
+        debugPrint('Register Success: $response');
+      },
+    );
   }
 
   @override

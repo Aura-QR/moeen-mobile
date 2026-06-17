@@ -1,21 +1,22 @@
-class RegisterResponse {
-  final bool success;
-  final String? message;
-  final int? userId;
+import 'package:moean/core/models/user_model.dart';
+import 'package:moean/core/models/teacher_model.dart';
 
-  RegisterResponse({required this.success, this.message, this.userId});
+class RegisterResponse {
+  final UserModel user;
+  final String token;
+  final TeacherModel? teacher;
+
+  RegisterResponse({
+    required this.user,
+    required this.token,
+    this.teacher,
+  });
 
   factory RegisterResponse.fromJson(Map<String, dynamic> json) {
-    int? uid;
-    if (json['data'] != null && json['data'] is Map) {
-      uid = json['data']['id'] ?? json['data']['user']?['id'];
-    }
-    uid ??= json['user_id'];
-
     return RegisterResponse(
-      success: json['success'] ?? false,
-      message: json['message'] as String?,
-      userId: uid,
+      user: UserModel.fromJson(json['user']),
+      token: json['token'] as String,
+      teacher: json['teacher'] != null ? TeacherModel.fromJson(json['teacher']) : null,
     );
   }
 }

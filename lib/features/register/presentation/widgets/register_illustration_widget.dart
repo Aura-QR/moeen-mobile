@@ -18,7 +18,6 @@ class RegisterIllustrationWidget extends StatelessWidget {
           child: Container(
             height: 180,
             decoration: BoxDecoration(
-              color: ColorsManager.backgroundColorLight,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Image.asset(
@@ -36,14 +35,14 @@ class RegisterIllustrationWidget extends StatelessWidget {
               Text(
                 appTranslation().get('register_title'),
                 style: TextStylesManager.bold26.copyWith(
-                  color: ColorsManager.textPrimaryLight,
+                  color: ColorsManager.mainText,
                 ),
               ),
               verticalSpace8,
               Text(
                 appTranslation().get('register_subtitle'),
                 style: TextStylesManager.regular14.copyWith(
-                  color: ColorsManager.textBody,
+                  color: ColorsManager.mainText,
                 ),
               ),
             ],

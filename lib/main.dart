@@ -5,6 +5,7 @@ import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/network/local/cache_helper.dart';
 import 'package:moean/core/theme/theme.dart';
 import 'package:moean/core/utils/constants/routes.dart';
+import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'dart:developer' as developer;
@@ -28,6 +29,10 @@ void main() async {
   await initInjections();
     final bool isDark = CacheHelper.getData(key: 'isDark') ?? false;
     final bool isArabic = CacheHelper.getData(key: 'isArabicLang') ?? true;
+    final String? cachedToken = CacheHelper.getData(key: 'auth_token');
+    
+    token = cachedToken;
+    String initialRoute = (token != null && token!.isNotEmpty) ? Routes.home : Routes.login;
     
     developer.log('Main: Loading translations...');
     final String translation = await rootBundle.loadString(
@@ -35,7 +40,7 @@ void main() async {
     );
     developer.log('Main: Translations loaded');
 
-    runApp(MyApp(isDark: isDark, isArabic: isArabic, translation: translation));
+    runApp(MyApp(isDark: isDark, isArabic: isArabic, translation: translation, initialRoute: initialRoute));
     
 }
 
@@ -43,12 +48,14 @@ class MyApp extends StatelessWidget {
   final bool isDark;
   final bool isArabic;
   final String translation;
+  final String initialRoute;
 
   const MyApp({
     super.key,
     required this.isDark,
     required this.isArabic,
     required this.translation,
+    required this.initialRoute,
   });
 
   @override
@@ -74,7 +81,7 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             routes: Routes.routes,
           //  onGenerateRoute: Routes.onGenerateRoute,
-            initialRoute: Routes.register,
+            initialRoute: initialRoute,
             theme: ThemesManager.lightTheme,
             darkTheme: ThemesManager.darkTheme,
             themeMode: themeCubit.isDarkMode ? ThemeMode.dark : ThemeMode.light,

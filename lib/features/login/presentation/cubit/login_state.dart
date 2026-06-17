@@ -4,7 +4,10 @@ class LoginInitialState extends LoginState {}
 
 class LoginLoadingState extends LoginState {}
 
-class LoginSuccessState extends LoginState {}
+class LoginSuccessState extends LoginState {
+  final bool madrasatiConnected;
+  LoginSuccessState({required this.madrasatiConnected});
+}
 
 class LoginErrorState extends LoginState {
   final String message;

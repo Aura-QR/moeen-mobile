@@ -21,7 +21,7 @@ class RegisterFormWidget extends StatelessWidget {
         Text(
           appTranslation().get('full_name'),
           style: TextStylesManager.medium14.copyWith(
-            color: ColorsManager.textPrimaryLight,
+            color: ColorsManager.mainText,
           ),
         ),
         verticalSpace8,
@@ -42,7 +42,7 @@ class RegisterFormWidget extends StatelessWidget {
         Text(
           appTranslation().get('email'),
           style: TextStylesManager.medium14.copyWith(
-            color: ColorsManager.textPrimaryLight,
+            color: ColorsManager.mainText,
           ),
         ),
         verticalSpace8,
@@ -67,7 +67,7 @@ class RegisterFormWidget extends StatelessWidget {
         Text(
           appTranslation().get('phone'),
           style: TextStylesManager.medium14.copyWith(
-            color: ColorsManager.textPrimaryLight,
+            color: ColorsManager.mainText,
           ),
         ),
         verticalSpace8,
@@ -76,7 +76,7 @@ class RegisterFormWidget extends StatelessWidget {
         Text(
           appTranslation().get('password'),
           style: TextStylesManager.medium14.copyWith(
-            color: ColorsManager.textPrimaryLight,
+            color: ColorsManager.mainText,
           ),
         ),
         verticalSpace8,
@@ -112,7 +112,7 @@ class RegisterFormWidget extends StatelessWidget {
         Text(
           appTranslation().get('confirm_password'),
           style: TextStylesManager.medium14.copyWith(
-            color: ColorsManager.textPrimaryLight,
+            color: ColorsManager.mainText,
           ),
         ),
         verticalSpace8,
@@ -191,7 +191,7 @@ class _PhoneFieldWidget extends StatelessWidget {
               Text(
                 '+966',
                 style: TextStylesManager.medium14.copyWith(
-                  color: ColorsManager.textPrimaryLight,
+                  color: ColorsManager.mainText,
                 ),
               ),
               const SizedBox(width: 4),
