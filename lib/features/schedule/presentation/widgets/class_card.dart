@@ -5,8 +5,9 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/schedule/data/models/schedule_models.dart';
 import 'package:moean/features/schedule/presentation/widgets/status_strip.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moean/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:moean/features/schedule/presentation/widgets/schedule_bottom_sheet.dart';
-
 
 class ClassCard extends StatefulWidget {
   final ClassModel classModel;
@@ -27,18 +28,23 @@ class _ClassCardState extends State<ClassCard> {
   }
 
   void _showActions(BuildContext context) {
+    final cubit = ScheduleCubit.get(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ScheduleBottomSheet(classModel: widget.classModel),
+      builder: (context) => BlocProvider.value(
+        value: cubit,
+        child: ScheduleBottomSheet(classModel: widget.classModel),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final bool hasLesson = widget.classModel.lessonTitle != null;
-    final bool isActivity = widget.classModel.status == ClassStatus.activity;
+    final bool isActivity =
+        widget.classModel.status == ClassStatus.activity;
 
     return GestureDetector(
       onTap: isActivity ? null : () => _showActions(context),
@@ -47,10 +53,14 @@ class _ClassCardState extends State<ClassCard> {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _isExpanded ? ColorsManager.brandMint.withValues(alpha: 0.2) : ColorsManager.surfacePrimary,
+          color: _isExpanded
+              ? ColorsManager.brandMint.withValues(alpha: 0.2)
+              : ColorsManager.surfacePrimary,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: _isExpanded ? ColorsManager.primaryColor : ColorsManager.borderLightGray,
+            color: _isExpanded
+                ? ColorsManager.primaryColor
+                : ColorsManager.borderLightGray,
             width: _isExpanded ? 1.5 : 1,
           ),
         ),
@@ -65,12 +75,18 @@ class _ClassCardState extends State<ClassCard> {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: _isExpanded ? ColorsManager.brandMint : ColorsManager.scheduleBackground,
+                        color: _isExpanded
+                            ? ColorsManager.brandMint
+                            : ColorsManager.scheduleBackground,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                        color: _isExpanded ? ColorsManager.primaryColor : ColorsManager.secondaryText,
+                        _isExpanded
+                            ? Icons.keyboard_arrow_up
+                            : Icons.keyboard_arrow_down,
+                        color: _isExpanded
+                            ? ColorsManager.primaryColor
+                            : ColorsManager.secondaryText,
                         size: 20,
                       ),
                     ),
@@ -83,21 +99,31 @@ class _ClassCardState extends State<ClassCard> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      appTranslation().get(widget.classModel.numberKey),
-                      style: TextStylesManager.regular12.copyWith(color: ColorsManager.primaryColor),
+                      appTranslation().get(widget.classModel.periodKey),
+                      style: TextStylesManager.regular12
+                          .copyWith(color: ColorsManager.primaryColor),
                     ),
                     Text(
-                      appTranslation().get(widget.classModel.subjectKey),
-                      style: TextStylesManager.bold18.copyWith(color: ColorsManager.mainText),
+                      widget.classModel.lessonTitle ??
+                          appTranslation().get('no_lesson_title'),
+                      style: TextStylesManager.bold18
+                          .copyWith(color: ColorsManager.mainText),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Row(
                       children: [
                         Text(
-                          appTranslation().get(widget.classModel.gradeKey),
-                          style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText),
+                          widget.classModel.classroomId,
+                          style: TextStylesManager.regular12
+                              .copyWith(color: ColorsManager.secondaryText),
                         ),
                         horizontalSpace4,
-                        Icon(Icons.school, size: 14, color: ColorsManager.secondaryText),
+                        Icon(
+                          Icons.school,
+                          size: 14,
+                          color: ColorsManager.secondaryText,
+                        ),
                       ],
                     ),
                   ],
@@ -108,11 +134,16 @@ class _ClassCardState extends State<ClassCard> {
               verticalSpace16,
               Row(
                 children: [
-                  Icon(Icons.access_time, size: 16, color: ColorsManager.secondaryText),
+                  Icon(
+                    Icons.format_list_numbered,
+                    size: 16,
+                    color: ColorsManager.secondaryText,
+                  ),
                   horizontalSpace4,
                   Text(
-                    widget.classModel.time,
-                    style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText),
+                    '${appTranslation().get('period_label')} ${widget.classModel.periodNumber}',
+                    style: TextStylesManager.regular12
+                        .copyWith(color: ColorsManager.secondaryText),
                   ),
                 ],
               ),
@@ -128,12 +159,17 @@ class _ClassCardState extends State<ClassCard> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.bookmark_border, color: ColorsManager.primaryColor, size: 20),
+                    Icon(
+                      Icons.bookmark_border,
+                      color: ColorsManager.primaryColor,
+                      size: 20,
+                    ),
                     horizontalSpace8,
                     Expanded(
                       child: Text(
                         widget.classModel.lessonTitle!,
-                        style: TextStylesManager.regular12.copyWith(color: ColorsManager.mainText),
+                        style: TextStylesManager.regular12
+                            .copyWith(color: ColorsManager.mainText),
                       ),
                     ),
                   ],

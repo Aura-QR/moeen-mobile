@@ -71,7 +71,7 @@ class HomeResourceCardWidget extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStylesManager.bold14.copyWith(
-                color: ColorsManager.themeDarkPrimary,
+                color: ColorsManager.textPrimary,
                 height: 1.4,
               ),
             ),

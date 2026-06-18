@@ -63,7 +63,7 @@ erDiagram
 
 ## 🔄 Core Lesson Preparation Flow
 
-When a teacher initiates a lesson preparation via the mobile app, the system runs through the following stages:
+When a teacher initiates a lesson preparation via the mobile app, the system runs through the following 12-step orchestration pipeline:
 
 ```mermaid
 sequenceDiagram
@@ -73,34 +73,65 @@ sequenceDiagram
     participant OpenAI (GPT-4o-mini)
     participant Madrasati Portal
 
-    Mobile App->>Laravel API: POST /api/prepare (Lesson context)
+    Mobile App->>Laravel API: POST /api/prepare (with optional encrypted_token)
     Note over Laravel API: Check active session & daily quota
     Laravel API-->>Mobile App: 202 Accepted (preparation_id)
-    Laravel API->>Queue Worker: Dispatch PrepareLessonJob
+    Laravel API->>Queue Worker: Dispatch PrepareLessonJob (Queue: preparations)
     
     activate Queue Worker
-    Queue Worker->>Madrasati Portal: Fetch Lesson Goals
-    Madrasati Portal-->>Queue Worker: Goals JSON
+    Note over Queue Worker: Step 1: fetch_goals
+    Queue Worker->>Madrasati Portal: GET /Teacher/Lessons/GetGoalLessonSubject
+    Madrasati Portal-->>Queue Worker: Goals and Activities IDs
     
-    Queue Worker->>Madrasati Portal: Scrape Digital Content checkbox IDs
-    Madrasati Portal-->>Queue Worker: Scraped HTML checkboxes
+    Note over Queue Worker: Step 2: extract_digital_content
+    Queue Worker->>Madrasati Portal: GET /Teacher/Lessons/ViewContent & /Teacher/Lessons/ViewPlayer
+    Madrasati Portal-->>Queue Worker: Scraped Digital Content Checkbox IDs
     
-    Queue Worker->>OpenAI (GPT-4o-mini): Generate Lesson Content in Arabic (JSON)
-    OpenAI (GPT-4o-mini)-->>Queue Worker: Structured Lesson JSON
+    Note over Queue Worker: Step 3: generate_ai_content
+    Queue Worker->>OpenAI (GPT-4o-mini): Generate Arabic lesson planning fields (JSON)
+    OpenAI (GPT-4o-mini)-->>Queue Worker: Structured Planning JSON (strategies, tools, vocab, etc.)
     
-    Queue Worker->>Madrasati Portal: GET Activity Form (Extract CSRF & HashKey)
-    Madrasati Portal-->>Queue Worker: HTML Page Source
+    Note over Queue Worker: Step 4: before_snapshot (if Activity runs)
+    Queue Worker->>Madrasati Portal: GET /Projects/Projects/Index
+    Madrasati Portal-->>Queue Worker: Scrapes active projects for differential comparison
     
-    Queue Worker->>Madrasati Portal: POST /Projects/Create (Activity resource)
-    Madrasati Portal-->>Queue Worker: 200 Success JSON
+    Note over Queue Worker: Step 5: create_activity (if selected)
+    Queue Worker->>Madrasati Portal: POST /Projects/Create
+    Madrasati Portal-->>Queue Worker: Success response (triggers Project ID generation)
     
-    Note over Queue Worker: Poll with exponential backoff (1s - 15s) for new ProjectId
+    Note over Queue Worker: Step 6: create_enrichment (if selected)
+    Queue Worker->>Madrasati Portal: POST /LearningResources/MangeResources/Create
+    Madrasati Portal-->>Queue Worker: Scrapes new Enrichment ID
     
-    Queue Worker->>Madrasati Portal: GET /Teacher/ManageLecture?ProjectId={Id} (Scrape form fields)
-    Madrasati Portal-->>Queue Worker: Form fields HTML (~61 inputs)
+    Note over Queue Worker: Step 7: create_homework (if selected)
+    Queue Worker->>Madrasati Portal: POST /Teacher/LectureTools/AddAssignment & fetch questions
+    Madrasati Portal-->>Queue Worker: Scrapes new Assignment ID
     
-    Queue Worker->>Madrasati Portal: POST SaveLastLessonPlan (Submit built payload)
-    Madrasati Portal-->>Queue Worker: Success JSON + EventId
+    Note over Queue Worker: Step 8: create_exam (if selected)
+    Queue Worker->>Madrasati Portal: GET /Teacher/Exams/Manage & POSTsettings
+    Madrasati Portal-->>Queue Worker: Scrapes new Exam ID
+    
+    Note over Queue Worker: Step 9: resolve_project_id
+    Queue Worker->>Madrasati Portal: GET /Projects/Projects/Index & diff
+    Madrasati Portal-->>Queue Worker: Resolved newly created Project ID
+    
+    Note over Queue Worker: Step 10: fetch_lesson_form
+    alt Has encrypted_token
+        Queue Worker->>Madrasati Portal: POST /Teacher/Lessons/MlutiLessonPlan
+        Madrasati Portal-->>Queue Worker: Hidden fields with numeric IDs
+    else No encrypted_token
+        Queue Worker->>Madrasati Portal: GET /Teacher/ManageLecture?ProjectId={Id}
+        Madrasati Portal-->>Queue Worker: Scraped HTML form fields
+    end
+    
+    Note over Queue Worker: Step 10.5: attach_homework (if Homework created)
+    Queue Worker->>Madrasati Portal: POST /Teacher/LectureTools/AddAssignmentToLecture
+    Madrasati Portal-->>Queue Worker: Homework assignment to classroom timetable
+    
+    Note over Queue Worker: Step 11: build_payload
+    Note over Queue Worker: Step 12: submit_to_madrasati
+    Queue Worker->>Madrasati Portal: POST /Teacher/Lessons/SaveLastLessonPlan (Raw query string)
+    Madrasati Portal-->>Queue Worker: Success + EventId
     
     Queue Worker->>Laravel API: Mark preparation status as 'done'
     deactivate Queue Worker
@@ -110,6 +141,39 @@ sequenceDiagram
         Laravel API-->>Mobile App: Real-time progress steps
     end
 ```
+
+### 📋 Detailed Step Descriptions
+
+1. **`fetch_goals`**: Pulls specific lesson curriculum learning goals and pre-mapped Madrasati activities.
+2. **`extract_digital_content`**: Scrapes digital material, PDFs, and Interactive Content links directly from Madrasati's resource player.
+3. **`generate_ai_content`**: Invokes OpenAI GPT to translate instruction details, closure templates, vocabulary words, and extra notes into highly professional Arabic educational responses.
+4. **`before_snapshot`**: Captures a snapshot of the teacher's current activities list to enable differential identification of newly created items.
+5. **`create_activity`**: Automatically posts a new Activity request targeting the current unit/lesson context.
+6. **`create_enrichment`**: Creates a Madrasati Enrichment item (Link/File) matching the lesson name.
+7. **`create_homework`**: Programmatically designs a lesson Homework assignment (fetching appropriate questions from the IEN question bank).
+8. **`create_exam`**: Configures and registers a custom Madrasati lesson Exam (distributing questions by difficulty settings).
+9. **`resolve_project_id`**: Resolves the exact Madrasati Project UUID via a differential analysis of the teacher's Projects list.
+10. **`fetch_lesson_form`**: Scrapes form elements or retrieves them via `MlutiLessonPlan` using `encrypted_token` to discover correct numeric School and Timetable IDs.
+11. **`build_payload`**: Merges all AI-generated fields, strategies, teaching tools, and generated resource IDs into a raw url-encoded query string structure.
+12. **`submit_to_madrasati`**: Submits the final instruction plan to the server via `/Teacher/Lessons/SaveLastLessonPlan`.
+
+---
+
+## 📊 HTTP Scraper Request Logging
+
+All HTTP calls made by `MadrasatiClient` are captured in the database to assist in diagnostics, debug flows, and audit session behavior.
+
+### Database Table: `madrasati_request_logs`
+Each row captures:
+- `teacher_id`: Linked teacher model reference.
+- `preparation_id`: Optional connection to the active lesson preparation tracking table.
+- `endpoint`: The Madrasati URL/endpoint requested.
+- `method`: HTTP method (e.g. GET, POST).
+- `request_payload` (`jsonb`): Request arguments, query variables, or raw form body payloads.
+- `response_payload` (`jsonb`): Scraped text or HTML responses (trimmed to prevent storage bloat).
+- `status_code`: HTTP response status code (e.g., 200, 302).
+- `duration_ms`: Roundtrip time in milliseconds.
+- `success`: Boolean indicating if the client completed the request successfully.
 
 ---
 

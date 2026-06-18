@@ -26,7 +26,7 @@ class MadrasatiCubit extends Cubit<MadrasatiState> {
 
   Future<void> connectMadrasati({
     required String sessionCookie,
-    required String csrfToken,
+    required String madrasatiSchoolId,
     required String expiresAt,
   }) async {
     emit(MadrasatiLoadingState());
@@ -36,7 +36,7 @@ class MadrasatiCubit extends Cubit<MadrasatiState> {
         url: connectMadrasatiApi,
         data: {
           'session_cookie': sessionCookie,
-          'csrf_token': csrfToken,
+          'madrasati_school_id': madrasatiSchoolId,
           'expires_at': expiresAt,
         },
       );
@@ -45,7 +45,8 @@ class MadrasatiCubit extends Cubit<MadrasatiState> {
         (error) => emit(MadrasatiErrorState(error)),
         (res) {
           final success = res.data['success'] ?? false;
-          final message = res.data['message'] ?? 'Connected successfully';
+          final message =
+              res.data['message'] as String? ?? 'Connected successfully';
           if (success) {
             emit(MadrasatiSuccessState(message));
           } else {

@@ -53,19 +53,26 @@ class RegisterScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             verticalSpace16,
-                            const RegisterHeaderWidget(),
+                            // ignore: prefer_const_constructors
+                            RegisterHeaderWidget(),
                             verticalSpace16,
-                            const RegisterIllustrationWidget(),
+                            // ignore: prefer_const_constructors
+                            RegisterIllustrationWidget(),
                             verticalSpace24,
-                            const RegisterFormWidget(),
+                            // ignore: prefer_const_constructors
+                            RegisterFormWidget(),
                             verticalSpace20,
-                            const RegisterAccountTypeWidget(),
+                            // ignore: prefer_const_constructors
+                            RegisterAccountTypeWidget(),
                             verticalSpace16,
-                            const RegisterTermsWidget(),
+                            // ignore: prefer_const_constructors
+                            RegisterTermsWidget(),
                             verticalSpace28,
-                            const RegisterActionButtonsWidget(),
+                            // ignore: prefer_const_constructors
+                            RegisterActionButtonsWidget(),
                             verticalSpace24,
-                            const RegisterFooterWidget(),
+                            // ignore: prefer_const_constructors
+                            RegisterFooterWidget(),
                             verticalSpace32,
                           ],
                         ),

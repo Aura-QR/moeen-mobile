@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
+import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/features/login/presentation/cubit/login_cubit.dart';
 import 'package:moean/features/login/presentation/cubit/login_state.dart';
 import 'package:moean/features/login/presentation/widgets/login_action_buttons_widget.dart';
@@ -22,11 +24,13 @@ class LoginScreen extends StatelessWidget {
       create: (_) => LoginCubit(),
       child: BlocListener<LoginCubit, LoginState>(
         listener: _onStateChanged,
-        child: Scaffold(
-          backgroundColor: ColorsManager.background,
-          body: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: BlocBuilder<ThemeCubit, ThemeState>(
+          builder: (context, themeState) {
+            return Scaffold(
+              backgroundColor: ColorsManager.background,
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Builder(
                 builder: (context) {
                   final cubit = LoginCubit.get(context);
@@ -36,7 +40,8 @@ class LoginScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         verticalSpace16,
-                        const LoginHeaderWidget(),
+                        // ignore: prefer_const_constructors
+                        LoginHeaderWidget(),
                   Container(
                      height: 300,
                       width: double.infinity,
@@ -50,13 +55,17 @@ class LoginScreen extends StatelessWidget {
             
           ),
                   ),
-                        const LoginFormWidget(),
+                        // ignore: prefer_const_constructors
+                        LoginFormWidget(),
                         verticalSpace16,
-                        const LoginRememberForgotWidget(),
+                        // ignore: prefer_const_constructors
+                        LoginRememberForgotWidget(),
                         verticalSpace28,
-                        const LoginActionButtonsWidget(),
+                        // ignore: prefer_const_constructors
+                        LoginActionButtonsWidget(),
                         verticalSpace24,
-                        const LoginFooterWidget(),
+                        // ignore: prefer_const_constructors
+                        LoginFooterWidget(),
                         verticalSpace32,
                       ],
                     ),
@@ -65,6 +74,8 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
           ),
+            );
+          },
         ),
       ),
     );
@@ -81,10 +92,12 @@ class LoginScreen extends StatelessWidget {
     }
     if (state is LoginSuccessState) {
       if (state.madrasatiConnected) {
-        context.pushNamedAndRemoveUntil(Routes.home, (route) => false);
+        context.pushNamedAndRemoveUntil(Routes.schedule, (route) => false);
       } else {
-        context.pushNamedAndRemoveUntil(Routes.loginMicrosoft, (route) => false);
+        context.pushNamedAndRemoveUntil(
+            Routes.loginMicrosoft, (route) => false);
       }
     }
   }
+
 }

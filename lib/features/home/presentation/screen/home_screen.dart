@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
+import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/features/home/presentation/cubit/home_cubit.dart';
 import 'package:moean/features/home/presentation/widgets/home_app_bar_widget.dart';
 import 'package:moean/features/home/presentation/widgets/home_category_chips_widget.dart';
@@ -18,38 +20,48 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => HomeCubit(),
-      child: Scaffold(
-        backgroundColor: ColorsManager.background,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+      child: BlocBuilder<ThemeCubit, ThemeState>(
+        builder: (context, themeState) {
+          return Scaffold(
+            backgroundColor: ColorsManager.background,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 verticalSpace8,
-                const HomeAppBarWidget(),
+                // ignore: prefer_const_constructors
+                HomeAppBarWidget(),
                 verticalSpace16,
-                const HomeHeroBannerWidget(),
+                // ignore: prefer_const_constructors
+                HomeHeroBannerWidget(),
                 verticalSpace20,
-                const HomeSearchBarWidget(),
+                // ignore: prefer_const_constructors
+                HomeSearchBarWidget(),
                 verticalSpace20,
-                const HomeCategoryChipsWidget(),
+                // ignore: prefer_const_constructors
+                HomeCategoryChipsWidget(),
                 verticalSpace24,
-                const HomeFeaturedSectionHeaderWidget(),
+                // ignore: prefer_const_constructors
+                HomeFeaturedSectionHeaderWidget(),
                 verticalSpace16,
-                const _FeaturedResourcesList(),
+                // ignore: prefer_const_constructors
+                _FeaturedResourcesList(),
                 verticalSpace20,
-                const HomeTipOfDayWidget(),
-                verticalSpace32,
+                // ignore: prefer_const_constructors
+                HomeTipOfDayWidget(),
+               verticalSpace32,
               ],
             ),
           ),
         ),
-      ),
-    );
+      );
+    },
+  ),
+);
   }
 }
-
 class _FeaturedResourcesList extends StatelessWidget {
   const _FeaturedResourcesList();
 

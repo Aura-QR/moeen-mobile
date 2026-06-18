@@ -10,6 +10,7 @@ class ActionButtonWidget extends StatelessWidget {
   final Color color;
   final Color? backgroundColor;
   final bool isOutlined;
+  final VoidCallback? onTap;
 
   const ActionButtonWidget({
     super.key,
@@ -18,13 +19,16 @@ class ActionButtonWidget extends StatelessWidget {
     required this.color,
     this.backgroundColor,
     this.isOutlined = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 72,
-      height: 72,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 72,
+        height: 72,
       decoration: BoxDecoration(
         color: backgroundColor ?? ColorsManager.white,
         borderRadius: BorderRadius.circular(12),
@@ -46,6 +50,7 @@ class ActionButtonWidget extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

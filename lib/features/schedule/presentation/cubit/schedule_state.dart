@@ -9,11 +9,13 @@ class ScheduleLoading extends ScheduleState {}
 class ScheduleLoaded extends ScheduleState {
   final List<DayModel> days;
   final List<ClassModel> classes;
+  final List<ClassModel> allClasses;
   final int selectedDayIndex;
 
   ScheduleLoaded({
     required this.days,
     required this.classes,
+    required this.allClasses,
     required this.selectedDayIndex,
   });
 }

@@ -54,4 +54,60 @@ class ApiService {
       (res) => const Right(true),
     );
   }
+
+  static Future<Either<String, Map<String, dynamic>>> getSchedule({
+    required String weekDate,
+  }) async {
+    final response = await DioHelper.getData(
+      url: scheduleApi,
+      query: {'week': weekDate},
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(res.data as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, bool>> syncSchedule({
+    required String weekDate,
+  }) async {
+    final response = await DioHelper.postData(
+      url: '$scheduleApi/sync',
+      data: {
+        'week_date': weekDate,
+      },
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => const Right(true),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> prepareLesson({
+    required int lessonId,
+    required int subjectId,
+    required String classroomId,
+    required String schoolMadrasatiId,
+    required String timeTableId,
+    required List<String> selectedModules,
+  }) async {
+    final response = await DioHelper.postData(
+      url: prepareApi,
+      data: {
+        'lesson_id': lessonId,
+        'subject_id': subjectId,
+        'classroom_id': classroomId,
+        'school_madrasati_id': schoolMadrasatiId,
+        'time_table_id': timeTableId,
+        'selected_modules': selectedModules,
+      },
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(res.data as Map<String, dynamic>),
+    );
+  }
 }

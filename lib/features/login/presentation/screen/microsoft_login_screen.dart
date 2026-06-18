@@ -18,8 +18,34 @@ class _MicrosoftLoginScreenState extends State<MicrosoftLoginScreen> {
   InAppWebViewController? webViewController;
   double progress = 0;
 
-  final String madrasatiLoginUrl = "https://schools.madrasati.sa/";
-  bool isConnecting = false;
+  final String _madrasatiLoginUrl = 'https://schools.madrasati.sa/';
+  bool _isConnecting = false;
+
+  /// Attempts to extract the Madrasati school ID from the current URL.
+  ///
+  /// Madrasati URLs have the school ID embedded either in the path
+  /// (`/School/abc123`) or as a query parameter (`?schoolId=abc123`).
+  String _extractSchoolId(WebUri url) {
+    final uri = Uri.tryParse(url.toString());
+    if (uri == null) return '';
+
+    // 1. Try query parameter: ?schoolId=... or ?school_id=...
+    final fromQuery = uri.queryParameters['schoolId'] ??
+        uri.queryParameters['school_id'] ??
+        uri.queryParameters['SchoolId'];
+    if (fromQuery != null && fromQuery.isNotEmpty) return fromQuery;
+
+    // 2. Try to find a 32-char hex segment in the path segments
+    // (Madrasati real_school_id is a 32-char alphanumeric string)
+    for (final segment in uri.pathSegments) {
+      if (segment.length == 32 &&
+          RegExp(r'^[a-zA-Z0-9]+$').hasMatch(segment)) {
+        return segment;
+      }
+    }
+
+    return '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +57,11 @@ class _MicrosoftLoginScreenState extends State<MicrosoftLoginScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: ColorsManager.successColor ,
+                backgroundColor: ColorsManager.successColor,
               ),
             );
-            context.pushNamedAndRemoveUntil(Routes.home, (route) => false);
+            context.pushNamedAndRemoveUntil(
+                Routes.schedule, (route) => false);
           } else if (state is MadrasatiErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -42,9 +69,7 @@ class _MicrosoftLoginScreenState extends State<MicrosoftLoginScreen> {
                 backgroundColor: ColorsManager.errorColor,
               ),
             );
-            setState(() {
-              isConnecting = false;
-            });
+            setState(() => _isConnecting = false);
           }
         },
         builder: (context, state) {
@@ -66,14 +91,14 @@ class _MicrosoftLoginScreenState extends State<MicrosoftLoginScreen> {
                         LinearProgressIndicator(
                           value: progress,
                           color: ColorsManager.primaryColor,
-                          backgroundColor:
-                              ColorsManager.primaryColor.withValues(alpha: 0.2),
+                          backgroundColor: ColorsManager.primaryColor
+                              .withValues(alpha: 0.2),
                         ),
                       Expanded(
                         child: InAppWebView(
                           key: webViewKey,
                           initialUrlRequest: URLRequest(
-                            url: WebUri(madrasatiLoginUrl),
+                            url: WebUri(_madrasatiLoginUrl),
                           ),
                           initialSettings: InAppWebViewSettings(
                             javaScriptEnabled: true,
@@ -82,60 +107,52 @@ class _MicrosoftLoginScreenState extends State<MicrosoftLoginScreen> {
                           onWebViewCreated: (controller) {
                             webViewController = controller;
                           },
-                          onProgressChanged: (controller, progress) {
-                            setState(() {
-                              this.progress = progress / 100;
-                            });
+                          onProgressChanged: (controller, p) {
+                            setState(() => progress = p / 100);
                           },
                           onLoadStop: (controller, url) async {
-                            setState(() {
-                              progress = 1.0;
-                            });
-                            
-                            if (url != null && url.toString().contains('schools.madrasati.sa')) {
-                              // We might be logged in, let's check cookies
-                              final cookieManager = CookieManager.instance();
-                              final cookies = await cookieManager.getCookies(url: url);
-                              
-                              if (cookies.isNotEmpty) {
-                                bool hasAspNetCore = cookies.any((c) => c.name == '.AspNetCore.Cookies');
-                                
-                                // If we have the main session cookies, let's extract them
-                                if (hasAspNetCore) {
-                                  if (!isConnecting) {
-                                    setState(() {
-                                      isConnecting = true;
-                                    });
-                                    String sessionCookieStr = cookies.map((c) => "${c.name}=${c.value}").join('; ');
-                                    
-                                    String csrfToken = '';
-                                    try {
-                                      final csrfCookie = cookies.firstWhere((c) => c.name.contains('Antiforgery') || c.name.contains('RequestVerificationToken'));
-                                      csrfToken = csrfCookie.value;
-                                    } catch (_) {}
+                            setState(() => progress = 1.0);
 
-                                    if (csrfToken.isEmpty) {
-                                      try {
-                                        final jsResult = await controller.evaluateJavascript(source: "document.querySelector('input[name=__RequestVerificationToken]')?.value;");
-                                        if (jsResult != null) {
-                                          csrfToken = jsResult.toString();
-                                        }
-                                      } catch (_) {}
-                                    }
-                                    
-                                    DateTime expiresAt = DateTime.now().add(const Duration(days: 30));
-                                    String expiresStr = "${expiresAt.year}-${expiresAt.month.toString().padLeft(2, '0')}-${expiresAt.day.toString().padLeft(2, '0')} ${expiresAt.hour.toString().padLeft(2, '0')}:${expiresAt.minute.toString().padLeft(2, '0')}:00";
-                                    
-                                    // ignore: use_build_context_synchronously
-                                    context.read<MadrasatiCubit>().connectMadrasati(
-                                      sessionCookie: sessionCookieStr,
-                                      csrfToken: csrfToken,
-                                      expiresAt: expiresStr,
-                                    );
-                                  }
-                                }
-                              }
+                            if (url == null) return;
+                            if (!url
+                                .toString()
+                                .contains('schools.madrasati.sa')) {
+                              return;
                             }
+
+                            // Check for the main session cookie
+                            final cookieManager = CookieManager.instance();
+                            final cookies =
+                                await cookieManager.getCookies(url: url);
+
+                            if (cookies.isEmpty) return;
+
+                            final hasSession = cookies
+                                .any((c) => c.name == '.AspNetCore.Cookies');
+                            if (!hasSession || _isConnecting) return;
+
+                            setState(() => _isConnecting = true);
+
+                            // Build the full cookie string
+                            final sessionCookieStr =
+                                cookies.map((c) => '${c.name}=${c.value}').join('; ');
+
+                            // Extract school ID from URL
+                            final schoolId = _extractSchoolId(url);
+
+                            // Calculate expiry (30 days from now)
+                            final expiresAt =
+                                DateTime.now().add(const Duration(days: 30));
+                            final expiresStr =
+                                '${expiresAt.year}-${expiresAt.month.toString().padLeft(2, '0')}-${expiresAt.day.toString().padLeft(2, '0')} '
+                                '${expiresAt.hour.toString().padLeft(2, '0')}:${expiresAt.minute.toString().padLeft(2, '0')}:00';
+
+                            // ignore: use_build_context_synchronously
+                            MadrasatiCubit.get(context).connectMadrasati(
+                              sessionCookie: sessionCookieStr,
+                              madrasatiSchoolId: schoolId,
+                              expiresAt: expiresStr,
+                            );
                           },
                         ),
                       ),

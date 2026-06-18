@@ -104,5 +104,11 @@
   "register_failed": "فشل إنشاء الحساب",
   "network_error": "خطأ في الاتصال بالشبكة",
   "madrasati_connecting": "جاري الربط مع منصة مدرستي...",
-  "madrasati_connected_success": "تم ربط حساب مدرستي بنجاح"
+  "madrasati_connected_success": "تم ربط حساب مدرستي بنجاح",
+  "period_label": "الحصة",
+  "no_lesson_title": "لا يوجد درس محدد",
+  "schedule_empty_title": "لا يوجد جدول لهذا الأسبوع",
+  "schedule_empty_subtitle": "تأكد من تزامن جدولك مع منصة مدرستي",
+  "schedule_error_title": "تعذّر تحميل الجدول",
+  "retry": "إعادة المحاولة"
 }

@@ -104,5 +104,11 @@
   "register_failed": "Registration failed",
   "network_error": "Network connection error",
   "madrasati_connecting": "Connecting to Madrasati platform...",
-  "madrasati_connected_success": "Madrasati account connected successfully"
+  "madrasati_connected_success": "Madrasati account connected successfully",
+  "period_label": "Period",
+  "no_lesson_title": "No lesson assigned",
+  "schedule_empty_title": "No schedule for this week",
+  "schedule_empty_subtitle": "Make sure your timetable is synced with Madrasati",
+  "schedule_error_title": "Failed to load schedule",
+  "retry": "Retry"
 }

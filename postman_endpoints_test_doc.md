@@ -1,7 +1,7 @@
 # Moeen Backend API - Postman Testing Documentation
 
 This document serves as a complete reference for testing the Moeen API in Postman.
-url =http://172.19.80.1:8000/api
+
 ---
 
 ## 🔑 Global Headers
@@ -147,7 +147,7 @@ Submit session cookies extracted by the Chrome extension to enable Laravel to ac
   ```json
   {
     "session_cookie": "MicrosoftSeqCol=123; .AspNetCore.Cookies=XYZ;",
-    "madrasati_school_id": "abc123abc123abc123abc123abc123ab",
+    "madrasati_school_id": "6E91EFB432214026DFC80BC935F660B6",
     "expires_at": "2026-06-25 18:00:00"
   }
   ```
@@ -324,9 +324,12 @@ Initiate lesson preparation. This triggers an asynchronous queue worker to scrap
     "classroom_id": "classroom_a_12",
     "school_madrasati_id": "abc123abc123abc123abc123abc123ab",
     "time_table_id": "98765432",
-    "selected_modules": ["assignment"]
+    "selected_modules": ["assignment", "enrichment", "homework", "exam"],
+    "encrypted_token": "aHR0cHM6Ly9zY2hvb2xzLm1hZHJhc2F0aS5zYS8..."
   }
   ```
+  - Note: `encrypted_token` is optional (string, min:16). When provided, it is used for resolving numeric school and timetable IDs via `MlutiLessonPlan`.
+  - Note: `selected_modules` supports `assignment`, `homework`, `enrichment`, and `exam`.
 - **Response (202 Accepted)**:
   ```json
   {
@@ -402,6 +405,105 @@ List previous lesson preparation attempts made by the teacher.
         }
       }
     ]
+  }
+  ```
+
+---
+
+### 5.4 Get Preparation Details
+Retrieve detailed information for a specific preparation, including progress steps.
+
+- **Method**: `GET`
+- **Route**: `/api/preparations/{id}`
+- **Headers**:
+  - `Accept: application/json`
+  - `Authorization: Bearer <token>`
+- **Response (200 OK)**:
+  ```json
+  {
+    "id": 1,
+    "teacher_id": 1,
+    "lesson_id": 26143,
+    "subject_id": 86,
+    "classroom_id": "classroom_a_12",
+    "school_madrasati_id": "abc123abc123abc123abc123abc123ab",
+    "time_table_id": "98765432",
+    "selected_modules": ["assignment"],
+    "status": "done",
+    "error_message": null,
+    "completed_at": "2026-06-16 14:26:15",
+    "madrasati_event_id": "123456",
+    "steps": [
+      {
+        "id": 1,
+        "preparation_id": 1,
+        "step_name": "fetch_goals",
+        "status": "done",
+        "metadata": {}
+      }
+    ]
+  }
+  ```
+
+---
+
+### 5.5 Retry Lesson Preparation
+Retry a failed lesson preparation attempt. Re-queues the preparation job using stored details and credentials.
+
+- **Method**: `POST`
+- **Route**: `/api/preparations/{id}/retry`
+- **Headers**:
+  - `Accept: application/json`
+  - `Authorization: Bearer <token>`
+- **Response (200 OK)**:
+  ```json
+  {
+    "success": true,
+    "message": "Preparation queued for retry."
+  }
+  ```
+
+---
+
+### 5.6 Bulk Start Lesson Preparation
+Prepare multiple lessons concurrently (e.g. for a full week timetable). Each lesson can optionally have an `encrypted_token`. Jobs are staggered to prevent rate limiting.
+
+- **Method**: `POST`
+- **Route**: `/api/prepare/bulk`
+- **Headers**:
+  - `Accept: application/json`
+  - `Authorization: Bearer <token>`
+- **Request Body (JSON)**:
+  ```json
+  {
+    "lessons": [
+      {
+        "lesson_id": 26143,
+        "subject_id": 86,
+        "classroom_id": "classroom_a_12",
+        "school_madrasati_id": "abc123abc123abc123abc123abc123ab",
+        "time_table_id": "98765432",
+        "selected_modules": ["assignment", "enrichment"],
+        "encrypted_token": "aHR0cHM6Ly9zY2hvb2xzLm1hZHJhc2F0aS5zYS8..."
+      },
+      {
+        "lesson_id": 26144,
+        "subject_id": 86,
+        "classroom_id": "classroom_a_12",
+        "school_madrasati_id": "abc123abc123abc123abc123abc123ab",
+        "time_table_id": "98765433",
+        "selected_modules": ["assignment"],
+        "encrypted_token": null
+      }
+    ]
+  }
+  ```
+- **Response (202 Accepted)**:
+  ```json
+  {
+    "success": true,
+    "preparation_ids": [1, 2],
+    "total": 2
   }
   ```
 
