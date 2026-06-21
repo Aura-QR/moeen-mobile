@@ -63,15 +63,31 @@ class ScheduleScreen extends StatelessWidget {
                                         ScheduleCubit.get(context)
                                             .selectDay(index),
                                   ),
-                                  verticalSpace24,
-                                  Expanded(
-                                    child: ListView.builder(
-                                      itemCount: loaded.classes.length,
-                                      itemBuilder: (context, index) =>
-                                          ClassCard(
-                                        classModel: loaded.classes[index],
+                                  verticalSpace16,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'عدد الحصص',
+                                        style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
                                       ),
-                                    ),
+                                      Text(
+                                        loaded.classes.isEmpty ? 'لا توجد حصص' : '${loaded.classes.length}',
+                                        style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor),
+                                      ),
+                                    ],
+                                  ),
+                                  verticalSpace16,
+                                  Expanded(
+                                    child: loaded.classes.isEmpty
+                                        ? const _ScheduleEmptyView(message: 'لا توجد حصص')
+                                        : ListView.builder(
+                                            itemCount: loaded.classes.length,
+                                            itemBuilder: (context, index) =>
+                                                ClassCard(
+                                              classModel: loaded.classes[index],
+                                            ),
+                                          ),
                                   ),
                                 ],
                               ),
@@ -132,7 +148,8 @@ class _ScheduleErrorView extends StatelessWidget {
 }
 
 class _ScheduleEmptyView extends StatelessWidget {
-  const _ScheduleEmptyView();
+  final String? message;
+  const _ScheduleEmptyView({this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +166,7 @@ class _ScheduleEmptyView extends StatelessWidget {
             ),
             verticalSpace16,
             Text(
-              appTranslation().get('schedule_empty_title'),
+              message ?? appTranslation().get('schedule_empty_title'),
               style: TextStylesManager.bold16
                   .copyWith(color: ColorsManager.mainText),
               textAlign: TextAlign.center,

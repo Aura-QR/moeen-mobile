@@ -8,10 +8,27 @@ import 'package:moean/features/schedule/presentation/widgets/status_strip.dart';
 import 'package:moean/features/schedule/presentation/widgets/action_button_widget.dart';
 import 'package:moean/features/schedule/presentation/cubit/schedule_cubit.dart';
 
-class ScheduleBottomSheet extends StatelessWidget {
+class ScheduleBottomSheet extends StatefulWidget {
   final ClassModel classModel;
 
   const ScheduleBottomSheet({super.key, required this.classModel});
+
+  @override
+  State<ScheduleBottomSheet> createState() => _ScheduleBottomSheetState();
+}
+
+class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
+  final List<String> _selectedModules = [];
+
+  void _toggleModule(String module) {
+    setState(() {
+      if (_selectedModules.contains(module)) {
+        _selectedModules.remove(module);
+      } else {
+        _selectedModules.add(module);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,9 +69,9 @@ class ScheduleBottomSheet extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (classModel.lessonTitle != null)
+                    if (widget.classModel.lessonTitle != null)
                       Text(
-                        classModel.lessonTitle!,
+                        widget.classModel.lessonTitle!,
                         style: TextStylesManager.bold14
                             .copyWith(color: ColorsManager.mainText),
                       ),
@@ -62,12 +79,12 @@ class ScheduleBottomSheet extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          classModel.classroomId,
+                          widget.classModel.classroomId,
                           style: TextStylesManager.regular12
                               .copyWith(color: ColorsManager.secondaryText),
                         ),
                         const Spacer(),
-                        StatusIcon(status: classModel.status, size: 24),
+                        StatusIcon(status: widget.classModel.status, size: 24),
                       ],
                     ),
                   ],
@@ -78,19 +95,19 @@ class ScheduleBottomSheet extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    appTranslation().get(classModel.periodKey),
+                    appTranslation().get(widget.classModel.periodKey),
                     style: TextStylesManager.regular12
                         .copyWith(color: ColorsManager.primaryColor),
                   ),
                   Text(
-                    '${appTranslation().get('period_label')} ${classModel.periodNumber}',
+                    '${appTranslation().get('period_label')} ${widget.classModel.periodNumber}',
                     style: TextStylesManager.bold16
                         .copyWith(color: ColorsManager.mainText),
                   ),
                   Row(
                     children: [
                       Text(
-                        classModel.classroomId,
+                        widget.classModel.classroomId,
                         style: TextStylesManager.regular12
                             .copyWith(color: ColorsManager.secondaryText),
                       ),
@@ -98,7 +115,7 @@ class ScheduleBottomSheet extends StatelessWidget {
                       Icon(
                         Icons.school,
                         size: 14,
-                        color: ColorsManager.secondaryText,
+                        color: ColorsManager.primaryColor,
                       ),
                     ],
                   ),
@@ -113,77 +130,62 @@ class ScheduleBottomSheet extends StatelessWidget {
                 .copyWith(color: ColorsManager.mainText),
           ),
           verticalSpace16,
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                ActionButtonWidget(
-                  titleKey: 'action_enrichment',
-                  icon: Icons.star_border,
-                  color: ColorsManager.brandGold,
-                  onTap: () {
-                    ScheduleCubit.get(context).prepareLesson(
-                      classModel: classModel,
-                      selectedModules: ['enrichment'],
-                    );
-                    Navigator.pop(context);
-                  },
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ActionButtonWidget(
+                titleKey: 'action_enrichment',
+                icon: Icons.star_border,
+                color: _selectedModules.contains('enrichment') ? ColorsManager.white : ColorsManager.brandGold,
+                backgroundColor: _selectedModules.contains('enrichment') ? ColorsManager.brandGold : null,
+                onTap: () => _toggleModule('enrichment'),
+              ),
+              ActionButtonWidget(
+                titleKey: 'action_exam',
+                icon: Icons.assignment_outlined,
+                color: _selectedModules.contains('exam') ? ColorsManager.white : ColorsManager.statusSuccess,
+                backgroundColor: _selectedModules.contains('exam') ? ColorsManager.statusSuccess : null,
+                onTap: () => _toggleModule('exam'),
+              ),
+              ActionButtonWidget(
+                titleKey: 'action_activity',
+                icon: Icons.directions_walk_outlined,
+                color: _selectedModules.contains('activity') ? ColorsManager.white : ColorsManager.statusActivity,
+                backgroundColor: _selectedModules.contains('activity') ? ColorsManager.statusActivity : null,
+                onTap: () => _toggleModule('activity'),
+              ),
+              ActionButtonWidget(
+                titleKey: 'action_homework',
+                icon: Icons.home_work_outlined,
+                color: _selectedModules.contains('homework') ? ColorsManager.white : ColorsManager.statusWaiting,
+                backgroundColor: _selectedModules.contains('homework') ? ColorsManager.statusWaiting : null,
+                onTap: () => _toggleModule('homework'),
+              ),
+            ],
+          ),
+          verticalSpace24,
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorsManager.primaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                horizontalSpace8,
-                ActionButtonWidget(
-                  titleKey: 'action_exam',
-                  icon: Icons.assignment_outlined,
-                  color: ColorsManager.statusSuccess,
-                  onTap: () {
-                    ScheduleCubit.get(context).prepareLesson(
-                      classModel: classModel,
-                      selectedModules: ['exam'],
-                    );
-                    Navigator.pop(context);
-                  },
-                ),
-                horizontalSpace8,
-                ActionButtonWidget(
-                  titleKey: 'action_worksheet',
-                  icon: Icons.description_outlined,
-                  color: ColorsManager.statusWaiting,
-                  onTap: () {
-                    ScheduleCubit.get(context).prepareLesson(
-                      classModel: classModel,
-                      selectedModules: ['assignment'], // or homework, mapped based on API supported modules
-                    );
-                    Navigator.pop(context);
-                  },
-                ),
-                horizontalSpace8,
-                ActionButtonWidget(
-                  titleKey: 'action_presentation',
-                  icon: Icons.personal_video,
-                  color: ColorsManager.primaryColor,
-                  isOutlined: true,
-                  onTap: () {
-                    ScheduleCubit.get(context).prepareLesson(
-                      classModel: classModel,
-                      selectedModules: [], // maybe not supported directly by API but we trigger it
-                    );
-                    Navigator.pop(context);
-                  },
-                ),
-                horizontalSpace8,
-                ActionButtonWidget(
-                  titleKey: 'action_prepare_moean',
-                  icon: Icons.auto_awesome,
-                  color: ColorsManager.white,
-                  backgroundColor: ColorsManager.primaryColor,
-                  onTap: () {
-                    ScheduleCubit.get(context).prepareLesson(
-                      classModel: classModel,
-                      selectedModules: ['assignment', 'enrichment', 'homework', 'exam'],
-                    );
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
+                elevation: 0,
+              ),
+              onPressed: () {
+                ScheduleCubit.get(context).prepareLesson(
+                  classModel: widget.classModel,
+                  selectedModules: _selectedModules,
+                );
+                Navigator.pop(context);
+              },
+              child: Text(
+                appTranslation().get('action_prepare_moean'),
+                style: TextStylesManager.bold16.copyWith(color: ColorsManager.white),
+              ),
             ),
           ),
           verticalSpace24,

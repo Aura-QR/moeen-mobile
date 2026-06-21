@@ -112,13 +112,27 @@ class ScheduleCubit extends Cubit<ScheduleState> {
       (data) {
         debugPrint('✅ ScheduleCubit Success Full Response: $data');
         final weekStart = data['week_start'] as String? ?? weekDate;
-        final scheduleRaw = data['schedule'];
-        final rawSchedule = scheduleRaw is Map
-            ? Map<String, dynamic>.from(scheduleRaw)
-            : <String, dynamic>{};
+        final days = _parseDays(weekStart, <String, dynamic>{}); // mock doesn't need rawSchedule for days
+        final allClasses = <ClassModel>[];
 
-        final days = _parseDays(weekStart, rawSchedule);
-        final allClasses = _parseAllClasses(rawSchedule);
+        if (data['data'] is List) {
+          // Parse fake API structure
+          for (final item in data['data']) {
+            if (item is Map) {
+              allClasses.add(ClassModel.fromJson(Map<String, dynamic>.from(item)));
+            }
+          }
+        } else {
+          // Parse old structure
+          final scheduleRaw = data['schedule'];
+          final rawSchedule = scheduleRaw is Map
+              ? Map<String, dynamic>.from(scheduleRaw)
+              : <String, dynamic>{};
+          allClasses.addAll(_parseAllClasses(rawSchedule));
+        }
+
+        allClasses.sort((a, b) => a.periodNumber.compareTo(b.periodNumber));
+
         final firstDayClasses = days.isNotEmpty
             ? _classesForDay(allClasses, days.first.dayOfWeek)
             : <ClassModel>[];
@@ -130,7 +144,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
           selectedDayIndex: 0,
         );
 
-        debugPrint('✅ ScheduleCubit Success: week_start=${data['week_start']} | days=${days.length} | classes=${allClasses.length}');
+        debugPrint('✅ ScheduleCubit Success: week_start=$weekStart | days=${days.length} | classes=${allClasses.length}');
 
         // Persist to cache so next launch is instant.
         _saveToCache(data);
@@ -164,13 +178,27 @@ class ScheduleCubit extends Cubit<ScheduleState> {
 
       final data = jsonDecode(raw) as Map<String, dynamic>;
       final weekStart = data['week_start'] as String? ?? _currentWeekDate();
-      final scheduleRaw = data['schedule'];
-      final rawSchedule = scheduleRaw is Map
-          ? Map<String, dynamic>.from(scheduleRaw)
-          : <String, dynamic>{};
+      final days = _parseDays(weekStart, <String, dynamic>{});
+      final allClasses = <ClassModel>[];
 
-      final days = _parseDays(weekStart, rawSchedule);
-      final allClasses = _parseAllClasses(rawSchedule);
+      if (data['data'] is List) {
+        // Parse fake API structure
+        for (final item in data['data']) {
+          if (item is Map) {
+            allClasses.add(ClassModel.fromJson(Map<String, dynamic>.from(item)));
+          }
+        }
+      } else {
+        // Parse old structure
+        final scheduleRaw = data['schedule'];
+        final rawSchedule = scheduleRaw is Map
+            ? Map<String, dynamic>.from(scheduleRaw)
+            : <String, dynamic>{};
+        allClasses.addAll(_parseAllClasses(rawSchedule));
+      }
+
+      allClasses.sort((a, b) => a.periodNumber.compareTo(b.periodNumber));
+
       final firstDayClasses = days.isNotEmpty
           ? _classesForDay(allClasses, days.first.dayOfWeek)
           : <ClassModel>[];
@@ -207,8 +235,8 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     Map<String, dynamic> rawSchedule,
   ) {
     final startDate = DateTime.parse(weekStart);
-    final sortedKeys = rawSchedule.keys.toList()
-      ..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
+    // Always show Sunday (1) to Thursday (5)
+    final sortedKeys = ['1', '2', '3', '4', '5'];
 
     const dayNameKeys = <String, String>{
       '1': 'sunday',
@@ -247,8 +275,34 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   List<ClassModel> _classesForDay(
     List<ClassModel> allClasses,
     int dayOfWeek,
-  ) =>
-      allClasses.where((c) => c.dayOfWeek == dayOfWeek).toList();
+  ) {
+    final dayClasses =
+        allClasses.where((c) => c.dayOfWeek == dayOfWeek).toList();
+    if (dayClasses.isEmpty) return [];
+
+    // Fixed to 8 periods as standard
+    const maxPeriod = 8;
+
+    final filledClasses = <ClassModel>[];
+    for (int i = 1; i <= maxPeriod; i++) {
+      final existing = dayClasses.where((c) => c.periodNumber == i).toList();
+      if (existing.isNotEmpty) {
+        filledClasses.addAll(existing);
+      } else {
+        filledClasses.add(
+          ClassModel(
+            id: 'empty_${dayOfWeek}_$i',
+            periodNumber: i,
+            classroomId: '',
+            status: ClassStatus.notPrepared,
+            dayOfWeek: dayOfWeek,
+            lessonTitle: null,
+          ),
+        );
+      }
+    }
+    return filledClasses;
+  }
 
   /// Arabic month names — data utility, not UI label.
   String _arabicMonth(int month) {

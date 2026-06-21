@@ -110,5 +110,7 @@
   "schedule_empty_title": "No schedule for this week",
   "schedule_empty_subtitle": "Make sure your timetable is synced with Madrasati",
   "schedule_error_title": "Failed to load schedule",
-  "retry": "Retry"
+  "retry": "Retry",
+  "action_activity": "Activity",
+  "action_homework": "Homework"
 }

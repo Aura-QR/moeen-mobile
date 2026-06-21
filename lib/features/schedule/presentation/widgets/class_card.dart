@@ -40,14 +40,26 @@ class _ClassCardState extends State<ClassCard> {
     );
   }
 
+  Color _getStatusColor(ClassStatus status) {
+    switch (status) {
+      case ClassStatus.waiting:
+        return ColorsManager.statusWaiting;
+      case ClassStatus.prepared:
+        return ColorsManager.statusSuccess;
+      case ClassStatus.notPrepared:
+        return ColorsManager.statusWarning;
+      case ClassStatus.activity:
+        return ColorsManager.statusActivity;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool hasLesson = widget.classModel.lessonTitle != null;
-    final bool isActivity =
-        widget.classModel.status == ClassStatus.activity;
+    final bool isActivity = widget.classModel.status == ClassStatus.activity;
 
     return GestureDetector(
-      onTap: isActivity ? null : () => _showActions(context),
+      onTap: (isActivity || !hasLesson) ? null : () => _showActions(context),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         margin: const EdgeInsets.only(bottom: 16),
@@ -60,100 +72,118 @@ class _ClassCardState extends State<ClassCard> {
           border: Border.all(
             color: _isExpanded
                 ? ColorsManager.primaryColor
-                : ColorsManager.borderLightGray,
-            width: _isExpanded ? 1.5 : 1,
+                : (hasLesson ? _getStatusColor(widget.classModel.status) : ColorsManager.borderLightGray),
+            width: (hasLesson && widget.classModel.status == ClassStatus.prepared) ? 2.0 : (_isExpanded ? 1.5 : 1.0),
           ),
         ),
         child: Column(
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (!isActivity) ...[
-                  GestureDetector(
-                    onTap: hasLesson ? _toggleExpand : null,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: _isExpanded
-                            ? ColorsManager.brandMint
-                            : ColorsManager.scheduleBackground,
-                        shape: BoxShape.circle,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        appTranslation().get(widget.classModel.periodKey),
+                        style: TextStylesManager.regular12
+                            .copyWith(color: ColorsManager.primaryColor),
                       ),
-                      child: Icon(
-                        _isExpanded
-                            ? Icons.keyboard_arrow_up
-                            : Icons.keyboard_arrow_down,
-                        color: _isExpanded
-                            ? ColorsManager.primaryColor
-                            : ColorsManager.secondaryText,
-                        size: 20,
+                      verticalSpace4,
+                      Text(
+                        widget.classModel.lessonTitle ?? 'لا توجد حصة ',
+                        style: TextStylesManager.bold18
+                            .copyWith(color: ColorsManager.mainText),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
+                      verticalSpace4,
+                      if (hasLesson && widget.classModel.classroomId.isNotEmpty)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.school,
+                              size: 14,
+                              color: ColorsManager.primaryColor,
+                            ),
+                            horizontalSpace4,
+                            Text(
+                              widget.classModel.classroomId,
+                              style: TextStylesManager.regular12
+                                  .copyWith(color: ColorsManager.secondaryText),
+                            ),
+                          ],
+                        ),
+                    ],
                   ),
-                  horizontalSpace12,
-                ],
-                StatusIcon(status: widget.classModel.status, size: 28),
-                const Spacer(),
+                ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      appTranslation().get(widget.classModel.periodKey),
-                      style: TextStylesManager.regular12
-                          .copyWith(color: ColorsManager.primaryColor),
-                    ),
-                    Text(
-                      widget.classModel.lessonTitle ??
-                          appTranslation().get('no_lesson_title'),
-                      style: TextStylesManager.bold18
-                          .copyWith(color: ColorsManager.mainText),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    if (widget.classModel.time.isNotEmpty)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 14,
+                            color: ColorsManager.secondaryText,
+                          ),
+                          horizontalSpace4,
+                          Text(
+                            widget.classModel.time,
+                            style: TextStylesManager.regular12
+                                .copyWith(color: ColorsManager.secondaryText),
+                            textDirection: TextDirection.ltr,
+                          ),
+                        ],
+                      ),
+                    verticalSpace16,
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          widget.classModel.classroomId,
-                          style: TextStylesManager.regular12
-                              .copyWith(color: ColorsManager.secondaryText),
-                        ),
-                        horizontalSpace4,
-                        Icon(
-                          Icons.school,
-                          size: 14,
-                          color: ColorsManager.secondaryText,
-                        ),
+                        if (widget.classModel.lessonTitle != null || widget.classModel.classroomId.isNotEmpty)
+                          StatusIcon(status: widget.classModel.status, size: 28)
+                        else
+                          const SizedBox(width: 28, height: 28),
+                        if (!isActivity && hasLesson) ...[
+                          horizontalSpace12,
+                          GestureDetector(
+                            onTap: _toggleExpand,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: _isExpanded
+                                    ? ColorsManager.brandMint
+                                    : ColorsManager.scheduleBackground,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                _isExpanded
+                                    ? Icons.keyboard_arrow_up
+                                    : Icons.keyboard_arrow_left,
+                                color: _isExpanded
+                                    ? ColorsManager.primaryColor
+                                    : ColorsManager.secondaryText,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],
                 ),
               ],
             ),
-            if (!isActivity) ...[
-              verticalSpace16,
-              Row(
-                children: [
-                  Icon(
-                    Icons.format_list_numbered,
-                    size: 16,
-                    color: ColorsManager.secondaryText,
-                  ),
-                  horizontalSpace4,
-                  Text(
-                    '${appTranslation().get('period_label')} ${widget.classModel.periodNumber}',
-                    style: TextStylesManager.regular12
-                        .copyWith(color: ColorsManager.secondaryText),
-                  ),
-                ],
-              ),
-            ],
             if (_isExpanded && hasLesson) ...[
               verticalSpace16,
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: ColorsManager.white,
+                  color: ColorsManager.background,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: ColorsManager.borderLightGray),
                 ),

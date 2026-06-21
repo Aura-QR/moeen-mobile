@@ -29,28 +29,28 @@ class ActionButtonWidget extends StatelessWidget {
       child: Container(
         width: 72,
         height: 72,
-      decoration: BoxDecoration(
-        color: backgroundColor ?? ColorsManager.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isOutlined ? color : (backgroundColor == null ? ColorsManager.borderLightGray : Colors.transparent),
+        decoration: BoxDecoration(
+          color: backgroundColor ?? ColorsManager.surfacePrimary,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isOutlined ? color : (backgroundColor == null ? ColorsManager.borderLightGray : Colors.transparent),
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 24),
+            verticalSpace4,
+            Text(
+              appTranslation().get(titleKey),
+              style: TextStylesManager.regular10.copyWith(
+                color: color,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 24),
-          verticalSpace4,
-          Text(
-            appTranslation().get(titleKey),
-            style: TextStylesManager.regular10.copyWith(
-              color: backgroundColor != null ? ColorsManager.white : color,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    ),
     );
   }
 }

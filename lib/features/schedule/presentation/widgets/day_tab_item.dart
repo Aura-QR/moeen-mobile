@@ -21,7 +21,6 @@ class DayTabItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 72,
         height: 72,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(

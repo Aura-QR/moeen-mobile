@@ -110,5 +110,7 @@
   "schedule_empty_title": "لا يوجد جدول لهذا الأسبوع",
   "schedule_empty_subtitle": "تأكد من تزامن جدولك مع منصة مدرستي",
   "schedule_error_title": "تعذّر تحميل الجدول",
-  "retry": "إعادة المحاولة"
+  "retry": "إعادة المحاولة",
+  "action_activity": "نشاط",
+  "action_homework": "واجب "
 }

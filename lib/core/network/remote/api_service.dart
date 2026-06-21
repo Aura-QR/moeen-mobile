@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:dartz/dartz.dart';
 import 'package:moean/core/network/remote/api_endpoints.dart';
 import 'package:moean/core/network/remote/dio_helper.dart';
@@ -58,15 +60,20 @@ class ApiService {
   static Future<Either<String, Map<String, dynamic>>> getSchedule({
     required String weekDate,
   }) async {
-    final response = await DioHelper.getData(
-      url: scheduleApi,
-      query: {'week': weekDate},
-    );
-
-    return response.fold(
-      (error) => Left(error),
-      (res) => Right(res.data as Map<String, dynamic>),
-    );
+    try {
+      // Using Dio directly to avoid base URL conflict in DioHelper for the absolute mock URL
+      final dio = Dio();
+      final response = await dio.get('https://n8n.qraura.shop/webhook/mock-schedule');
+      
+      // Ensure we pass back a Map<String, dynamic>
+      final data = response.data;
+      if (data is String) {
+        return Right(jsonDecode(data) as Map<String, dynamic>);
+      }
+      return Right(data as Map<String, dynamic>);
+    } catch (e) {
+      return Left(e.toString());
+    }
   }
 
   static Future<Either<String, bool>> syncSchedule({

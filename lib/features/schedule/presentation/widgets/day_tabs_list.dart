@@ -19,40 +19,22 @@ class DayTabsList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 88,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
         color: ColorsManager.surfacePrimary,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: ColorsManager.borderLightGray),
       ),
       child: Row(
-        children: [
-          IconButton(
-            icon: Icon(Icons.chevron_right, color: ColorsManager.secondaryText),
-            onPressed: () {
-              // Optional: Scroll right
-            },
-          ),
-          Expanded(
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: days.length,
-              itemBuilder: (context, index) {
-                return DayTabItem(
-                  day: days[index],
-                  isSelected: index == selectedIndex,
-                  onTap: () => onDaySelected(index),
-                );
-              },
+        children: List.generate(days.length, (index) {
+          return Expanded(
+            child: DayTabItem(
+              day: days[index],
+              isSelected: index == selectedIndex,
+              onTap: () => onDaySelected(index),
             ),
-          ),
-          IconButton(
-            icon: Icon(Icons.chevron_left, color: ColorsManager.secondaryText),
-            onPressed: () {
-              // Optional: Scroll left
-            },
-          ),
-        ],
+          );
+        }),
       ),
     );
   }
