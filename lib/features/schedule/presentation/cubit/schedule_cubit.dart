@@ -115,16 +115,33 @@ class ScheduleCubit extends Cubit<ScheduleState> {
         final days = _parseDays(weekStart, <String, dynamic>{}); // mock doesn't need rawSchedule for days
         final allClasses = <ClassModel>[];
 
-        if (data['data'] is List) {
+        final daysList = data['days'] is List ? data['days'] as List : null;
+        final fakeData = data['data'] is List ? data['data'] as List : null;
+
+        if (daysList != null) {
+          for (final dayItem in daysList) {
+            if (dayItem is Map && dayItem['periods'] is List) {
+              final int dayOfWeekValue = dayItem['day_of_week'] as int? ?? 0;
+              final int normalizedDayOfWeek = dayOfWeekValue + 1; // 0 -> 1 (Sunday)
+              for (final periodItem in dayItem['periods']) {
+                if (periodItem is Map) {
+                  final p = Map<String, dynamic>.from(periodItem);
+                  p['day_of_week'] = normalizedDayOfWeek;
+                  allClasses.add(ClassModel.fromJson(p));
+                }
+              }
+            }
+          }
+        } else if (fakeData != null) {
           // Parse fake API structure
-          for (final item in data['data']) {
+          for (final item in fakeData) {
             if (item is Map) {
               allClasses.add(ClassModel.fromJson(Map<String, dynamic>.from(item)));
             }
           }
         } else {
           // Parse old structure
-          final scheduleRaw = data['schedule'];
+          final scheduleRaw = data['schedule'] ?? data['data'];
           final rawSchedule = scheduleRaw is Map
               ? Map<String, dynamic>.from(scheduleRaw)
               : <String, dynamic>{};
@@ -181,16 +198,33 @@ class ScheduleCubit extends Cubit<ScheduleState> {
       final days = _parseDays(weekStart, <String, dynamic>{});
       final allClasses = <ClassModel>[];
 
-      if (data['data'] is List) {
+      final daysList = data['days'] is List ? data['days'] as List : null;
+      final fakeData = data['data'] is List ? data['data'] as List : null;
+
+      if (daysList != null) {
+        for (final dayItem in daysList) {
+          if (dayItem is Map && dayItem['periods'] is List) {
+            final int dayOfWeekValue = dayItem['day_of_week'] as int? ?? 0;
+            final int normalizedDayOfWeek = dayOfWeekValue + 1; // 0 -> 1 (Sunday)
+            for (final periodItem in dayItem['periods']) {
+              if (periodItem is Map) {
+                final p = Map<String, dynamic>.from(periodItem);
+                p['day_of_week'] = normalizedDayOfWeek;
+                allClasses.add(ClassModel.fromJson(p));
+              }
+            }
+          }
+        }
+      } else if (fakeData != null) {
         // Parse fake API structure
-        for (final item in data['data']) {
+        for (final item in fakeData) {
           if (item is Map) {
             allClasses.add(ClassModel.fromJson(Map<String, dynamic>.from(item)));
           }
         }
       } else {
         // Parse old structure
-        final scheduleRaw = data['schedule'];
+        final scheduleRaw = data['schedule'] ?? data['data'];
         final rawSchedule = scheduleRaw is Map
             ? Map<String, dynamic>.from(scheduleRaw)
             : <String, dynamic>{};

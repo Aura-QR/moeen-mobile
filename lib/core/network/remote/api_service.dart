@@ -60,6 +60,7 @@ class ApiService {
   static Future<Either<String, Map<String, dynamic>>> getSchedule({
     required String weekDate,
   }) async {
+    /*
     try {
       // Using Dio directly to avoid base URL conflict in DioHelper for the absolute mock URL
       final dio = Dio();
@@ -74,6 +75,17 @@ class ApiService {
     } catch (e) {
       return Left(e.toString());
     }
+    */
+
+    final response = await DioHelper.getData(
+      url: madrasatiScheduleApi,
+      query: {'week': weekDate},
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(res.data as Map<String, dynamic>),
+    );
   }
 
   static Future<Either<String, bool>> syncSchedule({

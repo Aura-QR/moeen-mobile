@@ -95,7 +95,7 @@ class LoginScreen extends StatelessWidget {
         context.pushNamedAndRemoveUntil(Routes.schedule, (route) => false);
       } else {
         context.pushNamedAndRemoveUntil(
-            Routes.schedule, (route) => false);
+            Routes.loginMicrosoft, (route) => false);
       }
     }
   }

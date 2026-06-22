@@ -103,6 +103,11 @@ class _MicrosoftLoginScreenState extends State<MicrosoftLoginScreen> {
                           initialSettings: InAppWebViewSettings(
                             javaScriptEnabled: true,
                             transparentBackground: true,
+                            domStorageEnabled: true,
+                            databaseEnabled: true,
+                            clearCache: true,
+                            clearSessionCache: true,
+                            safeBrowsingEnabled: false,
                           ),
                           onWebViewCreated: (controller) {
                             webViewController = controller;
