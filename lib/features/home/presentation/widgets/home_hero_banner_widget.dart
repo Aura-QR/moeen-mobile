@@ -53,7 +53,7 @@ class HomeHeroBannerWidget extends StatelessWidget {
                         Text(
                           appTranslation().get('home_hero_title'),
                           style: TextStylesManager.bold40.copyWith(
-                            color: Colors.white,
+                            color: ColorsManager.mainText,
                             height: 1.1,
                           ),
                         ),
@@ -61,14 +61,14 @@ class HomeHeroBannerWidget extends StatelessWidget {
                         Text(
                           appTranslation().get('home_hero_subtitle'), 
                           style: TextStylesManager.regular16.copyWith(
-                            color: Colors.white,
+                            color: ColorsManager.mainText,
                           ),
                         ),
                         verticalSpace12,
                         Text(
                           appTranslation().get('home_hero_description'), 
                           style: TextStylesManager.regular14.copyWith(
-                            color: Colors.white,
+                            color: ColorsManager.mainText,
                             height: 1.6,
                           ),
                         ),

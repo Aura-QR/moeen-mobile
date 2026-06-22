@@ -112,5 +112,13 @@
   "schedule_error_title": "Failed to load schedule",
   "retry": "Retry",
   "action_activity": "Activity",
-  "action_homework": "Homework"
+  "action_homework": "Homework",
+  "choose_lesson": "Choose the lesson",
+  "lesson_1": "First Lesson",
+  "lesson_2": "Second Lesson",
+  "review": "Review",
+  "applied_activity": "Applied Activity",
+  "class_count": "Class Count",
+  "no_classes": "No classes available"
+
 }

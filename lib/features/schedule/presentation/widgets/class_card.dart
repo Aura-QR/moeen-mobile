@@ -20,6 +20,20 @@ class ClassCard extends StatefulWidget {
 
 class _ClassCardState extends State<ClassCard> {
   bool _isExpanded = false;
+  String? _selectedLesson;
+
+  final List<String> _lessons = [
+    'lesson_2',
+    'lesson_1',
+    'review',
+    'applied_activity',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedLesson = null;
+  }
 
   void _toggleExpand() {
     setState(() {
@@ -93,7 +107,7 @@ class _ClassCardState extends State<ClassCard> {
                       ),
                       verticalSpace4,
                       Text(
-                        widget.classModel.lessonTitle ?? 'لا توجد حصة ',
+                        widget.classModel.lessonTitle ?? appTranslation().get('no_classes'),
                         style: TextStylesManager.bold18
                             .copyWith(color: ColorsManager.mainText),
                         maxLines: 1,
@@ -181,28 +195,128 @@ class _ClassCardState extends State<ClassCard> {
             if (_isExpanded && hasLesson) ...[
               verticalSpace16,
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: ColorsManager.background,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: ColorsManager.borderLightGray),
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.bookmark_border,
-                      color: ColorsManager.primaryColor,
-                      size: 20,
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedLesson,
+                    isExpanded: true,
+                    icon: Icon(Icons.keyboard_arrow_down, color: ColorsManager.primaryColor),
+                    borderRadius: BorderRadius.circular(16),
+                    dropdownColor: ColorsManager.background,
+                    hint: Row(
+                      children: [
+                        Icon(
+                          Icons.bookmark_border,
+                          color: ColorsManager.primaryColor,
+                          size: 20,
+                        ),
+                        horizontalSpace8,
+                        Expanded(
+                          child: Text(
+                            widget.classModel.lessonTitle ?? '',
+                            style: TextStylesManager.regular12
+                                .copyWith(color: ColorsManager.mainText),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
-                    horizontalSpace8,
-                    Expanded(
-                      child: Text(
-                        widget.classModel.lessonTitle!,
-                        style: TextStylesManager.regular12
-                            .copyWith(color: ColorsManager.mainText),
+                    onChanged: (String? newValue) {
+                      if (newValue != null && newValue != 'header') {
+                        setState(() {
+                          _selectedLesson = newValue;
+                        });
+                      }
+                    },
+                    items: [
+                      DropdownMenuItem<String>(
+                        enabled: false,
+                        value: 'header',
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: ColorsManager.brandMint.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '4',
+                                style: TextStylesManager.bold18.copyWith(
+                                  color: ColorsManager.primaryColor,
+                                ),
+                              ),
+                            ),
+                            horizontalSpace12,
+                            Text(
+                              appTranslation().get('choose_lesson'),
+                              style: TextStylesManager.bold18.copyWith(
+                                color: ColorsManager.primaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      ..._lessons.map<DropdownMenuItem<String>>((String value) {
+                        bool isSelected = _selectedLesson == value;
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected ? ColorsManager.primaryColor : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                if (isSelected) ...[
+                                   Icon(Icons.check_circle_outline, color: ColorsManager.surfacePrimary, size: 20),
+                                  horizontalSpace8,
+                                ],
+                                Text(
+                                  appTranslation().get(value),
+                                  style: TextStylesManager.regular12.copyWith(
+                                    color: isSelected ? ColorsManager.surfacePrimary : ColorsManager.mainText,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                    selectedItemBuilder: (BuildContext context) {
+                      return ['header', ..._lessons].map<Widget>((String value) {
+                        return Row(
+                          children: [
+                            Icon(
+                              Icons.bookmark_border,
+                              color: ColorsManager.primaryColor,
+                              size: 20,
+                            ),
+                            horizontalSpace8,
+                            Expanded(
+                              child: Text(
+                                _selectedLesson != null ? appTranslation().get(_selectedLesson!) : widget.classModel.lessonTitle!,
+                                style: TextStylesManager.regular12
+                                    .copyWith(color: ColorsManager.mainText),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList();
+                    },
+                  ),
                 ),
               ),
             ],

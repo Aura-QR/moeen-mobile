@@ -3,6 +3,8 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/utils/constants/routes.dart';
+import 'package:moean/core/utils/extensions/context_extension.dart';
 
 class LoginHeaderWidget extends StatelessWidget {
   const LoginHeaderWidget({super.key});
@@ -47,7 +49,9 @@ class LoginHeaderWidget extends StatelessWidget {
             ),
 
             TextButton.icon(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                context.push(Routes.home);
+              },
               icon: Icon(
                 Icons.home_outlined,
                 size: 20,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
+import 'package:moean/core/utils/constants/spacing.dart';
 
 class HomeCategoryChipItemWidget extends StatelessWidget {
   final String label;
@@ -63,7 +64,7 @@ class HomeCategoryChipItemWidget extends StatelessWidget {
                     : ColorsManager.primaryColor,
               ),
             ),
-            const SizedBox(height: 6),
+            verticalSpace6,
             Flexible(
               child: Text(
                 label,

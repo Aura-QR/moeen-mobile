@@ -68,11 +68,11 @@ class ScheduleScreen extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        'عدد الحصص',
+                                        appTranslation().get('class_count'),
                                         style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
                                       ),
                                       Text(
-                                        loaded.classes.isEmpty ? 'لا توجد حصص' : '${loaded.classes.length}',
+                                        loaded.classes.isEmpty ?  appTranslation().get('no_classes'): '${loaded.classes.length}',
                                         style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor),
                                       ),
                                     ],
@@ -80,7 +80,7 @@ class ScheduleScreen extends StatelessWidget {
                                   verticalSpace16,
                                   Expanded(
                                     child: loaded.classes.isEmpty
-                                        ? const _ScheduleEmptyView(message: 'لا توجد حصص')
+                                        ?  _ScheduleEmptyView(message:  appTranslation().get('no_classes'))
                                         : ListView.builder(
                                             itemCount: loaded.classes.length,
                                             itemBuilder: (context, index) =>
