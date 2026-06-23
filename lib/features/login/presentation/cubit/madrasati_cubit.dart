@@ -49,13 +49,16 @@ class MadrasatiCubit extends Cubit<MadrasatiState> {
               res.data['message'] as String? ?? 'Connected successfully';
           if (success) {
             emit(MadrasatiSuccessState(message));
+            debugPrint('Madrasati connection successful: $message');
           } else {
             emit(MadrasatiErrorState(message));
+            debugPrint('Madrasati connection failed: $message');
           }
         },
       );
     } catch (e) {
       emit(MadrasatiErrorState(e.toString()));
+      debugPrint('Madrasati connection error: $e');
     }
   }
 }
