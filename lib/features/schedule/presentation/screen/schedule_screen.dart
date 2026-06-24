@@ -13,6 +13,7 @@ import 'package:moean/features/schedule/presentation/widgets/class_card.dart';
 import 'package:moean/features/schedule/presentation/widgets/day_tabs_list.dart';
 import 'package:moean/features/schedule/presentation/widgets/schedule_app_bar.dart';
 import 'package:moean/features/schedule/presentation/widgets/status_strip.dart';
+import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
 
 class ScheduleScreen extends StatelessWidget {
   const ScheduleScreen({super.key});
@@ -65,15 +66,27 @@ class ScheduleScreen extends StatelessWidget {
                                   ),
                                   verticalSpace16,
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         appTranslation().get('class_count'),
                                         style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
                                       ),
+                                      horizontalSpace8,
                                       Text(
-                                        loaded.classes.isEmpty ?  appTranslation().get('no_classes'): '${loaded.classes.length}',
+                                        loaded.classes.where((c) => !c.id.startsWith('empty_')).isEmpty ?  '0': '${loaded.classes.where((c) => !c.id.startsWith('empty_')).length}',
                                         style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor),
+                                      ),
+                                      const Spacer(),
+                                      PrimaryElevatedButton(
+                                        text: appTranslation().get('refresh'),
+                                        width: 120,
+                                        height: 38,
+                                        radius: 12,
+                                        textStyle: TextStylesManager.bold12.copyWith(color: Colors.white),
+                                        icon: const Icon(Icons.refresh, size: 18, color: Colors.white),
+                                        onPressed: () {
+                                          ScheduleCubit.get(context).refreshSchedule();
+                                        },
                                       ),
                                     ],
                                   ),
@@ -85,6 +98,7 @@ class ScheduleScreen extends StatelessWidget {
                                             itemCount: loaded.classes.length,
                                             itemBuilder: (context, index) =>
                                                 ClassCard(
+                                              key: ValueKey(loaded.classes[index].id),
                                               classModel: loaded.classes[index],
                                             ),
                                           ),

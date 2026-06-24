@@ -19,7 +19,7 @@ class DioHelper {
       final Response response = await getDio().get(
         url,
         queryParameters: {
-          'q': search,
+          if (search != null) 'q': search,
           ...?query,
         },
         options: Options(
@@ -166,8 +166,8 @@ class DioHelper {
         return message;
       }
 
-      return 'Error ${response.statusCode}';
+      return 'Error ${response.statusCode}: ${response.statusMessage}';
     }
-    return 'Error: ${response.statusCode}';
+    return 'Error: ${response.statusCode}: ${response.statusMessage}';
   }
 }

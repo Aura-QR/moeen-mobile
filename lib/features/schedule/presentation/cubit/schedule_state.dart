@@ -11,12 +11,14 @@ class ScheduleLoaded extends ScheduleState {
   final List<ClassModel> classes;
   final List<ClassModel> allClasses;
   final int selectedDayIndex;
+  final Map<String, dynamic>? availableLessons;
 
   ScheduleLoaded({
     required this.days,
     required this.classes,
     required this.allClasses,
     required this.selectedDayIndex,
+    this.availableLessons,
   });
 }
 

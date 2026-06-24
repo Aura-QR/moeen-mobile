@@ -30,6 +30,7 @@ class ClassModel {
   final int lessonId;
   final String time;
   final String date;
+  final String encryptedToken;
 
   const ClassModel({
     required this.id,
@@ -44,6 +45,7 @@ class ClassModel {
     this.lessonId = 0,
     this.time = '',
     this.date = '',
+    this.encryptedToken = '',
   });
 
   factory ClassModel.fromJson(Map<String, dynamic> json) {
@@ -85,13 +87,14 @@ class ClassModel {
       classroomId: json['grade'] as String? ?? json['classroom_id'] as String? ?? '',
       status: parsedStatus,
       dayOfWeek: dNum,
-      realSchoolId: json['real_school_id'] as String? ?? '',
-      timeTaleId: json['time_table_id'] as String? ?? '',
+      realSchoolId: json['real_school_id']?.toString() ?? '',
+      timeTaleId: json['time_table_id']?.toString() ?? '',
       subjectId: int.tryParse(json['subject_id']?.toString() ?? '') ?? 0,
       lessonId: int.tryParse(json['lesson_id']?.toString() ?? '') ?? 
                 int.tryParse(json['lesson_madrasati_id']?.toString() ?? '') ?? 0,
       time: json['time'] as String? ?? '',
       date: json['date'] as String? ?? '',
+      encryptedToken: json['encrypted_token'] as String? ?? '',
     );
   }
 

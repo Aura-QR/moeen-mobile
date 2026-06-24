@@ -1,14 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:moean/core/network/local/cache_helper.dart';
 import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/features/schedule/data/models/schedule_models.dart';
 import 'package:moean/features/schedule/presentation/cubit/schedule_state.dart';
-
-/// Key used to persist the last successful schedule API response.
-const _kScheduleCacheKey = 'cached_schedule';
 
 class ScheduleCubit extends Cubit<ScheduleState> {
   ScheduleCubit() : super(ScheduleInitial());
@@ -23,35 +17,32 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   }
   Future<void> getSchedule() async {
     final weekDate = _currentWeekDate();
-
-    // 1. Try to restore from cache first so the UI isn't blank.
-    final restored = _loadFromCache();
-    if (restored != null) {
-      emit(restored);
-    } else {
-      emit(ScheduleLoading());
-    }
-
-    // 2. Always refresh from network.
-    await _fetchAndEmit(weekDate);
-  }
-
-  Future<void> syncSchedule() async {
     emit(ScheduleLoading());
-    final weekDate = _currentWeekDate();
-
     final result = await ApiService.syncSchedule(weekDate: weekDate);
     result.fold(
       (error) {
         debugPrint('❌ Sync Error Response: $error');
         emit(ScheduleError(error));
       },
-      (response) {
-        debugPrint('✅ Sync Success Response: $response');
-        debugPrint('✅ Sync Success, now fetching schedule...');
-        _fetchAndEmit(weekDate);
-      },
+      (data) => _handleData(data, weekDate),
     );
+  }
+
+  Future<void> refreshSchedule() async {
+    emit(ScheduleLoading());
+    final weekDate = _currentWeekDate();
+    final result = await ApiService.getSchedule(weekDate: weekDate);
+    result.fold(
+      (error) {
+        debugPrint('❌ Schedule Error Response: $error');
+        emit(ScheduleError(error));
+      },
+      (data) => _handleData(data, weekDate),
+    );
+  }
+
+  Future<void> syncSchedule() async {
+    await getSchedule();
   }
 
   Future<void> prepareLesson({
@@ -73,6 +64,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
       schoolMadrasatiId: classModel.realSchoolId,
       timeTableId: classModel.timeTaleId,
       selectedModules: selectedModules,
+      encryptedToken: classModel.encryptedToken,
     );
 
     result.fold(
@@ -97,167 +89,118 @@ class ScheduleCubit extends Cubit<ScheduleState> {
       classes: _classesForDay(current.allClasses, selected.dayOfWeek),
       allClasses: current.allClasses,
       selectedDayIndex: index,
+      availableLessons: current.availableLessons,
     ));
   }
 
-  Future<void> _fetchAndEmit(String weekDate) async {
-    final result = await ApiService.getSchedule(weekDate: weekDate);
+  Future<void> fetchAvailableLessonsIfNeeded() async {
+    if (state is! ScheduleLoaded) return;
+    final current = state as ScheduleLoaded;
+    if (current.availableLessons != null && current.availableLessons!.isNotEmpty) return;
 
+    final weekDate = _currentWeekDate();
+    final result = await ApiService.getAvailableLessons(weekDate: weekDate);
     result.fold(
-      (error) {
-        debugPrint('❌ ScheduleCubit Error Response: $error');
-        // Only replace the current state with error if we have no cached data.
-        if (state is! ScheduleLoaded) emit(ScheduleError(error));
-      },
+      (error) => debugPrint('❌ Available Lessons Error: $error'),
       (data) {
-        debugPrint('✅ ScheduleCubit Success Full Response: $data');
-        final weekStart = data['week_start'] as String? ?? weekDate;
-        final days = _parseDays(weekStart, <String, dynamic>{}); // mock doesn't need rawSchedule for days
-        final allClasses = <ClassModel>[];
-
-        final daysList = data['days'] is List ? data['days'] as List : null;
-        final fakeData = data['data'] is List ? data['data'] as List : null;
-
-        if (daysList != null) {
-          for (final dayItem in daysList) {
-            if (dayItem is Map && dayItem['periods'] is List) {
-              final int dayOfWeekValue = dayItem['day_of_week'] as int? ?? 0;
-              final int normalizedDayOfWeek = dayOfWeekValue + 1; // 0 -> 1 (Sunday)
-              for (final periodItem in dayItem['periods']) {
-                if (periodItem is Map) {
-                  final p = Map<String, dynamic>.from(periodItem);
-                  p['day_of_week'] = normalizedDayOfWeek;
-                  allClasses.add(ClassModel.fromJson(p));
-                }
-              }
-            }
-          }
-        } else if (fakeData != null) {
-          // Parse fake API structure
-          for (final item in fakeData) {
-            if (item is Map) {
-              allClasses.add(ClassModel.fromJson(Map<String, dynamic>.from(item)));
-            }
-          }
-        } else {
-          // Parse old structure
-          final scheduleRaw = data['schedule'] ?? data['data'];
-          final rawSchedule = scheduleRaw is Map
-              ? Map<String, dynamic>.from(scheduleRaw)
-              : <String, dynamic>{};
-          allClasses.addAll(_parseAllClasses(rawSchedule));
-        }
-
-        allClasses.sort((a, b) => a.periodNumber.compareTo(b.periodNumber));
-
-        final firstDayClasses = days.isNotEmpty
-            ? _classesForDay(allClasses, days.first.dayOfWeek)
-            : <ClassModel>[];
-
-        final newState = ScheduleLoaded(
-          days: days,
-          classes: firstDayClasses,
-          allClasses: allClasses,
-          selectedDayIndex: 0,
-        );
-
-        debugPrint('✅ ScheduleCubit Success: week_start=$weekStart | days=${days.length} | classes=${allClasses.length}');
-
-        // Persist to cache so next launch is instant.
-        _saveToCache(data);
-
-        emit(newState);
+        emit(ScheduleLoaded(
+          days: current.days,
+          classes: current.classes,
+          allClasses: current.allClasses,
+          selectedDayIndex: current.selectedDayIndex,
+          availableLessons: data,
+        ));
       },
     );
   }
 
-  Future<void> _saveToCache(Map<String, dynamic> data) async {
-    try {
-      await CacheHelper.saveData(
-        key: _kScheduleCacheKey,
-        value: jsonEncode(data),
-      );
-      debugPrint('✅ Schedule cached successfully ' );
-    } catch (error) {
-      debugPrint('❌ Failed to cache schedule: $error');
-      // Cache write failure is non-critical — silently ignore.
-    }
-  }
+  void _handleData(Map<String, dynamic> data, String weekDate) {
+    debugPrint('✅ ScheduleCubit Success Full Response: $data');
 
-  /// Restores the last cached [ScheduleLoaded] state, or null if none exists.
-  ScheduleLoaded? _loadFromCache() {
-    try {
-      final raw = CacheHelper.getData(key: _kScheduleCacheKey);
-      if (raw == null || raw is! String) {
-        debugPrint('ℹ️ No cached schedule found');
-        return null;
-      }
+    final weekStart = data['week_start'] as String? ?? weekDate;
+    final days = _parseDays(weekStart, <String, dynamic>{}); // mock doesn't need rawSchedule for days
+    final allClasses = <ClassModel>[];
 
-      final data = jsonDecode(raw) as Map<String, dynamic>;
-      final weekStart = data['week_start'] as String? ?? _currentWeekDate();
-      final days = _parseDays(weekStart, <String, dynamic>{});
-      final allClasses = <ClassModel>[];
+    final daysList = data['days'] is List 
+        ? data['days'] as List 
+        : (data['schedule'] is List ? data['schedule'] as List : null);
+    final fakeData = data['data'] is List ? data['data'] as List : null;
 
-      final daysList = data['days'] is List ? data['days'] as List : null;
-      final fakeData = data['data'] is List ? data['data'] as List : null;
-
-      if (daysList != null) {
-        for (final dayItem in daysList) {
-          if (dayItem is Map && dayItem['periods'] is List) {
-            final int dayOfWeekValue = dayItem['day_of_week'] as int? ?? 0;
-            final int normalizedDayOfWeek = dayOfWeekValue + 1; // 0 -> 1 (Sunday)
-            for (final periodItem in dayItem['periods']) {
-              if (periodItem is Map) {
-                final p = Map<String, dynamic>.from(periodItem);
-                p['day_of_week'] = normalizedDayOfWeek;
-                allClasses.add(ClassModel.fromJson(p));
-              }
+    if (daysList != null) {
+      for (final dayItem in daysList) {
+        if (dayItem is Map && dayItem['periods'] is List) {
+          final int dayOfWeekValue = dayItem['day_of_week'] as int? ?? 0;
+          final int normalizedDayOfWeek = dayOfWeekValue + 1; // 0 -> 1 (Sunday)
+          for (final periodItem in dayItem['periods']) {
+            if (periodItem is Map) {
+              final p = Map<String, dynamic>.from(periodItem);
+              p['day_of_week'] = normalizedDayOfWeek;
+              allClasses.add(ClassModel.fromJson(p));
             }
           }
         }
-      } else if (fakeData != null) {
-        // Parse fake API structure
-        for (final item in fakeData) {
-          if (item is Map) {
-            allClasses.add(ClassModel.fromJson(Map<String, dynamic>.from(item)));
-          }
-        }
-      } else {
-        // Parse old structure
-        final scheduleRaw = data['schedule'] ?? data['data'];
-        final rawSchedule = scheduleRaw is Map
-            ? Map<String, dynamic>.from(scheduleRaw)
-            : <String, dynamic>{};
-        allClasses.addAll(_parseAllClasses(rawSchedule));
       }
-
-      allClasses.sort((a, b) => a.periodNumber.compareTo(b.periodNumber));
-
-      final firstDayClasses = days.isNotEmpty
-          ? _classesForDay(allClasses, days.first.dayOfWeek)
-          : <ClassModel>[];
-
-      debugPrint('✅ Cached schedule loaded successfully');
-      return ScheduleLoaded(
-        days: days,
-        classes: firstDayClasses,
-        allClasses: allClasses,
-        selectedDayIndex: 0,
-      );
-    } catch (error) {
-      debugPrint('❌ Failed to load cached schedule: $error');
-      return null;
+    } else if (fakeData != null) {
+      // Parse fake API structure
+      for (final item in fakeData) {
+        if (item is Map) {
+          allClasses.add(ClassModel.fromJson(Map<String, dynamic>.from(item)));
+        }
+      }
+    } else {
+      // Parse old structure
+      final scheduleRaw = data['schedule'] ?? data['data'];
+      final rawSchedule = scheduleRaw is Map
+          ? Map<String, dynamic>.from(scheduleRaw)
+          : <String, dynamic>{};
+      allClasses.addAll(_parseAllClasses(rawSchedule));
     }
+
+    allClasses.sort((a, b) => a.periodNumber.compareTo(b.periodNumber));
+
+    final firstDayClasses = days.isNotEmpty
+        ? _classesForDay(allClasses, days.first.dayOfWeek)
+        : <ClassModel>[];
+
+    final newState = ScheduleLoaded(
+      days: days,
+      classes: firstDayClasses,
+      allClasses: allClasses,
+      selectedDayIndex: 0,
+      availableLessons: null,
+    );
+
+    debugPrint('✅ ScheduleCubit Success: week_start=$weekStart | days=${days.length} | classes=${allClasses.length}');
+
+    emit(newState);
   }
 
+
+
+  DateTime? _currentWeekStart;
+
   String _currentWeekDate() {
-    final now = DateTime.now();
-    // Dart weekday: Monday=1 … Sunday=7
-    final daysFromSunday = now.weekday == 7 ? 0 : now.weekday;
-    final weekStart = now.subtract(Duration(days: daysFromSunday));
-    return '${weekStart.year}-'
-        '${weekStart.month.toString().padLeft(2, '0')}-'
-        '${weekStart.day.toString().padLeft(2, '0')}';
+    if (_currentWeekStart == null) {
+      final now = DateTime.now();
+      // Dart weekday: Monday=1 … Sunday=7
+      final daysFromSunday = now.weekday == 7 ? 0 : now.weekday;
+      _currentWeekStart = now.subtract(Duration(days: daysFromSunday));
+    }
+    return '${_currentWeekStart!.year}-'
+        '${_currentWeekStart!.month.toString().padLeft(2, '0')}-'
+        '${_currentWeekStart!.day.toString().padLeft(2, '0')}';
+  }
+
+  void nextWeek() {
+    _currentWeekDate();
+    _currentWeekStart = _currentWeekStart!.add(const Duration(days: 7));
+    getSchedule();
+  }
+
+  void previousWeek() {
+    _currentWeekDate();
+    _currentWeekStart = _currentWeekStart!.subtract(const Duration(days: 7));
+    getSchedule();
   }
 
   // ---------------------------------------------------------------------------

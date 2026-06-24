@@ -76,7 +76,7 @@ class ApiService {
     */
 
     final response = await DioHelper.getData(
-      url: madrasatiScheduleApi,
+      url: scheduleApi,
       query: {'week': weekDate},
     );
 
@@ -86,19 +86,17 @@ class ApiService {
     );
   }
 
-  static Future<Either<String, bool>> syncSchedule({
+  static Future<Either<String, Map<String, dynamic>>> syncSchedule({
     required String weekDate,
   }) async {
-    final response = await DioHelper.postData(
-      url: '$scheduleApi/sync',
-      data: {
-        'week_date': weekDate,
-      },
+    final response = await DioHelper.getData(
+      url: madrasatiScheduleApi,
+      query: {'week_date': weekDate},
     );
 
     return response.fold(
       (error) => Left(error),
-      (res) => const Right(true),
+      (res) => Right(res.data as Map<String, dynamic>),
     );
   }
 
@@ -109,6 +107,7 @@ class ApiService {
     required String schoolMadrasatiId,
     required String timeTableId,
     required List<String> selectedModules,
+    required String encryptedToken,
   }) async {
     final response = await DioHelper.postData(
       url: prepareApi,
@@ -119,7 +118,22 @@ class ApiService {
         'school_madrasati_id': schoolMadrasatiId,
         'time_table_id': timeTableId,
         'selected_modules': selectedModules,
+        'encrypted_token': encryptedToken,
       },
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(res.data as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getAvailableLessons({
+    required String weekDate,
+  }) async {
+    final response = await DioHelper.getData(
+      url: '$scheduleApi/available-lessons',
+      query: {'week': weekDate},
     );
 
     return response.fold(

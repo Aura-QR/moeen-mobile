@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/features/schedule/data/models/schedule_models.dart';
 import 'package:moean/features/schedule/presentation/widgets/day_tab_item.dart';
+import 'package:moean/features/schedule/presentation/cubit/schedule_cubit.dart';
 
 class DayTabsList extends StatelessWidget {
   final List<DayModel> days;
@@ -26,15 +27,27 @@ class DayTabsList extends StatelessWidget {
         border: Border.all(color: ColorsManager.borderLightGray),
       ),
       child: Row(
-        children: List.generate(days.length, (index) {
-          return Expanded(
-            child: DayTabItem(
-              day: days[index],
-              isSelected: index == selectedIndex,
-              onTap: () => onDaySelected(index),
-            ),
-          );
-        }),
+        children: [
+          IconButton(
+            padding: EdgeInsets.zero,
+            icon: const Icon(Icons.keyboard_arrow_right, size: 24, color: ColorsManager.primaryDark),
+            onPressed: () => ScheduleCubit.get(context).previousWeek(),
+          ),
+          ...List.generate(days.length, (index) {
+            return Expanded(
+              child: DayTabItem(
+                day: days[index],
+                isSelected: index == selectedIndex,
+                onTap: () => onDaySelected(index),
+              ),
+            );
+          }),
+          IconButton(
+            padding: EdgeInsets.zero,
+            icon: const Icon(Icons.keyboard_arrow_left, size: 24, color: ColorsManager.primaryDark),
+            onPressed: () => ScheduleCubit.get(context).nextWeek(),
+          ),
+        ],
       ),
     );
   }

@@ -1,0 +1,912 @@
+{
+  "info": {
+    "_postman_id": "moeen-backend-api-collection-2026",
+    "name": "Moeen Backend API",
+    "description": "Complete Postman collection for testing the Moeen Backend API (Laravel 11 + Sanctum).\n\nBased on postman_endpoints_test_doc.md and actual routes/controllers.\n\n## Quick Start\n1. Set `base_url` variable (default: http://127.0.0.1:8000)\n2. Register or Login first to obtain a token\n3. Token is automatically saved to collection variables\n4. Use `Authorization: Bearer {{token}}` on protected routes (already configured)\n\n## Prerequisites\n- Run `php artisan serve`\n- Database seeded with at least one teacher + free subscription plan\n- For Madrasati flows: valid session cookies from Chrome extension",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string",
+      "description": "Base URL of the Laravel app (without trailing slash)"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "Sanctum bearer token. Automatically populated after successful login/register."
+    },
+    {
+      "key": "teacher_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "last_preparation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "last_content_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Register New Teacher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"معلم جديد\",\n  \"email\": \"teacher.new@moeen.sa\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"phone\": \"0509998887\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new teacher. Creates user + free tier teacher profile and returns token.\n\nResponse includes: user, token, teacher"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has token', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('token');",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('✅ Token saved to collection variables');",
+                  "});",
+                  "",
+                  "pm.test('Response has user and teacher', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('user');",
+                  "    pm.expect(json).to.have.property('token');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"teacher@moeen.sa\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with existing teacher credentials.\n\nDefault test account (after seeding):\n- Email: teacher@moeen.sa\n- Password: password\n\nAuto-saves token to collection variables."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Extract and save token', function () {",
+                  "    const json = pm.response.json();",
+                  "    if (json.token) {",
+                  "        pm.collectionVariables.set('token', json.token);",
+                  "        console.log('✅ Token saved:', json.token.substring(0, 10) + '...');",
+                  "    }",
+                  "    if (json.teacher && json.teacher.id) {",
+                  "        pm.collectionVariables.set('teacher_id', json.teacher.id);",
+                  "    }",
+                  "});",
+                  "",
+                  "pm.test('Response structure is correct', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('user');",
+                  "    pm.expect(json).to.have.property('token');",
+                  "    pm.expect(json).to.have.property('teacher');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Current User (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Get authenticated user + teacher profile + madrasati_connected status."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Revoke current Sanctum token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📡 Madrasati Connection",
+      "item": [
+        {
+          "name": "Connect Madrasati Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session_cookie\": \"MicrosoftSeqCol=123; .AspNetCore.Cookies=XYZ;\",\n  \"madrasati_school_id\": \"6E91EFB432214026DFC80BC935F660B6\",\n  \"expires_at\": \"2026-06-25 18:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/madrasati/connect",
+              "host": ["{{base_url}}"],
+              "path": ["api", "madrasati", "connect"]
+            },
+            "description": "Submit session cookies from Chrome extension to link Madrasati account.\n\nRequired before using schedule fetching and lesson preparation."
+          },
+          "response": []
+        },
+        {
+          "name": "Fetch Live Schedule from Madrasati ⭐",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/madrasati/schedule?week_date=2026-06-21",
+              "host": ["{{base_url}}"],
+              "path": ["api", "madrasati", "schedule"],
+              "query": [
+                {
+                  "key": "week_date",
+                  "value": "2026-06-21",
+                  "description": "Any date in the target week (YYYY-MM-DD)"
+                },
+                {
+                  "key": "week",
+                  "value": "1",
+                  "description": "Madrasati week number (optional)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "⭐ KEY ENDPOINT\n\nFetches live timetable from Madrasati using stored cookies.\nAutomatically syncs to local database.\n\nReturns encrypted_token, time_table_id, subject_id, lesson_madrasati_id needed for /prepare.\n\nRequires active Madrasati session (call Connect first)."
+          },
+          "response": []
+        },
+        {
+          "name": "Disconnect Madrasati",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/madrasati/disconnect",
+              "host": ["{{base_url}}"],
+              "path": ["api", "madrasati", "disconnect"]
+            },
+            "description": "Invalidate Madrasati session cookies."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📅 Timetable & Schedule",
+      "item": [
+        {
+          "name": "Sync Timetable",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"week_date\": \"2026-06-21\",\n  \"timetable\": [\n    {\n      \"real_school_id\": \"6E91EFB432214026DFC80BC935F660B6\",\n      \"time_table_id\": \"98765432\",\n      \"subject_id\": 86,\n      \"classroom_id\": \"classroom_a_12\",\n      \"day_of_week\": 1,\n      \"period_number\": 2,\n      \"lesson_madrasati_id\": \"26143\",\n      \"encrypted_token\": \"aHR0cHM6Ly9zY2hvb2xzLm1hZHJhc2F0aS5zYS8...\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/schedule/sync",
+              "host": ["{{base_url}}"],
+              "path": ["api", "schedule", "sync"]
+            },
+            "description": "Manually sync scraped timetable data.\n\nNote: /api/madrasati/schedule usually does this automatically."
+          },
+          "response": []
+        },
+        {
+          "name": "View Weekly Timetable",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/schedule?week=2026-06-21",
+              "host": ["{{base_url}}"],
+              "path": ["api", "schedule"],
+              "query": [
+                {
+                  "key": "week",
+                  "value": "2026-06-21",
+                  "description": "Week start date (YYYY-MM-DD). Defaults to current week."
+                }
+              ]
+            },
+            "description": "Get the teacher's synced weekly schedule with lesson titles and preparation status."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Available Lessons for Schedule",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/schedule/available-lessons?week=2026-06-21",
+              "host": ["{{base_url}}"],
+              "path": ["api", "schedule", "available-lessons"],
+              "query": [
+                {
+                  "key": "week",
+                  "value": "2026-06-21"
+                }
+              ]
+            },
+            "description": "Returns all available lessons per timetable period.\nUseful for lesson selection UI before calling /prepare."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📚 Catalogue & Lessons",
+      "item": [
+        {
+          "name": "Get All Subjects",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/subjects",
+              "host": ["{{base_url}}"],
+              "path": ["api", "subjects"]
+            },
+            "description": "List all subjects in the catalogue with lesson counts."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Lessons of a Subject",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/subjects/86/lessons",
+              "host": ["{{base_url}}"],
+              "path": ["api", "subjects", "86", "lessons"]
+            },
+            "description": "Get all lessons for a subject grouped by chapter.\n\nReplace 86 with actual subject_id from /subjects."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Lesson",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/lessons/26143",
+              "host": ["{{base_url}}"],
+              "path": ["api", "lessons", "26143"]
+            },
+            "description": "Get details for a specific lesson by ID."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🚀 Lesson Preparation",
+      "item": [
+        {
+          "name": "Start Lesson Preparation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lesson_id\": 26143,\n  \"subject_id\": 86,\n  \"classroom_id\": \"classroom_a_12\",\n  \"school_madrasati_id\": \"6E91EFB432214026DFC80BC935F660B6\",\n  \"time_table_id\": \"98765432\",\n  \"selected_modules\": [\"assignment\", \"enrichment\", \"homework\", \"exam\"],\n  \"encrypted_token\": \"aHR0cHM6Ly9zY2hvb2xzLm1hZHJhc2F0aS5zYS8...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/prepare",
+              "host": ["{{base_url}}"],
+              "path": ["api", "prepare"]
+            },
+            "description": "Start async lesson preparation.\n\nReturns preparation_id immediately (202). Poll /prepare/{id}/status for progress.\n\nRequires:\n- Active Madrasati session\n- Daily quota available"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 202 Accepted', function () {",
+                  "    pm.response.to.have.status(202);",
+                  "});",
+                  "",
+                  "pm.test('Save preparation_id', function () {",
+                  "    const json = pm.response.json();",
+                  "    if (json.preparation_id) {",
+                  "        pm.collectionVariables.set('last_preparation_id', json.preparation_id);",
+                  "        console.log('📌 Saved preparation_id:', json.preparation_id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Poll Preparation Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/prepare/{{last_preparation_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "prepare", "{{last_preparation_id}}", "status"]
+            },
+            "description": "Poll this endpoint every 3-5 seconds after starting preparation.\n\nUses `{{last_preparation_id}}` variable (auto-set by Start Preparation request)."
+          },
+          "response": []
+        },
+        {
+          "name": "View Preparation History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/preparations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "preparations"]
+            },
+            "description": "List previous preparation attempts (paginated)."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Preparation Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/preparations/{{last_preparation_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "preparations", "{{last_preparation_id}}"]
+            },
+            "description": "Get full details of a specific preparation including steps."
+          },
+          "response": []
+        },
+        {
+          "name": "Retry Failed Preparation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/preparations/{{last_preparation_id}}/retry",
+              "host": ["{{base_url}}"],
+              "path": ["api", "preparations", "{{last_preparation_id}}", "retry"]
+            },
+            "description": "Retry a failed preparation. Re-uses stored credentials."
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Start Lesson Preparation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lessons\": [\n    {\n      \"lesson_id\": 26143,\n      \"subject_id\": 86,\n      \"classroom_id\": \"classroom_a_12\",\n      \"school_madrasati_id\": \"6E91EFB432214026DFC80BC935F660B6\",\n      \"time_table_id\": \"98765432\",\n      \"selected_modules\": [\"assignment\", \"enrichment\"],\n      \"encrypted_token\": \"aHR0cHM6Ly9zY2hvb2xzLm1hZHJhc2F0aS5zYS8...\"\n    },\n    {\n      \"lesson_id\": 26144,\n      \"subject_id\": 86,\n      \"classroom_id\": \"classroom_a_12\",\n      \"school_madrasati_id\": \"6E91EFB432214026DFC80BC935F660B6\",\n      \"time_table_id\": \"98765433\",\n      \"selected_modules\": [\"assignment\"],\n      \"encrypted_token\": null\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/prepare/bulk",
+              "host": ["{{base_url}}"],
+              "path": ["api", "prepare", "bulk"]
+            },
+            "description": "Prepare multiple lessons at once (max 10).\nJobs are staggered by 5 seconds to avoid rate limits."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📦 Content Bank",
+      "item": [
+        {
+          "name": "List Content Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/content?type=assignment",
+              "host": ["{{base_url}}"],
+              "path": ["api", "content"],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "assignment",
+                  "description": "Filter by type: assignment | homework | enrichment | exam | template"
+                },
+                {
+                  "key": "subject_id",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "shared",
+                  "value": "true",
+                  "disabled": true,
+                  "description": "Show only shared community items"
+                }
+              ]
+            },
+            "description": "List content items (assignments, homework, exams, etc).\n\nBy default shows own + shared items."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Content Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"assignment\",\n  \"title\": \"واجب سورة البقرة\",\n  \"content_json\": {\n    \"questions\": [\"ما هي أطول آية في القرآن الكريم؟\"]\n  },\n  \"subject_id\": 86,\n  \"chapter_id\": 26087,\n  \"grade_level\": \"Grade 5\",\n  \"is_shared\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/content",
+              "host": ["{{base_url}}"],
+              "path": ["api", "content"]
+            },
+            "description": "Save a new reusable content item (assignment/homework/exam/etc)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Save content id', function () {",
+                  "    const json = pm.response.json();",
+                  "    if (json.id) {",
+                  "        pm.collectionVariables.set('last_content_id', json.id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Single Content Item",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/content/{{last_content_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "content", "{{last_content_id}}"]
+            },
+            "description": "Get a specific content item."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Content Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"واجب سورة البقرة - نسخة محدثة\",\n  \"content_json\": {\n    \"questions\": [\"ما هي أطول آية في القرآن الكريم؟\", \"ما هي أقصر سورة؟\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/content/{{last_content_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "content", "{{last_content_id}}"]
+            },
+            "description": "Update your own content item."
+          },
+          "response": []
+        },
+        {
+          "name": "Clone Shared Content Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/content/2/clone",
+              "host": ["{{base_url}}"],
+              "path": ["api", "content", "2", "clone"]
+            },
+            "description": "Clone a shared/public content item into your private library.\n\nReplace ID 2 with a real shared content id."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Content Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/content/{{last_content_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "content", "{{last_content_id}}"]
+            },
+            "description": "Delete your own content item."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💳 Subscriptions & Quotas",
+      "item": [
+        {
+          "name": "List All Subscription Plans",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/subscriptions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "subscriptions"]
+            },
+            "description": "Public endpoint. Lists available plans (free + paid)."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current Usage & Quotas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/subscription/current",
+              "host": ["{{base_url}}"],
+              "path": ["api", "subscription", "current"]
+            },
+            "description": "Get current plan + remaining AI quota + daily lesson limit."
+          },
+          "response": []
+        },
+        {
+          "name": "Upgrade Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan_slug\": \"premium\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/subscription/upgrade",
+              "host": ["{{base_url}}"],
+              "path": ["api", "subscription", "upgrade"]
+            },
+            "description": "Placeholder upgrade endpoint. Returns redirect to payment page."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🛠️ Admin & Debug",
+      "item": [
+        {
+          "name": "Debug Proxy Configuration",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/debug/proxy",
+              "host": ["{{base_url}}"],
+              "path": ["api", "debug", "proxy"]
+            },
+            "description": "Check proxy configuration used for Madrasati requests.\nUseful for debugging connectivity issues."
+          },
+          "response": []
+        },
+        {
+          "name": "Admin: Import Lessons (requires admin role)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/lessons/import",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "lessons", "import"]
+            },
+            "description": "Admin only. Import lessons from JSON file."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
