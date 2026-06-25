@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moean/core/di/injections.dart';
+import 'package:moean/core/models/madrasati_session_data.dart';
+import 'package:moean/core/network/local/secure_storage_helper.dart';
 import 'package:moean/core/network/remote/api_endpoints.dart';
 import 'package:moean/core/network/remote/dio_helper.dart';
+import 'package:moean/core/services/madrasati_session_service.dart';
 
 abstract class MadrasatiState {}
 
@@ -43,22 +47,36 @@ class MadrasatiCubit extends Cubit<MadrasatiState> {
 
       response.fold(
         (error) => emit(MadrasatiErrorState(error)),
-        (res) {
+        (res) async {
           final success = res.data['success'] ?? false;
           final message =
               res.data['message'] as String? ?? 'Connected successfully';
+
           if (success) {
+            // ── Save session securely ─────────────────────────────
+            final expiry = DateTime.tryParse(expiresAt.replaceAll(' ', 'T'));
+            await sl<SecureStorageHelper>().saveMadrasatiSession(
+              MadrasatiSessionData(
+                sessionCookie: sessionCookie,
+                schoolId: madrasatiSchoolId,
+                expiresAt: expiry,
+              ),
+            );
+
+            // ── Notify session service that session is now active ─
+            sl<MadrasatiSessionService>().notifySessionActive();
+
             emit(MadrasatiSuccessState(message));
-            debugPrint('Madrasati connection successful: $message');
+            debugPrint('✅ Madrasati connection successful: $message');
           } else {
             emit(MadrasatiErrorState(message));
-            debugPrint('Madrasati connection failed: $message');
+            debugPrint('❌ Madrasati connection failed: $message');
           }
         },
       );
     } catch (e) {
       emit(MadrasatiErrorState(e.toString()));
-      debugPrint('Madrasati connection error: $e');
+      debugPrint('❌ Madrasati connection error: $e');
     }
   }
 }

@@ -3,6 +3,7 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/utils/constants/routes.dart';
 
 class ScheduleAppBar extends StatelessWidget {
   const ScheduleAppBar({super.key});
@@ -25,20 +26,11 @@ class ScheduleAppBar extends StatelessWidget {
             appTranslation().get('schedule_title'),
             style: TextStylesManager.bold18.copyWith(color: ColorsManager.mainText),
           ),
-          Stack(
-            alignment: Alignment.topRight,
-            children: [
-              Icon(Icons.notifications_none, color: ColorsManager.primaryColor, size: 28),
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: ColorsManager.statusWarning,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: ColorsManager.white, width: 2),
-                ),
-              ),
-            ],
+          GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, Routes.profile);
+            },
+            child: Icon(Icons.person, color: ColorsManager.primaryColor, size: 28),
           ),
         ],
       ),

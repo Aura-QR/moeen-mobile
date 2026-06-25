@@ -7,6 +7,7 @@ import 'package:moean/core/models/login_response.dart';
 import 'package:moean/core/models/register_request.dart';
 import 'package:moean/core/models/register_response.dart';
 import 'package:moean/core/models/user_model.dart';
+import 'package:moean/core/models/profile_model.dart';
 
 class ApiService {
   static Future<Either<String, RegisterResponse>> registerUser(RegisterRequest request) async {
@@ -41,6 +42,17 @@ class ApiService {
     return response.fold(
       (error) => Left(error),
       (res) => Right(UserModel.fromJson(res.data['user'] ?? res.data)),
+    );
+  }
+
+  static Future<Either<String, ProfileModel>> getProfile() async {
+    final response = await DioHelper.getData(
+      url: meApi,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(ProfileModel.fromJson(res.data)),
     );
   }
 

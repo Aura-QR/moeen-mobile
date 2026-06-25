@@ -4,9 +4,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/features/schedule/data/models/schedule_models.dart';
 import 'package:moean/features/schedule/presentation/cubit/schedule_state.dart';
+import 'package:moean/core/di/injections.dart';
+import 'package:moean/core/services/madrasati_session_service.dart';
 
 class ScheduleCubit extends Cubit<ScheduleState> {
-  ScheduleCubit() : super(ScheduleInitial());
+  StreamSubscription? _sessionActiveSubscription;
+
+  ScheduleCubit() : super(ScheduleInitial()) {
+    _sessionActiveSubscription = sl<MadrasatiSessionService>().onSessionActive.listen((_) {
+      // Re-fetch schedule when session is refreshed
+      if (state is ScheduleError) {
+        getSchedule();
+      }
+    });
+  }
 
   static ScheduleCubit get(BuildContext context) =>
       BlocProvider.of<ScheduleCubit>(context);
@@ -20,6 +31,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     final weekDate = _currentWeekDate();
     emit(ScheduleLoading());
     final result = await ApiService.syncSchedule(weekDate: weekDate);
+    if (isClosed) return;
     result.fold(
       (error) {
         debugPrint('❌ Sync Error Response: $error');
@@ -33,6 +45,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     emit(ScheduleLoading());
     final weekDate = _currentWeekDate();
     final result = await ApiService.getSchedule(weekDate: weekDate);
+    if (isClosed) return;
     result.fold(
       (error) {
         debugPrint('❌ Schedule Error Response: $error');
@@ -115,6 +128,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   @override
   Future<void> close() {
     _pollingTimer?.cancel();
+    _sessionActiveSubscription?.cancel();
     return super.close();
   }
 
@@ -138,6 +152,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
 
     final weekDate = _currentWeekDate();
     final result = await ApiService.getAvailableLessons(weekDate: weekDate);
+    if (isClosed) return;
     result.fold(
       (error) => debugPrint('❌ Available Lessons Error: $error'),
       (data) {
@@ -210,7 +225,9 @@ class ScheduleCubit extends Cubit<ScheduleState> {
 
     debugPrint('✅ ScheduleCubit Success: week_start=$weekStart | days=${days.length} | classes=${allClasses.length}');
 
-    emit(newState);
+    if (!isClosed) {
+      emit(newState);
+    }
   }
 
 

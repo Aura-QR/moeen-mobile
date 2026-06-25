@@ -47,6 +47,7 @@ dependencies:
   lucide_icons: ^0.257.0
   lucide_icons_flutter: ^3.1.14+2
   flutter_inappwebview: ^6.1.5
+  flutter_secure_storage: ^9.2.4
   rounded_loading_button_plus: ^3.0.1
 
 dev_dependencies:

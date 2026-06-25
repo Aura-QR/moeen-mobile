@@ -2,6 +2,7 @@ import 'package:moean/core/di/injections.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:moean/core/services/madrasati_session_service.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 
 class DioHelper {
@@ -138,6 +139,26 @@ class DioHelper {
     if (response == null) return 'No response from server';
     if (response.data is Map) {
       final map = response.data as Map;
+
+      // ── Detect Madrasati session expiry from error code ───────
+      final errorCode = map['code']?.toString() ?? '';
+      const sessionExpiredCodes = [
+        'madrasati_session_expired',
+        'madrasati_session_required',
+      ];
+      final fullMapStr = map.toString();
+      final isSessionExpired = sessionExpiredCodes.contains(errorCode) ||
+          fullMapStr.contains('معرف المدرسة غير موجود في الجلسة') ||
+          fullMapStr.contains('أعد ربط حساب مدرستي');
+
+      if (isSessionExpired) {
+        debugPrint('🔴 DioHelper: detected session expired code or message');
+        try {
+          sl<MadrasatiSessionService>().notifySessionExpired();
+        } catch (_) {}
+      }
+      // ─────────────────────────────────────────────────────────
+
       final errors = map['errors'];
       if (errors is Map && errors.isNotEmpty) {
         final buffer = <String>[];

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
+import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/core/utils/extensions/context_extension.dart';
 
 class HomeCategoryChipItemWidget extends StatelessWidget {
   final String label;
@@ -20,7 +22,9 @@ class HomeCategoryChipItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: (){
+               context.push(Routes.login);
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,

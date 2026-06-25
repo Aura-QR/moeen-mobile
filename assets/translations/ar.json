@@ -121,5 +121,15 @@
   "review": "مراجعة",
   "applied_activity": "نشاط تطبيقي",
   "class_count": "عدد الحصص",
-  "no_classes": "لا توجد حصص"
+  "no_classes": "لا توجد حصص",
+  "profile": "الملف الشخصي",
+  "logout": "تسجيل الخروج",
+  "logout_desc": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+  "role": "الدور",
+  "phone_number": "رقم الجوال",
+  "subscription": "الاشتراك",
+  "ai_quota": "الرصيد المتبقي للذكاء الاصطناعي",
+  "madrasati_status": "حالة منصة مدرستي",
+  "connected": "متصل",
+  "not_connected": "غير متصل"
 }

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/core/utils/extensions/context_extension.dart';
 
 class HomeResourceCardWidget extends StatelessWidget {
   final String typeKey;
@@ -29,78 +31,83 @@ class HomeResourceCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = appTranslation();
-    return Container(
-      decoration: BoxDecoration(
-        color: ColorsManager.surfacePrimary,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: ColorsManager.borderColor.withValues(alpha: 0.4),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+    return GestureDetector(
+      onTap: () {
+        context.push(Routes.login);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: ColorsManager.surfacePrimary,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: ColorsManager.borderColor.withValues(alpha: 0.4),
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _ResourceIconBox(
-                  icon: typeIcon,
-                  color: typeColor,
-                  bgColor: typeBgColor,
-                ),
-                _TypeBadge(
-                  label: t.get(typeKey),
-                  color: typeColor,
-                  bgColor: typeBgColor,
-                ),
-              ],
-            ),
-            verticalSpace12,
-            Text(
-              t.get(titleKey),
-              textAlign: TextAlign.right,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStylesManager.bold14.copyWith(
-                color: ColorsManager.textPrimary,
-                height: 1.4,
-              ),
-            ),
-            verticalSpace6,
-            Text(
-              '${t.get(subjectKey)} • ${t.get(gradeKey)}',
-              textAlign: TextAlign.right,
-              style: TextStylesManager.regular12.copyWith(
-                color: ColorsManager.textBody,
-              ),
-            ),
-            verticalSpace12,
-            const Divider(height: 1),
-            verticalSpace10,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _ActionIconButton(icon: Icons.download_outlined),
-                horizontalSpace8,
-                Text(
-                  '${usesCount.toStringAsFixed(1)} ${t.get('k_uses')}',
-                  style: TextStylesManager.regular12.copyWith(
-                    color: ColorsManager.textBody,
-                  ),
-                ),
-                _ActionIconButton(icon: Icons.bookmark_border_rounded),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _ResourceIconBox(
+                    icon: typeIcon,
+                    color: typeColor,
+                    bgColor: typeBgColor,
+                  ),
+                  _TypeBadge(
+                    label: t.get(typeKey),
+                    color: typeColor,
+                    bgColor: typeBgColor,
+                  ),
+                ],
+              ),
+              verticalSpace12,
+              Text(
+                t.get(titleKey),
+                textAlign: TextAlign.right,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStylesManager.bold14.copyWith(
+                  color: ColorsManager.textPrimary,
+                  height: 1.4,
+                ),
+              ),
+              verticalSpace6,
+              Text(
+                '${t.get(subjectKey)} • ${t.get(gradeKey)}',
+                textAlign: TextAlign.right,
+                style: TextStylesManager.regular12.copyWith(
+                  color: ColorsManager.textBody,
+                ),
+              ),
+              verticalSpace12,
+              const Divider(height: 1),
+              verticalSpace10,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _ActionIconButton(icon: Icons.download_outlined),
+                  horizontalSpace8,
+                  Text(
+                    '${usesCount.toStringAsFixed(1)} ${t.get('k_uses')}',
+                    style: TextStylesManager.regular12.copyWith(
+                      color: ColorsManager.textBody,
+                    ),
+                  ),
+                  _ActionIconButton(icon: Icons.bookmark_border_rounded),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

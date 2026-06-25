@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/login/presentation/cubit/login_cubit.dart';
 import 'package:moean/features/login/presentation/cubit/login_state.dart';
 import 'package:rounded_loading_button_plus/rounded_loading_button.dart';
@@ -63,7 +64,7 @@ class _LoginActionButtonsWidgetState extends State<LoginActionButtonsWidget> {
                   color: Colors.white,
                   size: 18,
                 ),
-                const SizedBox(width: 8),
+                horizontalSpace8,
                 Text(
                   appTranslation().get('login'),
                   style: TextStylesManager.bold16.copyWith(

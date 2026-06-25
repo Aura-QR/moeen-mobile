@@ -3,11 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/network/local/cache_helper.dart';
+import 'package:moean/core/network/local/secure_storage_helper.dart';
+import 'package:moean/core/network/remote/api_service.dart';
+import 'package:moean/core/services/madrasati_session_service.dart';
 import 'package:moean/core/theme/theme.dart';
 import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:moean/core/utils/cubit/theme/theme_state.dart';
+import 'package:moean/core/widgets/session_monitor_wrapper.dart';
 import 'dart:developer' as developer;
 
 final RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();
@@ -16,32 +20,66 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setEnabledSystemUIMode(
-    SystemUiMode.edgeToEdge,
-  );
-
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       systemNavigationBarColor: Colors.transparent,
     ),
   );
-  await initInjections();
-    final bool isDark = CacheHelper.getData(key: 'isDark') ?? false;
-    final bool isArabic = CacheHelper.getData(key: 'isArabicLang') ?? true;
-    final String? cachedToken = CacheHelper.getData(key: 'auth_token');
-    
-    token = cachedToken;
-    String initialRoute = (token != null && token!.isNotEmpty) ? Routes.home : Routes.login;
-    
-    developer.log('Main: Loading translations...');
-    final String translation = await rootBundle.loadString(
-      'assets/translations/${isArabic ? 'ar' : 'en'}.json',
-    );
-    developer.log('Main: Translations loaded');
 
-    runApp(MyApp(isDark: isDark, isArabic: isArabic, translation: translation, initialRoute: initialRoute));
-    
+  await initInjections();
+
+  final bool isDark = CacheHelper.getData(key: 'isDark') ?? false;
+  final bool isArabic = CacheHelper.getData(key: 'isArabicLang') ?? true;
+
+  developer.log('Main: Loading translations...');
+  final String translation = await rootBundle.loadString(
+    'assets/translations/${isArabic ? 'ar' : 'en'}.json',
+  );
+  developer.log('Main: Translations loaded');
+
+  // ── Restore token from secure storage ──────────────────────────
+  final secureStorage = sl<SecureStorageHelper>();
+  final String? savedToken = await secureStorage.getToken();
+
+  String initialRoute = Routes.login;
+
+  if (savedToken != null && savedToken.isNotEmpty) {
+    // Token found – verify it is still valid via /auth/me
+    token = savedToken;
+    developer.log('Main: Token found, verifying via /auth/me...');
+
+    final meResult = await ApiService.getMe();
+
+    meResult.fold(
+      (error) {
+        // 401 or network error – clear token and go to login
+        developer.log('Main: Token invalid ($error), clearing...');
+        token = null;
+        secureStorage.deleteToken();
+        initialRoute = Routes.login;
+      },
+      (user) {
+        developer.log('Main: Token valid, user=${user.name}');
+        // Check if madrasati is connected from the /auth/me response
+        // (the full response is stored in the API service; here we check
+        //  our saved session as a proxy)
+        initialRoute = Routes.schedule;
+        sl<MadrasatiSessionService>().notifySessionActive();
+      },
+    );
+  } else {
+    developer.log('Main: No token found, going to login');
+    initialRoute = Routes.login;
+  }
+
+  runApp(MyApp(
+    isDark: isDark,
+    isArabic: isArabic,
+    translation: translation,
+    initialRoute: initialRoute,
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -68,9 +106,6 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => themeCubit),
-        // BlocProvider(create: (context) => sl<AuthCubit>()..loadCachedUser()),
-        // BlocProvider(create: (context) => sl<ProfileCubit>()),
-        // BlocProvider(create: (context) => sl<NotificationCubit>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, state) {
@@ -80,17 +115,18 @@ class MyApp extends StatelessWidget {
             navigatorKey: navigatorKey,
             debugShowCheckedModeBanner: false,
             routes: Routes.routes,
-          //  onGenerateRoute: Routes.onGenerateRoute,
             initialRoute: initialRoute,
             theme: ThemesManager.lightTheme,
             darkTheme: ThemesManager.darkTheme,
-            themeMode: themeCubit.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            themeMode:
+                themeCubit.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             builder: (context, child) {
               return Directionality(
                 textDirection: themeCubit.isArabicLang
                     ? TextDirection.rtl
                     : TextDirection.ltr,
-                child: child!,
+                // SessionMonitorWrapper listens to session expiry globally
+                child: SessionMonitorWrapper(child: child!),
               );
             },
           );

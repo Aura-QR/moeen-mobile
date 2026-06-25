@@ -4,11 +4,13 @@ import 'package:moean/features/login/presentation/cubit/login_state.dart';
 import 'package:moean/main.dart';
 import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/core/models/login_request.dart';
-import 'package:moean/core/network/local/cache_helper.dart';
+import 'package:moean/core/models/madrasati_session_data.dart';
+import 'package:moean/core/network/local/secure_storage_helper.dart';
+import 'package:moean/core/services/madrasati_session_service.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/di/injections.dart';
 
-LoginCubit get loginCubit =>
-    LoginCubit.get(navigatorKey.currentContext!);
+LoginCubit get loginCubit => LoginCubit.get(navigatorKey.currentContext!);
 
 class LoginCubit extends Cubit<LoginState> {
   LoginCubit() : super(LoginInitialState());
@@ -48,8 +50,25 @@ class LoginCubit extends Cubit<LoginState> {
         emit(LoginErrorState(message: error));
       },
       (response) async {
-        await CacheHelper.saveData(key: 'auth_token', value: response.token);
+        // Save token securely (replaces CacheHelper for sensitive data)
+        await sl<SecureStorageHelper>().saveToken(response.token);
         token = response.token;
+
+        // If already connected to Madrasati, persist school_id locally
+        // so HeadlessRefresh can use it when session expires
+        if (response.madrasatiConnected &&
+            response.madrasatiSchoolId != null &&
+            response.madrasatiSchoolId!.isNotEmpty) {
+          await sl<SecureStorageHelper>().saveMadrasatiSession(
+            MadrasatiSessionData(
+              sessionCookie: '', // cookies managed by WebView internally
+              schoolId: response.madrasatiSchoolId!,
+              expiresAt: null,
+            ),
+          );
+          sl<MadrasatiSessionService>().notifySessionActive();
+        }
+
         emit(LoginSuccessState(madrasatiConnected: response.madrasatiConnected));
       },
     );

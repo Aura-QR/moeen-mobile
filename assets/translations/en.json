@@ -121,6 +121,15 @@
   "review": "Review",
   "applied_activity": "Applied Activity",
   "class_count": "Class Count",
-  "no_classes": "No classes available"
-
+  "no_classes": "No classes available",
+  "profile": "Profile",
+  "logout": "Logout",
+  "logout_desc": "Are you sure you want to logout?",
+  "role": "Role",
+  "phone_number": "Phone Number",
+  "subscription": "Subscription",
+  "ai_quota": "AI Quota Remaining",
+  "madrasati_status": "Madrasati Status",
+  "connected": "Connected",
+  "not_connected": "Not Connected"
 }
