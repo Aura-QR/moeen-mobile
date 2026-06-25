@@ -141,4 +141,16 @@ class ApiService {
       (res) => Right(res.data as Map<String, dynamic>),
     );
   }
+  static Future<Either<String, Map<String, dynamic>>> checkPreparationStatus({
+    required int preparationId,
+  }) async {
+    final response = await DioHelper.getData(
+      url: '$prepareApi/$preparationId/status',
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(res.data as Map<String, dynamic>),
+    );
+  }
 }

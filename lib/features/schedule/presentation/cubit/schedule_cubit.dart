@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/network/remote/api_service.dart';
@@ -75,9 +76,46 @@ class ScheduleCubit extends Cubit<ScheduleState> {
       (data) {
         debugPrint('✅ Lesson Preparation Success!');
         debugPrint('   - Response: $data');
-        // emit(SchedulePrepareSuccess(data)); // Handle success state if UI needs to react
+        
+        final preparationId = int.tryParse(data['preparation_id']?.toString() ?? '');
+        if (preparationId != null) {
+          _startPolling(preparationId);
+        }
       },
     );
+  }
+
+  Timer? _pollingTimer;
+
+  void _startPolling(int preparationId) {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      debugPrint('⏳ Polling preparation status for ID: $preparationId');
+      final result = await ApiService.checkPreparationStatus(preparationId: preparationId);
+      
+      result.fold(
+        (error) {
+          debugPrint('❌ Polling Error: $error');
+          timer.cancel();
+        },
+        (data) {
+          debugPrint('✅ Polling Response: $data');
+          final status = data['status'] as String?;
+          if (status == 'completed' || status == 'success' || status == 'failed' || status == 'error') {
+            timer.cancel();
+            if (status == 'completed' || status == 'success') {
+               refreshSchedule();
+            }
+          }
+        },
+      );
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _pollingTimer?.cancel();
+    return super.close();
   }
 
   void selectDay(int index) {
