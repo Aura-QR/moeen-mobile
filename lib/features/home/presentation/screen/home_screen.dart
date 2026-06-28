@@ -29,7 +29,8 @@ class HomeScreen extends StatelessWidget {
                     begin: Alignment.topRight,
                     end: Alignment.bottomLeft,
                     colors: [
-                      ColorsManager.primaryColor.withValues(alpha: 0.0019),
+                      
+                      Color(0xFF24b998).withValues(alpha: 0.001),
                       ColorsManager.background,
                     ],
                     stops: const [0.0, 0.4],
@@ -52,21 +53,24 @@ class HomeScreen extends StatelessWidget {
                     SafeArea(
                       child: SingleChildScrollView(
                         physics: const BouncingScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            verticalSpace8,
-                            // ignore: prefer_const_constructors
-                            HomeAppBarWidget(),
-                            verticalSpace40,
-                            // ignore: prefer_const_constructors
-                            HomeHeroBannerWidget(),
-                            verticalSpace40,
-                            const HomeFeaturesSectionWidget(),
-                            verticalSpace40,
-                            // ignore: prefer_const_constructors
-                            HomeTipOfDayWidget(),
-                          ],
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              verticalSpace8,
+                              // ignore: prefer_const_constructors
+                              HomeAppBarWidget(),
+                              verticalSpace40,
+                              // ignore: prefer_const_constructors
+                              HomeHeroBannerWidget(),
+                              verticalSpace40,
+                              const HomeFeaturesSectionWidget(),
+                              verticalSpace40,
+                              // ignore: prefer_const_constructors
+                              HomeTipOfDayWidget(),
+                            ],
+                          ),
                         ),
                       ),
                     ),

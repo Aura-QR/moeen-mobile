@@ -54,7 +54,7 @@ class ScheduleScreen extends StatelessWidget {
                             final loaded = loadedState!;
                             return Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 24),
+                                  horizontal: 16),
                               child: Column(
                                 children: [
                                   DayTabsList(

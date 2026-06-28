@@ -44,7 +44,11 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
                 ),
                 child: GestureDetector(
                   onTap: () {
-context.push(Routes.schedule);
+                    if (token != null && token!.isNotEmpty) {
+                      context.push(Routes.schedule);
+                    } else {
+                      context.push(Routes.login);
+                    }
                   },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

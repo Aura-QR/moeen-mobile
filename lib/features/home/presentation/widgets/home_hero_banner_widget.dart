@@ -27,48 +27,54 @@ class HomeHeroBannerWidget extends StatelessWidget {
                   children: [
                    
                     Stack(
-  clipBehavior: Clip.none, 
+  clipBehavior: Clip.none,
   alignment: Alignment.center,
   children: [
-   Text(
-                      appTranslation().get('home_hero_title'),
-                      textAlign: TextAlign.start,
-                      style: TextStylesManager.bold48.copyWith(
-                        color: ColorsManager.textSecondaryDark,
-                       // height: 1.1,
-                        decoration: TextDecoration.underline,
-
-                        decorationColor: ColorsManager.goldDark,
-                             decorationThickness: 20,
-
-                      ),
-                    ),
-                    Positioned(
-      right: -20, 
+    Positioned(
+      bottom: 5,
       child: Container(
-        width: 15,
-        height: 15,
-        decoration:  BoxDecoration(
-           color: ColorsManager.primaryColor, 
-          shape: BoxShape.circle,
+        width: 100, 
+        height: 10, 
+        decoration: BoxDecoration(
+          color: ColorsManager.goldDark,
+          borderRadius: BorderRadius.circular(10), 
         ),
       ),
     ),
     
- Positioned(
-      top: 8,
-      left: -16, 
+    Text(
+      appTranslation().get('home_hero_title'),
+      textAlign: TextAlign.start,
+      style: TextStylesManager.bold48.copyWith(
+        color: ColorsManager.textSecondaryDark,
+      ),
+    ),
+
+    Positioned(
+      right: -25, 
+      top: 20, 
       child: Container(
-        width: 15,
-        height: 15,
-        decoration:  BoxDecoration(
-  color: ColorsManager.goldDark,                  shape: BoxShape.circle,
+        width: 14,
+        height: 14,
+        decoration: BoxDecoration(
+          color: ColorsManager.primaryColor,
+          shape: BoxShape.circle,
         ),
       ),
     ),
-        
 
-   
+    Positioned(
+      top: 0,
+      left: -20,
+      child: Container(
+        width: 16,
+        height: 16,
+        decoration: BoxDecoration(
+          color: ColorsManager.goldDark,
+          shape: BoxShape.circle,
+        ),
+      ),
+    ),
   ],
 ),
                     verticalSpace20,
