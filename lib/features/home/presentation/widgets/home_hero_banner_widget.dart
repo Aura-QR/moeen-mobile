@@ -12,76 +12,95 @@ class HomeHeroBannerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        height: 240, 
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: ColorsManager.primaryColor.withValues(alpha: 0.1),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: ColorsManager.primaryColor.withValues(alpha: 0.06),
-              blurRadius: 20,
-              offset: const Offset(0, 6),
-            ),
-          ],
-          image: DecorationImage(
-            image: AssetImage(AssetsHelper.img6), 
-            fit: BoxFit.cover, 
-          ),
-        ),
-        child: Stack(
-          children: [
-            const _HeroBannerDecoration(), 
-            
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
+      child: Padding(
+        padding: const EdgeInsets.only(right: 20),
+        child: Row(
+mainAxisAlignment: MainAxisAlignment.spaceBetween,          children: [
+            Expanded(
+              flex: 7,
+              child: Padding(
+                padding:  EdgeInsets.symmetric(vertical: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    
+Stack(
+  clipBehavior: Clip.none, 
+  alignment: Alignment.center,
+  children: [
+   Text(
+                      appTranslation().get('home_hero_title'),
+                      textAlign: TextAlign.start,
+                      style: TextStylesManager.bold48.copyWith(
+                        color: ColorsManager.textSecondaryDark,
+                       // height: 1.1,
+                        decoration: TextDecoration.underline,
 
-                  Expanded(
-                    flex: 6,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start, 
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min, 
-                      children: [
-                        Text(
-                          appTranslation().get('home_hero_title'),
-                          style: TextStylesManager.bold40.copyWith(
-                            color: ColorsManager.mainText,
-                            height: 1.1,
-                          ),
-                        ),
-                        verticalSpace4,
-                        Text(
-                          appTranslation().get('home_hero_subtitle'), 
-                          style: TextStylesManager.regular16.copyWith(
-                            color: ColorsManager.mainText,
-                          ),
-                        ),
-                        verticalSpace12,
-                        Text(
-                          appTranslation().get('home_hero_description'), 
-                          style: TextStylesManager.regular14.copyWith(
-                            color: ColorsManager.mainText,
-                            height: 1.6,
-                          ),
-                        ),
-                      ],
+                        decorationColor: ColorsManager.goldDark,
+                             decorationThickness: 20,
+
+                      ),
                     ),
-                  ),
-                  
-                  
-                  const Expanded(
-                    flex: 5, 
-                    child: SizedBox.shrink(),
-                  ),
-                ],
+                    Positioned(
+      right: -20, 
+      child: Container(
+        width: 15,
+        height: 15,
+        decoration:  BoxDecoration(
+           color: ColorsManager.primaryColor, 
+          shape: BoxShape.circle,
+        ),
+      ),
+    ),
+    
+ Positioned(
+      top: 8,
+      left: -16, 
+      child: Container(
+        width: 15,
+        height: 15,
+        decoration:  BoxDecoration(
+  color: ColorsManager.goldDark,                  shape: BoxShape.circle,
+        ),
+      ),
+    ),
+        
+
+   
+  ],
+),
+                    verticalSpace20,
+
+                    Text(
+                      appTranslation().get('home_hero_subtitle'),
+                      textAlign: TextAlign.start,
+                      style: TextStylesManager.bold20.copyWith(
+                        color:  ColorsManager.textSecondaryDark,
+                      ),
+                    ),
+
+                    verticalSpace20,
+
+                    Text(
+                      appTranslation().get('home_hero_description'),
+                      textAlign: TextAlign.start,
+                      style: TextStylesManager.medium14.copyWith(
+                        color: ColorsManager.textPrimary,
+                        height: 1.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            Expanded(
+              flex: 5,
+              child: Image.asset(
+                AssetsHelper.img9,
+                fit: BoxFit.cover,
+                alignment: Alignment.centerRight,
               ),
             ),
           ],
@@ -89,10 +108,4 @@ class HomeHeroBannerWidget extends StatelessWidget {
       ),
     );
   }
-}
-
-class _HeroBannerDecoration extends StatelessWidget {
-  const _HeroBannerDecoration();
-  @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
 }

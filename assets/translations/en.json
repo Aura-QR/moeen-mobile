@@ -131,5 +131,15 @@
   "ai_quota": "AI Quota Remaining",
   "madrasati_status": "Madrasati Status",
   "connected": "Connected",
-  "not_connected": "Not Connected"
+  "not_connected": "Not Connected",
+  "home_start_prep": "Start Preparation",
+  "home_reports": "Reports",
+  "home_worksheets": "Worksheets",
+  "home_tests": "Tests",
+  "feature_curriculum_title": "Curriculum Compatible",
+  "feature_curriculum_subtitle": "According to Ministry of Education standards",
+  "feature_time_title": "Saves your time",
+  "feature_time_subtitle": "Faster preparation and higher quality",
+  "feature_security_title": "Reliable and Safe",
+  "feature_security_subtitle": "Protecting your data with highest standards"
 }

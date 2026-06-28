@@ -18,20 +18,7 @@ class HomeAppBarWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          PrimaryElevatedButton(
- icon: const Icon(Icons.person_add_alt_1_outlined, size: 20,),
-            
-            text: appTranslation().get('create_account'),
-          textStyle: TextStylesManager.bold14.copyWith(
-                color: ColorsManager.white,
-              ),
- onPressed: (){
-  context.push( Routes.register);
- },
- width: 150,
- 
- ),
-          Row(
+            Row(
             children: [
             
 
@@ -50,57 +37,24 @@ class HomeAppBarWidget extends StatelessWidget {
               ),
             ],
           ),
-          _NotificationButton(),
 
+          PrimaryElevatedButton(
+ icon: const Icon(Icons.person_add_alt_1_outlined, size: 20,),
+            
+            text: appTranslation().get('create_account'),
+          textStyle: TextStylesManager.bold14.copyWith(
+                color: ColorsManager.white,
+              ),
+ onPressed: (){
+  context.push( Routes.register);
+ },
+ width: 150,
+ 
+ ),
+        
         ],
       ),
     );
   }
 }
 
-class _NotificationButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: ColorsManager.surfacePrimary,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: ColorsManager.primaryColor.withValues(alpha: 0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Icon(
-            Icons.notifications_outlined,
-            color: ColorsManager.primaryColor,
-            size: 20,
-          ),
-        ),
-        Positioned(
-          top: 6,
-          right: 6,
-          child: Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: ColorsManager.secondaryColor,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: ColorsManager.backgroundColorLight,
-                width: 1.5,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}

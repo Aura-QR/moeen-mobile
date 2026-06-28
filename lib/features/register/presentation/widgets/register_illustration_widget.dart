@@ -4,6 +4,7 @@ import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/features/register/presentation/widgets/register_header_widget.dart';
 
 class RegisterIllustrationWidget extends StatelessWidget {
   const RegisterIllustrationWidget({super.key});
@@ -13,6 +14,14 @@ class RegisterIllustrationWidget extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        Expanded(
+          flex: 5,
+          child:
+              RegisterHeaderWidget(),
+             
+        ),
+        horizontalSpace16,
+      
         Expanded(
           flex: 4,
           child: Container(
@@ -26,29 +35,8 @@ class RegisterIllustrationWidget extends StatelessWidget {
             ),
           ),
         ),
-        horizontalSpace16,
-        Expanded(
-          flex: 5,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                appTranslation().get('register_title'),
-                style: TextStylesManager.bold26.copyWith(
-                  color: ColorsManager.mainText,
-                ),
-              ),
-              verticalSpace8,
-              Text(
-                appTranslation().get('register_subtitle'),
-                style: TextStylesManager.regular14.copyWith(
-                  color: ColorsManager.mainText,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        
+        ],
     );
   }
 }

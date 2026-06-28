@@ -54,7 +54,7 @@ class RegisterScreen extends StatelessWidget {
                           children: [
                             verticalSpace16,
                             // ignore: prefer_const_constructors
-                            RegisterHeaderWidget(),
+                         //   RegisterHeaderWidget(),
                             verticalSpace16,
                             // ignore: prefer_const_constructors
                             RegisterIllustrationWidget(),

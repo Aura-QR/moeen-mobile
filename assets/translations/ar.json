@@ -131,5 +131,15 @@
   "ai_quota": "الرصيد المتبقي للذكاء الاصطناعي",
   "madrasati_status": "حالة منصة مدرستي",
   "connected": "متصل",
-  "not_connected": "غير متصل"
+  "not_connected": "غير متصل",
+  "home_start_prep": "ابدأ التحضير",
+  "home_reports": "تقارير",
+  "home_worksheets": "أوراق العمل",
+  "home_tests": "الاختبارات",
+  "feature_curriculum_title": "متوافق مع المناهج",
+  "feature_curriculum_subtitle": "وفق معايير وزارة التعليم",
+  "feature_time_title": "يوفر وقتك",
+  "feature_time_subtitle": "تحضير أسرع وجودة أعلى",
+  "feature_security_title": "موثوق وآمن",
+  "feature_security_subtitle": "حماية بياناتك بأعلى المعايير"
 }

@@ -33,11 +33,12 @@ class LoginHeaderWidget extends StatelessWidget {
                     Text(
                       appTranslation().get('app_name'),
                       style: TextStylesManager.bold22.copyWith(
-                        color: ColorsManager.primaryColor,
+                        color: ColorsManager.textSecondaryDark,
                       ),
                     ),
                     Text(
                       appTranslation().get('smart_assistant'),
+                        maxLines: 1,
                       style: TextStylesManager.regular10.copyWith(
                         color: ColorsManager.mainText,
                       ),

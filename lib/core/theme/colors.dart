@@ -21,7 +21,7 @@ class ColorsManager {
   static const Color primaryDark = Color(0xFF24B998);
   static const Color goldDark = Color(0xFFE2AD3B);
   static const Color mutedDark = Color(0xFF9CB8B0);
-
+ static const Color textSecondaryDark = Color(0xFF075244);
   static Color get primaryColor => isDark ? primaryDark : themeActiveAccent;
   static Color get secondaryColor => isDark ? goldDark : const Color(0xFFE2AD3B);
   static Color get placeholder => isDark ? mutedDark : textBody;

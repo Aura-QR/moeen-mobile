@@ -21,12 +21,13 @@ class LoginFormWidget extends StatelessWidget {
         Text(
           appTranslation().get('welcome_back'),
           style: TextStylesManager.bold26.copyWith(
-            color: ColorsManager.mainText,
+            color: ColorsManager.textSecondaryDark,
           ),
         ),
         verticalSpace8,
         Text(
           appTranslation().get('login_subtitle'),
+          maxLines: 1,
           style: TextStylesManager.regular14.copyWith(
             color: ColorsManager.mainText,
           ),
