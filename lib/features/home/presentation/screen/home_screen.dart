@@ -21,30 +21,87 @@ class HomeScreen extends StatelessWidget {
         builder: (context, themeState) {
           return Scaffold(
             backgroundColor: ColorsManager.background,
-            body: SafeArea(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                verticalSpace8,
-                // ignore: prefer_const_constructors
-                HomeAppBarWidget(),
-                verticalSpace40,
-                // ignore: prefer_const_constructors
-                HomeHeroBannerWidget(),
-                verticalSpace40,
-                const HomeFeaturesSectionWidget(),
-                verticalSpace40,
-                // ignore: prefer_const_constructors
-                HomeTipOfDayWidget(),
-              ],
+            body: Directionality(
+              textDirection: TextDirection.rtl,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [
+                      ColorsManager.primaryColor.withValues(alpha: 0.0019),
+                      ColorsManager.background,
+                    ],
+                    stops: const [0.0, 0.4],
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      right: 20,
+                      top: 200,
+                      height: 150,
+                      width: 140,
+                      child: CustomPaint(
+                        painter: DotGridPainter(
+                          color: ColorsManager.primaryColor.withValues(alpha: 0.15),
+                          spacing: 16.0,
+                        ),
+                      ),
+                    ),
+                    SafeArea(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            verticalSpace8,
+                            // ignore: prefer_const_constructors
+                            HomeAppBarWidget(),
+                            verticalSpace40,
+                            // ignore: prefer_const_constructors
+                            HomeHeroBannerWidget(),
+                            verticalSpace40,
+                            const HomeFeaturesSectionWidget(),
+                            verticalSpace40,
+                            // ignore: prefer_const_constructors
+                            HomeTipOfDayWidget(),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
-      );
-    },
-  ),
-);
+          );
+        },
+      ),
+    );
+  }
+}
+
+class DotGridPainter extends CustomPainter {
+  final Color color;
+  final double spacing;
+
+  DotGridPainter({required this.color, this.spacing = 16.0});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    for (double x = 0; x < size.width; x += spacing) {
+      for (double y = 0; y < size.height; y += spacing) {
+        canvas.drawCircle(Offset(x, y), 2.0, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant DotGridPainter oldDelegate) {
+    return oldDelegate.color != color || oldDelegate.spacing != spacing;
   }
 }

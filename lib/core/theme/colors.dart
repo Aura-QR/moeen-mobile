@@ -13,7 +13,7 @@ class ColorsManager {
   static const Color textBody = Color(0xFF64748B);
   static const Color themePink = Color(0xFFD61F69);
   static const Color textPrimaryLight = themeDarkPrimary;
-  static const Color backgroundColorLight = Color(0xFFF8FFFC);
+  static const Color backgroundColorLight = Color(0xFFf7fcfa);
   static const Color precpictationcardColor = Color(0xFFDB805B);
   static const Color textPrimaryDark = Color(0xFFF4FFFC);
   static const Color backgroundDark = Color(0xFF071C18);

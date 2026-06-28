@@ -15,7 +15,8 @@ class HomeHeroBannerWidget extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(right: 20),
         child: Row(
-mainAxisAlignment: MainAxisAlignment.spaceBetween,          children: [
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Expanded(
               flex: 7,
               child: Padding(
@@ -24,8 +25,8 @@ mainAxisAlignment: MainAxisAlignment.spaceBetween,          children: [
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    
-Stack(
+                   
+                    Stack(
   clipBehavior: Clip.none, 
   alignment: Alignment.center,
   children: [
