@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:moean/core/di/injections.dart';
-import 'package:moean/core/services/madrasati_headless_refresh_service.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/core/utils/constants/routes.dart';
-import 'package:moean/features/login/presentation/screen/microsoft_login_screen.dart';
 
-/// Dialog shown when the Madrasati school session has expired.
-/// Offers a "تحديث الجلسة" button that triggers a silent HeadlessWebView refresh,
-/// and a "إلغاء" button to dismiss.
-class SessionExpiredDialog extends StatefulWidget {
+/// Dialog shown when the Madrasati school session has expired AND the silent
+/// background refresh has already failed (e.g., the Microsoft refresh token
+/// is expired or revoked).
+///
+/// At this point the user must perform a manual WebView login. This dialog
+/// provides a clear CTA to navigate to the Microsoft login screen.
+///
+/// Note: The automatic silent refresh is now handled transparently by
+/// [MadrasatiSessionInterceptor] at the Dio layer — this dialog only appears
+/// when that interceptor cannot recover the session automatically.
+class SessionExpiredDialog extends StatelessWidget {
   const SessionExpiredDialog({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -20,45 +24,6 @@ class SessionExpiredDialog extends StatefulWidget {
       barrierDismissible: false,
       builder: (_) => const SessionExpiredDialog(),
     );
-  }
-
-  @override
-  State<SessionExpiredDialog> createState() => _SessionExpiredDialogState();
-}
-
-class _SessionExpiredDialogState extends State<SessionExpiredDialog> {
-  bool _isRefreshing = false;
-  String? _resultMessage;
-  bool? _refreshSuccess;
-
-  Future<void> _onRefresh() async {
-    setState(() {
-      _isRefreshing = true;
-      _resultMessage = null;
-    });
-
-    final success =
-        await sl<MadrasatiHeadlessRefreshService>().refresh();
-
-    if (!mounted) return;
-
-    if (success) {
-      setState(() {
-        _isRefreshing = false;
-        _refreshSuccess = true;
-        _resultMessage = 'تم تحديث الجلسة بنجاح ✅';
-      });
-      // Close dialog after short delay on success
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted) Navigator.of(context).pop();
-    } else {
-      setState(() {
-        _isRefreshing = false;
-        _refreshSuccess = false;
-        _resultMessage =
-            'تعذّر تحديث الجلسة تلقائياً.\nيرجى تسجيل الدخول في مدرستي مجدداً.';
-      });
-    }
   }
 
   @override
@@ -92,7 +57,7 @@ class _SessionExpiredDialogState extends State<SessionExpiredDialog> {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.timer_off_rounded,
+                Icons.lock_clock_rounded,
                 color: Colors.orange,
                 size: 36,
               ),
@@ -111,82 +76,63 @@ class _SessionExpiredDialogState extends State<SessionExpiredDialog> {
 
             // ── Message ───────────────────────────────────────────
             Text(
-              _resultMessage ??
-                  'انتهت صلاحية الجلسة الخاصة بمنصة مدرستي.\nاضغط "تحديث الجلسة" للمتابعة.',
+              'تعذّر تجديد الجلسة تلقائياً.\nيرجى تسجيل الدخول في مدرستي مجدداً للاستمرار.',
               style: TextStylesManager.medium14.copyWith(
-                color: _refreshSuccess == false
-                    ? ColorsManager.errorColor
-                    : _refreshSuccess == true
-                        ? ColorsManager.successColor
-                        : ColorsManager.textPrimary,
+                color: ColorsManager.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
             verticalSpace24,
 
             // ── Buttons ───────────────────────────────────────────
-            if (!(_refreshSuccess == true)) ...[
-              Row(
-                children: [
-                  // Cancel
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _isRefreshing
-                          ? null
-                          : () => Navigator.of(context).pop(),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: BorderSide(color: ColorsManager.borderColor),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+            Row(
+              children: [
+                // Dismiss
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: BorderSide(color: ColorsManager.borderColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
-                        'إلغاء',
-                        style: TextStylesManager.bold14.copyWith(
-                          color: ColorsManager.textPrimary,
-                        ),
+                    ),
+                    child: Text(
+                      'لاحقاً',
+                      style: TextStylesManager.bold14.copyWith(
+                        color: ColorsManager.textPrimary,
                       ),
                     ),
                   ),
-                  horizontalSpace12,
+                ),
+                horizontalSpace12,
 
-                  // Refresh
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _isRefreshing ? null : (_refreshSuccess == false ? () {
-                        Navigator.of(context).pop();
-                        context.push(Routes.loginMicrosoft);
-                      } : _onRefresh),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ColorsManager.primaryAction,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                // Login
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      context.push(Routes.loginMicrosoft);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorsManager.primaryAction,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: _isRefreshing
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : Text(
-                              _refreshSuccess == false ? 'تسجيل الدخول' : 'تحديث الجلسة',
-                              style: TextStylesManager.bold14.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
+                    ),
+                    child: Text(
+                      'تسجيل الدخول',
+                      style: TextStylesManager.bold14.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ],
         ),
       ),

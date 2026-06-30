@@ -5,16 +5,22 @@ class MadrasatiSessionData {
   final String schoolId;
   final DateTime? expiresAt;
 
+  /// The Microsoft OAuth refresh_token used for silent session renewal.
+  /// Stored securely so the interceptor can use it without user interaction.
+  final String? refreshToken;
+
   const MadrasatiSessionData({
     required this.sessionCookie,
     required this.schoolId,
     this.expiresAt,
+    this.refreshToken,
   });
 
   Map<String, dynamic> toJson() => {
         'session_cookie': sessionCookie,
         'school_id': schoolId,
         'expires_at': expiresAt?.toIso8601String(),
+        'refresh_token': refreshToken,
       };
 
   factory MadrasatiSessionData.fromJson(Map<String, dynamic> json) {
@@ -24,6 +30,7 @@ class MadrasatiSessionData {
       expiresAt: json['expires_at'] != null
           ? DateTime.tryParse(json['expires_at'] as String)
           : null,
+      refreshToken: json['refresh_token'] as String?,
     );
   }
 
@@ -45,4 +52,7 @@ class MadrasatiSessionData {
     if (expiresAt == null) return false;
     return DateTime.now().isAfter(expiresAt!);
   }
+
+  bool get hasRefreshToken =>
+      refreshToken != null && refreshToken!.isNotEmpty;
 }

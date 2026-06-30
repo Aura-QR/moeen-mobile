@@ -1,6 +1,6 @@
 import 'package:moean/core/network/local/secure_storage_helper.dart';
 import 'package:moean/core/network/remote/api_endpoints.dart';
-import 'package:moean/core/services/madrasati_headless_refresh_service.dart';
+import 'package:moean/core/network/remote/madrasati_session_interceptor.dart';
 import 'package:moean/core/services/madrasati_session_service.dart';
 import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:dio/dio.dart';
@@ -26,19 +26,16 @@ Future<void> initInjections() async {
     () => SecureStorageHelper(sl<FlutterSecureStorage>()),
   );
 
-  // ─── Session Services ─────────────────────────────────────────
+  // ─── Session Service ──────────────────────────────────────────
   sl.registerLazySingleton<MadrasatiSessionService>(
     () => MadrasatiSessionService(),
   );
-  sl.registerLazySingleton<MadrasatiHeadlessRefreshService>(
-    () => MadrasatiHeadlessRefreshService(
-      sl<SecureStorageHelper>(),
-      sl<MadrasatiSessionService>(),
-    ),
-  );
 
   // ─── Dio ──────────────────────────────────────────────────────
-  sl.registerLazySingleton(() {
+  // NOTE: Dio is registered first without the session interceptor,
+  // then the interceptor is added afterwards (because the interceptor
+  // itself needs the Dio instance to replay requests).
+  sl.registerLazySingleton<Dio>(() {
     final dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
@@ -46,6 +43,8 @@ Future<void> initInjections() async {
         receiveTimeout: const Duration(seconds: 60),
       ),
     );
+
+    // ── Language header interceptor ─────────────────────────────
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
@@ -57,6 +56,18 @@ Future<void> initInjections() async {
         },
       ),
     );
+
+    // ── Madrasati silent session refresh interceptor ─────────────
+    // Uses QueuedInterceptor to ensure only one refresh request
+    // fires even if multiple API calls fail simultaneously.
+    dio.interceptors.add(
+      MadrasatiSessionInterceptor(
+        dio: dio,
+        secureStorage: sl<SecureStorageHelper>(),
+        sessionService: sl<MadrasatiSessionService>(),
+      ),
+    );
+
     return dio;
   });
 }

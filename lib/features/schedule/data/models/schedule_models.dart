@@ -53,10 +53,21 @@ class ClassModel {
     
     ClassStatus parsedStatus = ClassStatus.notPrepared;
     final statusStr = json['status'] as String?;
-    if (statusStr == 'تم إعداد الدرس') parsedStatus = ClassStatus.prepared;
-    else if (statusStr == 'نشاط') parsedStatus = ClassStatus.activity;
-    else if (statusStr == 'بإعداد الدرس' || statusStr == 'بانتظار إعداد الدرس') parsedStatus = ClassStatus.waiting;
-    else if (lessonTitle != null && statusStr == null) parsedStatus = ClassStatus.prepared;
+    
+    if (statusStr == 'تم إعداد الدرس') {
+      parsedStatus = ClassStatus.prepared;
+    } else if (statusStr == 'نشاط') {
+      parsedStatus = ClassStatus.activity;
+    } else if (statusStr == 'بإعداد الدرس' || statusStr == 'بانتظار إعداد الدرس') {
+      parsedStatus = ClassStatus.waiting;
+    } else if (json.containsKey('is_prepared')) {
+      parsedStatus = (json['is_prepared'] == true) 
+          ? ClassStatus.prepared 
+          : ClassStatus.notPrepared;
+    } else if (statusStr != null) {
+      // Fallback for any other unexpected string
+      parsedStatus = ClassStatus.notPrepared;
+    }
 
     int pNum = json['period_number'] as int? ?? 0;
     if (pNum == 0) {

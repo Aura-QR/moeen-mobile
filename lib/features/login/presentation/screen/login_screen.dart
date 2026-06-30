@@ -92,7 +92,7 @@ class LoginScreen extends StatelessWidget {
     }
     if (state is LoginSuccessState) {
       if (state.madrasatiConnected) {
-        context.pushNamedAndRemoveUntil(Routes.schedule, (route) => false);
+        context.pushNamedAndRemoveUntil(Routes.home, (route) => false);
       } else {
         context.pushNamedAndRemoveUntil(
             Routes.loginMicrosoft, (route) => false);

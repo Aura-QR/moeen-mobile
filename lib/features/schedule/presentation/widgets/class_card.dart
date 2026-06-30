@@ -176,26 +176,23 @@ class _ClassCardState extends State<ClassCard> {
   Widget build(BuildContext context) {
     final bool hasLesson = widget.classModel.lessonTitle != null;
     final bool isActivity = widget.classModel.status == ClassStatus.activity;
+final bool isNotAssigned = widget.classModel.lessonId == 0;
 
     return GestureDetector(
       onTap: (isActivity || !hasLesson) ? null : () => _showActions(context),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: _isExpanded
-              ? ColorsManager.brandMint.withValues(alpha: 0.2)
-              : ColorsManager.surfacePrimary,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: _isExpanded
-                ? ColorsManager.primaryColor
-                : (hasLesson ? _getStatusColor(widget.classModel.status) : ColorsManager.borderLightGray),
-            width: (hasLesson && widget.classModel.status == ClassStatus.prepared) ? 2.0 : (_isExpanded ? 1.5 : 1.0),
-          ),
-        ),
-        child: Column(
+      child: Stack(
+  children: [
+    AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: _isExpanded
+            ? ColorsManager.brandMint.withValues(alpha: 0.2)
+            : ColorsManager.surfacePrimary,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child:  Column(
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,8 +482,27 @@ class _ClassCardState extends State<ClassCard> {
               ),
             ],
           ],
+        
+        ),
+        
+      ),
+      Positioned(
+        right: 0,
+        top: 0,
+        bottom: 16,
+        child: Container(
+          width: 6,
+          decoration: BoxDecoration(
+            color: _getStatusColor(widget.classModel.status),
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(16),
+              bottomRight: Radius.circular(16),
+            ),
+          ),
         ),
       ),
+  ],
+),
     );
   }
 }
