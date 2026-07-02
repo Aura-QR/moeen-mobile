@@ -4,6 +4,7 @@ import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/routes.dart';
+import 'package:moean/core/utils/extensions/context_extension.dart';
 
 class ScheduleAppBar extends StatelessWidget {
   const ScheduleAppBar({super.key});
@@ -15,6 +16,12 @@ class ScheduleAppBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          GestureDetector(
+                  onTap: () {
+                    context.pop();
+                  },
+                  child:  Icon(Icons.arrow_back_ios, color: ColorsManager.primaryColor),
+                ),
          Image.asset(
                     AssetsHelper.logo,
                     width: 55,

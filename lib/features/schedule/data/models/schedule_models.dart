@@ -31,6 +31,9 @@ class ClassModel {
   final String time;
   final String date;
   final String encryptedToken;
+  final String subjectName;
+  final String classroomName;
+  final String madrasatiStatus;
 
   const ClassModel({
     required this.id,
@@ -46,6 +49,9 @@ class ClassModel {
     this.time = '',
     this.date = '',
     this.encryptedToken = '',
+    this.subjectName = '',
+    this.classroomName = '',
+    this.madrasatiStatus = '',
   });
 
   factory ClassModel.fromJson(Map<String, dynamic> json) {
@@ -106,6 +112,9 @@ class ClassModel {
       time: json['time'] as String? ?? '',
       date: json['date'] as String? ?? '',
       encryptedToken: json['encrypted_token'] as String? ?? '',
+      subjectName: json['subject_name'] as String? ?? '',
+      classroomName: json['classroom_name'] as String? ?? '',
+      madrasatiStatus: json['madrasati_status'] as String? ?? '',
     );
   }
 
