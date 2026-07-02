@@ -141,5 +141,10 @@
   "feature_time_title": "Saves your time",
   "feature_time_subtitle": "Faster preparation and higher quality",
   "feature_security_title": "Reliable and Safe",
-  "feature_security_subtitle": "Protecting your data with highest standards"
+  "feature_security_subtitle": "Protecting your data with highest standards",
+  "settings": "Settings",
+  "dark_mode": "Dark Mode",
+  "language": "Language",
+  "arabic": "Arabic",
+  "english": "English"
 }

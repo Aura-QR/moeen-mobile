@@ -55,20 +55,15 @@ class ProfileScreen extends StatelessWidget {
     ),
   ),
 
-  // أيقونة Logout
+  // أيقونة Settings
   actions: [
     IconButton(
       icon: const Icon(
-        Icons.logout,
+        Icons.settings,
       ),
-      color: ColorsManager.errorColor,
+      color: ColorsManager.primaryColor,
       onPressed: () {
-        showDialog(
-                            context: context,
-                            builder: (dialogContext) => LogoutDialog(
-                              onConfirm: () => cubit.logout(),
-                            ),
-                          );
+        Navigator.pushNamed(context, Routes.settings);
       },
     ),
   ],

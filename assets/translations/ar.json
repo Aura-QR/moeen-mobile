@@ -141,5 +141,10 @@
   "feature_time_title": "يوفر وقتك",
   "feature_time_subtitle": "تحضير أسرع وجودة أعلى",
   "feature_security_title": "موثوق وآمن",
-  "feature_security_subtitle": "حماية بياناتك بأعلى المعايير"
+  "feature_security_subtitle": "حماية بياناتك بأعلى المعايير",
+  "settings": "الإعدادات",
+  "dark_mode": "الوضع الداكن",
+  "language": "اللغة",
+  "arabic": "العربية",
+  "english": "English"
 }

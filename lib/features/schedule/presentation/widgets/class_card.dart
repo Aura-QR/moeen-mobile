@@ -88,15 +88,18 @@ class _ClassCardState extends State<ClassCard> {
     );
   }
 
-  Color _getStatusColor(ClassModel classModel) {
-    // Use madrasati_status if available
+  ClassStatus _getMappedStatus(ClassModel classModel) {
     final madrasatiStatus = classModel.madrasatiStatus.toLowerCase();
-    if (madrasatiStatus == 'expired') return ColorsManager.statusWarning;   // orange
-    if (madrasatiStatus == 'waiting') return ColorsManager.statusWaiting;   // blue
-    if (madrasatiStatus == 'ready')   return ColorsManager.statusSuccess;   // green
+    if (madrasatiStatus == 'expired') return ClassStatus.notPrepared;
+    if (madrasatiStatus == 'waiting') return ClassStatus.waiting;
+    if (madrasatiStatus == 'ready')   return ClassStatus.prepared;
 
-    // Fallback to ClassStatus enum
-    switch (classModel.status) {
+    return classModel.status;
+  }
+
+  Color _getStatusColor(ClassModel classModel) {
+    final status = _getMappedStatus(classModel);
+    switch (status) {
       case ClassStatus.waiting:
         return ColorsManager.statusWaiting;
       case ClassStatus.prepared:
@@ -215,7 +218,7 @@ final bool isNotAssigned = widget.classModel.lessonId == 0;
                       Text(
                         appTranslation().get(widget.classModel.periodKey),
                         style: TextStylesManager.regular12
-                            .copyWith(color: ColorsManager.primaryColor),
+                            .copyWith(color: ColorsManager.mainText),
                       ),
                       verticalSpace4,
                       Text(
@@ -277,7 +280,7 @@ final bool isNotAssigned = widget.classModel.lessonId == 0;
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (widget.classModel.lessonTitle != null || widget.classModel.classroomId.isNotEmpty)
-                          StatusIcon(status: widget.classModel.status, size: 28)
+                          StatusIcon(status: _getMappedStatus(widget.classModel), size: 28)
                         else
                           const SizedBox(width: 28, height: 28),
                         if (!isActivity && hasLesson) ...[
@@ -500,21 +503,22 @@ final bool isNotAssigned = widget.classModel.lessonId == 0;
         ),
         
       ),
-      Positioned(
-        right: 0,
-        top: 0,
-        bottom: 16,
-        child: Container(
-          width: 6,
-          decoration: BoxDecoration(
-            color: _getStatusColor(widget.classModel),
-            borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(16),
-              bottomRight: Radius.circular(16),
+      if (!(widget.classModel.subjectName.isEmpty && widget.classModel.lessonTitle == null))
+        Positioned(
+          right: 0,
+          top: 0,
+          bottom: 16,
+          child: Container(
+            width: 6,
+            decoration: BoxDecoration(
+              color: _getStatusColor(widget.classModel),
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
             ),
           ),
         ),
-      ),
   ],
 ),
     );

@@ -312,8 +312,8 @@ class ScheduleCubit extends Cubit<ScheduleState> {
         allClasses.where((c) => c.dayOfWeek == dayOfWeek).toList();
     if (dayClasses.isEmpty) return [];
 
-    // Fixed to 8 periods as standard
-    const maxPeriod = 8;
+    // Fixed to 7 periods as standard
+    const maxPeriod = 7;
 
     final filledClasses = <ClassModel>[];
     for (int i = 1; i <= maxPeriod; i++) {
