@@ -36,17 +36,17 @@ class ProfileScreen extends StatelessWidget {
   elevation: 0,
   centerTitle: true,
 
-  // سهم iOS
-  leading: IconButton(
-    icon: const Icon(
-      Icons.arrow_back_ios,
-      size: 24,
-    ),
-    color: ColorsManager.primaryColor,
-    onPressed: () {
-      Navigator.pop(context);
-    },
-  ),
+  // // سهم iOS
+  // leading: IconButton(
+  //   icon: const Icon(
+  //     Icons.arrow_back_ios,
+  //     size: 24,
+  //   ),
+  //   color: ColorsManager.primaryColor,
+  //   onPressed: () {
+  //     Navigator.pop(context);
+  //   },
+  // ),
 
   title: Text(
     appTranslation().get('profile'),
@@ -55,18 +55,17 @@ class ProfileScreen extends StatelessWidget {
     ),
   ),
 
-  // أيقونة Settings
-  actions: [
-    IconButton(
-      icon: const Icon(
-        Icons.settings,
-      ),
-      color: ColorsManager.primaryColor,
-      onPressed: () {
-        Navigator.pushNamed(context, Routes.settings);
-      },
-    ),
-  ],
+  // actions: [
+  //   IconButton(
+  //     icon: const Icon(
+  //       Icons.settings,
+  //     ),
+  //     color: ColorsManager.primaryColor,
+  //     onPressed: () {
+  //       Navigator.pushNamed(context, Routes.settings);
+  //     },
+  //   ),
+  // ],
 ),
             body: ConditionalBuilder(
               loadingState: state is ProfileLoadingState,

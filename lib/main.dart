@@ -54,24 +54,21 @@ void main() async {
 
     meResult.fold(
       (error) {
-        // 401 or network error – clear token and go to login
+        // 401 or network error – clear token
         developer.log('Main: Token invalid ($error), clearing...');
         token = null;
         secureStorage.deleteToken();
-        initialRoute = Routes.login;
+        initialRoute = Routes.home; // start at home
       },
       (user) {
         developer.log('Main: Token valid, user=${user.name}');
-        // Check if madrasati is connected from the /auth/me response
-        // (the full response is stored in the API service; here we check
-        //  our saved session as a proxy)
-        initialRoute = Routes.schedule;
+        initialRoute = Routes.home; // start at home
         sl<MadrasatiSessionService>().notifySessionActive();
       },
     );
   } else {
-    developer.log('Main: No token found, going to login');
-    initialRoute = Routes.login;
+    developer.log('Main: No token found, going to home');
+    initialRoute = Routes.home;
   }
 
   runApp(MyApp(

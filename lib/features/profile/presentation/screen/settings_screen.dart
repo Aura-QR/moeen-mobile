@@ -34,17 +34,9 @@ class SettingsScreen extends StatelessWidget {
             appBar: AppBar(
               backgroundColor: ColorsManager.surfacePrimary,
               elevation: 0,
+            //  automaticallyImplyLeading :false,
               centerTitle: true,
-              leading: IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios,
-                  size: 24,
-                ),
-                color: ColorsManager.primaryColor,
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
+           
               title: Text(
                 appTranslation().get('settings'),
                 style: TextStylesManager.bold18.copyWith(
