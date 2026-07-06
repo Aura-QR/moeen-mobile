@@ -9,7 +9,7 @@ class AssetsHelper {
   static const String img7 = 'assets/images/img7.jpeg';
   static const String img8 = 'assets/images/img8.png';
   static const String img9 = 'assets/images/img11.png';
-static const String icon = 'assets/images/logo_icon.png';
+static const String icon = 'assets/images/logo_icon-removebg-preview.png';
   static const String tips = 'assets/images/tips.png';
   static const String microsoft = 'assets/images/microsoft.png';
 

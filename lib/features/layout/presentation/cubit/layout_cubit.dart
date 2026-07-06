@@ -13,17 +13,17 @@ class LayoutCubit extends Cubit<LayoutState> {
 
   static LayoutCubit get(BuildContext context) => BlocProvider.of<LayoutCubit>(context);
 
-  int currentIndex = 0;
+  int currentIndex = 1;
   final GlobalKey<CurvedNavigationBarState> bottomNavigationKey = GlobalKey();
 
   List<Widget> screens = [
-    const HomeScreen(),
     const ProfileScreen(),
+    const HomeScreen(),
     const SettingsScreen(),
   ];
 
   void changeBottomNav(int index, BuildContext context) {
-    if (index == 1 || index == 2) {
+    if (index == 0 || index == 2) {
       if (token == null || token!.isEmpty) {
         // Not logged in, prevent navigation to Profile or Settings
         bottomNavigationKey.currentState?.setPage(currentIndex);

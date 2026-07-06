@@ -10,6 +10,7 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:moean/core/utils/cubit/theme/theme_state.dart';
+import 'package:moean/core/widgets/dot_grid_painter.dart';
 import 'package:moean/core/widgets/session_expired_dialog.dart';
 import 'package:moean/features/home/presentation/cubit/home_cubit.dart';
 import 'package:moean/features/home/presentation/widgets/home_app_bar_widget.dart';
@@ -332,28 +333,3 @@ class _DebugSessionExpireButtonState extends State<_DebugSessionExpireButton> {
   }
 }
 
-
-class DotGridPainter extends CustomPainter {
-  final Color color;
-  final double spacing;
-
-  DotGridPainter({required this.color, this.spacing = 16.0});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    for (double x = 0; x < size.width; x += spacing) {
-      for (double y = 0; y < size.height; y += spacing) {
-        canvas.drawCircle(Offset(x, y), 2.0, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant DotGridPainter oldDelegate) {
-    return oldDelegate.color != color || oldDelegate.spacing != spacing;
-  }
-}
