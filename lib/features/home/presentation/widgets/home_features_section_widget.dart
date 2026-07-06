@@ -45,7 +45,8 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
                 child: GestureDetector(
                   onTap: () {
                     if (token != null && token!.isNotEmpty) {
-                      context.push(Routes.schedule);
+                   //   context.push(Routes.schedule);
+                   context.push(Routes.choseapp);
                     } else {
                       context.push(Routes.login);
                     }

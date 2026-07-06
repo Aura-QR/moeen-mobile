@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import 'package:moean/core/network/remote/api_endpoints.dart';
 import 'package:moean/core/network/remote/dio_helper.dart';
@@ -10,6 +11,17 @@ import 'package:moean/core/models/user_model.dart';
 import 'package:moean/core/models/profile_model.dart';
 
 class ApiService {
+  static dynamic _decodeData(dynamic data) {
+    if (data is String) {
+      try {
+        return jsonDecode(data);
+      } catch (_) {
+        return data;
+      }
+    }
+    return data;
+  }
+
   static Future<Either<String, RegisterResponse>> registerUser(RegisterRequest request) async {
     final response = await DioHelper.postData(
       url: registerApi,
@@ -18,7 +30,7 @@ class ApiService {
 
     return response.fold(
       (error) => Left(error),
-      (res) => Right(RegisterResponse.fromJson(res.data)),
+      (res) => Right(RegisterResponse.fromJson(_decodeData(res.data))),
     );
   }
 
@@ -30,7 +42,7 @@ class ApiService {
 
     return response.fold(
       (error) => Left(error),
-      (res) => Right(LoginResponse.fromJson(res.data)),
+      (res) => Right(LoginResponse.fromJson(_decodeData(res.data))),
     );
   }
 
@@ -41,7 +53,10 @@ class ApiService {
 
     return response.fold(
       (error) => Left(error),
-      (res) => Right(UserModel.fromJson(res.data['user'] ?? res.data)),
+      (res) {
+        final data = _decodeData(res.data);
+        return Right(UserModel.fromJson(data['user'] ?? data));
+      },
     );
   }
 
@@ -52,7 +67,7 @@ class ApiService {
 
     return response.fold(
       (error) => Left(error),
-      (res) => Right(ProfileModel.fromJson(res.data)),
+      (res) => Right(ProfileModel.fromJson(_decodeData(res.data))),
     );
   }
 
@@ -94,7 +109,7 @@ class ApiService {
 
     return response.fold(
       (error) => Left(error),
-      (res) => Right(res.data as Map<String, dynamic>),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
     );
   }
 
@@ -108,7 +123,7 @@ class ApiService {
 
     return response.fold(
       (error) => Left(error),
-      (res) => Right(res.data as Map<String, dynamic>),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
     );
   }
 
@@ -136,7 +151,7 @@ class ApiService {
 
     return response.fold(
       (error) => Left(error),
-      (res) => Right(res.data as Map<String, dynamic>),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
     );
   }
 
@@ -150,7 +165,7 @@ class ApiService {
 
     return response.fold(
       (error) => Left(error),
-      (res) => Right(res.data as Map<String, dynamic>),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
     );
   }
   static Future<Either<String, Map<String, dynamic>>> checkPreparationStatus({
@@ -162,7 +177,7 @@ class ApiService {
 
     return response.fold(
       (error) => Left(error),
-      (res) => Right(res.data as Map<String, dynamic>),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
     );
   }
 }

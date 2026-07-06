@@ -132,7 +132,7 @@ class MadrasatiSessionInterceptor extends QueuedInterceptor {
 
 ## 3. Web Frontend Integration Guide
 
-The Web app integrates similarly, but has two options based on whether the user is utilizing the **Moeen Chrome Extension** or doing a direct OIDC authentication in the browser.
+The Web app integrates similarly, but has two options based on whether the user is utilizing the **Haddher Chrome Extension** or doing a direct OIDC authentication in the browser.
 
 ### 3.1 Scenario A: Chrome Extension Active
 If the Chrome extension is active, it periodically updates cookies from the active Madrasati tab.

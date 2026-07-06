@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "moeen-backend-api-collection-2026",
-    "name": "Moeen Backend API",
-    "description": "Complete Postman collection for testing the Moeen Backend API (Laravel 11 + Sanctum).\n\nBased on postman_endpoints_test_doc.md and actual routes/controllers.\n\n## Quick Start\n1. Set `base_url` variable (default: http://127.0.0.1:8000)\n2. Register or Login first to obtain a token\n3. Token is automatically saved to collection variables\n4. Use `Authorization: Bearer {{token}}` on protected routes (already configured)\n\n## Prerequisites\n- Run `php artisan serve`\n- Database seeded with at least one teacher + free subscription plan\n- For Madrasati flows: valid session cookies from Chrome extension",
+    "_postman_id": "Haddher-backend-api-collection-2026",
+    "name": "Haddher Backend API",
+    "description": "Complete Postman collection for testing the Haddher Backend API (Laravel 11 + Sanctum).\n\nBased on postman_endpoints_test_doc.md and actual routes/controllers.\n\n## Quick Start\n1. Set `base_url` variable (default: http://127.0.0.1:8000)\n2. Register or Login first to obtain a token\n3. Token is automatically saved to collection variables\n4. Use `Authorization: Bearer {{token}}` on protected routes (already configured)\n\n## Prerequisites\n- Run `php artisan serve`\n- Database seeded with at least one teacher + free subscription plan\n- For Madrasati flows: valid session cookies from Chrome extension",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -66,7 +66,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"معلم جديد\",\n  \"email\": \"teacher.new@moeen.sa\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"phone\": \"0509998887\"\n}"
+              "raw": "{\n  \"name\": \"معلم جديد\",\n  \"email\": \"teacher.new@Haddher.sa\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"phone\": \"0509998887\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/auth/register",
@@ -121,14 +121,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"teacher@moeen.sa\",\n  \"password\": \"password\"\n}"
+              "raw": "{\n  \"email\": \"teacher@Haddher.sa\",\n  \"password\": \"password\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/auth/login",
               "host": ["{{base_url}}"],
               "path": ["api", "auth", "login"]
             },
-            "description": "Login with existing teacher credentials.\n\nDefault test account (after seeding):\n- Email: teacher@moeen.sa\n- Password: password\n\nAuto-saves token to collection variables."
+            "description": "Login with existing teacher credentials.\n\nDefault test account (after seeding):\n- Email: teacher@Haddher.sa\n- Password: password\n\nAuto-saves token to collection variables."
           },
           "response": [],
           "event": [

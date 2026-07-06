@@ -50,6 +50,8 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   rounded_loading_button_plus: ^3.0.1
   curved_navigation_bar: ^1.0.6
+  url_launcher: ^6.3.1
+  android_intent_plus: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -109,11 +111,11 @@ flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   adaptive_icon_background: "#016B5F" 
-  adaptive_icon_foreground: "assets/images/iconligth.png"
-  image_path: "assets/images/iconligth.png"
+  adaptive_icon_foreground: "assets/images/logo_icon.png"
+  image_path: "assets/images/logo_icon.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   web:
     generate: true
-    image_path: "assets/images/iconligth.png"
+    image_path: "assets/images/logo_icon.png"
     background_color: "#016B5F"
     theme_color: "#016B5F"  

@@ -45,5 +45,17 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Required for url_launcher to resolve market:// (Play Store deep link) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="market"/>
+        </intent>
+        <!-- Required for android_intent_plus to query Quetta Browser availability -->
+        <package android:name="net.quetta.browser"/>
+        <!-- Required for url_launcher to resolve https:// (Play Store web fallback) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
+        </intent>
     </queries>
 </manifest>

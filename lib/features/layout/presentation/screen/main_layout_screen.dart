@@ -24,11 +24,11 @@ class MainLayoutScreen extends StatelessWidget {
               index: cubit.currentIndex,
               height: 60.0,
               items: <Widget>[
-                Icon(Icons.home, size: 30, color: cubit.currentIndex == 0 ? ColorsManager.white : ColorsManager.textPrimary),
                 Icon(Icons.person, size: 30, color: cubit.currentIndex == 1 ? ColorsManager.white : ColorsManager.textPrimary),
+                Icon(Icons.home, size: 30, color: cubit.currentIndex == 0 ? ColorsManager.white : ColorsManager.textPrimary),
                 Icon(Icons.settings, size: 30, color: cubit.currentIndex == 2 ? ColorsManager.white : ColorsManager.textPrimary),
               ],
-              color: ColorsManager.surfacePrimary,
+              color: ColorsManager.primaryColor,
               buttonBackgroundColor: ColorsManager.primaryColor,
               backgroundColor: Colors.transparent,
               animationCurve: Curves.easeInOut,

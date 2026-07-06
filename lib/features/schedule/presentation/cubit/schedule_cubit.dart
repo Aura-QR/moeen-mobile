@@ -29,34 +29,92 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   }
   Future<void> getSchedule() async {
     final weekDate = _currentWeekDate();
+    
+    // Emit loading state initially
     emit(ScheduleLoading());
-    final result = await ApiService.syncSchedule(weekDate: weekDate);
+    
+    // 1. Fetch from /api/schedule
+    final result = await ApiService.getSchedule(weekDate: weekDate);
+    
     if (isClosed) return;
+    
     result.fold(
       (error) {
-        debugPrint('❌ Sync Error Response: $error');
+        debugPrint('❌ Schedule Error Response: $error');
         emit(ScheduleError(error));
       },
-      (data) => _handleData(data, weekDate),
+      (data) {
+        _handleData(data, weekDate);
+        // 2. After successfully displaying (or handling empty), sync in background
+        _syncScheduleBackground(weekDate);
+      },
+    );
+  }
+
+  Future<void> _syncScheduleBackground(String weekDate) async {
+    // Sync from madrasati in the background
+    final syncResult = await ApiService.syncSchedule(weekDate: weekDate);
+    
+    if (isClosed) return;
+    
+    syncResult.fold(
+      (error) {
+        debugPrint('❌ Background Sync Error: $error');
+      },
+      (syncData) async {
+        debugPrint('✅ Background Sync Success, re-fetching schedule...');
+        // 3. Once synced, fetch from /api/schedule again to reflect in UI
+        final freshResult = await ApiService.getSchedule(weekDate: weekDate);
+        if (isClosed) return;
+        
+        freshResult.fold(
+          (error) {
+            debugPrint('❌ Fresh Schedule Error: $error');
+          },
+          (data) {
+            _handleData(data, weekDate);
+          },
+        );
+      },
     );
   }
 
   Future<void> refreshSchedule() async {
     emit(ScheduleLoading());
     final weekDate = _currentWeekDate();
-    final result = await ApiService.getSchedule(weekDate: weekDate);
+    
+    // When user explicitly clicks refresh, we trigger the sync process
+    final syncResult = await ApiService.syncSchedule(weekDate: weekDate);
+    
     if (isClosed) return;
-    result.fold(
+    
+    syncResult.fold(
       (error) {
-        debugPrint('❌ Schedule Error Response: $error');
+        debugPrint('❌ Refresh Sync Error: $error');
         emit(ScheduleError(error));
       },
-      (data) => _handleData(data, weekDate),
+      (syncData) async {
+        // Then get from /api/schedule
+        final freshResult = await ApiService.getSchedule(weekDate: weekDate);
+        
+        if (isClosed) return;
+        
+        freshResult.fold(
+          (error) {
+            debugPrint('❌ Fresh Schedule Error: $error');
+            emit(ScheduleError(error));
+          },
+          (data) {
+            _handleData(data, weekDate);
+          },
+        );
+      },
     );
   }
 
   Future<void> syncSchedule() async {
-    await getSchedule();
+    final weekDate = _currentWeekDate();
+    await _syncScheduleBackground(weekDate);
   }
 
   Future<void> prepareLesson({

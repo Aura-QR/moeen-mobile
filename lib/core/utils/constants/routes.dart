@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:moean/features/home/presentation/widgets/chose_app.dart';
+import 'package:moean/features/home/presentation/widgets/download_extention.dart';
 import 'package:moean/features/layout/presentation/screen/main_layout_screen.dart';
 import 'package:moean/features/login/presentation/screen/login_screen.dart';
 import 'package:moean/features/login/presentation/screen/microsoft_login_screen.dart';
@@ -17,7 +19,8 @@ class Routes {
   static const String schedule = '/schedule';
   static const String profile = '/profile';
   static const String settings = '/settings';
-
+  static const String addextention = '/add-extension';
+  static const String choseapp = '/chose-app';
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
     login: (context) => const LoginScreen(),
@@ -26,5 +29,7 @@ class Routes {
     schedule: (context) => const ScheduleScreen(),
     profile: (context) => const ProfileScreen(),
     settings: (context) => const SettingsScreen(),
+    addextention: (context) => const DownloadExtention(),
+    choseapp: (context) => const ChoseApp(),
   };
 }

@@ -1,4 +1,4 @@
-# Moeen Backend — Strict Flutter Mobile App Integration Plan
+# Haddher Backend — Strict Flutter Mobile App Integration Plan
 
 **Date:** 2026-06-25  
 **Backend:** Laravel 11 + Sanctum Bearer tokens + Redis Queue + OpenRouter + Madrasati scraper  
@@ -157,7 +157,7 @@ Use the standardized error shape:
 **Request:**
 ```json
 {
-  "email": "teacher@moeen.sa",
+  "email": "teacher@Haddher.sa",
   "password": "password"
 }
 ```

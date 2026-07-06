@@ -1,6 +1,6 @@
-# Moeen Backend API - Project Documentation
+# Haddher Backend API - Project Documentation
 
-Moeen is an AI-powered lesson preparation SaaS tailored for Saudi teachers using the Madrasati platform. It replaces a legacy Chrome extension by performing lesson orchestration, scraper-assisted DOM reading, AI generation, and final submission entirely server-side.
+Haddher is an AI-powered lesson preparation SaaS tailored for Saudi teachers using the Madrasati platform. It replaces a legacy Chrome extension by performing lesson orchestration, scraper-assisted DOM reading, AI generation, and final submission entirely server-side.
 
 ---
 
@@ -180,6 +180,6 @@ Each row captures:
 ## 🔒 Security & Performance Guidelines
 
 1. **Encrypted Session Cookies**: Raw cookie credentials parsed from the chrome extension are encrypted using AES-256-CBC database-level encryption via Laravel's Encrypted Casts on `TeacherSession.session_cookie`.
-2. **Quota Gating Middleware**: Custom middlewares [CheckLessonQuota](file:///d:/Work/Aura/moeen-backend/app/Application/Http/Middleware/CheckLessonQuota.php) and [CheckMadrasatiSession](file:///d:/Work/Aura/moeen-backend/app/Application/Http/Middleware/CheckMadrasatiSession.php) prevent unauthorized or over-quota requests prior to entering controllers.
+2. **Quota Gating Middleware**: Custom middlewares [CheckLessonQuota](file:///d:/Work/Aura/Haddher-backend/app/Application/Http/Middleware/CheckLessonQuota.php) and [CheckMadrasatiSession](file:///d:/Work/Aura/Haddher-backend/app/Application/Http/Middleware/CheckMadrasatiSession.php) prevent unauthorized or over-quota requests prior to entering controllers.
 3. **Queue Processing**: Heavy HTTP operations are pushed into Redis and handled asynchronously via queue workers to keep API response times under 200ms.
 4. **Caching Layer**: Catalogs like subject lists and lesson trees are cached with 1-hour TTLs to reduce repetitive database execution.

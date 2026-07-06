@@ -1,6 +1,6 @@
-# Moeen Backend API - Postman Testing Documentation
+# Haddher Backend API - Postman Testing Documentation
 
-This document serves as a complete reference for testing the Moeen API in Postman.
+This document serves as a complete reference for testing the Haddher API in Postman.
 
 ---
 
@@ -24,7 +24,7 @@ Create a new user and automatically associate a teacher profile under the `free`
   ```json
   {
     "name": "معلم جديد",
-    "email": "teacher.new@moeen.sa",
+    "email": "teacher.new@Haddher.sa",
     "password": "password123",
     "password_confirmation": "password123",
     "phone": "0509998887"
@@ -36,7 +36,7 @@ Create a new user and automatically associate a teacher profile under the `free`
     "user": {
       "id": 3,
       "name": "معلم جديد",
-      "email": "teacher.new@moeen.sa"
+      "email": "teacher.new@Haddher.sa"
     },
     "token": "3|t19bNXmN...",
     "teacher": {
@@ -61,7 +61,7 @@ Authenticate credentials and obtain a Sanctum access token.
 - **Request Body (JSON)**:
   ```json
   {
-    "email": "teacher@moeen.sa",
+    "email": "teacher@Haddher.sa",
     "password": "password"
   }
   ```
@@ -71,7 +71,7 @@ Authenticate credentials and obtain a Sanctum access token.
     "user": {
       "id": 2,
       "name": "معلم تجريبي",
-      "email": "teacher@moeen.sa"
+      "email": "teacher@Haddher.sa"
     },
     "token": "4|u8XaB98...",
     "teacher": {
@@ -101,7 +101,7 @@ Retrieve the authenticated teacher profile stats.
     "user": {
       "id": 2,
       "name": "معلم تجريبي",
-      "email": "teacher@moeen.sa"
+      "email": "teacher@Haddher.sa"
     },
     "teacher": {
       "id": 1,
