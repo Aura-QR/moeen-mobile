@@ -29,13 +29,7 @@ class HomeAppBarWidget extends StatelessWidget {
                 height: 45,
                 fit: BoxFit.contain,
               ),
-              horizontalSpace6,
-                Text(
-                appTranslation().get('app_name'),
-                style: TextStylesManager.bold20.copyWith(
-                  color: ColorsManager.primaryColor,
-                ),
-              ),
+             
             ],
           ),
 

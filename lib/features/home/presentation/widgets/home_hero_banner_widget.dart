@@ -46,7 +46,7 @@ class HomeHeroBannerWidget extends StatelessWidget {
       appTranslation().get('home_hero_title'),
       textAlign: TextAlign.start,
       style: TextStylesManager.bold48.copyWith(
-        color: ColorsManager.textSecondaryDark,
+        color: ColorsManager.secondarytext,
       ),
     ),
 
@@ -83,7 +83,7 @@ class HomeHeroBannerWidget extends StatelessWidget {
                       appTranslation().get('home_hero_subtitle'),
                       textAlign: TextAlign.start,
                       style: TextStylesManager.bold20.copyWith(
-                        color:  ColorsManager.textSecondaryDark,
+                        color:  ColorsManager.secondarytext,
                       ),
                     ),
 

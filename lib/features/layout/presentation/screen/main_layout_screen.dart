@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:moean/core/theme/colors.dart';
@@ -16,27 +17,44 @@ class MainLayoutScreen extends StatelessWidget {
         builder: (context, state) {
           var cubit = LayoutCubit.get(context);
 
-          return Scaffold(
-            backgroundColor: ColorsManager.background,
-            body: cubit.screens[cubit.currentIndex],
-            bottomNavigationBar: CurvedNavigationBar(
-              key: cubit.bottomNavigationKey,
-              index: cubit.currentIndex,
-              height: 60.0,
-              items: <Widget>[
-                Icon(Icons.person, size: 30, color: ColorsManager.white ),
-                Icon(Icons.home, size: 30, color: ColorsManager.white),
-                Icon(Icons.settings, size: 30, color:  ColorsManager.white ),
-              ],
-              color: ColorsManager.primaryColor,
-              buttonBackgroundColor: ColorsManager.primaryColor,
-              backgroundColor: Colors.transparent,
-              animationCurve: Curves.easeInOut,
-              animationDuration: const Duration(milliseconds: 300),
-              onTap: (index) {
-                cubit.changeBottomNav(index, context);
-              },
-              letIndexChange: (index) => true,
+          // Get the bottom system inset (navigation bar / gesture bar height)
+          final double bottomPadding =
+              MediaQuery.of(context).padding.bottom;
+
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              systemNavigationBarColor: Colors.transparent,
+              systemNavigationBarDividerColor: Colors.transparent,
+            ),
+            child: Scaffold(
+              backgroundColor: ColorsManager.background,
+              // Allow the body to extend behind the bottom nav bar
+              extendBody: true,
+              body: cubit.screens[cubit.currentIndex],
+              bottomNavigationBar: Padding(
+                // Push the nav bar above the system navigation area
+                padding: EdgeInsets.only(bottom: bottomPadding),
+                child: CurvedNavigationBar(
+                  key: cubit.bottomNavigationKey,
+                  index: cubit.currentIndex,
+                  height: 60.0,
+                  items: <Widget>[
+                    Icon(Icons.person, size: 30, color: ColorsManager.white),
+                    Icon(Icons.home, size: 30, color: ColorsManager.white),
+                    Icon(Icons.settings, size: 30, color: ColorsManager.white),
+                  ],
+                  color: ColorsManager.primaryColor,
+                  buttonBackgroundColor: ColorsManager.primaryColor,
+                  backgroundColor: Colors.transparent,
+                  animationCurve: Curves.easeInOut,
+                  animationDuration: const Duration(milliseconds: 300),
+                  onTap: (index) {
+                    cubit.changeBottomNav(index, context);
+                  },
+                  letIndexChange: (index) => true,
+                ),
+              ),
             ),
           );
         },

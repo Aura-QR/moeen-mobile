@@ -38,6 +38,8 @@ class ColorsManager {
   static const Color brandMint = Color(0xFFCFF3EE);
   static const Color brandGold = Color(0xFFF5B25A);
   static Color get scheduleBackground => isDark ? backgroundDark : const Color(0xFFF6FAF9);
+  static Color get secondarytext => isDark ? textPrimaryDark : textSecondaryDark;
+
   static Color get mainText => isDark ? textPrimaryDark : const Color(0xFF111827);
   static Color get secondaryText => isDark ? mutedDark : const Color(0xFF6B7280);
   static Color get borderLightGray => isDark ? white.withValues(alpha: 0.1) : const Color(0xFFE5E7EB);

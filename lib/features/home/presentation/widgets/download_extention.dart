@@ -6,6 +6,8 @@ import 'package:moean/core/utils/constants/assets_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
+import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/features/home/presentation/cubit/extension_install_cubit.dart';
 import 'package:moean/features/home/presentation/widgets/extension_ios_dialog.dart';
 
@@ -36,14 +38,15 @@ class _DownloadExtentionView extends StatelessWidget {
           );
         }
       },
-      child: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Container(
-          color: ColorsManager.surfacePrimary,
-          // SafeArea ensures Edge-to-Edge devices don't overlap the UI
-          // with the system status bar or navigation bar.
-          child: SafeArea(
-            child:Scaffold(
+      child: BlocBuilder<ThemeCubit, ThemeState>(
+        builder: (context, themeState) => Directionality(
+          textDirection: TextDirection.rtl,
+          child: Container(
+            color: ColorsManager.surfacePrimary,
+            // SafeArea ensures Edge-to-Edge devices don't overlap the UI
+            // with the system status bar or navigation bar.
+            child: SafeArea(
+              child: Scaffold(
               appBar: AppBar(
   backgroundColor: ColorsManager.background,
   elevation: 0,
@@ -187,7 +190,9 @@ showDialog(
               ),
             ),
          
-            )),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -210,7 +215,7 @@ class _StepCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorsManager.surfacePrimary,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: ColorsManager.primaryColor.withValues(alpha: 0.08),

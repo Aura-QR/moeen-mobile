@@ -29,25 +29,24 @@ class SettingsScreen extends StatelessWidget {
         },
         builder: (context, state) {
           final profileCubit = ProfileCubit.get(context);
-          return Scaffold(
-            backgroundColor: ColorsManager.background,
-            appBar: AppBar(
-              backgroundColor: ColorsManager.surfacePrimary,
-              elevation: 0,
-            //  automaticallyImplyLeading :false,
-              centerTitle: true,
-           
-              title: Text(
-                appTranslation().get('settings'),
-                style: TextStylesManager.bold18.copyWith(
-                  color: ColorsManager.textPrimary,
+          return BlocBuilder<ThemeCubit, ThemeState>(
+            builder: (context, themeState) {
+              final themeCubit = ThemeCubit.get(context);
+              return Scaffold(
+                backgroundColor: ColorsManager.background,
+                appBar: AppBar(
+                  backgroundColor: ColorsManager.surfacePrimary,
+                  elevation: 0,
+                  //  automaticallyImplyLeading :false,
+                  centerTitle: true,
+                  title: Text(
+                    appTranslation().get('settings'),
+                    style: TextStylesManager.bold18.copyWith(
+                      color: ColorsManager.textPrimary,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            body: BlocBuilder<ThemeCubit, ThemeState>(
-              builder: (context, themeState) {
-                final themeCubit = ThemeCubit.get(context);
-                return ListView(
+                body: ListView(
                   padding: const EdgeInsets.all(24.0),
                   children: [
                     // Dark Mode Toggle
@@ -75,7 +74,7 @@ class SettingsScreen extends StatelessWidget {
                     // Language Toggle
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading:  Icon(
+                      leading: Icon(
                         Icons.language,
                         color: ColorsManager.primaryColor,
                       ),
@@ -94,7 +93,7 @@ class SettingsScreen extends StatelessWidget {
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<bool>(
                             value: themeCubit.isArabicLang,
-                            icon:  Icon(Icons.arrow_drop_down, color: ColorsManager.primaryColor),
+                            icon: Icon(Icons.arrow_drop_down, color: ColorsManager.primaryColor),
                             onChanged: (bool? newValue) {
                               if (newValue != null && newValue != themeCubit.isArabicLang) {
                                 themeCubit.changeLanguage();
@@ -148,9 +147,9 @@ class SettingsScreen extends StatelessWidget {
                       },
                     ),
                   ],
-                );
-              },
-            ),
+                ),
+              );
+            },
           );
         },
       ),
