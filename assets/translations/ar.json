@@ -166,5 +166,14 @@
   "should_download":"يجب عليك تحميل تطبيق Quetta  أولاً حتى تتمكن من المتابعة ف الخطوه الاولى.",
   "cancel": "إلغاء",
   "attention": "تنبيه",
-  "ext_quetta_btn_open_madrasati": "فتح منصة مدرستي في Quetta"
+  "ext_quetta_btn_open_madrasati": "فتح منصة مدرستي في Quetta",
+  "chose_app_title": "كيف تريد التحضير؟",
+  "chose_app_subtitle": "اختر الطريقة المناسبة لك",
+  "chose_app_extension_title": "إضافة المتصفح",
+  "chose_app_extension_subtitle": "اضافه الاداه ع المتصفح",
+  "chose_app_extension_badge": "متاح الآن",
+  "chose_app_app_title": "تطبيق الجوال",
+  "chose_app_app_subtitle": "حضّر دروسك مباشرةً من هاتفك بكل سهولة ويسر",
+  "chose_app_app_badge": "قريباً",
+  "chose_app_continue": "متابعة"
 }

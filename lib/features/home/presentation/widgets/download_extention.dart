@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
+import 'package:moean/core/utils/constants/assets_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
@@ -43,6 +44,29 @@ class _DownloadExtentionView extends StatelessWidget {
           // with the system status bar or navigation bar.
           child: SafeArea(
             child:Scaffold(
+              appBar: AppBar(
+  backgroundColor: ColorsManager.background,
+  elevation: 0,
+  centerTitle: true,
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back_ios),
+    onPressed: () => Navigator.pop(context),
+  ),
+  title: Text(
+    appTranslation().get('app_name'),
+    style: TextStylesManager.bold20.copyWith(
+      color: ColorsManager.primaryColor,
+    ),
+  ),
+  actions: [
+    Image.asset(
+      AssetsHelper.icon,
+      width: 55,
+      height: 55,
+      fit: BoxFit.cover,
+    ),
+  ],
+),
               body:  SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(

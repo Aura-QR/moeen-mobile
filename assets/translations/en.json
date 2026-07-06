@@ -166,5 +166,14 @@
   "should_download":"You must download the Quetta app first to proceed.",
    "cancel": "Cancel",
   "attention": "Attention",
-  "ext_quetta_btn_open_madrasati": "Open Madrasati in Quetta"
+  "ext_quetta_btn_open_madrasati": "Open Madrasati in Quetta",
+  "chose_app_title": "How would you like to prepare?",
+  "chose_app_subtitle": "Choose the option that suits you",
+  "chose_app_extension_title": "Browser Extension",
+  "chose_app_extension_subtitle": "Prepare your lessons via the Chrome extension ",
+  "chose_app_extension_badge": "Available Now",
+  "chose_app_app_title": "Mobile App",
+  "chose_app_app_subtitle": "Prepare your lessons directly from your phone with ease",
+  "chose_app_app_badge": "Coming Soon",
+  "chose_app_continue": "Continue"
 }
