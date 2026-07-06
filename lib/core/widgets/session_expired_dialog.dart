@@ -113,7 +113,9 @@ class SessionExpiredDialog extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop();
-                      context.push(Routes.loginMicrosoft);
+                   //   context.push(Routes.loginMicrosoft);
+                      context.push(Routes.home);
+
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ColorsManager.primaryAction,

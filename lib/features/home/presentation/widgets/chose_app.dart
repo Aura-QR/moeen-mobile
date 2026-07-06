@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
-import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
@@ -9,6 +8,7 @@ import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/widgets/dot_grid_painter.dart';
 import 'package:moean/features/home/presentation/widgets/chose_app_header.dart';
 import 'package:moean/features/home/presentation/widgets/chose_app_option_card.dart';
+import 'package:moean/features/home/presentation/widgets/chose_app_usage_card.dart';
 
 class ChoseApp extends StatefulWidget {
   const ChoseApp({super.key});
@@ -27,7 +27,7 @@ class _ChoseAppState extends State<ChoseApp>
   late final AnimationController _controller;
 
   // Stagger config: 4 items → header, card1, card2, button
-  static const int _itemCount = 4;
+  static const int _itemCount = 5;
   static const double _itemDuration = 0.60; // fraction of total per item
   static const double _stagger = 0.14;      // fraction offset between items
 
@@ -247,11 +247,19 @@ class _ChoseAppState extends State<ChoseApp>
                         ),
                       ),
 
-                      verticalSpace40,
+                      verticalSpace24,
 
-                      // Item 3 — Continue button
+                      // Item 3 — How to use card
                       _animated(
                         3,
+                        const ChoseAppUsageCard(),
+                      ),
+
+                      verticalSpace24,
+
+                      // Item 4 — Continue button
+                      _animated(
+                        4,
                         PrimaryElevatedButton(
                           onPressed: _onContinue,
                           text: appTranslation().get('chose_app_continue'),

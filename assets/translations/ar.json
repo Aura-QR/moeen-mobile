@@ -175,5 +175,8 @@
   "chose_app_app_title": "تطبيق الجوال",
   "chose_app_app_subtitle": "حضّر دروسك مباشرةً من هاتفك بكل سهولة ويسر",
   "chose_app_app_badge": "قريباً",
-  "chose_app_continue": "متابعة"
+  "chose_app_continue": "متابعة",
+  "usage_card_title": "كيف تستخدم الإضافة؟",
+  "usage_card_subtitle": "شاهد الخطوات بالصور خطوة بخطوة",
+  "slider_swipe_hint": "اسحب للمشاهدة"
 }

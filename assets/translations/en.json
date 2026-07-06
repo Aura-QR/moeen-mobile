@@ -175,5 +175,8 @@
   "chose_app_app_title": "Mobile App",
   "chose_app_app_subtitle": "Prepare your lessons directly from your phone with ease",
   "chose_app_app_badge": "Coming Soon",
-  "chose_app_continue": "Continue"
+  "chose_app_continue": "Continue",
+  "usage_card_title": "How to use the Extension?",
+  "usage_card_subtitle": "Watch the steps with screenshots, step by step",
+  "slider_swipe_hint": "Swipe to browse"
 }

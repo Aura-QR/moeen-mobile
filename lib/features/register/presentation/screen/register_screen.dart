@@ -8,7 +8,6 @@ import 'package:moean/features/register/presentation/widgets/register_account_ty
 import 'package:moean/features/register/presentation/widgets/register_action_buttons_widget.dart';
 import 'package:moean/features/register/presentation/widgets/register_footer_widget.dart';
 import 'package:moean/features/register/presentation/widgets/register_form_widget.dart';
-import 'package:moean/features/register/presentation/widgets/register_header_widget.dart';
 import 'package:moean/features/register/presentation/widgets/register_illustration_widget.dart';
 import 'package:moean/features/register/presentation/widgets/register_terms_widget.dart';
 import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
@@ -98,7 +97,7 @@ class RegisterScreen extends StatelessWidget {
       );
     }
     if (state is RegisterSuccessState) {
-      context.pushNamedAndRemoveUntil(Routes.loginMicrosoft, (route) => false);
+      context.pushNamedAndRemoveUntil(Routes.home, (route) => false);
     }
   }
 }
