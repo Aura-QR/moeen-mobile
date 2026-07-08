@@ -5,6 +5,7 @@ import 'package:moean/core/utils/constants/assets_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
 import 'package:moean/core/utils/constants/routes.dart';
+import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/network/local/secure_storage_helper.dart';
@@ -62,7 +63,7 @@ class HomeAppBarWidget extends StatelessWidget {
                       child: Row(
                         children: [
                           const Icon(Icons.person_add_alt_1_outlined, size: 20),
-                          const SizedBox(width: 10),
+                          horizontalSpace10,
                           Text(
                             appTranslation().get('create_account'),
                             style: TextStylesManager.bold14,
@@ -75,7 +76,7 @@ class HomeAppBarWidget extends StatelessWidget {
                       child: Row(
                         children: [
                           const Icon(Icons.login_outlined, size: 20),
-                          const SizedBox(width: 10),
+                          horizontalSpace10,
                           Text(
                             appTranslation().get('login'),
                             style: TextStylesManager.bold14,
@@ -94,12 +95,12 @@ class HomeAppBarWidget extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(Icons.person_add_alt_1_outlined, size: 20, color: ColorsManager.white),
-                        const SizedBox(width: 8),
+                        horizontalSpace8,
                         Text(
                           appTranslation().get('create_account'),
                           style: TextStylesManager.bold14.copyWith(color: ColorsManager.white),
                         ),
-                        const SizedBox(width: 6),
+                        horizontalSpace6,
                         const Icon(Icons.arrow_drop_down, color: ColorsManager.white),
                       ],
                     ),

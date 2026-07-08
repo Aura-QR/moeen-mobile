@@ -4,6 +4,7 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/utils/constants/spacing.dart';
 
 class ExtensionUsageSlider extends StatefulWidget {
   const ExtensionUsageSlider({super.key});
@@ -195,7 +196,7 @@ class _ExtensionUsageSliderState extends State<ExtensionUsageSlider>
                             ),
                           ),
 
-                          const SizedBox(height: 14),
+                         verticalSpace14,
 
                           // Nav row: prev | dots | next
                           Row(
@@ -265,7 +266,7 @@ class _ExtensionUsageSliderState extends State<ExtensionUsageSlider>
                             color: Colors.white70,
                             size: 18,
                           ),
-                          const SizedBox(width: 6),
+                          horizontalSpace6,
                           Text(
                             appTranslation().get('slider_swipe_hint'),
                             style: TextStylesManager.regular12.copyWith(

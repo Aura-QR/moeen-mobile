@@ -9,7 +9,6 @@ import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
-import 'package:moean/features/profile/presentation/widgets/logout_dialog.dart';
 import 'package:moean/features/profile/presentation/widgets/profile_info_card.dart';
 
 class ProfileScreen extends StatelessWidget {

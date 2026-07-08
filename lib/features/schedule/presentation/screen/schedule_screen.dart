@@ -7,7 +7,6 @@ import 'package:moean/core/utils/constants/primary/conditional_builder.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:moean/core/utils/cubit/theme/theme_state.dart';
-import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:moean/features/schedule/presentation/cubit/schedule_state.dart';
 import 'package:moean/features/schedule/presentation/widgets/class_card.dart';

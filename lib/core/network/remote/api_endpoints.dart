@@ -11,3 +11,7 @@ const String refreshMadrasatiSessionApi = '/madrasati/refresh-session';
 const String scheduleApi = '/schedule';
 const String madrasatiScheduleApi = '/madrasati/schedule';
 const String prepareApi = '/prepare';
+
+// Admin API
+const String adminTeachersApi = '/admin/teachers';
+const String subscriptionsApi = '/subscriptions';

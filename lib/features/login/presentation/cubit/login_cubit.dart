@@ -69,7 +69,10 @@ class LoginCubit extends Cubit<LoginState> {
           sl<MadrasatiSessionService>().notifySessionActive();
         }
 
-        emit(LoginSuccessState(madrasatiConnected: response.madrasatiConnected));
+        emit(LoginSuccessState(
+          madrasatiConnected: response.madrasatiConnected,
+          userEmail: response.user.email,
+        ));
       },
     );
   }

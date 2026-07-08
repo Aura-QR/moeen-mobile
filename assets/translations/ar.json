@@ -1,5 +1,7 @@
 {
   "return_home": "العودة إلى الرئيسية",
+  "home": "الرئيسية",
+
   "welcome_back": "مرحباً بعودتك",
   "login_subtitle": "سجّل الدخول للوصول إلى مكتبتك التعليمية وأدوات التحضير الذكية",
   "email": "البريد الإلكتروني",
@@ -178,5 +180,29 @@
   "chose_app_continue": "متابعة",
   "usage_card_title": "كيف تستخدم الإضافة؟",
   "usage_card_subtitle": "شاهد الخطوات بالصور خطوة بخطوة",
-  "slider_swipe_hint": "اسحب للمشاهدة"
+  "slider_swipe_hint": "اسحب للمشاهدة",
+  "admin_teachers_title": " إدارة المعلمين",
+  "admin_add_teacher": "إضافة معلم",
+  "admin_total_teachers": "إجمالي المعلمين",
+  "admin_active_teachers": "المعلمون النشطون",
+  "admin_suspended_accounts": "الحسابات الموقوفة",
+  "admin_subscribed_plans": "مشتركو الخطط",
+  "admin_search_hint": "البحث بالاسم أو البريد الإلكتروني...",
+  "admin_all_status": " الكل",
+  "admin_teacher": "المعلم",
+  "admin_email": "البريد الإلكتروني",
+  "admin_phone": "الجوال",
+  "admin_plan": "الخطة",
+  "admin_status": "الحالة",
+  "admin_join_date": "تاريخ الانضمام",
+  "admin_actions": "الإجراءات",
+  "admin_active": "نشط",
+  "admin_suspended": "موقوف",
+  "admin_plan_free": "مجاني",
+  "admin_edit": "تعديل",
+  "admin_reset_password": "إعادة تعيين كلمة المرور",
+  "admin_suspend": "إيقاف",
+  "admin_activate": "تفعيل",
+  "admin_delete": "حذف",
+  "admin_confirm_delete": "هل أنت متأكد من حذف هذا المعلم؟"
 }

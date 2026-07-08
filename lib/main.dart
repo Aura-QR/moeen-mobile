@@ -62,7 +62,11 @@ void main() async {
       },
       (user) {
         developer.log('Main: Token valid, user=${user.name}');
-        initialRoute = Routes.home; // start at home
+        if (user.email == 'admin@moeen.com' || user.email == 'admin@moeen.sa') {
+          initialRoute = Routes.adminTeachers;
+        } else {
+          initialRoute = Routes.home; // start at home
+        }
         sl<MadrasatiSessionService>().notifySessionActive();
       },
     );

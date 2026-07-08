@@ -106,6 +106,35 @@ class DioHelper {
     }
   }
 
+  static Future<Either<String, Response>> patchData({
+    required String url,
+    dynamic data,
+    Map<String, dynamic>? query,
+  }) async {
+    try {
+      debugPrint('🚀 PATCH Request: $url');
+      final Response response = await getDio().patch(
+        url,
+        data: data,
+        queryParameters: query,
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            if (data is! FormData) 'Content-Type': 'application/json',
+            if (token != null && token!.isNotEmpty)
+              'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+      return Right(response);
+    } on DioException catch (error) {
+      final msg = _parseError(error);
+      return Left(msg);
+    } catch (e) {
+      return const Left('something went wrong');
+    }
+  }
+
   static Future<Either<String, Response>> deleteData({
     required String url,
   }) async {

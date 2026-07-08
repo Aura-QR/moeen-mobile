@@ -5,6 +5,8 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
+import 'package:moean/core/network/remote/api_service.dart';
+import 'package:moean/core/network/local/cache_helper.dart';
 import 'package:moean/features/home/presentation/widgets/home_action_chip_widget.dart';
 import 'package:moean/features/home/presentation/widgets/home_feature_item_widget.dart';
 
@@ -17,6 +19,53 @@ class HomeFeaturesSectionWidget extends StatefulWidget {
 
 class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
   int _selectedFeatureIndex = 1; 
+  bool _isAdmin = false;
+  bool _isLoadingRole = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkRole();
+  }
+
+  Future<void> _checkRole() async {
+    if (token != null && token!.isNotEmpty) {
+      final cachedIsAdmin = CacheHelper.getData(key: 'isAdmin');
+      if (cachedIsAdmin != null && cachedIsAdmin is bool) {
+        if (mounted) {
+          setState(() {
+            _isAdmin = cachedIsAdmin;
+            _isLoadingRole = false;
+          });
+        }
+        return;
+      }
+
+      final result = await ApiService.getProfile();
+      result.fold(
+        (error) {
+          if (mounted) {
+            setState(() => _isLoadingRole = false);
+          }
+        },
+        (profile) {
+          final admin = profile.role == 'admin' || profile.user.email == 'admin@moeen.sa';
+          CacheHelper.saveData(key: 'isAdmin', value: admin);
+          if (mounted) {
+            setState(() {
+              _isAdmin = admin;
+              _isLoadingRole = false;
+            });
+          }
+        },
+      );
+    } else {
+      if (mounted) {
+        setState(() => _isLoadingRole = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -45,8 +94,11 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
                 child: GestureDetector(
                   onTap: () {
                     if (token != null && token!.isNotEmpty) {
-                   //   context.push(Routes.schedule);
-                   context.push(Routes.choseapp);
+                      if (_isAdmin) {
+                        context.push(Routes.adminTeachers);
+                      } else {
+                        context.push(Routes.choseapp);
+                      }
                     } else {
                       context.push(Routes.login);
                     }
@@ -54,12 +106,24 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        appTranslation().get('home_start_prep'),
-                        style: TextStylesManager.bold16.copyWith(
-                          color: ColorsManager.white,
+                      if (_isLoadingRole)
+                        const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: ColorsManager.white,
+                          ),
+                        )
+                      else
+                        Text(
+                          _isAdmin 
+                              ? 'جدول المعلمين'
+                              : appTranslation().get('home_start_prep'),
+                          style: TextStylesManager.bold16.copyWith(
+                            color: ColorsManager.white,
+                          ),
                         ),
-                      ),
                       horizontalSpace8,
                       const Icon(
                         Icons.arrow_forward_ios_rounded,

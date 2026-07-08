@@ -6,7 +6,8 @@ class LoginLoadingState extends LoginState {}
 
 class LoginSuccessState extends LoginState {
   final bool madrasatiConnected;
-  LoginSuccessState({required this.madrasatiConnected});
+  final String userEmail;
+  LoginSuccessState({required this.madrasatiConnected, required this.userEmail});
 }
 
 class LoginErrorState extends LoginState {

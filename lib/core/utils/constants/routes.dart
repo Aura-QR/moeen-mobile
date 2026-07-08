@@ -10,6 +10,8 @@ import 'package:moean/features/schedule/presentation/screen/schedule_screen.dart
 import 'package:moean/features/profile/presentation/screen/profile_screen.dart';
 import 'package:moean/features/profile/presentation/screen/settings_screen.dart';
 
+import 'package:moean/features/admin/teachers/presentation/screen/admin_teachers_screen.dart';
+
 class Routes {
   static const String splash = '/splash';
   static const String onboarding = '/onboarding';
@@ -23,6 +25,8 @@ class Routes {
   static const String addextention = '/add-extension';
   static const String choseapp = '/chose-app';
   static const String extensionUsage = '/extension-usage';
+  static const String adminTeachers = '/admin/teachers';
+
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
     login: (context) => const LoginScreen(),
@@ -34,5 +38,6 @@ class Routes {
     addextention: (context) => const DownloadExtention(),
     choseapp: (context) => const ChoseApp(),
     extensionUsage: (context) => const ExtensionUsageSlider(),
+    adminTeachers: (context) => const AdminTeachersScreen(),
   };
 }

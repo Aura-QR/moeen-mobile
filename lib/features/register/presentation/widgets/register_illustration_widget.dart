@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moean/core/theme/colors.dart';
-import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
-import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/register/presentation/widgets/register_header_widget.dart';
 
