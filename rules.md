@@ -8,6 +8,8 @@ ARCHITECTURE
   * ColorsManager → all colors → lib/core/theme/colors.dart
 - All theme files must be in lib/core/theme (ColorsManager, TextStylesManager, AppTheme)
 - Never use Theme.of(context) for colors or text styles
+- to use primary_text_field the widget in lib/core/utils/constants/primary
+-to use buttom is in /core/utils/constants/primary
 
 CODE STRUCTURE
 - Each widget must be in a separate Dart file

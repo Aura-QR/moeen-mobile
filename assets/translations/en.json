@@ -204,5 +204,16 @@
   "admin_suspend": "Suspend",
   "admin_activate": "Activate",
   "admin_delete": "Delete",
-  "admin_confirm_delete": "Are you sure you want to delete this teacher?"
+  "admin_confirm_delete": "Are you sure you want to delete this teacher?",
+  "about_password":"You can copy , change and regenerate the password:",
+  "new_password":"New Password",
+  "copy_password":"Copy Password",
+  "regenerate_password" :"Regenerate Password",
+  "copy_success":"Copied to clipboard successfully",
+  "close":"Close",
+  "save_changes":"Save Changes",
+  "change_password": "Change Password",
+  "current_password": "Current Password",
+  "confirm_new_password": "Confirm New Password",
+  "admin_dashboard": "Admin Dashboard"
 }

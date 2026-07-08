@@ -34,20 +34,20 @@ class AdminTeachersScreen extends StatelessWidget {
               builder: (ctx) {
                 final passwordController = TextEditingController(text: state.plainPassword);
                 return AlertDialog(
-                  title: const Text('كلمة المرور الجديدة'),
+                  title:  Text(appTranslation().get('new_password')),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('يمكنك نسخ كلمة المرور، أو تعديلها يدوياً، أو إعادة توليدها:'),
+                       Text(appTranslation().get('about_password')),
                       verticalSpace12,
                       Row(
                         children: [
                           Expanded(
                             child: TextField(
                               controller: passwordController,
-                              decoration: const InputDecoration(
-                                labelText: 'كلمة المرور',
+                              decoration:  InputDecoration(
+                                labelText: appTranslation().get('password'),
                                 border: OutlineInputBorder(),
                               ),
                             ),
@@ -62,17 +62,17 @@ class AdminTeachersScreen extends StatelessWidget {
                               passwordController.text = newPassword;
                             },
                             icon: const Icon(Icons.autorenew),
-                            tooltip: 'إعادة توليد',
+                            tooltip: appTranslation().get('regenerate_password'),
                           ),
                           IconButton(
                             onPressed: () {
                               Clipboard.setData(ClipboardData(text: passwordController.text));
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('تم النسخ بنجاح'), backgroundColor: Colors.green),
+                                SnackBar(content: Text(appTranslation().get('copy_success')), backgroundColor: Colors.green),
                               );
                             },
                             icon: const Icon(Icons.copy),
-                            tooltip: 'نسخ',
+                            tooltip: appTranslation().get('copy_password'),
                           ),
                         ],
                       ),
@@ -81,7 +81,7 @@ class AdminTeachersScreen extends StatelessWidget {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text('إغلاق'),
+                      child:  Text(appTranslation().get('close')),
                     ),
                     ElevatedButton(
                       onPressed: () {
@@ -93,7 +93,7 @@ class AdminTeachersScreen extends StatelessWidget {
                         }
                         Navigator.pop(ctx);
                       },
-                      child: const Text('حفظ التعديل'),
+                      child:  Text(appTranslation().get('save_changes')),
                     ),
                   ],
                 );

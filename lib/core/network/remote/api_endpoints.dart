@@ -6,6 +6,7 @@ const String registerApi = '/auth/register';
 const String loginApi = '/auth/login';
 const String meApi = '/auth/me';
 const String logoutApi = '/auth/logout';
+const String changePasswordApi = '/auth/password';
 const String connectMadrasatiApi = '/madrasati/connect';
 const String refreshMadrasatiSessionApi = '/madrasati/refresh-session';
 const String scheduleApi = '/schedule';

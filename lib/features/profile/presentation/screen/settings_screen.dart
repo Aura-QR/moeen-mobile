@@ -67,8 +67,31 @@ class SettingsScreen extends StatelessWidget {
                         onChanged: (value) {
                           themeCubit.changeTheme();
                         },
-                        activeColor: ColorsManager.primaryColor,
+                        activeThumbColor: ColorsManager.primaryColor,
                       ),
+                    ),
+                    const Divider(),
+                    // Change Password
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(
+                        Icons.lock_outline,
+                        color: ColorsManager.primaryColor,
+                      ),
+                      title: Text(
+                        appTranslation().get('change_password'),
+                        style: TextStylesManager.medium16.copyWith(
+                          color: ColorsManager.textPrimary,
+                        ),
+                      ),
+                      trailing: Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: ColorsManager.textSecondary,
+                      ),
+                      onTap: () {
+                        Navigator.pushNamed(context, Routes.changePassword);
+                      },
                     ),
                     const Divider(),
                     // Language Toggle

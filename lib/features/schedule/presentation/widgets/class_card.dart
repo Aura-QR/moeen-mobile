@@ -189,7 +189,7 @@ class _ClassCardState extends State<ClassCard> {
   Widget build(BuildContext context) {
     final bool hasLesson = widget.classModel.lessonTitle != null;
     final bool isActivity = widget.classModel.status == ClassStatus.activity;
-final bool isNotAssigned = widget.classModel.lessonId == 0;
+// final bool isNotAssigned = widget.classModel.lessonId == 0;
 
     return GestureDetector(
       onTap: (isActivity || !hasLesson) ? null : () => _showActions(context),

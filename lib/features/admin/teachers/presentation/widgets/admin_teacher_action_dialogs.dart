@@ -5,6 +5,7 @@ import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/admin/teachers/presentation/cubit/admin_teachers_cubit.dart';
+import 'package:moean/core/theme/colors.dart';
 
 void showAddTeacherDialog(BuildContext context) {
   final cubit = AdminTeachersCubit.get(context);
@@ -114,9 +115,9 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('تعديل بيانات المعلم', style: TextStylesManager.bold18.copyWith(color: const Color(0xFF155C50))),
+                                Text('تعديل بيانات المعلم', style: TextStylesManager.bold18.copyWith(color: ColorsManager.primaryColor)),
                                 verticalSpace4,
-                                Text(teacher.user.email, style: TextStylesManager.medium14.copyWith(color: Colors.grey)),
+                                Text(teacher.user.email, style: TextStylesManager.medium14.copyWith(color: ColorsManager.secondaryText)),
                               ],
                             ),
                           ],
@@ -130,13 +131,13 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                     const Divider(height: 32),
                     
                     // Name
-                    Text('الاسم الكامل *', style: TextStylesManager.bold14.copyWith(color: const Color(0xFF155C50))),
+                    Text('الاسم الكامل *', style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
                     verticalSpace8,
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderColor)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderColor)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
                     ),
@@ -150,15 +151,15 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('خطة الاشتراك', style: TextStylesManager.bold14.copyWith(color: const Color(0xFF155C50))),
+                              Text('خطة الاشتراك', style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
                               verticalSpace8,
                               DropdownButtonFormField<int?>(
-                                value: selectedPlanId,
+                                initialValue: selectedPlanId,
                                 isExpanded: true,
-                                style: TextStylesManager.medium14.copyWith(color: Colors.black),
+                                style: TextStylesManager.medium14.copyWith(color: ColorsManager.mainText),
                                 decoration: InputDecoration(
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderColor)),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderColor)),
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
                                 items: [
@@ -187,15 +188,15 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('رقم الجوال', style: TextStylesManager.bold14.copyWith(color: const Color(0xFF155C50))),
+                              Text('رقم الجوال', style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
                               verticalSpace8,
                               TextField(
                                 controller: phoneController,
                                 keyboardType: TextInputType.phone,
                                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                 decoration: InputDecoration(
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderColor)),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderColor)),
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
                               ),
@@ -214,7 +215,7 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('إجراءات سريعة للاشتراك', style: TextStylesManager.bold14.copyWith(color: const Color(0xFF155C50))),
+                              Text('إجراءات سريعة للاشتراك', style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
                               verticalSpace8,
                               Row(
                                 children: [
@@ -227,10 +228,10 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                                       style: OutlinedButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(vertical: 12),
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                        side: BorderSide(color: const Color(0xFF155C50).withValues(alpha: 0.3)),
-                                        backgroundColor: const Color(0xFFE8F5E9),
+                                        side: BorderSide(color: ColorsManager.primaryColor.withValues(alpha: 0.3)),
+                                        backgroundColor: ColorsManager.isDark ? ColorsManager.primaryColor.withValues(alpha: 0.1) : const Color(0xFFE8F5E9),
                                       ),
-                                      child: const FittedBox(child: Text('تجديد (6+\nأشهر)', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF155C50), fontSize: 12, fontWeight: FontWeight.bold))),
+                                      child: FittedBox(child: Text('تجديد (6+\nأشهر)', textAlign: TextAlign.center, style: TextStyle(color: ColorsManager.primaryColor, fontSize: 12, fontWeight: FontWeight.bold))),
                                     ),
                                   ),
                                   horizontalSpace8,
@@ -244,7 +245,7 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                                         padding: const EdgeInsets.symmetric(vertical: 12),
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                         side: BorderSide(color: Colors.red.withValues(alpha: 0.3)),
-                                        backgroundColor: const Color(0xFFFFEBEE),
+                                        backgroundColor: ColorsManager.isDark ? Colors.red.withValues(alpha: 0.1) : const Color(0xFFFFEBEE),
                                       ),
                                       child: const FittedBox(child: Text('إلغاء الاشتراك', textAlign: TextAlign.center, style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold))),
                                     ),
@@ -259,7 +260,7 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('تاريخ انتهاء الاشتراك', style: TextStylesManager.bold14.copyWith(color: const Color(0xFF155C50))),
+                              Text('تاريخ انتهاء الاشتراك', style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
                               verticalSpace8,
                               TextField(
                                 controller: endDateController,
@@ -280,8 +281,8 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                                 decoration: InputDecoration(
                                   hintText: 'mm/dd/yyyy',
                                   suffixIcon: const Icon(Icons.calendar_today, size: 20),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderColor)),
+                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderColor)),
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
                               ),
@@ -296,9 +297,9 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FBF8),
+                        color: ColorsManager.isDark ? ColorsManager.surfaceDark : const Color(0xFFF8FBF8),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
+                        border: Border.all(color: ColorsManager.borderColor),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -306,9 +307,9 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('حالة الحساب', style: TextStylesManager.bold16.copyWith(color: const Color(0xFF155C50))),
+                              Text('حالة الحساب', style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
                               verticalSpace4,
-                              Text('الحساب نشط ويمكن تسجيل الدخول', style: TextStylesManager.medium12.copyWith(color: Colors.grey)),
+                              Text('الحساب نشط ويمكن تسجيل الدخول', style: TextStylesManager.medium12.copyWith(color: ColorsManager.secondaryText)),
                             ],
                           ),
                           Switch(
@@ -318,7 +319,7 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                                 isActive = val;
                               });
                             },
-                            activeColor: const Color(0xFF00B778),
+                            activeThumbColor: const Color(0xFF00B778),
                           ),
                         ],
                       ),
@@ -363,9 +364,9 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              side: BorderSide(color: Colors.grey.shade300),
+                              side: BorderSide(color: ColorsManager.borderColor),
                             ),
-                            child: Text('إلغاء', style: TextStyle(color: Colors.grey.shade700, fontSize: 16, fontWeight: FontWeight.bold)),
+                            child: Text('إلغاء', style: TextStyle(color: ColorsManager.mainText, fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],

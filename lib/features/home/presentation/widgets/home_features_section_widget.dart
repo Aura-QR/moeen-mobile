@@ -31,7 +31,8 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
   Future<void> _checkRole() async {
     if (token != null && token!.isNotEmpty) {
       final cachedIsAdmin = CacheHelper.getData(key: 'isAdmin');
-      if (cachedIsAdmin != null && cachedIsAdmin is bool) {
+      final cachedToken = CacheHelper.getData(key: 'admin_token');
+      if (cachedIsAdmin != null && cachedIsAdmin is bool && cachedToken == token) {
         if (mounted) {
           setState(() {
             _isAdmin = cachedIsAdmin;
@@ -51,6 +52,7 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
         (profile) {
           final admin = profile.role == 'admin' || profile.user.email == 'admin@moeen.sa';
           CacheHelper.saveData(key: 'isAdmin', value: admin);
+          CacheHelper.saveData(key: 'admin_token', value: token);
           if (mounted) {
             setState(() {
               _isAdmin = admin;
@@ -118,7 +120,7 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
                       else
                         Text(
                           _isAdmin 
-                              ? 'جدول المعلمين'
+                              ?  appTranslation().get('admin_dashboard')
                               : appTranslation().get('home_start_prep'),
                           style: TextStylesManager.bold16.copyWith(
                             color: ColorsManager.white,

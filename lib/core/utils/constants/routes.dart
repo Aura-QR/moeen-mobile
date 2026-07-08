@@ -9,6 +9,7 @@ import 'package:moean/features/register/presentation/screen/register_screen.dart
 import 'package:moean/features/schedule/presentation/screen/schedule_screen.dart';
 import 'package:moean/features/profile/presentation/screen/profile_screen.dart';
 import 'package:moean/features/profile/presentation/screen/settings_screen.dart';
+import 'package:moean/features/profile/presentation/screen/change_password_screen.dart';
 
 import 'package:moean/features/admin/teachers/presentation/screen/admin_teachers_screen.dart';
 
@@ -22,6 +23,7 @@ class Routes {
   static const String schedule = '/schedule';
   static const String profile = '/profile';
   static const String settings = '/settings';
+  static const String changePassword = '/change-password';
   static const String addextention = '/add-extension';
   static const String choseapp = '/chose-app';
   static const String extensionUsage = '/extension-usage';
@@ -35,6 +37,7 @@ class Routes {
     schedule: (context) => const ScheduleScreen(),
     profile: (context) => const ProfileScreen(),
     settings: (context) => const SettingsScreen(),
+    changePassword: (context) => const ChangePasswordScreen(),
     addextention: (context) => const DownloadExtention(),
     choseapp: (context) => const ChoseApp(),
     extensionUsage: (context) => const ExtensionUsageSlider(),

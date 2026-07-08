@@ -75,8 +75,8 @@ class MadrasatiCubit extends Cubit<MadrasatiState> {
 
         (res) async {
           debugPrint('📥 [MadrasatiCubit] API returned RIGHT (success path)');
-          debugPrint('   statusCode : ${res.statusCode}');
-          debugPrint('   statusCode : ${res}');
+          debugPrint('   statusCode : $res.statusCode');
+          debugPrint('   statusCode : $res');
 
 
           // ── طباعة كل حقل بيرجع من الباك بالاسم ──────────────────────────

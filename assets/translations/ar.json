@@ -181,6 +181,7 @@
   "usage_card_title": "كيف تستخدم الإضافة؟",
   "usage_card_subtitle": "شاهد الخطوات بالصور خطوة بخطوة",
   "slider_swipe_hint": "اسحب للمشاهدة",
+  "admin_dashboard": "لوحه التحكم",
   "admin_teachers_title": " إدارة المعلمين",
   "admin_add_teacher": "إضافة معلم",
   "admin_total_teachers": "إجمالي المعلمين",
@@ -204,5 +205,16 @@
   "admin_suspend": "إيقاف",
   "admin_activate": "تفعيل",
   "admin_delete": "حذف",
-  "admin_confirm_delete": "هل أنت متأكد من حذف هذا المعلم؟"
+  "admin_confirm_delete": "هل أنت متأكد من حذف هذا المعلم؟",
+  "about_password":"يمكنك نسخ كلمة المرور، أو تعديلها يدوياً، أو إعادة توليدها:",
+  "new_password":"كلمة المرور الجديدة",
+  "copy_password":"نسخ",
+  "regenerate_password" :"اعاده توليد",
+  "copy_success":"تم النسخ بنجاح",
+  "close":"إغلاق",
+  "save_changes":"حفظ التعديلات",
+  "change_password": "تغيير كلمة المرور",
+  "current_password": "كلمة المرور الحالية",
+  "confirm_new_password": "تأكيد كلمة المرور الجديدة"
+
 }

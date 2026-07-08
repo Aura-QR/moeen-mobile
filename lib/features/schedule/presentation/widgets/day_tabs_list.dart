@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
-import 'package:moean/core/utils/constants/spacing.dart'; // تأكد من استدعاء ملف المسافات
 import 'package:moean/features/schedule/data/models/schedule_models.dart';
 import 'package:moean/features/schedule/presentation/widgets/day_tab_item.dart';
 import 'package:moean/features/schedule/presentation/cubit/schedule_cubit.dart';

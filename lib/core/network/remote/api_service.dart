@@ -82,6 +82,26 @@ class ApiService {
     );
   }
 
+  static Future<Either<String, bool>> changePassword({
+    required String currentPassword,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    final response = await DioHelper.patchData(
+      url: changePasswordApi,
+      data: {
+        'current_password': currentPassword,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      },
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => const Right(true),
+    );
+  }
+
   static Future<Either<String, Map<String, dynamic>>> getSchedule({
     required String weekDate,
   }) async {

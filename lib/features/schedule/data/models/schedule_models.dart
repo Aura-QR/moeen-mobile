@@ -77,25 +77,40 @@ class ClassModel {
 
     int pNum = json['period_number'] as int? ?? 0;
     if (pNum == 0) {
-      final periodStr = json['period'] as String? ?? '';
-      if (periodStr.contains('الأولى')) pNum = 1;
-      else if (periodStr.contains('الثانية')) pNum = 2;
-      else if (periodStr.contains('الثالثة')) pNum = 3;
-      else if (periodStr.contains('الرابعة')) pNum = 4;
-      else if (periodStr.contains('الخامسة')) pNum = 5;
-      else if (periodStr.contains('السادسة')) pNum = 6;
-      else if (periodStr.contains('السابعة')) pNum = 7;
-    }
+  final periodStr = json['period'] as String? ?? '';
+
+  if (periodStr.contains('الأولى')) {
+    pNum = 1;
+  } else if (periodStr.contains('الثانية')) {
+    pNum = 2;
+  } else if (periodStr.contains('الثالثة')) {
+    pNum = 3;
+  } else if (periodStr.contains('الرابعة')) {
+    pNum = 4;
+  } else if (periodStr.contains('الخامسة')) {
+    pNum = 5;
+  } else if (periodStr.contains('السادسة')) {
+    pNum = 6;
+  } else if (periodStr.contains('السابعة')) {
+    pNum = 7;
+  }
+}
 
     int dNum = json['day_of_week'] as int? ?? 1;
     final dayStr = json['day'] as String?;
-    if (dayStr != null) {
-      if (dayStr == 'الأحد') dNum = 1;
-      else if (dayStr == 'الاثنين') dNum = 2;
-      else if (dayStr == 'الثلاثاء') dNum = 3;
-      else if (dayStr == 'الأربعاء') dNum = 4;
-      else if (dayStr == 'الخميس') dNum = 5;
-    }
+   if (dayStr != null) {
+  if (dayStr == 'الأحد') {
+    dNum = 1;
+  } else if (dayStr == 'الاثنين') {
+    dNum = 2;
+  } else if (dayStr == 'الثلاثاء') {
+    dNum = 3;
+  } else if (dayStr == 'الأربعاء') {
+    dNum = 4;
+  } else if (dayStr == 'الخميس') {
+    dNum = 5;
+  }
+}
 
     return ClassModel(
       id: json['lesson_id']?.toString() ?? json['id']?.toString() ?? '',
