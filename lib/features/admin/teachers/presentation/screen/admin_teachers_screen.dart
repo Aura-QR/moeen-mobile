@@ -194,6 +194,7 @@ class AdminTeachersScreen extends StatelessWidget {
                      verticalSpace16,
                     Expanded(
                       child: Container(
+                        clipBehavior: Clip.hardEdge,
                         decoration: BoxDecoration(
                           color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(12),
