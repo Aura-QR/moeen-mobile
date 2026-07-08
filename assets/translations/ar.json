@@ -215,6 +215,8 @@
   "save_changes":"حفظ التعديلات",
   "change_password": "تغيير كلمة المرور",
   "current_password": "كلمة المرور الحالية",
-  "confirm_new_password": "تأكيد كلمة المرور الجديدة"
+  "confirm_new_password": "تأكيد كلمة المرور الجديدة",
+  "account_status":"حاله الحساب",
+  "expire_date":"تاريخ الانتهاء"
 
 }

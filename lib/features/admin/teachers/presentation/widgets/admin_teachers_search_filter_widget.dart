@@ -24,6 +24,7 @@ class AdminTeachersSearchFilterWidget extends StatelessWidget {
               flex: 3,
               child: PrimaryTextField(
                 controller: cubit.searchController,
+                onChanged: cubit.onSearchChanged,
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
                 hint: appTranslation().get('admin_search_hint')
               ),

@@ -32,18 +32,6 @@ class HomeScreen extends StatelessWidget {
             body: Directionality(
               textDirection: TextDirection.rtl,
               child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topRight,
-                    end: Alignment.bottomLeft,
-                    colors: [
-                      
-                      Color(0xFF24b998).withValues(alpha: 0.001),
-                      ColorsManager.background,
-                    ],
-                    stops: const [0.0, 0.4],
-                  ),
-                ),
                 child: Stack(
                   children: [
                     Positioned(

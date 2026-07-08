@@ -215,5 +215,7 @@
   "change_password": "Change Password",
   "current_password": "Current Password",
   "confirm_new_password": "Confirm New Password",
-  "admin_dashboard": "Admin Dashboard"
+  "admin_dashboard": "Admin Dashboard",
+  "account_status":"Account Status",
+  "expire_date":"Expire Date"
 }

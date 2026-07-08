@@ -121,17 +121,6 @@ class _ChoseAppState extends State<ChoseApp>
           ],
         ),
         body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
-              colors: [
-                ColorsManager.primaryColor.withValues(alpha: 0.08),
-                ColorsManager.background,
-              ],
-              stops: const [0.0, 0.45],
-            ),
-          ),
           child: Stack(
             children: [
               // ── Decorative: dot grid (top-right) ─────────────────────

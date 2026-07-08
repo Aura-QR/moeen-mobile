@@ -260,7 +260,7 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('تاريخ انتهاء الاشتراك', style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
+                              Text(appTranslation().get("expire_date"), style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
                               verticalSpace8,
                               TextField(
                                 controller: endDateController,
@@ -307,7 +307,7 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('حالة الحساب', style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
+                              Text(appTranslation().get('account_status'), style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
                               verticalSpace4,
                               Text('الحساب نشط ويمكن تسجيل الدخول', style: TextStylesManager.medium12.copyWith(color: ColorsManager.secondaryText)),
                             ],
@@ -352,7 +352,7 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                               children: [
                                 Icon(Icons.check, color: Colors.white, size: 20),
                                 horizontalSpace8,
-                                Text('حفظ التعديلات', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                Text(appTranslation().get('save_changes'), style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -366,7 +366,7 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               side: BorderSide(color: ColorsManager.borderColor),
                             ),
-                            child: Text('إلغاء', style: TextStyle(color: ColorsManager.mainText, fontSize: 16, fontWeight: FontWeight.bold)),
+                            child: Text(appTranslation().get('close'), style: TextStyle(color: ColorsManager.mainText, fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],
