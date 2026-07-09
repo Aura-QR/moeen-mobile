@@ -7,8 +7,7 @@ import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart'
 import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
-import 'package:moean/core/di/injections.dart';
-import 'package:moean/core/network/local/secure_storage_helper.dart';
+import 'package:moean/core/network/local/cache_helper.dart';
 
 class HomeAppBarWidget extends StatelessWidget {
   const HomeAppBarWidget({super.key});
@@ -32,16 +31,17 @@ class HomeAppBarWidget extends StatelessWidget {
           ),
           (token != null && token!.isNotEmpty)
               ? PrimaryElevatedButton(
-                  icon: const Icon(Icons.logout, size: 20),
-                  text: 'تسجيل خروج',
+                  icon: const Icon(Icons.phone, size: 20, color: ColorsManager.white),
+                  text: appTranslation().get('contact_support') ?? '',
                   textStyle: TextStylesManager.bold14.copyWith(
                     color: ColorsManager.white,
                   ),
-                  onPressed: () async {
-                    await sl<SecureStorageHelper>().clearAll();
-                    token = null;
-                    if (context.mounted) {
-                      context.pushNamedAndRemoveUntil(Routes.home, (route) => false);
+                  onPressed: () {
+                    final bool isAdmin = CacheHelper.getData(key: 'isAdmin') ?? false;
+                    if (isAdmin) {
+                      context.push(Routes.adminContact);
+                    } else {
+                      context.push(Routes.contact);
                     }
                   },
                   width: 150,

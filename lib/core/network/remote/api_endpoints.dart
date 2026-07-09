@@ -16,3 +16,10 @@ const String prepareApi = '/prepare';
 // Admin API
 const String adminTeachersApi = '/admin/teachers';
 const String subscriptionsApi = '/subscriptions';
+const String adminContactStatsApi = '/admin/contact/stats';
+const String adminContactApi = '/admin/contact';
+
+// Contact API
+const String contactTypesApi = '/contact/types';
+const String contactApi = '/contact';
+const String contactMyApi = '/contact/my';

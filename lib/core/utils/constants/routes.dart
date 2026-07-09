@@ -12,6 +12,15 @@ import 'package:moean/features/profile/presentation/screen/settings_screen.dart'
 import 'package:moean/features/profile/presentation/screen/change_password_screen.dart';
 
 import 'package:moean/features/admin/teachers/presentation/screen/admin_teachers_screen.dart';
+import 'package:moean/features/admin/contact/presentation/screen/admin_contact_screen.dart';
+import 'package:moean/features/admin/contact/presentation/screen/admin_ticket_details_screen.dart';
+import 'package:moean/features/admin/contact/presentation/cubit/admin_contact_cubit.dart';
+import 'package:moean/features/contact/presentation/screen/contact_support_screen.dart';
+import 'package:moean/features/contact/presentation/screen/create_ticket_screen.dart';
+import 'package:moean/features/contact/presentation/screen/my_tickets_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moean/features/contact/presentation/cubit/contact_cubit.dart';
+import 'package:moean/features/contact/presentation/screen/ticket_details_screen.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -28,6 +37,12 @@ class Routes {
   static const String choseapp = '/chose-app';
   static const String extensionUsage = '/extension-usage';
   static const String adminTeachers = '/admin/teachers';
+  static const String adminContact = '/admin/contact';
+  static const String adminTicketDetails = '/admin/contact/details';
+  static const String contact = '/contact';
+  static const String createTicket = '/contact/create-ticket';
+  static const String myTickets = '/contact/my-tickets';
+  static const String ticketDetails = '/contact/my-tickets/details';
 
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
@@ -42,5 +57,11 @@ class Routes {
     choseapp: (context) => const ChoseApp(),
     extensionUsage: (context) => const ExtensionUsageSlider(),
     adminTeachers: (context) => const AdminTeachersScreen(),
+    adminContact: (context) => const AdminContactScreen(),
+    adminTicketDetails: (context) => BlocProvider(create: (context) => AdminContactCubit(), child: const AdminTicketDetailsScreen()),
+    contact: (context) => BlocProvider(create: (context) => ContactCubit(), child: const ContactSupportScreen()),
+    createTicket: (context) => BlocProvider(create: (context) => ContactCubit(), child: const CreateTicketScreen()),
+    myTickets: (context) => BlocProvider(create: (context) => ContactCubit(), child: const MyTicketsScreen()),
+    ticketDetails: (context) => BlocProvider(create: (context) => ContactCubit(), child: const TicketDetailsScreen()),
   };
 }

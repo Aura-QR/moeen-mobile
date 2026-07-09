@@ -200,4 +200,185 @@ class ApiService {
       (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
     );
   }
+
+  // --- Contact API (Teacher) ---
+
+  static Future<Either<String, Map<String, dynamic>>> getContactTypes() async {
+    final response = await DioHelper.getData(
+      url: contactTypesApi,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> submitContactRequest({
+    required String name,
+    required String email,
+    String? phone,
+    required String type,
+    required String message,
+  }) async {
+    final response = await DioHelper.postData(
+      url: contactApi,
+      data: {
+        'name': name,
+        'email': email,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        'type': type,
+        'message': message,
+      },
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getMyContactTickets() async {
+    final response = await DioHelper.getData(
+      url: contactMyApi,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getMyContactTicketDetails({
+    required int id,
+  }) async {
+    final response = await DioHelper.getData(
+      url: '$contactMyApi/$id',
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> replyContactTicket({
+    required int id,
+    required String body,
+  }) async {
+    final response = await DioHelper.postData(
+      url: '$contactMyApi/$id/reply',
+      data: {
+        'body': body,
+      },
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  // --- Admin Contact API ---
+
+  static Future<Either<String, Map<String, dynamic>>> getAdminContactStats() async {
+    final response = await DioHelper.getData(
+      url: adminContactStatsApi,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getAdminContactTickets({
+    String? status,
+    String? type,
+    String? search,
+    int? hasUnread,
+    int perPage = 20,
+    int page = 1,
+  }) async {
+    final query = <String, dynamic>{
+      'per_page': perPage,
+      'page': page,
+    };
+    if (status != null && status.isNotEmpty) query['status'] = status;
+    if (type != null && type.isNotEmpty) query['type'] = type;
+    if (search != null && search.isNotEmpty) query['search'] = search;
+    if (hasUnread != null) query['has_unread'] = hasUnread;
+
+    final response = await DioHelper.getData(
+      url: adminContactApi,
+      query: query,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getAdminContactTicketDetails({
+    required int id,
+  }) async {
+    final response = await DioHelper.getData(
+      url: '$adminContactApi/$id',
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> updateAdminContactTicket({
+    required int id,
+    String? status,
+    String? adminNotes,
+  }) async {
+    final response = await DioHelper.patchData(
+      url: '$adminContactApi/$id',
+      data: {
+        if (status != null) 'status': status,
+        if (adminNotes != null) 'admin_notes': adminNotes,
+      },
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> replyAdminContactTicket({
+    required int id,
+    required String body,
+  }) async {
+    final response = await DioHelper.postData(
+      url: '$adminContactApi/$id/reply',
+      data: {
+        'body': body,
+      },
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, bool>> deleteAdminContactTicket({
+    required int id,
+  }) async {
+    final response = await DioHelper.deleteData(
+      url: '$adminContactApi/$id',
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => const Right(true),
+    );
+  }
 }
