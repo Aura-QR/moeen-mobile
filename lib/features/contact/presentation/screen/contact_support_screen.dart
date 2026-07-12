@@ -24,81 +24,83 @@ class ContactSupportScreen extends StatelessWidget {
             onPressed: () => context.pop(),
           ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                appTranslation().get('contact_support_title'),
-                style: TextStylesManager.bold24.copyWith(color: ColorsManager.primaryColor, height: 1.4),
-                textAlign: TextAlign.right,
-              ),
-              verticalSpace12,
-              Text(
-                appTranslation().get('contact_support_subtitle'),
-                style: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
-                textAlign: TextAlign.right,
-              ),
-              verticalSpace32,
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 1.1,
-                  children: [
-                    ContactOptionWidget(
-                      icon: Icons.chat_bubble_outline,
-                      title: appTranslation().get('whatsapp_support'),
-                      subtitle: appTranslation().get('fast_communication_support'),
-                    ),
-                    ContactOptionWidget(
-                      icon: Icons.email_outlined,
-                      title: appTranslation().get('email_support'),
-                      subtitle: appTranslation().get('support_email'),
-                    ),
-                    ContactOptionWidget(
-                      icon: Icons.location_on_outlined,
-                      title: appTranslation().get('location'),
-                      subtitle: appTranslation().get('saudi_arabia'),
-                    ),
-                    ContactOptionWidget(
-                      icon: Icons.access_time,
-                      title: appTranslation().get('working_hours'),
-                      subtitle: appTranslation().get('working_hours_details'),
-                    ),
-                  ],
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  appTranslation().get('contact_support_title'),
+                  style: TextStylesManager.bold24.copyWith(color: ColorsManager.primaryColor, height: 1.4),
+                  textAlign: TextAlign.right,
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: ColorsManager.primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
+                verticalSpace12,
+                Text(
+                  appTranslation().get('contact_support_subtitle'),
+                  style: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
+                  textAlign: TextAlign.right,
                 ),
-                child: Row(
-                  children: [
-                    Icon(Icons.headset_mic_outlined, color: ColorsManager.primaryColor),
-                    horizontalSpace12,
-                    Expanded(
-                      child: Text(
-                        appTranslation().get('team_close_to_you'),
-                        style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
+                verticalSpace32,
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 1.1,
+                    children: [
+                      ContactOptionWidget(
+                        icon: Icons.chat_bubble_outline,
+                        title: appTranslation().get('whatsapp_support'),
+                        subtitle: appTranslation().get('fast_communication_support'),
                       ),
-                    ),
-                  ],
+                      ContactOptionWidget(
+                        icon: Icons.email_outlined,
+                        title: appTranslation().get('email_support'),
+                        subtitle: appTranslation().get('support_email'),
+                      ),
+                      ContactOptionWidget(
+                        icon: Icons.location_on_outlined,
+                        title: appTranslation().get('location'),
+                        subtitle: appTranslation().get('saudi_arabia'),
+                      ),
+                      ContactOptionWidget(
+                        icon: Icons.access_time,
+                        title: appTranslation().get('working_hours'),
+                        subtitle: appTranslation().get('working_hours_details'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              verticalSpace24,
-              PrimaryElevatedButton(
-                text: appTranslation().get('my_past_requests'),
-                onPressed: () {
-                  context.push(Routes.myTickets);
-                },
-              ),
-              verticalSpace32,
-            ],
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.headset_mic_outlined, color: ColorsManager.primaryColor),
+                      horizontalSpace12,
+                      Expanded(
+                        child: Text(
+                          appTranslation().get('team_close_to_you'),
+                          style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                verticalSpace24,
+                PrimaryElevatedButton(
+                  text: appTranslation().get('my_past_requests'),
+                  onPressed: () {
+                    context.push(Routes.myTickets);
+                  },
+                ),
+                verticalSpace24,
+              ],
+            ),
           ),
         ),
       ),

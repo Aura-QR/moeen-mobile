@@ -52,26 +52,28 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                 ),
               ],
             ),
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: _buildTicketsList(state),
-                  ),
-                  verticalSpace16,
-                  PrimaryElevatedButton(
-                    text: appTranslation().get('new_request'),
-                    onPressed: () {
-                      Navigator.pushNamed(context, Routes.createTicket).then((_) {
-                        if (context.mounted) {
-                          ContactCubit.get(context).getMyTickets();
-                        }
-                      });
-                    },
-                  ),
-                ],
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: _buildTicketsList(state),
+                    ),
+                    verticalSpace16,
+                    PrimaryElevatedButton(
+                      text: appTranslation().get('new_request'),
+                      onPressed: () {
+                        Navigator.pushNamed(context, Routes.createTicket).then((_) {
+                          if (context.mounted) {
+                            ContactCubit.get(context).getMyTickets();
+                          }
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -297,7 +297,96 @@ Get full details for a single lesson.
 
 ---
 
-## 🤖 Lesson Preparation
+## 🤖 Report Preparation
+
+### `POST /reports/educational/generate`
+Generate an AI educational report through the configured n8n workflow.
+
+**Auth:** Required (`Authorization: Bearer <token>`)
+
+**Backend behavior**
+- Proxies the validated payload to `N8N_EDUCATIONAL_REPORT_WEBHOOK_URL`.
+- Sends `x-api-key` to n8n when `N8N_EDUCATIONAL_REPORT_API_KEY` is configured.
+- Sends `X-Moeen-User-Id` with the authenticated user ID.
+- Normalizes the response so all expected report arrays are always present.
+- `أسبوعي` is accepted and normalized to `اسبوعي` before forwarding.
+
+**Body — weekly report**
+```json
+{
+  "reportType": "اسبوعي",
+  "grade": "الصف الثالث الابتدائي",
+  "subject": "القسمة (1)",
+  "selectedLessons": [
+    "التهيئة",
+    "استكشف: مفهوم القسمة"
+  ]
+}
+```
+
+**Body — monthly report with multiple subjects**
+```json
+{
+  "reportType": "شهري",
+  "grade": "الصف الثالث الابتدائي",
+  "subject": ["القسمة (1)", "الكسور", "الهندسة"],
+  "selectedLessons": []
+}
+```
+
+**Validation rules**
+| Field | Rules |
+|-------|-------|
+| `reportType` | required, one of `اسبوعي`, `شهري` (`أسبوعي` is normalized to `اسبوعي`) |
+| `grade` | required string, max 255 chars |
+| `subject` | required string max 255 chars, or array of 1–12 unique non-empty strings |
+| `selectedLessons` | required to be present, array, may be empty, max 30 items |
+| `selectedLessons.*` | string, max 255 chars, distinct |
+
+**Response `200`**
+```json
+{
+  "achievementRows": [
+    {
+      "lesson": "التهيئة",
+      "description": "تم تنفيذ درس التهيئة بنجاح...",
+      "participation": "عالية",
+      "understanding": "ممتاز"
+    }
+  ],
+  "lessonPlanRows": [
+    {
+      "lesson": "التهيئة",
+      "concepts": "مفهوم القسمة...",
+      "objectives": "أن يتعرف الطالب على مفهوم القسمة..."
+    }
+  ],
+  "goalRows": [],
+  "challengeRows": [],
+  "checkUnderstandingRows": [],
+  "modelingRows": [],
+  "strategySections": []
+}
+```
+
+**Error responses**
+| HTTP | `code` | Cause |
+|------|--------|-------|
+| `401` | `unauthenticated` | Missing/invalid bearer token |
+| `422` | `validation_error` | Invalid payload, unsupported `reportType`, duplicate subjects/lessons |
+| `503` | `educational_report_webhook_missing` | n8n webhook URL is not configured |
+| `504` | `educational_report_webhook_unreachable` | n8n request timed out or connection failed |
+| `502` | `educational_report_generation_failed` | n8n returned a non-2xx response |
+| `502` | `invalid_educational_report_response` | n8n returned non-JSON or invalid JSON |
+
+**Required environment**
+```env
+N8N_EDUCATIONAL_REPORT_WEBHOOK_URL=https://n8n.example.com/webhook/generate-moeen-report
+N8N_EDUCATIONAL_REPORT_API_KEY=...
+N8N_WEBHOOK_TIMEOUT=45
+```
+
+---
 
 ### `POST /prepare`
 ⚠️ Requires `madrasati.session` + `lesson.quota` middleware.  
