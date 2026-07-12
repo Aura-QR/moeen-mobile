@@ -23,3 +23,6 @@ const String adminContactApi = '/admin/contact';
 const String contactTypesApi = '/contact/types';
 const String contactApi = '/contact';
 const String contactMyApi = '/contact/my';
+
+// Reports API
+const String educationalReportApi = '/reports/educational/generate';

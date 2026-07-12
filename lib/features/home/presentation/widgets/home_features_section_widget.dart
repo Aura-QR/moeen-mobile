@@ -150,6 +150,13 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
                 HomeActionChipWidget(
                   icon: Icons.monitor,
                   title: appTranslation().get('home_reports'),
+                  onTap: () {
+                    if (token != null && token!.isNotEmpty) {
+                      context.push(Routes.reports);
+                    } else {
+                      context.push(Routes.login);
+                    }
+                  },
                 ),
                 horizontalSpace12,
                 HomeActionChipWidget(

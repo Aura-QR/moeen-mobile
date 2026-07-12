@@ -21,6 +21,8 @@ import 'package:moean/features/contact/presentation/screen/my_tickets_screen.dar
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/features/contact/presentation/cubit/contact_cubit.dart';
 import 'package:moean/features/contact/presentation/screen/ticket_details_screen.dart';
+import 'package:moean/features/reports/presentation/screen/report_screen.dart';
+import 'package:moean/features/reports/presentation/cubit/report_cubit.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -43,6 +45,7 @@ class Routes {
   static const String createTicket = '/contact/create-ticket';
   static const String myTickets = '/contact/my-tickets';
   static const String ticketDetails = '/contact/my-tickets/details';
+  static const String reports = '/reports';
 
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
@@ -63,5 +66,6 @@ class Routes {
     createTicket: (context) => BlocProvider(create: (context) => ContactCubit(), child: const CreateTicketScreen()),
     myTickets: (context) => BlocProvider(create: (context) => ContactCubit(), child: const MyTicketsScreen()),
     ticketDetails: (context) => BlocProvider(create: (context) => ContactCubit(), child: const TicketDetailsScreen()),
+    reports: (context) => BlocProvider(create: (_) => ReportCubit(), child: const ReportScreen()),
   };
 }

@@ -381,4 +381,28 @@ class ApiService {
       (res) => const Right(true),
     );
   }
+
+  // --- Educational Reports API ---
+
+  static Future<Either<String, Map<String, dynamic>>> generateEducationalReport({
+    required String reportType,
+    required String grade,
+    required dynamic subject,
+    required List<String> selectedLessons,
+  }) async {
+    final response = await DioHelper.postData(
+      url: educationalReportApi,
+      data: {
+        'reportType': reportType,
+        'grade': grade,
+        'subject': subject,
+        'selectedLessons': selectedLessons,
+      },
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
 }
