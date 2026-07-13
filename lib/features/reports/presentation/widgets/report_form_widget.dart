@@ -118,18 +118,23 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
   }
 
   void _showLessonsSelector() {
-    if (_unitController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('الرجاء اختيار الوحدة أولاً', style: TextStylesManager.bold14),
-          backgroundColor: ColorsManager.errorColor,
-        ),
-      );
-      return;
+    List<String> availableLessons = [];
+
+    if (_selectedType == 'اسبوعي') {
+      availableLessons = _dummyUnitsData.values.expand((element) => element).toList();
+    } else {
+      if (_unitController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('الرجاء اختيار الوحدة أولاً', style: TextStylesManager.bold14),
+            backgroundColor: ColorsManager.errorColor,
+          ),
+        );
+        return;
+      }
+      availableLessons = _dummyUnitsData[_unitController.text] ?? [];
     }
 
-    final availableLessons = _dummyUnitsData[_unitController.text] ?? [];
-    
     SelectionBottomSheet.show(
       context: context,
       title: 'اختر الدروس',
@@ -206,22 +211,24 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
           verticalSpace16,
 
           // Unit/Field
-          _FormLabel(label: appTranslation().get('report_unit')),
-          verticalSpace8,
-          GestureDetector(
-            onTap: _showUnitSelector,
-            child: AbsorbPointer(
-              child: PrimaryTextField(
-                controller: _unitController,
-                hint: appTranslation().get('report_unit_hint'),
-                prefixIcon: const Icon(Icons.layers_outlined),
-                validator: (v) => (v == null || v.isEmpty)
-                    ? appTranslation().get('field_required')
-                    : null,
+          if (_selectedType != 'اسبوعي') ...[
+            _FormLabel(label: appTranslation().get('report_unit')),
+            verticalSpace8,
+            GestureDetector(
+              onTap: _showUnitSelector,
+              child: AbsorbPointer(
+                child: PrimaryTextField(
+                  controller: _unitController,
+                  hint: appTranslation().get('report_unit_hint'),
+                  prefixIcon: const Icon(Icons.layers_outlined),
+                  validator: (v) => (v == null || v.isEmpty)
+                      ? appTranslation().get('field_required')
+                      : null,
+                ),
               ),
             ),
-          ),
-          verticalSpace16,
+            verticalSpace16,
+          ],
 
           // Grade
           _FormLabel(label: appTranslation().get('report_grade')),

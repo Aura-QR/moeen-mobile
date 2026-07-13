@@ -5,7 +5,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 class ReportPdfService {
   static final PdfColor _primaryColor = PdfColor.fromHex('0E7A5E');
-  static final PdfColor _headerBg = PdfColor.fromHex('0E7A5E');
+  static final PdfColor _headerBg = PdfColor.fromHex('0B4A45');
   static final PdfColor _subHeaderBg = PdfColor.fromHex('E8F5F1');
   static final PdfColor _lightGray = PdfColor.fromHex('F8FAFC');
   static final PdfColor _borderColor = PdfColor.fromHex('E2E8F0');
@@ -93,6 +93,7 @@ class ReportPdfService {
               educationOffice: educationOffice,
               reportType: reportType,
               reportDate: reportDate,
+              lessonsCount: selectedLessons.length.toString(),
               titleStyle: titleStyle,
               headerStyle: headerStyle,
               arabicRegular: arabicRegular,
@@ -180,139 +181,128 @@ class ReportPdfService {
     required String educationOffice,
     required String reportType,
     required String reportDate,
+    required String lessonsCount,
     required pw.TextStyle titleStyle,
     required pw.TextStyle headerStyle,
     required pw.TextStyle arabicRegular,
     required pw.TextStyle arabicBold,
   }) {
-    return pw.Container(
-      decoration: pw.BoxDecoration(
-        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
-        border: pw.Border.all(color: _borderColor),
-      ),
-      child: pw.Column(
-        children: [
-          // Top green bar with logo + title
-          pw.Container(
-            width: double.infinity,
-            padding: const pw.EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: pw.BoxDecoration(
-              color: _headerBg,
-              borderRadius: const pw.BorderRadius.only(
-                topLeft: pw.Radius.circular(8),
-                topRight: pw.Radius.circular(8),
-              ),
+    return pw.Column(
+      children: [
+        // Top dark header
+        pw.Container(
+          width: double.infinity,
+          padding: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: pw.BoxDecoration(
+            color: _headerBg,
+            borderRadius: const pw.BorderRadius.only(
+              bottomLeft: pw.Radius.circular(16),
+              bottomRight: pw.Radius.circular(16),
             ),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('الإدارة العامة للتعليم', style: titleStyle),
-                    pw.SizedBox(height: 2),
-                    pw.Text('مكتب المملكة', style: headerStyle.copyWith(fontSize: 8)),
-                  ],
-                ),
-                pw.Container(
-                  width: 40,
-                  height: 40,
-                  decoration: pw.BoxDecoration(
-                    color: PdfColors.white,
-                    shape: pw.BoxShape.circle,
-                  ),
-                  child: pw.Center(
-                    child: pw.Text(
-                      'ME',
-                      style: pw.TextStyle(
-                        fontSize: 10,
-                        fontWeight: pw.FontWeight.bold,
-                        color: _primaryColor,
-                      ),
+          ),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('الإدارة العامة للتعليم', style: titleStyle.copyWith(fontSize: 16)),
+                  pw.SizedBox(height: 4),
+                  pw.Text('مواهب المملكة', style: headerStyle.copyWith(fontSize: 10, color: PdfColors.cyan200)),
+                  pw.SizedBox(height: 12),
+                  pw.Text('Moean للإدارة (مسار إداري)', style: arabicRegular.copyWith(color: PdfColors.white, fontSize: 8)),
+                ],
+              ),
+              pw.Row(
+                children: [
+                  pw.Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.white,
+                      shape: pw.BoxShape.circle,
+                    ),
+                    child: pw.Center(
+                      child: pw.Text('ME', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: _primaryColor)),
                     ),
                   ),
-                ),
-              ],
-            ),
+                  pw.SizedBox(width: 8),
+                  //add images her
+                  pw.Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const pw.BoxDecoration(
+                      color: PdfColors.white,
+                      shape: pw.BoxShape.circle,
+                    ),
+                    child: pw.Center(
+                      child: pw.Text('وزارة', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: _primaryColor)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
+        ),
+        pw.SizedBox(height: 16),
 
-          // Secondary teal bar
-          pw.Container(
-            width: double.infinity,
-            padding: const pw.EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            color: _sectionBg,
-            child: pw.Text(
-              'التقرير $reportType الإشرافي — $reportDate',
-              style: headerStyle.copyWith(fontSize: 9),
-              textAlign: pw.TextAlign.center,
-            ),
-          ),
-
-          // Info grid
-          pw.Container(
-            padding: const pw.EdgeInsets.all(12),
-            color: _lightGray,
-            child: pw.Column(
-              children: [
-                _buildInfoRow('اسم المعلم', teacherName, arabicBold, arabicRegular),
-                _buildDivider(),
-                _buildInfoRow('المادة', subject, arabicBold, arabicRegular),
-                _buildDivider(),
-                _buildInfoRow('الوحدة / المجال', unit, arabicBold, arabicRegular),
-                _buildDivider(),
-                _buildInfoRow('الصف', grade, arabicBold, arabicRegular),
-                _buildDivider(),
-                _buildInfoRow('الفصل', semester, arabicBold, arabicRegular),
-                _buildDivider(),
-                _buildInfoRow('نوع التقرير', reportType, arabicBold, arabicRegular),
-                _buildDivider(),
-                _buildInfoRow('اسم المدرسة', schoolName, arabicBold, arabicRegular),
-                _buildDivider(),
-                _buildInfoRow('مكتب التعليم', educationOffice, arabicBold, arabicRegular),
-              ],
-            ),
-          ),
-        ],
-      ),
+        // Titles
+        pw.Text('تقرير $reportType', style: titleStyle.copyWith(color: _primaryColor, fontSize: 16)),
+        if (reportType != 'خطة') pw.SizedBox(height: 4),
+        if (reportType != 'خطة') pw.Text('بيانات التقرير الأساسية', style: arabicRegular.copyWith(color: _textMuted)),
+        
+        pw.SizedBox(height: 12),
+        // Basic Info Table
+        if (reportType != 'خطة') _buildBasicInfoTable(
+          teacherName: teacherName,
+          grade: grade,
+          subject: subject,
+          semester: semester,
+          reportDate: reportDate,
+          lessonsCount: lessonsCount,
+          regular: arabicRegular,
+          bold: arabicBold,
+        ),
+      ],
     );
   }
 
-  static pw.Widget _buildInfoRow(
-    String label,
-    String value,
-    pw.TextStyle bold,
-    pw.TextStyle regular,
-  ) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(vertical: 4),
-      child: pw.Row(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.SizedBox(
-            width: 110,
-            child: pw.Text(label, style: bold),
-          ),
-          pw.Expanded(
-            child: pw.Text(value, style: regular),
-          ),
-        ],
-      ),
+  static pw.Widget _buildBasicInfoTable({
+    required String teacherName,
+    required String grade,
+    required String subject,
+    required String semester,
+    required String reportDate,
+    required String lessonsCount,
+    required pw.TextStyle regular,
+    required pw.TextStyle bold,
+  }) {
+    return pw.TableHelper.fromTextArray(
+      headers: ['اسم المعلم', 'الصف', 'المادة', 'الفصل', 'تاريخ التقرير', 'عدد الحصص'],
+      data: [
+        [teacherName, grade, subject, semester, reportDate, lessonsCount]
+      ],
+      border: pw.TableBorder.all(color: _borderColor, width: 0.5),
+      headerStyle: bold.copyWith(color: PdfColors.white),
+      headerDecoration: pw.BoxDecoration(color: _primaryColor),
+      cellStyle: regular,
+      cellAlignments: {
+        0: pw.Alignment.center,
+        1: pw.Alignment.center,
+        2: pw.Alignment.center,
+        3: pw.Alignment.center,
+        4: pw.Alignment.center,
+        5: pw.Alignment.center,
+      },
     );
-  }
-
-  static pw.Widget _buildDivider() {
-    return pw.Divider(height: 1, color: _borderColor, thickness: 0.5);
   }
 
   static pw.Widget _buildSectionTitle(String title, pw.TextStyle headerStyle) {
-    return pw.Container(
-      width: double.infinity,
-      padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: pw.BoxDecoration(
-        color: _headerBg,
-        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+    return pw.Center(
+      child: pw.Text(
+        title,
+        style: headerStyle.copyWith(color: _primaryColor, fontSize: 14),
       ),
-      child: pw.Text(title, style: headerStyle),
     );
   }
 
