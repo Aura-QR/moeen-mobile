@@ -7,8 +7,6 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
-import 'package:moean/core/network/remote/api_service.dart';
-import 'package:moean/core/network/local/cache_helper.dart';
 import 'package:moean/features/home/presentation/widgets/home_action_chip_widget.dart';
 import 'package:moean/features/home/presentation/widgets/home_feature_item_widget.dart';
 
@@ -19,12 +17,28 @@ class HomeFeaturesSectionWidget extends StatefulWidget {
   State<HomeFeaturesSectionWidget> createState() => _HomeFeaturesSectionWidgetState();
 }
 
-class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
+class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> with SingleTickerProviderStateMixin {
   int _selectedFeatureIndex = 1; 
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -34,7 +48,7 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Start Prep Button
+          // Start Prep Button with Pulse Effect
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Align(
@@ -43,61 +57,78 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
                 builder: (context, state) {
                   final isAdmin = context.read<HomeCubit>().isAdmin;
                   final isLoadingRole = context.read<HomeCubit>().isLoadingRole;
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 44, vertical: 22),
-                    decoration: BoxDecoration(
-                      color: ColorsManager.primaryColor,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: ColorsManager.primaryColor.withValues(alpha: 0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                  
+                  return AnimatedBuilder(
+                    animation: _animation,
+                    builder: (context, child) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: ColorsManager.primaryColor.withValues(alpha: 0.2 + (_animation.value * 0.2)),
+                              blurRadius: 10 + (_animation.value * 5),
+                              spreadRadius: _animation.value * 2,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: GestureDetector(
-                      onTap: () {
-                        if (token != null && token!.isNotEmpty) {
-                          if (isAdmin) {
-                            context.push(Routes.adminTeachers);
-                          } else {
-                            context.push(Routes.choseapp);
-                          }
-                        } else {
-                          context.push(Routes.login);
-                        }
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (isLoadingRole)
-                            const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: ColorsManager.white,
-                              ),
-                            )
-                          else
-                            Text(
-                              isAdmin 
-                                  ?  appTranslation().get('admin_dashboard')
-                                  : appTranslation().get('home_start_prep'),
-                              style: TextStylesManager.bold16.copyWith(
-                                color: ColorsManager.white,
+                        child: InkWell(
+                          onTap: () {
+                            if (token != null && token!.isNotEmpty) {
+                              if (isAdmin) {
+                                context.push(Routes.adminTeachers);
+                              } else {
+                                context.push(Routes.choseapp);
+                              }
+                            } else {
+                              context.push(Routes.login);
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(30),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 44, vertical: 22),
+                            decoration: BoxDecoration(
+                              color: ColorsManager.primaryColor,
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: _animation.value * 0.3),
+                                width: 2,
                               ),
                             ),
-                          horizontalSpace8,
-                          const Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            color: ColorsManager.white,
-                            size: 16,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isLoadingRole)
+                                  const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: ColorsManager.white,
+                                    ),
+                                  )
+                                else
+                                  Text(
+                                    isAdmin 
+                                        ?  appTranslation().get('admin_dashboard')
+                                        : appTranslation().get('home_start_prep'),
+                                    style: TextStylesManager.bold16.copyWith(
+                                      color: ColorsManager.white,
+                                    ),
+                                  ),
+                                horizontalSpace8,
+                                const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: ColorsManager.white,
+                                  size: 16,
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -127,18 +158,19 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
                 HomeActionChipWidget(
                   icon: Icons.description_outlined,
                   title: appTranslation().get('home_worksheets'),
+                  onTap: () {}, // تم إضافة onTap فارغ لتفعيل النبض
                 ),
                 horizontalSpace12,
                 HomeActionChipWidget(
                   icon: Icons.verified_outlined,
                   title: appTranslation().get('home_tests'),
+                  onTap: () {}, // تم إضافة onTap فارغ لتفعيل النبض
                 ),
               ],
             ),
           ),
           verticalSpace24,
 
-         
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: IntrinsicHeight( 
