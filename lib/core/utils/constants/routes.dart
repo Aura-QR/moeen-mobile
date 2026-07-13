@@ -15,6 +15,7 @@ import 'package:moean/features/admin/teachers/presentation/screen/admin_teachers
 import 'package:moean/features/admin/contact/presentation/screen/admin_contact_screen.dart';
 import 'package:moean/features/admin/contact/presentation/screen/admin_ticket_details_screen.dart';
 import 'package:moean/features/admin/contact/presentation/cubit/admin_contact_cubit.dart';
+import 'package:moean/features/admin/payments/presentation/screen/admin_payments_screen.dart';
 import 'package:moean/features/contact/presentation/screen/contact_support_screen.dart';
 import 'package:moean/features/contact/presentation/screen/create_ticket_screen.dart';
 import 'package:moean/features/contact/presentation/screen/my_tickets_screen.dart';
@@ -47,6 +48,7 @@ class Routes {
   static const String adminTeachers = '/admin/teachers';
   static const String adminContact = '/admin/contact';
   static const String adminTicketDetails = '/admin/contact/details';
+  static const String adminPayments = '/admin/payments';
   static const String contact = '/contact';
   static const String createTicket = '/contact/create-ticket';
   static const String myTickets = '/contact/my-tickets';
@@ -73,6 +75,7 @@ class Routes {
     adminTeachers: (context) => const AdminTeachersScreen(),
     adminContact: (context) => const AdminContactScreen(),
     adminTicketDetails: (context) => BlocProvider(create: (context) => AdminContactCubit(), child: const AdminTicketDetailsScreen()),
+    adminPayments: (context) => const AdminPaymentsScreen(),
     contact: (context) => BlocProvider(create: (context) => ContactCubit(), child: const ContactSupportScreen()),
     createTicket: (context) => BlocProvider(create: (context) => ContactCubit(), child: const CreateTicketScreen()),
     myTickets: (context) => BlocProvider(create: (context) => ContactCubit(), child: const MyTicketsScreen()),
@@ -80,7 +83,7 @@ class Routes {
     reports: (context) => BlocProvider(create: (_) => ReportCubit(), child: const ReportScreen()),
     checkout: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const CheckoutScreen()),
     bankTransfer: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const BankTransferScreen()),
-    moyasarPayment: (context) => const MoyasarPaymentScreen(),
+    moyasarPayment: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const MoyasarPaymentScreen()),
     paymentResult: (context) => const PaymentResultScreen(),
     paymentHistory: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const PaymentHistoryScreen()),
   };

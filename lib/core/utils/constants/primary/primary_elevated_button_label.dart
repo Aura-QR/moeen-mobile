@@ -18,6 +18,14 @@ class PrimaryElevatedButtonLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return ConditionalBuilder(
       loadingState: isLoading,
+      loadingBuilder: (context) => const SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(
+          color: Colors.white,
+          strokeWidth: 2.5,
+        ),
+      ),
       successBuilder: (context) => Text(
         text,
         style: textStyle ??

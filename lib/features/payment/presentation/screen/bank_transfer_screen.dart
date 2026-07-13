@@ -94,7 +94,9 @@ class _BankTransferScreenState extends State<BankTransferScreen> {
             s is BankInfoLoading ||
             s is BankInfoLoaded ||
             s is BankInfoError ||
-            s is ReceiptUploading,
+            s is ReceiptUploading ||
+            s is ReceiptUploaded ||
+            s is ReceiptUploadError, // تم إضافة الحالات النهائية هنا
         builder: (context, state) {
           final cubit = PaymentCubit.get(context);
           return ConditionalBuilder(

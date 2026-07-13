@@ -21,9 +21,9 @@ class OrderModel {
     return OrderModel(
       id: json['id'] as int,
       serviceId: json['service_id'] as int? ?? 0,
-      amount: json['amount'] as String? ?? '0',
-      currency: json['currency'] as String? ?? 'SAR',
-      status: json['status'] as String? ?? 'pending',
+      amount: json['amount']?.toString() ?? '0',
+      currency: json['currency']?.toString() ?? 'SAR',
+      status: json['status']?.toString() ?? 'pending',
       service: json['service'] != null
           ? SubscriptionPlanModel.fromJson(
               json['service'] as Map<String, dynamic>)

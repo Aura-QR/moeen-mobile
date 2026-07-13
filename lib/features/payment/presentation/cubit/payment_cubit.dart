@@ -15,7 +15,6 @@ class PaymentCubit extends Cubit<PaymentState> {
   Map<String, dynamic>? bankInfo;
   List<PaymentModel> paymentHistory = [];
   int selectedPlanIndex = 0;
-  // 0 = moyasar (online), 1 = manual_bank_transfer
   int selectedMethodIndex = 0;
 
   Future<void> loadPlans() async {
@@ -42,9 +41,7 @@ class PaymentCubit extends Cubit<PaymentState> {
 
   void selectMethod(int index) {
     selectedMethodIndex = index;
-    if (currentOrder != null) {
-      emit(OrderCreated(currentOrder!));
-    }
+    emit(PlansLoaded(plans));
   }
 
   Future<void> createOrder() async {
@@ -74,23 +71,34 @@ class PaymentCubit extends Cubit<PaymentState> {
     );
   }
 
-  Future<void> uploadReceipt({
-    required String filePath,
-    required String fileName,
-  }) async {
-    if (currentOrder == null) return;
-    emit(ReceiptUploading());
-    final result = await ApiService.uploadManualReceipt(
-      orderId: currentOrder!.id,
-      filePath: filePath,
-      fileName: fileName,
-    );
+  // Moyasar Flow
+  Future<void> getMoyasarConfig(int orderId) async {
+    emit(MoyasarConfigLoading());
+    final result = await ApiService.getOrderCheckout(orderId);
     result.fold(
-      (error) => emit(ReceiptUploadError(error)),
+      (error) => emit(MoyasarConfigError(error)),
+      (data) => emit(MoyasarConfigLoaded(data)),
+    );
+  }
+
+  Future<void> verifyPayment(String paymentId, {int? orderId}) async {
+    emit(PaymentVerifying());
+    
+    // إذا كان لدينا orderId، نقوم بحفظ المرجع أولاً (حسب المستند)
+    if (orderId != null) {
+      await ApiService.savePaymentReference(
+        orderId: orderId,
+        moyasarPaymentId: paymentId,
+      );
+    }
+
+    final result = await ApiService.verifyPayment(paymentId);
+    result.fold(
+      (error) => emit(PaymentVerifyError(error)),
       (data) {
         final payment = PaymentModel.fromJson(
             data['payment'] as Map<String, dynamic>);
-        emit(ReceiptUploaded(payment));
+        emit(PaymentVerified(payment));
       },
     );
   }
@@ -112,19 +120,6 @@ class PaymentCubit extends Cubit<PaymentState> {
         final payment = PaymentModel.fromJson(
             data['payment'] as Map<String, dynamic>);
         emit(ReceiptUploaded(payment));
-      },
-    );
-  }
-
-  Future<void> verifyPayment(String paymentId) async {
-    emit(PaymentVerifying());
-    final result = await ApiService.verifyPayment(paymentId);
-    result.fold(
-      (error) => emit(PaymentVerifyError(error)),
-      (data) {
-        final payment = PaymentModel.fromJson(
-            data['payment'] as Map<String, dynamic>);
-        emit(PaymentVerified(payment));
       },
     );
   }

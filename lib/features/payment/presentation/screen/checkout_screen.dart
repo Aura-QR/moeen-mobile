@@ -30,10 +30,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ColorsManager.background,
+      appBar:  AppBar(
+              backgroundColor: ColorsManager.background,
+              elevation: 0,
+              centerTitle: true,
+              title: Text(
+                appTranslation().get('payment'),
+                style: TextStylesManager.bold18.copyWith(color: ColorsManager.primaryColor),
+              ),
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios, color: ColorsManager.mainText),
+                onPressed: () => context.pop(),
+              ),
+             
+            ),
+            
       body: SafeArea(
         child: Column(
           children: [
-            _CheckoutHeader(),
+        //    _CheckoutHeader(),
             Expanded(
               child: BlocConsumer<PaymentCubit, PaymentState>(
                 listenWhen: (_, s) =>
@@ -75,7 +90,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     s is PlansLoading ||
                     s is PlansLoaded ||
                     s is PlansError ||
-                    s is OrderCreating,
+                    s is OrderCreating ||
+                    s is OrderCreated || 
+                    s is OrderError, // أضفنا الحالات النهائية لإيقاف الـ Loading
                 builder: (context, state) {
                   final cubit = PaymentCubit.get(context);
                   return ConditionalBuilder(
@@ -122,7 +139,6 @@ class _CheckoutHeader extends StatelessWidget {
         border: Border.all(color: ColorsManager.borderColor),
       ),
       child: Column(
-       // crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
             appTranslation().get('pay_subscription_label') ?? '',

@@ -42,7 +42,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
                 style: TextStylesManager.bold18.copyWith(color: ColorsManager.mainText),
               ),
               leading: IconButton(
-                icon: Icon(Icons.arrow_forward, color: ColorsManager.mainText),
+                icon: Icon(Icons.arrow_back_ios, color: ColorsManager.mainText),
                 onPressed: () => context.pop(),
               ),
               actions: [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
@@ -7,47 +8,56 @@ import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart'
 import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
-import 'package:moean/core/network/local/cache_helper.dart';
+import 'package:moean/features/home/presentation/cubit/home_cubit.dart';
 
 class HomeAppBarWidget extends StatelessWidget {
   const HomeAppBarWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final bool isAdmin = CacheHelper.getData(key: 'isAdmin') ?? false;
-    final bool isLoggedIn = token != null && token!.isNotEmpty;
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        final bool isAdmin = context.read<HomeCubit>().isAdmin;
+        final bool isLoggedIn = token != null && token!.isNotEmpty;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Image.asset(
-                AssetsHelper.logo,
-                width: 45,
-                height: 45,
-                fit: BoxFit.contain,
+              Row(
+                children: [
+                  Image.asset(
+                    AssetsHelper.logo,
+                    width: 45,
+                    height: 45,
+                    fit: BoxFit.contain,
+                  ),
+                ],
               ),
+              if (isLoggedIn)
+                Row(
+                  children: [
+                    // Phone icon button — contact
+                    _ContactIconButton(isAdmin: isAdmin),
+                    if (isAdmin) ...[
+                      horizontalSpace8,
+                      // Admin Payments button — admin only
+                      _AdminPaymentsButton(),
+                    ],
+                    if (!isAdmin) ...[
+                      horizontalSpace8,
+                      // Subscription button — non-admin only
+                      _SubscriptionButton(),
+                    ],
+                  ],
+                )
+              else
+                _GuestMenuButton(),
             ],
           ),
-          if (isLoggedIn)
-            Row(
-              children: [
-                // Phone icon button — contact
-                _ContactIconButton(isAdmin: isAdmin),
-                if (!isAdmin) ...[
-                  horizontalSpace8,
-                  // Subscription button — non-admin only
-                  _SubscriptionButton(),
-                ],
-              ],
-            )
-          else
-            _GuestMenuButton(),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -88,6 +98,27 @@ class _ContactIconButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AdminPaymentsButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return PrimaryElevatedButton(
+      icon: Icon(
+        Icons.payments_outlined,
+        size: 18,
+        color: ColorsManager.white,
+      ),
+      text: appTranslation().get('admin_payments_title') ?? 'Payments',
+      textStyle: TextStylesManager.bold13.copyWith(
+        color: ColorsManager.white,
+      ),
+      onPressed: () => context.push(Routes.adminPayments),
+      width: 140,
+      height: 42,
+      radius: 24,
     );
   }
 }

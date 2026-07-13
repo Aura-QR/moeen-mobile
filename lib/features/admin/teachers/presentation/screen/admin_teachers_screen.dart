@@ -180,10 +180,20 @@ class AdminTeachersScreen extends StatelessWidget {
                      Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                        children: [
+                        //  ElevatedButton.icon(
+                        //    style: ElevatedButton.styleFrom(
+                        //      backgroundColor:  ColorsManager.secondaryColor,
+                        //      foregroundColor: Colors.white,
+                        //    ),
+                        //    onPressed: () => context.push(Routes.adminPayments),
+                        //    icon: const Icon(Icons.payments_outlined),
+                        //    label: Text(appTranslation().get('admin_payments_title') ?? 'Payments'),
+                        //  ),
+                        //  horizontalSpace8,
                          ElevatedButton.icon(
                            style: ElevatedButton.styleFrom(
-                                                   backgroundColor:  ColorsManager.primaryColor,
-                                                   foregroundColor: Colors.white,
+                             backgroundColor:  ColorsManager.primaryColor,
+                             foregroundColor: Colors.white,
                            ),
                            onPressed: () => showAddTeacherDialog(context),
                            icon: const Icon(Icons.add),

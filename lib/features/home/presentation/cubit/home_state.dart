@@ -13,3 +13,8 @@ class HomeCategoryChanged extends HomeState {
   final int selectedIndex;
   HomeCategoryChanged({required this.selectedIndex});
 }
+
+class HomeRoleChecked extends HomeState {
+  final bool isAdmin;
+  HomeRoleChecked({required this.isAdmin});
+}

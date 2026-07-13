@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moean/features/home/presentation/cubit/home_cubit.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
@@ -19,53 +21,10 @@ class HomeFeaturesSectionWidget extends StatefulWidget {
 
 class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
   int _selectedFeatureIndex = 1; 
-  bool _isAdmin = false;
-  bool _isLoadingRole = true;
 
   @override
   void initState() {
     super.initState();
-    _checkRole();
-  }
-
-  Future<void> _checkRole() async {
-    if (token != null && token!.isNotEmpty) {
-      final cachedIsAdmin = CacheHelper.getData(key: 'isAdmin');
-      final cachedToken = CacheHelper.getData(key: 'admin_token');
-      if (cachedIsAdmin != null && cachedIsAdmin is bool && cachedToken == token) {
-        if (mounted) {
-          setState(() {
-            _isAdmin = cachedIsAdmin;
-            _isLoadingRole = false;
-          });
-        }
-        return;
-      }
-
-      final result = await ApiService.getProfile();
-      result.fold(
-        (error) {
-          if (mounted) {
-            setState(() => _isLoadingRole = false);
-          }
-        },
-        (profile) {
-          final admin = profile.role == 'admin' || profile.user.email == 'admin@moeen.sa';
-          CacheHelper.saveData(key: 'isAdmin', value: admin);
-          CacheHelper.saveData(key: 'admin_token', value: token);
-          if (mounted) {
-            setState(() {
-              _isAdmin = admin;
-              _isLoadingRole = false;
-            });
-          }
-        },
-      );
-    } else {
-      if (mounted) {
-        setState(() => _isLoadingRole = false);
-      }
-    }
   }
 
   @override
@@ -80,61 +39,67 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> {
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Align(
               alignment: AlignmentDirectional.centerStart,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 44, vertical: 22),
-                decoration: BoxDecoration(
-                  color: ColorsManager.primaryColor,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: ColorsManager.primaryColor.withValues(alpha: 0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: GestureDetector(
-                  onTap: () {
-                    if (token != null && token!.isNotEmpty) {
-                      if (_isAdmin) {
-                        context.push(Routes.adminTeachers);
-                      } else {
-                        context.push(Routes.choseapp);
-                      }
-                    } else {
-                      context.push(Routes.login);
-                    }
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_isLoadingRole)
-                        const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: ColorsManager.white,
-                          ),
-                        )
-                      else
-                        Text(
-                          _isAdmin 
-                              ?  appTranslation().get('admin_dashboard')
-                              : appTranslation().get('home_start_prep'),
-                          style: TextStylesManager.bold16.copyWith(
-                            color: ColorsManager.white,
-                          ),
+              child: BlocBuilder<HomeCubit, HomeState>(
+                builder: (context, state) {
+                  final isAdmin = context.read<HomeCubit>().isAdmin;
+                  final isLoadingRole = context.read<HomeCubit>().isLoadingRole;
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 44, vertical: 22),
+                    decoration: BoxDecoration(
+                      color: ColorsManager.primaryColor,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: ColorsManager.primaryColor.withValues(alpha: 0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                      horizontalSpace8,
-                      const Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: ColorsManager.white,
-                        size: 16,
+                      ],
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (token != null && token!.isNotEmpty) {
+                          if (isAdmin) {
+                            context.push(Routes.adminTeachers);
+                          } else {
+                            context.push(Routes.choseapp);
+                          }
+                        } else {
+                          context.push(Routes.login);
+                        }
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isLoadingRole)
+                            const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: ColorsManager.white,
+                              ),
+                            )
+                          else
+                            Text(
+                              isAdmin 
+                                  ?  appTranslation().get('admin_dashboard')
+                                  : appTranslation().get('home_start_prep'),
+                              style: TextStylesManager.bold16.copyWith(
+                                color: ColorsManager.white,
+                              ),
+                            ),
+                          horizontalSpace8,
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: ColorsManager.white,
+                            size: 16,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
             ),
           ),

@@ -24,7 +24,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => HomeCubit(),
+      create: (_) => HomeCubit()..checkRole(),
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) {
           return Scaffold(

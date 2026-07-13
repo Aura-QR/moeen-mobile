@@ -18,6 +18,7 @@ const String adminTeachersApi = '/admin/teachers';
 const String subscriptionsApi = '/subscriptions';
 const String adminContactStatsApi = '/admin/contact/stats';
 const String adminContactApi = '/admin/contact';
+const String adminPaymentsApi = '/admin/payments';
 
 // Contact API
 const String contactTypesApi = '/contact/types';

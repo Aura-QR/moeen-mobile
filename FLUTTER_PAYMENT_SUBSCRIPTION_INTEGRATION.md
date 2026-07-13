@@ -574,7 +574,314 @@ Flutter:
 
 ---
 
-## 9. Orders
+## 9. Admin Payment Management
+
+Admin endpoints require an authenticated admin token:
+
+```http
+Accept: application/json
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+```
+
+The authenticated user must have the `admin` role.
+
+### 9.1 List Payments
+
+```http
+GET /api/admin/payments
+```
+
+Query parameters:
+
+| Parameter | Values | Required | Notes |
+|---|---|---|---|
+| `filter` | `pending`, `paid`, `failed`, `manual`, `moyasar` | no | Status/method shortcut |
+| `search` | string | no | Searches user, order id, payment id, Moyasar id, transaction id |
+| `per_page` | 1-100 | no | Defaults to backend value |
+| `page` | integer | no | Laravel pagination page |
+
+Examples:
+
+```http
+GET /api/admin/payments
+GET /api/admin/payments?filter=pending
+GET /api/admin/payments?filter=manual&search=teacher@moeen.sa&per_page=20
+GET /api/admin/payments?filter=moyasar
+```
+
+Filter meanings:
+
+| Filter | Backend behavior |
+|---|---|
+| `pending` | `pending`, `processing`, `waiting_verification` |
+| `paid` | `paid` only |
+| `failed` | `failed`, `rejected`, `cancelled` |
+| `manual` | `payment_method = manual_bank_transfer` |
+| `moyasar` | `payment_method = moyasar` |
+
+Response:
+
+```json
+{
+  "data": [
+    {
+      "id": 21,
+      "order_id": 15,
+      "payment_method": "manual_bank_transfer",
+      "gateway": "manual",
+      "moyasar_payment_id": null,
+      "transaction_id": null,
+      "amount": "99.00",
+      "currency": "SAR",
+      "status": "waiting_verification",
+      "receipt_path": "payment-receipts/abc.pdf",
+      "receipt_url": "temporary-url-or-null",
+      "metadata": {
+        "submitted_at": "2026-07-12T10:00:00+00:00"
+      },
+      "paid_at": null,
+      "verified_at": null,
+      "created_at": "2026-07-12T10:00:00+00:00",
+      "order": {
+        "id": 15,
+        "service_id": 2,
+        "service": {
+          "id": 2,
+          "name": "فصل دراسي واحد",
+          "slug": "semester",
+          "price": "99.00",
+          "features": {}
+        },
+        "amount": "99.00",
+        "currency": "SAR",
+        "status": "waiting_payment"
+      },
+      "user": {
+        "id": 2,
+        "name": "Teacher Name",
+        "email": "teacher@moeen.sa"
+      }
+    }
+  ],
+  "links": {},
+  "meta": {
+    "current_page": 1,
+    "last_page": 1,
+    "per_page": 20,
+    "total": 1
+  }
+}
+```
+
+Admin Flutter UI:
+- Use tabs/segmented controls for `pending`, `paid`, `failed`, `manual`, `moyasar`.
+- Add search by teacher name/email, order id, payment id, Moyasar id.
+- Show receipt button only when `receipt_url != null`.
+- Show approve/reject buttons only when:
+
+```dart
+payment.paymentMethod == 'manual_bank_transfer' &&
+payment.status == 'waiting_verification'
+```
+
+### 9.2 Approve Manual Payment
+
+```http
+POST /api/admin/payments/{payment_id}/approve
+```
+
+Auth: admin only.
+
+Request body: empty.
+
+Success:
+
+```json
+{
+  "message": "تم اعتماد التحويل البنكي",
+  "payment": {
+    "id": 21,
+    "order_id": 15,
+    "payment_method": "manual_bank_transfer",
+    "gateway": "manual",
+    "amount": "99.00",
+    "currency": "SAR",
+    "status": "paid",
+    "paid_at": "2026-07-12T10:30:00+00:00",
+    "verified_at": "2026-07-12T10:30:00+00:00",
+    "order": {
+      "id": 15,
+      "status": "paid",
+      "service": {
+        "id": 2,
+        "name": "فصل دراسي واحد"
+      }
+    },
+    "user": {
+      "id": 2,
+      "name": "Teacher Name",
+      "email": "teacher@moeen.sa"
+    }
+  }
+}
+```
+
+Backend side effects:
+- `payments.status = paid`
+- `orders.status = paid`
+- teacher subscription is activated
+- `paid_at` and `verified_at` are set
+
+Admin Flutter behavior:
+- Disable approve/reject buttons while request is running.
+- On success, update the row locally or refetch `/api/admin/payments`.
+- Show success toast: `تم اعتماد التحويل البنكي`.
+
+### 9.3 Reject Manual Payment
+
+```http
+POST /api/admin/payments/{payment_id}/reject
+```
+
+Auth: admin only.
+
+Request:
+
+```json
+{
+  "reason": "الصورة غير واضحة"
+}
+```
+
+`reason` is optional, max 1000 characters.
+
+Success:
+
+```json
+{
+  "message": "تم رفض التحويل البنكي",
+  "payment": {
+    "id": 21,
+    "order_id": 15,
+    "payment_method": "manual_bank_transfer",
+    "gateway": "manual",
+    "amount": "99.00",
+    "currency": "SAR",
+    "status": "rejected",
+    "metadata": {
+      "submitted_at": "2026-07-12T10:00:00+00:00",
+      "rejected_at": "2026-07-12T10:35:00+00:00",
+      "rejection_reason": "الصورة غير واضحة"
+    },
+    "verified_at": "2026-07-12T10:35:00+00:00",
+    "order": {
+      "id": 15,
+      "status": "waiting_payment"
+    },
+    "user": {
+      "id": 2,
+      "name": "Teacher Name",
+      "email": "teacher@moeen.sa"
+    }
+  }
+}
+```
+
+Backend side effects:
+- `payments.status = rejected`
+- `orders.status = waiting_payment`
+- teacher subscription is not activated
+- user can upload another receipt
+
+Admin Flutter behavior:
+- Ask for optional rejection reason in a dialog.
+- On success, update row status to `rejected`.
+- Customer Flutter app should show the rejected status and allow another upload.
+
+### 9.4 Admin Error Cases
+
+| HTTP | Meaning | Flutter behavior |
+|---|---|---|
+| 401 | Admin token missing/expired | Logout admin |
+| 403 | User is not admin | Show access denied |
+| 404 | Payment does not exist | Refetch list |
+| 422 | Payment is not manual, already invalid for this action, or validation error | Show API message |
+
+Example `422`:
+
+```json
+{
+  "message": "هذه العملية ليست تحويلًا بنكيًا يدويًا.",
+  "errors": {
+    "payment": ["هذه العملية ليست تحويلًا بنكيًا يدويًا."]
+  }
+}
+```
+
+### 9.5 Admin Dio Sketch
+
+```dart
+class AdminPaymentApi {
+  final Dio dio;
+
+  AdminPaymentApi(this.dio);
+
+  Future<PaginatedPayments> getPayments({
+    String? filter,
+    String? search,
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    final res = await dio.get('/admin/payments', queryParameters: {
+      if (filter != null && filter.isNotEmpty) 'filter': filter,
+      if (search != null && search.isNotEmpty) 'search': search,
+      'page': page,
+      'per_page': perPage,
+    });
+
+    return PaginatedPayments.fromJson(res.data);
+  }
+
+  Future<Payment> approveManualPayment(int paymentId) async {
+    final res = await dio.post('/admin/payments/$paymentId/approve');
+    return Payment.fromJson(res.data['payment']);
+  }
+
+  Future<Payment> rejectManualPayment(
+    int paymentId, {
+    String? reason,
+  }) async {
+    final res = await dio.post(
+      '/admin/payments/$paymentId/reject',
+      data: {
+        if (reason != null && reason.trim().isNotEmpty)
+          'reason': reason.trim(),
+      },
+    );
+
+    return Payment.fromJson(res.data['payment']);
+  }
+}
+```
+
+### 9.6 Admin Screen Checklist
+
+- [ ] Admin login stores admin token.
+- [ ] Non-admin user cannot open admin payment screen.
+- [ ] Admin can list payments.
+- [ ] Admin can filter by pending/manual/moyasar/paid/failed.
+- [ ] Admin can search by teacher email/name/order/payment id.
+- [ ] Admin can view receipt when `receipt_url` exists.
+- [ ] Admin can approve `waiting_verification` manual payment.
+- [ ] Admin can reject manual payment with optional reason.
+- [ ] Row updates after approve/reject.
+- [ ] Paid manual payment activates teacher subscription.
+- [ ] Rejected manual payment lets teacher upload another receipt.
+
+---
+
+## 10. Orders
 
 ### List Orders
 
@@ -596,7 +903,7 @@ Auth: required. The order must belong to the current user.
 
 ---
 
-## 10. Error Handling
+## 11. Error Handling
 
 Common payment errors:
 
@@ -622,7 +929,7 @@ Validation error shape:
 
 ---
 
-## 11. Recommended Screens
+## 12. Recommended Screens
 
 ### Subscription/Plans Screen
 
@@ -664,9 +971,17 @@ Validation error shape:
 - Supports retry verify for `processing` Moyasar payments.
 - Supports upload again for rejected manual payments.
 
+### Admin Payments Screen
+
+- Calls `/admin/payments`.
+- Filters by pending/manual/moyasar/paid/failed.
+- Searches by teacher, order id, payment id, Moyasar id, or transaction id.
+- Shows receipt preview/link when `receipt_url` exists.
+- Approves or rejects only manual payments with `waiting_verification` status.
+
 ---
 
-## 12. Dart Model Sketches
+## 13. Dart Model Sketches
 
 ```dart
 class SubscriptionPlan {
@@ -717,7 +1032,7 @@ class MoyasarCheckout {
 
 ---
 
-## 13. Dio Service Sketch
+## 14. Dio Service Sketch
 
 ```dart
 class PaymentApi {
@@ -778,7 +1093,7 @@ class PaymentApi {
 
 ---
 
-## 14. Testing Checklist
+## 15. Testing Checklist
 
 - [ ] `GET /api/subscriptions` loads plans before login.
 - [ ] Login stores Sanctum token securely.
@@ -794,10 +1109,15 @@ class PaymentApi {
 - [ ] Rejected receipt appears as `rejected` in history.
 - [ ] Approved manual payment activates `/subscription/current`.
 - [ ] 401 clears token and returns to login.
+- [ ] Admin can list payments.
+- [ ] Admin can filter and search payments.
+- [ ] Admin can approve manual payment.
+- [ ] Admin can reject manual payment with reason.
+- [ ] Non-admin receives 403 on admin endpoints.
 
 ---
 
-## 15. Production Notes
+## 16. Production Notes
 
 Backend env must be configured on the production server:
 
@@ -825,4 +1145,3 @@ For Moyasar:
 - `pk_live_` must be paired with `sk_live_`.
 - Both keys must belong to the same Moyasar account.
 - Flutter must never contain the secret key.
-

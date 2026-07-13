@@ -239,17 +239,22 @@ class ReportPdfService {
                   ),
                   pw.SizedBox(width: 8),
                   pw.Container(
-                    width: 48,
-                    height: 48,
-                    decoration: const pw.BoxDecoration(
-                      color: PdfColors.white,
-                      shape: pw.BoxShape.circle,
-                    ),
-                    child: pw.Padding(
-                      padding: const pw.EdgeInsets.all(4),
-                      child: pw.Image(ministryImage, fit: pw.BoxFit.contain),
-                    ),
-                  ),
+  width: 48,
+  height: 48,
+  decoration: const pw.BoxDecoration(
+    color: PdfColors.white,
+    shape: pw.BoxShape.circle,
+  ),
+  child: pw.ClipOval(
+    child: pw.Padding(
+      padding: const pw.EdgeInsets.all(4),
+      child: pw.Image(
+        ministryImage,
+        fit: pw.BoxFit.cover,
+      ),
+    ),
+  ),
+),
                 ],
               ),
             ],

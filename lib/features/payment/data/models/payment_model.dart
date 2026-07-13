@@ -1,5 +1,25 @@
 import 'package:moean/features/payment/data/models/order_model.dart';
 
+class PaymentUserModel {
+  final int id;
+  final String name;
+  final String email;
+
+  const PaymentUserModel({
+    required this.id,
+    required this.name,
+    required this.email,
+  });
+
+  factory PaymentUserModel.fromJson(Map<String, dynamic> json) {
+    return PaymentUserModel(
+      id: json['id'] as int? ?? 0,
+      name: json['name'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+    );
+  }
+}
+
 class PaymentModel {
   final int id;
   final int orderId;
@@ -12,8 +32,10 @@ class PaymentModel {
   final String? paidAt;
   final String? verifiedAt;
   final String? receiptPath;
+  final String? receiptUrl;
   final String? createdAt;
   final OrderModel? order;
+  final PaymentUserModel? user;
 
   const PaymentModel({
     required this.id,
@@ -27,8 +49,10 @@ class PaymentModel {
     this.paidAt,
     this.verifiedAt,
     this.receiptPath,
+    this.receiptUrl,
     this.createdAt,
     this.order,
+    this.user,
   });
 
   factory PaymentModel.fromJson(Map<String, dynamic> json) {
@@ -44,9 +68,13 @@ class PaymentModel {
       paidAt: json['paid_at'] as String?,
       verifiedAt: json['verified_at'] as String?,
       receiptPath: json['receipt_path'] as String?,
+      receiptUrl: json['receipt_url'] as String?,
       createdAt: json['created_at'] as String?,
       order: json['order'] != null
           ? OrderModel.fromJson(json['order'] as Map<String, dynamic>)
+          : null,
+      user: json['user'] != null
+          ? PaymentUserModel.fromJson(json['user'] as Map<String, dynamic>)
           : null,
     );
   }
