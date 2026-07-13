@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 import 'package:moean/core/network/remote/api_endpoints.dart';
 import 'package:moean/core/network/remote/dio_helper.dart';
 
@@ -405,4 +406,105 @@ class ApiService {
       (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
     );
   }
+
+  // --- Payment & Subscription API ---
+
+  static Future<Either<String, List<dynamic>>> getSubscriptions() async {
+    final response = await DioHelper.getData(url: subscriptionsApi);
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as List<dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getCurrentSubscription() async {
+    final response = await DioHelper.getData(url: subscriptionCurrentApi);
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> createOrder(int serviceId) async {
+    final response = await DioHelper.postData(
+      url: ordersApi,
+      data: {'service_id': serviceId},
+    );
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getOrderCheckout(int orderId) async {
+    final response = await DioHelper.postData(url: '$ordersApi/$orderId/pay');
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> savePaymentReference({
+    required int orderId,
+    required String moyasarPaymentId,
+  }) async {
+    final response = await DioHelper.postData(
+      url: paymentsSaveReferenceApi,
+      data: {
+        'order_id': orderId,
+        'moyasar_payment_id': moyasarPaymentId,
+      },
+    );
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> verifyPayment(String paymentId) async {
+    final response = await DioHelper.getData(
+      url: paymentsVerifyApi,
+      query: {'id': paymentId},
+    );
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getBankTransferInfo() async {
+    final response = await DioHelper.getData(url: paymentsBankTransferInfoApi);
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> uploadManualReceipt({
+    required int orderId,
+    required String filePath,
+    required String fileName,
+  }) async {
+    final formData = FormData.fromMap({
+      'order_id': orderId.toString(),
+      'receipt': await MultipartFile.fromFile(filePath, filename: fileName),
+    });
+    final response = await DioHelper.postData(
+      url: paymentsManualApi,
+      data: formData,
+    );
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getPaymentHistory() async {
+    final response = await DioHelper.getData(url: paymentsHistoryApi);
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
 }
+

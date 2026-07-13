@@ -26,3 +26,12 @@ const String contactMyApi = '/contact/my';
 
 // Reports API
 const String educationalReportApi = '/reports/educational/generate';
+
+// Payment & Subscription API
+const String subscriptionCurrentApi = '/subscription/current';
+const String ordersApi = '/orders';
+const String paymentsVerifyApi = '/payments/verify';
+const String paymentsSaveReferenceApi = '/payments/save-reference';
+const String paymentsManualApi = '/payments/manual';
+const String paymentsBankTransferInfoApi = '/payments/bank-transfer-info';
+const String paymentsHistoryApi = '/payments/history';

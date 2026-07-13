@@ -4,7 +4,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 class ReportPdfService {
-  static final PdfColor _primaryColor = PdfColor.fromHex('0E7A5E');
+  static final PdfColor _primaryColor = PdfColor.fromHex('073F49');
   static final PdfColor _headerBg = PdfColor.fromHex('0B4A45');
   static final PdfColor _subHeaderBg = PdfColor.fromHex('E8F5F1');
   static final PdfColor _lightGray = PdfColor.fromHex('F8FAFC');
@@ -31,6 +31,12 @@ class ReportPdfService {
 
     final ByteData boldFontData = await rootBundle.load('assets/fonts/Tajawal-Bold.ttf');
     final pw.Font ttfBold = pw.Font.ttf(boldFontData);
+
+    final ByteData ministryImageData = await rootBundle.load('assets/images/minstry.jpg');
+    final pw.MemoryImage ministryImage = pw.MemoryImage(ministryImageData.buffer.asUint8List());
+
+    final ByteData logoImageData = await rootBundle.load('assets/images/logo_icon-removebg-preview.png');
+    final pw.MemoryImage logoImage = pw.MemoryImage(logoImageData.buffer.asUint8List());
 
     final pdf = pw.Document(
       theme: pw.ThemeData.withFont(
@@ -98,6 +104,8 @@ class ReportPdfService {
               headerStyle: headerStyle,
               arabicRegular: arabicRegular,
               arabicBold: arabicBold,
+              ministryImage: ministryImage,
+              logoImage: logoImage,
             ),
             pw.SizedBox(height: 12),
 
@@ -186,6 +194,8 @@ class ReportPdfService {
     required pw.TextStyle headerStyle,
     required pw.TextStyle arabicRegular,
     required pw.TextStyle arabicBold,
+    required pw.MemoryImage ministryImage,
+    required pw.MemoryImage logoImage,
   }) {
     return pw.Column(
       children: [
@@ -222,12 +232,12 @@ class ReportPdfService {
                       color: PdfColors.white,
                       shape: pw.BoxShape.circle,
                     ),
-                    child: pw.Center(
-                      child: pw.Text('ME', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: _primaryColor)),
+                    child: pw.Padding(
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Image(logoImage, fit: pw.BoxFit.contain),
                     ),
                   ),
                   pw.SizedBox(width: 8),
-                  //add images her
                   pw.Container(
                     width: 48,
                     height: 48,
@@ -235,8 +245,9 @@ class ReportPdfService {
                       color: PdfColors.white,
                       shape: pw.BoxShape.circle,
                     ),
-                    child: pw.Center(
-                      child: pw.Text('وزارة', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: _primaryColor)),
+                    child: pw.Padding(
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Image(ministryImage, fit: pw.BoxFit.contain),
                     ),
                   ),
                 ],

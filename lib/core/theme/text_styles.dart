@@ -63,6 +63,8 @@ class TextStylesManager {
 
   static TextStyle get bold12 => _tajawal(12.0, FontWeight.w700);
 
+  static TextStyle get bold13 => _tajawal(13.0, FontWeight.w700);
+
   static TextStyle get bold14 => _tajawal(14.0, FontWeight.w700);
 
   static TextStyle get bold16 => _tajawal(16.0, FontWeight.w700);

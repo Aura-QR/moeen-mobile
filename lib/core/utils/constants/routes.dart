@@ -23,6 +23,12 @@ import 'package:moean/features/contact/presentation/cubit/contact_cubit.dart';
 import 'package:moean/features/contact/presentation/screen/ticket_details_screen.dart';
 import 'package:moean/features/reports/presentation/screen/report_screen.dart';
 import 'package:moean/features/reports/presentation/cubit/report_cubit.dart';
+import 'package:moean/features/payment/presentation/cubit/payment_cubit.dart';
+import 'package:moean/features/payment/presentation/screen/checkout_screen.dart';
+import 'package:moean/features/payment/presentation/screen/bank_transfer_screen.dart';
+import 'package:moean/features/payment/presentation/screen/moyasar_payment_screen.dart';
+import 'package:moean/features/payment/presentation/screen/payment_result_screen.dart';
+import 'package:moean/features/payment/presentation/screen/payment_history_screen.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -46,6 +52,11 @@ class Routes {
   static const String myTickets = '/contact/my-tickets';
   static const String ticketDetails = '/contact/my-tickets/details';
   static const String reports = '/reports';
+  static const String checkout = '/checkout';
+  static const String bankTransfer = '/bank-transfer';
+  static const String moyasarPayment = '/moyasar-payment';
+  static const String paymentResult = '/payment-result';
+  static const String paymentHistory = '/payment-history';
 
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
@@ -67,5 +78,10 @@ class Routes {
     myTickets: (context) => BlocProvider(create: (context) => ContactCubit(), child: const MyTicketsScreen()),
     ticketDetails: (context) => BlocProvider(create: (context) => ContactCubit(), child: const TicketDetailsScreen()),
     reports: (context) => BlocProvider(create: (_) => ReportCubit(), child: const ReportScreen()),
+    checkout: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const CheckoutScreen()),
+    bankTransfer: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const BankTransferScreen()),
+    moyasarPayment: (context) => const MoyasarPaymentScreen(),
+    paymentResult: (context) => const PaymentResultScreen(),
+    paymentHistory: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const PaymentHistoryScreen()),
   };
 }

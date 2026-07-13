@@ -12,8 +12,8 @@ class AssetsHelper {
   static const String screen1 = 'assets/images/screen1.jpg';
   static const String screen2 = 'assets/images/screen2.jpg';
   static const String screen3 = 'assets/images/screen3.jpg';
-
-static const String icon = 'assets/images/logo_icon-removebg-preview.png';
+  static const String minstry = 'assets/images/minstry.jpg';
+  static const String icon = 'assets/images/logo_icon-removebg-preview.png';
   static const String tips = 'assets/images/tips.png';
   static const String microsoft = 'assets/images/microsoft.png';
 
