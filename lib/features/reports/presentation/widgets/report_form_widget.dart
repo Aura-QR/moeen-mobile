@@ -5,6 +5,8 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
 import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/core/network/remote/api_service.dart';
+import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
 import 'package:moean/features/reports/presentation/widgets/report_lessons_widget.dart';
 import 'package:moean/features/reports/presentation/widgets/report_type_selector_widget.dart';
 import 'package:moean/features/reports/presentation/widgets/selection_bottom_sheet.dart';
@@ -49,41 +51,71 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
   String _selectedType = 'اسبوعي';
   List<String> _selectedLessons = [];
 
-  // Dummy Data for demonstration based on screenshot
-  final Map<String, List<String>> _dummyUnitsData = {
-    'أساسيات الإدارة': [
-      'أساسيات الإدارة - تعريف وأهمية الإدارة',
-      'أساسيات الإدارة - خصائص وأهداف الإدارة',
-      'أساسيات الإدارة - مجالات الإدارة',
-      'أساسيات الإدارة - عناصر العملية الإدارية',
-    ],
-    'التخطيط': [
-      'التخطيط - تعريف وفوائد وخصائص التخطيط',
-      'التخطيط - أنواع التخطيط',
-      'التخطيط - عناصر التخطيط',
-      'التخطيط - خطوات التخطيط',
-      'التخطيط - صفات التخطيط الفعال ومعوقات التخطيط',
-      'التخطيط - دور التخطيط في الحياة وأبرز أجهزة التخطيط',
-    ],
-    'التنظيم': [
-      'التنظيم - تعريف وأنواع التنظيم',
-      'التنظيم - مبادئ وخصائص التنظيم',
-    ],
-    'الرقابة': [
-      'الرقابة - تعريف وأهمية الرقابة',
-      'الرقابة - مبادئ وأنواع الرقابة',
-      'الرقابة - خطوات الرقابة',
-      'الرقابة - طرق الرقابة والرقابة الإدارية في الإسلام',
-    ],
-    'الاتصال الإداري': [
-      'الاتصال الإداري - عناصر وأهداف الاتصال',
-      'الاتصال الإداري - تعريف وأهمية الاتصال',
-      'الاتصال الإداري - مبادئ الاتصال الإداري',
-      'الاتصال الإداري - معوقات الاتصال الإداري',
-      'الاتصال الإداري - أنواع الاتصال',
-      'الاتصال الإداري - وسائل الاتصال الإداري',
-    ]
-  };
+  bool _isLoadingSubjects = false;
+  List<SubjectGroupModel> _subjectGroups = [];
+  SubjectGroupModel? _selectedSubjectGroup;
+  
+  final Map<int, List<CurriculumLessonModel>> _lessonsCache = {};
+  bool _isLoadingLessons = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSubjects();
+  }
+
+  Future<void> _fetchSubjects() async {
+    setState(() => _isLoadingSubjects = true);
+    final result = await ApiService.getSubjects();
+    if (mounted) {
+      result.fold(
+        (failure) {
+          setState(() => _isLoadingSubjects = false);
+        },
+        (subjectGroups) {
+          setState(() {
+            _subjectGroups = subjectGroups;
+            _isLoadingSubjects = false;
+          });
+        },
+      );
+    }
+  }
+
+  void _showSubjectSelector() {
+    if (_isLoadingSubjects) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('جاري تحميل المواد...', style: TextStylesManager.bold14),
+          backgroundColor: ColorsManager.primaryColor,
+        ),
+      );
+      return;
+    }
+
+    final subjectTitles = _subjectGroups.map((e) => e.title).toList();
+
+    SelectionBottomSheet.show(
+      context: context,
+      title: 'اختر المادة',
+      items: subjectTitles,
+      initialSelectedItems: _subjectController.text.isNotEmpty 
+          ? [_subjectController.text] 
+          : [],
+      isMultiSelect: false,
+      onSelectionConfirmed: (selected) {
+        if (selected.isNotEmpty) {
+          setState(() {
+            _subjectController.text = selected.first;
+            _selectedSubjectGroup = _subjectGroups.firstWhere((e) => e.title == selected.first);
+            // Clear unit and lessons
+            _unitController.clear();
+            _selectedLessons.clear();
+          });
+        }
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -99,46 +131,110 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
   }
 
   void _showUnitSelector() {
+    if (_selectedSubjectGroup == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('الرجاء اختيار المادة أولاً', style: TextStylesManager.bold14),
+          backgroundColor: ColorsManager.errorColor,
+        ),
+      );
+      return;
+    }
+
+    final isMonthly = _selectedType == 'شهري';
+    final unitTitles = _selectedSubjectGroup!.units.map((e) => e.title).toList();
+
     SelectionBottomSheet.show(
       context: context,
-      title: 'اختر الوحدة / المجال',
-      items: _dummyUnitsData.keys.toList(),
-      initialSelectedItems: _unitController.text.isNotEmpty ? [_unitController.text] : [],
-      isMultiSelect: false,
+      title: isMonthly ? 'اختر الوحدات / المجالات' : 'اختر الوحدة / المجال',
+      items: unitTitles,
+      initialSelectedItems: _unitController.text.isNotEmpty 
+          ? _unitController.text.split('، ').map((e) => e.trim()).toList() 
+          : [],
+      isMultiSelect: isMonthly,
       onSelectionConfirmed: (selected) {
-        if (selected.isNotEmpty) {
-          setState(() {
-            _unitController.text = selected.first;
-            // Clear selected lessons when unit changes
-            _selectedLessons.clear();
-          });
-        }
+        setState(() {
+          _unitController.text = selected.join('، ');
+          // Clear selected lessons when unit changes
+          _selectedLessons.clear();
+        });
       },
     );
   }
 
-  void _showLessonsSelector() {
-    List<String> availableLessons = [];
+  void _showLessonsSelector() async {
+    if (_unitController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('الرجاء اختيار الوحدة أولاً', style: TextStylesManager.bold14),
+          backgroundColor: ColorsManager.errorColor,
+        ),
+      );
+      return;
+    }
 
-    if (_selectedType == 'اسبوعي') {
-      availableLessons = _dummyUnitsData.values.expand((element) => element).toList();
+    if (_selectedType == 'شهري') return;
+
+    final selectedUnitTitle = _unitController.text;
+    final unitModel = _selectedSubjectGroup!.units.cast<UnitModel?>().firstWhere(
+      (e) => e?.title == selectedUnitTitle,
+      orElse: () => null,
+    );
+
+    if (unitModel == null) return;
+
+    List<CurriculumLessonModel> availableLessons = [];
+
+    if (_lessonsCache.containsKey(unitModel.subjectId)) {
+      availableLessons = _lessonsCache[unitModel.subjectId]!;
+      _showLessonsBottomSheet(availableLessons);
     } else {
-      if (_unitController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('الرجاء اختيار الوحدة أولاً', style: TextStylesManager.bold14),
-            backgroundColor: ColorsManager.errorColor,
-          ),
+      if (_isLoadingLessons) return;
+      setState(() => _isLoadingLessons = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('جاري تحميل الدروس...', style: TextStylesManager.bold14),
+          backgroundColor: ColorsManager.primaryColor,
+          duration: const Duration(seconds: 1),
+        ),
+      );
+
+      final result = await ApiService.getSubjectLessons(unitModel.subjectId);
+      if (mounted) {
+        setState(() => _isLoadingLessons = false);
+        result.fold(
+          (failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('فشل في تحميل الدروس', style: TextStylesManager.bold14),
+                backgroundColor: ColorsManager.errorColor,
+              ),
+            );
+          },
+          (lessons) {
+            _lessonsCache[unitModel.subjectId] = lessons;
+            _showLessonsBottomSheet(lessons);
+          },
         );
-        return;
       }
-      availableLessons = _dummyUnitsData[_unitController.text] ?? [];
+    }
+  }
+
+  void _showLessonsBottomSheet(List<CurriculumLessonModel> availableLessons) {
+    if (availableLessons.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('لا توجد دروس متاحة لهذه الوحدة', style: TextStylesManager.bold14),
+          backgroundColor: ColorsManager.errorColor,
+        ),
+      );
+      return;
     }
 
     SelectionBottomSheet.show(
       context: context,
       title: 'اختر الدروس',
-      items: availableLessons,
+      items: availableLessons.map((e) => e.name).toList(),
       initialSelectedItems: _selectedLessons,
       isMultiSelect: true,
       onSelectionConfirmed: (selected) {
@@ -198,37 +294,45 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
           // Subject
           _FormLabel(label: appTranslation().get('report_subject')),
           verticalSpace8,
-          PrimaryTextField(
-            controller: _subjectController,
-            hint: _selectedType == 'شهري'
-                ? appTranslation().get('report_subject_monthly_hint')
-                : appTranslation().get('report_subject_hint'),
-            prefixIcon: const Icon(Icons.book_outlined),
-            validator: (v) => (v == null || v.isEmpty)
-                ? appTranslation().get('field_required')
-                : null,
+          GestureDetector(
+            onTap: _showSubjectSelector,
+            child: AbsorbPointer(
+              child: PrimaryTextField(
+                controller: _subjectController,
+                hint: _isLoadingSubjects ? 'جاري التحميل...' : 'اختر المادة',
+                prefixIcon: _isLoadingSubjects 
+                    ? const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                      )
+                    : const Icon(Icons.book_outlined),
+                validator: (v) => (v == null || v.isEmpty)
+                    ? appTranslation().get('field_required')
+                    : null,
+              ),
+            ),
           ),
           verticalSpace16,
 
           // Unit/Field
-          if (_selectedType != 'اسبوعي') ...[
-            _FormLabel(label: appTranslation().get('report_unit')),
-            verticalSpace8,
-            GestureDetector(
-              onTap: _showUnitSelector,
-              child: AbsorbPointer(
-                child: PrimaryTextField(
-                  controller: _unitController,
-                  hint: appTranslation().get('report_unit_hint'),
-                  prefixIcon: const Icon(Icons.layers_outlined),
-                  validator: (v) => (v == null || v.isEmpty)
-                      ? appTranslation().get('field_required')
-                      : null,
-                ),
+          _FormLabel(label: appTranslation().get('report_unit')),
+          verticalSpace8,
+          GestureDetector(
+            onTap: _showUnitSelector,
+            child: AbsorbPointer(
+              child: PrimaryTextField(
+                controller: _unitController,
+                hint: _selectedType == 'شهري' 
+                    ? 'اختر الوحدات' 
+                    : appTranslation().get('report_unit_hint'),
+                prefixIcon: const Icon(Icons.layers_outlined),
+                validator: (v) => (v == null || v.isEmpty)
+                    ? appTranslation().get('field_required')
+                    : null,
               ),
             ),
-            verticalSpace16,
-          ],
+          ),
+          verticalSpace16,
 
           // Grade
           _FormLabel(label: appTranslation().get('report_grade')),

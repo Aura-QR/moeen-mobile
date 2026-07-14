@@ -5,9 +5,13 @@ import 'package:moean/core/network/remote/api_endpoints.dart';
 import 'package:moean/core/network/remote/dio_helper.dart';
 
 import 'package:moean/core/models/login_request.dart';
-import 'package:moean/core/models/login_response.dart';
+import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
+import 'package:moean/core/errors/failures.dart';
+import 'package:moean/core/utils/constants/constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:moean/core/models/register_request.dart';
 import 'package:moean/core/models/register_response.dart';
+import 'package:moean/core/models/login_response.dart';
 import 'package:moean/core/models/user_model.dart';
 import 'package:moean/core/models/profile_model.dart';
 
@@ -501,6 +505,193 @@ class ApiService {
 
   static Future<Either<String, Map<String, dynamic>>> getPaymentHistory() async {
     final response = await DioHelper.getData(url: paymentsHistoryApi);
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  // ===========================================================================
+  // Curriculum APIs (Subjects & Lessons)
+  // ===========================================================================
+
+  static Future<Either<Failure, List<SubjectGroupModel>>> getSubjects() async {
+    try {
+      final responseEither = await DioHelper.getData(url: subjectsApi);
+      return responseEither.fold(
+        (error) => Left(ServerFailure(error)),
+        (response) {
+          final List<dynamic> data = response.data is List ? response.data : (response.data['data'] ?? []);
+          return Right(data.map((e) => SubjectGroupModel.fromJson(e)).toList());
+        },
+      );
+    } catch (e) {
+      return Left(ServerFailure('An unexpected error occurred: $e'));
+    }
+  }
+
+  static Future<Either<Failure, List<CurriculumLessonModel>>> getSubjectLessons(int subjectId) async {
+    try {
+      final responseEither = await DioHelper.getData(url: subjectLessonsApi(subjectId));
+      return responseEither.fold(
+        (error) => Left(ServerFailure(error)),
+        (response) {
+          final data = response.data;
+          List<dynamic> lessonsRaw = [];
+          
+          if (data is Map<String, dynamic>) {
+            if (data.containsKey('chapters') && data['chapters'] is List) {
+              for (var chapter in data['chapters']) {
+                if (chapter is Map<String, dynamic> && chapter.containsKey('lessons') && chapter['lessons'] is List) {
+                  lessonsRaw.addAll(chapter['lessons']);
+                }
+              }
+            } else if (data.containsKey('data') && data['data'] is List) {
+              lessonsRaw = data['data'];
+            } else if (data.containsKey('lessons') && data['lessons'] is List) {
+              lessonsRaw = data['lessons'];
+            }
+          } else if (data is List) {
+            lessonsRaw = data;
+          }
+          
+          return Right(lessonsRaw.map((e) => CurriculumLessonModel.fromJson(e)).toList());
+        },
+      );
+    } catch (e) {
+      return Left(ServerFailure('An unexpected error occurred: $e'));
+    }
+  }
+
+  // ===========================================================================
+  // Exam Generation
+  // ===========================================================================
+
+  static Future<Either<String, Map<String, dynamic>>> generateExam(Map<String, dynamic> request) async {
+    try {
+      final options = Options(
+        receiveTimeout: const Duration(seconds: 120),
+        sendTimeout: const Duration(seconds: 120),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          if (token != null && token!.isNotEmpty) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      final response = await DioHelper.getDio().post(
+        examsGenerateApi,
+        data: request,
+        options: options,
+      );
+      
+      return Right(_decodeData(response.data) as Map<String, dynamic>);
+    } on DioException catch (error) {
+      // Return the error so our new repository logic can parse it
+      return Left(DioHelper.parseError(error));
+      // Actually we will handle DioException in repository, but since api_service returns String, we'll let api_service return error string.
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getExam(int id) async {
+    final response = await DioHelper.getData(
+      url: examDetailsApi(id),
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> updateExamPoints(int id, Map<String, dynamic> request) async {
+    final response = await DioHelper.patchData(
+      url: examPointsApi(id),
+      data: request,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getMyExams({
+    int page = 1,
+    int perPage = 20,
+    String? status,
+    String? search,
+  }) async {
+    final query = <String, dynamic>{
+      'page': page,
+      'per_page': perPage,
+    };
+    if (status != null && status.isNotEmpty) query['status'] = status;
+    if (search != null && search.isNotEmpty) query['search'] = search;
+
+    final response = await DioHelper.getData(
+      url: examsApi,
+      query: query,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> publishExam(int id) async {
+    final response = await DioHelper.postData(
+      url: examPublishApi(id),
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, bool>> deleteExam(int id) async {
+    final response = await DioHelper.deleteData(
+      url: examDetailsApi(id),
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => const Right(true),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getExams({
+    int page = 1,
+    int perPage = 20,
+    String? status,
+  }) async {
+    final query = <String, dynamic>{
+      'page': page,
+      'per_page': perPage,
+    };
+    if (status != null && status.isNotEmpty) query['status'] = status;
+
+    final response = await DioHelper.getData(
+      url: examsApi,
+      query: query,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> addManualQuestion(Map<String, dynamic> request) async {
+    final response = await DioHelper.postData(
+      url: questionsApi,
+      data: request,
+    );
+
     return response.fold(
       (error) => Left(error),
       (res) => Right(_decodeData(res.data) as Map<String, dynamic>),

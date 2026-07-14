@@ -155,16 +155,40 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                   },
                 ),
                 horizontalSpace12,
-                HomeActionChipWidget(
-                  icon: Icons.description_outlined,
-                  title: appTranslation().get('home_worksheets'),
-                  onTap: () {}, // تم إضافة onTap فارغ لتفعيل النبض
-                ),
-                horizontalSpace12,
+                // HomeActionChipWidget(
+                //   icon: Icons.description_outlined,
+                //   title: appTranslation().get('home_worksheets'),
+                //   onTap: () {
+                //     if (token != null && token!.isNotEmpty) {
+                //       context.push(Routes.manualExam);
+                //     } else {
+                //       context.push(Routes.login);
+                //     }
+                //   }, 
+                // ),
+                // horizontalSpace12,
                 HomeActionChipWidget(
                   icon: Icons.verified_outlined,
                   title: appTranslation().get('home_tests'),
-                  onTap: () {}, // تم إضافة onTap فارغ لتفعيل النبض
+                  onTap: () {
+                    if (token != null && token!.isNotEmpty) {
+                      context.push(Routes.examGenerationInfo);
+                    } else {
+                      context.push(Routes.login);
+                    }
+                  },
+                ),
+                horizontalSpace12,
+                HomeActionChipWidget(
+                  icon: Icons.description_outlined,
+                  title: appTranslation().get('my_exam'),
+                  onTap: () {
+                    if (token != null && token!.isNotEmpty) {
+                      context.push(Routes.myExams);
+                    } else {
+                      context.push(Routes.login);
+                    }
+                  }, 
                 ),
               ],
             ),

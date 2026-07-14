@@ -808,6 +808,21 @@ Permanently delete a ticket and all its replies.
 
 ---
 
+## 📝 Exams and Question Bank
+
+The exam API supports quick generation, detailed browse-and-select generation, exam history, per-question points, manual question submission, and admin review. See [EXAM_GENERATION_FRONTEND_INTEGRATION.md](EXAM_GENERATION_FRONTEND_INTEGRATION.md) for the complete request and response contracts for:
+
+- `POST /exams/generate`
+- `GET /exams`
+- `GET /exams/{exam}`
+- `PATCH /exams/{exam}/questions/points`
+- `GET /lessons/{lesson}/questions`
+- `POST /questions`
+- `GET /admin/questions/pending-review`
+- `PATCH /admin/questions/{question}/review`
+
+---
+
 ## 🧰 Debug / Diagnostic
 
 ### `GET /debug/proxy`

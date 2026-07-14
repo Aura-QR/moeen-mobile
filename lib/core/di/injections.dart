@@ -8,6 +8,18 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:moean/features/exam_generation/domain/repositories/exam_repository.dart' as moean_exam;
+import 'package:moean/features/exam_generation/data/repositories/exam_repository_impl.dart' as moean_exam;
+import 'package:moean/features/exam_generation/domain/usecases/generate_exam_usecase.dart' as moean_exam;
+import 'package:moean/features/exam_generation/domain/usecases/get_exam_usecase.dart' as moean_exam;
+import 'package:moean/features/exam_generation/domain/usecases/update_question_points_usecase.dart' as moean_exam;
+import 'package:moean/features/exam_generation/presentation/cubit/exam_info_cubit.dart' as moean_exam;
+import 'package:moean/features/exam_generation/presentation/cubit/lesson_selection_cubit.dart' as moean_exam;
+import 'package:moean/features/exam_generation/presentation/cubit/question_count_cubit.dart' as moean_exam;
+import 'package:moean/features/exam_generation/presentation/cubit/generate_exam_cubit.dart' as moean_exam;
+import 'package:moean/features/exam_generation/presentation/cubit/exam_preview_cubit.dart' as moean_exam;
+import 'package:moean/features/exam_generation/presentation/cubit/my_exams_cubit.dart' as moean_exam;
+
 final sl = GetIt.instance;
 
 Future<void> initInjections() async {
@@ -70,4 +82,22 @@ Future<void> initInjections() async {
 
     return dio;
   });
+
+  // ─── Exam Generation ──────────────────────────────────────────
+  sl.registerLazySingleton<moean_exam.ExamRepository>(() => moean_exam.ExamRepositoryImpl());
+  sl.registerLazySingleton(() => moean_exam.GenerateExamUseCase(sl()));
+  sl.registerLazySingleton(() => moean_exam.GetExamUseCase(sl()));
+  sl.registerLazySingleton(() => moean_exam.UpdateQuestionPointsUseCase(sl()));
+
+  sl.registerLazySingleton(() => moean_exam.ExamInfoCubit());
+  sl.registerLazySingleton(() => moean_exam.LessonSelectionCubit());
+  sl.registerLazySingleton(() => moean_exam.QuestionCountCubit());
+  sl.registerFactory(() => moean_exam.GenerateExamCubit(sl()));
+  sl.registerFactory(() => moean_exam.ExamPreviewCubit(
+        getExamUseCase: sl(),
+        updateQuestionPointsUseCase: sl(),
+        examRepository: sl(),
+      ));
+  sl.registerFactory(() => moean_exam.MyExamsCubit(sl()));
 }
+

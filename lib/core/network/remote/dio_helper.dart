@@ -34,7 +34,7 @@ class DioHelper {
       );
       return Right(response);
     } on DioException catch (error) {
-      final msg = _parseError(error);
+      final msg = parseError(error);
       if (error.response?.statusCode == 401 && (msg == 'Error 401' || msg == 'Unauthenticated')) {
         return const Left('Unauthenticated');
       }
@@ -67,7 +67,7 @@ class DioHelper {
       );
       return Right(response);
     } on DioException catch (error) {
-      final msg = _parseError(error);
+      final msg = parseError(error);
       if (error.response?.statusCode == 401 && (msg == 'Error 401' || msg == 'Unauthenticated')) {
         return const Left('Unauthenticated');
       }
@@ -99,7 +99,7 @@ class DioHelper {
       );
       return Right(response);
     } on DioException catch (error) {
-      final msg = _parseError(error);
+      final msg = parseError(error);
       return Left(msg);
     } catch (e) {
       return const Left('something went wrong');
@@ -128,7 +128,7 @@ class DioHelper {
       );
       return Right(response);
     } on DioException catch (error) {
-      final msg = _parseError(error);
+      final msg = parseError(error);
       return Left(msg);
     } catch (e) {
       return const Left('something went wrong');
@@ -153,7 +153,7 @@ class DioHelper {
       );
       return Right(response);
     } on DioException catch (error) {
-      final msg = _parseError(error);
+      final msg = parseError(error);
       if (error.response?.statusCode == 401 && (msg == 'Error 401' || msg == 'Unauthenticated')) {
         return const Left('Unauthenticated');
       }
@@ -163,7 +163,7 @@ class DioHelper {
     }
   }
 
-  static String _parseError(DioException error) {
+  static String parseError(DioException error) {
     final response = error.response;
     if (response == null) return 'No response from server';
     if (response.data is Map) {

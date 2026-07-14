@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moean/core/di/injections.dart';
 import 'package:moean/features/home/presentation/widgets/chose_app.dart';
 import 'package:moean/features/home/presentation/widgets/download_extention.dart';
 import 'package:moean/features/home/presentation/widgets/extension_usage_slider.dart';
@@ -31,6 +32,23 @@ import 'package:moean/features/payment/presentation/screen/moyasar_payment_scree
 import 'package:moean/features/payment/presentation/screen/payment_result_screen.dart';
 import 'package:moean/features/payment/presentation/screen/payment_history_screen.dart';
 
+// Exam Generation Imports
+import 'package:moean/features/exam_generation/presentation/screens/exam_info_screen.dart';
+import 'package:moean/features/exam_generation/presentation/screens/lesson_selection_screen.dart';
+import 'package:moean/features/exam_generation/presentation/screens/question_counts_screen.dart';
+import 'package:moean/features/exam_generation/presentation/screens/exam_preview_screen.dart';
+import 'package:moean/features/exam_generation/presentation/cubit/exam_info_cubit.dart';
+import 'package:moean/features/exam_generation/presentation/cubit/lesson_selection_cubit.dart';
+import 'package:moean/features/exam_generation/presentation/cubit/question_count_cubit.dart';
+import 'package:moean/features/exam_generation/presentation/cubit/exam_preview_cubit.dart';
+import 'package:moean/features/exam_generation/presentation/cubit/generate_exam_cubit.dart';
+import 'package:moean/features/exam_generation/presentation/cubit/my_exams_cubit.dart';
+import 'package:moean/features/exam_generation/domain/entities/exam_entities.dart';
+import 'package:moean/features/exam_generation/presentation/screens/my_exams_screen.dart';
+import 'package:moean/features/exam_generation/presentation/cubit/my_exams_cubit.dart';
+import 'package:moean/features/exam_generation/presentation/screens/my_exams_screen.dart';
+import 'package:moean/features/exam_generation/presentation/screens/manual_exam_screen.dart';
+
 class Routes {
   static const String splash = '/splash';
   static const String onboarding = '/onboarding';
@@ -59,7 +77,14 @@ class Routes {
   static const String moyasarPayment = '/moyasar-payment';
   static const String paymentResult = '/payment-result';
   static const String paymentHistory = '/payment-history';
-
+  
+  // Exam Generation
+  static const String examGenerationInfo = '/exam-generation/info';
+  static const String examGenerationLessons = '/exam-generation/lessons';
+  static const String examGenerationCounts = '/exam-generation/counts';
+  static const String examGenerationPreview = '/exam-generation/preview';
+  static const String myExams = '/my-exams';
+  static const String manualExam = '/manual-exam';
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
     login: (context) => const LoginScreen(),
@@ -86,5 +111,38 @@ class Routes {
     moyasarPayment: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const MoyasarPaymentScreen()),
     paymentResult: (context) => const PaymentResultScreen(),
     paymentHistory: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const PaymentHistoryScreen()),
+    examGenerationInfo: (context) => BlocProvider.value(value: sl<ExamInfoCubit>(), child: const ExamInfoScreen()),
+    examGenerationLessons: (context) => MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: sl<LessonSelectionCubit>()),
+        BlocProvider.value(value: sl<ExamInfoCubit>()),
+      ],
+      child: const LessonSelectionScreen(),
+    ),
+    examGenerationCounts: (context) => MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: sl<QuestionCountCubit>()),
+        BlocProvider(create: (_) => sl<GenerateExamCubit>()),
+        BlocProvider.value(value: sl<LessonSelectionCubit>()),
+        BlocProvider.value(value: sl<ExamInfoCubit>()),
+      ],
+      child: const QuestionCountsScreen(),
+    ),
+    myExams: (context) => BlocProvider(
+      create: (_) => sl<MyExamsCubit>(),
+      child: const MyExamsScreen(),
+    ),
+    examGenerationPreview: (context) {
+      final initialExam = ModalRoute.of(context)!.settings.arguments as ExamEntity;
+      return BlocProvider(
+        create: (_) => sl<ExamPreviewCubit>(),
+        child: ExamPreviewScreen(initialExam: initialExam),
+      );
+    },
+    myExams: (context) => BlocProvider.value(
+      value: sl<MyExamsCubit>(),
+      child: const MyExamsScreen(),
+    ),
+    manualExam: (context) => const ManualExamScreen(),
   };
 }

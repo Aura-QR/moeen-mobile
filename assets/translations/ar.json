@@ -135,7 +135,7 @@
   "not_connected": "غير متصل",
   "home_start_prep": "ابدأ التحضير",
   "home_reports": "تقارير",
-  "home_worksheets": "أوراق العمل",
+  "home_worksheets": "اختبار يدوى ",
   "home_tests": "الاختبارات",
   "feature_curriculum_title": "متوافق مع المناهج",
   "feature_curriculum_subtitle": "وفق معايير وزارة التعليم",
@@ -425,5 +425,6 @@
   "view": "عرض",
   "required": "مطلوب",
   "currency_sar": "ر.س",
-  "payment":"الدفع الإلكتروني"
+  "payment":"الدفع الإلكتروني",
+  "my_exam":"اختباراتى"
 }

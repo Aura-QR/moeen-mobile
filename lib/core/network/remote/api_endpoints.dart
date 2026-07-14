@@ -36,3 +36,15 @@ const String paymentsSaveReferenceApi = '/payments/save-reference';
 const String paymentsManualApi = '/payments/manual';
 const String paymentsBankTransferInfoApi = '/payments/bank-transfer-info';
 const String paymentsHistoryApi = '/payments/history';
+
+// Exam Generation API
+const String examsGenerateApi = '/exams/generate';
+const String examsApi = '/exams';
+const String questionsApi = '/questions';
+String examDetailsApi(int id) => '/exams/$id';
+String examPointsApi(int id) => '/exams/$id/questions/points';
+String examPublishApi(int id) => '/exams/$id/publish';
+
+// Curriculum API
+const String subjectsApi = '/subjects';
+String subjectLessonsApi(int id) => '/subjects/$id/lessons';

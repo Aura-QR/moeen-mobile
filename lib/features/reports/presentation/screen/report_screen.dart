@@ -110,7 +110,7 @@ class _ReportScreenState extends State<ReportScreen> {
                 ),
               ),
               leading: IconButton(
-                icon: Icon(Icons.arrow_forward, color: ColorsManager.mainText),
+                icon: Icon(Icons.arrow_back_ios),
                 onPressed: () => context.pop(),
               ),
               actions: [
@@ -125,51 +125,53 @@ class _ReportScreenState extends State<ReportScreen> {
                   ),
               ],
             ),
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: state is ReportSuccess
-                  ? _ReportResultView(
-                      data: state.data,
-                      teacherName: _teacherName,
-                      onPrint: () => _handlePrint(state.data),
-                    )
-                  : ReportFormWidget(
-                      teacherName: _teacherName,
-                      isLoading: state is ReportLoading,
-                      onSubmit: ({
-                        required reportType,
-                        required grade,
-                        required subject,
-                        required unit,
-                        required semester,
-                        required schoolName,
-                        required educationOffice,
-                        required reportDate,
-                        required selectedLessons,
-                      }) {
-                        _lastGrade = grade;
-                        _lastSubject = subject;
-                        _lastUnit = unit;
-                        _lastSemester = semester;
-                        _lastSchool = schoolName;
-                        _lastOffice = educationOffice;
-                        _lastReportType = reportType;
-                        _lastReportDate = reportDate;
-                        _lastLessons = selectedLessons;
-
-                        // For monthly reports, split comma-separated subjects into a List
-                        final dynamic apiSubject = reportType == 'شهري'
-                            ? subject.split('،').map((e) => e.trim()).where((e) => e.isNotEmpty).toList()
-                            : subject;
-
-                        ReportCubit.get(context).generateReport(
-                          reportType: reportType,
-                          grade: grade,
-                          subject: apiSubject,
-                          selectedLessons: selectedLessons,
-                        );
-                      },
-                    ),
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: state is ReportSuccess
+                    ? _ReportResultView(
+                        data: state.data,
+                        teacherName: _teacherName,
+                        onPrint: () => _handlePrint(state.data),
+                      )
+                    : ReportFormWidget(
+                        teacherName: _teacherName,
+                        isLoading: state is ReportLoading,
+                        onSubmit: ({
+                          required reportType,
+                          required grade,
+                          required subject,
+                          required unit,
+                          required semester,
+                          required schoolName,
+                          required educationOffice,
+                          required reportDate,
+                          required selectedLessons,
+                        }) {
+                          _lastGrade = grade;
+                          _lastSubject = subject;
+                          _lastUnit = unit;
+                          _lastSemester = semester;
+                          _lastSchool = schoolName;
+                          _lastOffice = educationOffice;
+                          _lastReportType = reportType;
+                          _lastReportDate = reportDate;
+                          _lastLessons = selectedLessons;
+              
+                          // For monthly reports, send units as list. For weekly, combine subject and unit.
+                          final dynamic apiSubject = reportType == 'شهري'
+                              ? unit.split('،').map((e) => e.trim()).where((e) => e.isNotEmpty).toList()
+                              : '$subject - $unit';
+              
+                          ReportCubit.get(context).generateReport(
+                            reportType: reportType,
+                            grade: grade,
+                            subject: apiSubject,
+                            selectedLessons: selectedLessons,
+                          );
+                        },
+                      ),
+              ),
             ),
           ),
         );

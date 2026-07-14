@@ -98,161 +98,163 @@ class _SelectionBottomSheetState extends State<SelectionBottomSheet> {
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: ColorsManager.background,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            // Handle
-            Center(
-              child: Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: ColorsManager.borderColor,
-                  borderRadius: BorderRadius.circular(4),
+      child: SafeArea(
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: BoxDecoration(
+            color: ColorsManager.background,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              // Handle
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: ColorsManager.borderColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
               ),
-            ),
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.title,
-                          style: TextStylesManager.bold16.copyWith(
-                            color: ColorsManager.mainText,
-                          ),
-                        ),
-                        if (widget.isMultiSelect) ...[
-                          verticalSpace2,
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            'تم اختيار ${_selectedItems.length} من ${widget.items.length}',
-                            style: TextStylesManager.regular12.copyWith(
-                              color: ColorsManager.primaryColor,
+                            widget.title,
+                            style: TextStylesManager.bold16.copyWith(
+                              color: ColorsManager.mainText,
                             ),
                           ),
+                          if (widget.isMultiSelect) ...[
+                            verticalSpace2,
+                            Text(
+                              'تم اختيار ${_selectedItems.length} من ${widget.items.length}',
+                              style: TextStylesManager.regular12.copyWith(
+                                color: ColorsManager.primaryColor,
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => context.pop(),
-                    icon: Icon(
-                      Icons.close_rounded,
-                      color: ColorsManager.secondaryText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            // Search Box
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: ColorsManager.surfacePrimary,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: ColorsManager.borderColor),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: appTranslation().get('search_hint'),
-                    hintStyle: TextStylesManager.regular14.copyWith(
-                      color: ColorsManager.secondaryText,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: ColorsManager.secondaryText,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-            ),
-            // List
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _filteredItems.length,
-                separatorBuilder: (context2, index2) => verticalSpace8,
-                itemBuilder: (context, index) {
-                  final item = _filteredItems[index];
-                  final isSelected = _selectedItems.contains(item);
-                  return GestureDetector(
-                    onTap: () => _toggleItem(item),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
                       ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? ColorsManager.primaryColor.withValues(alpha: 0.1)
-                            : ColorsManager.surfacePrimary,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected
-                              ? ColorsManager.primaryColor
-                              : ColorsManager.borderColor,
+                    ),
+                    IconButton(
+                      onPressed: () => context.pop(),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: ColorsManager.secondaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              // Search Box
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: ColorsManager.surfacePrimary,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: ColorsManager.borderColor),
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: appTranslation().get('search_hint'),
+                      hintStyle: TextStylesManager.regular14.copyWith(
+                        color: ColorsManager.secondaryText,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: ColorsManager.secondaryText,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ),
+              // List
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _filteredItems.length,
+                  separatorBuilder: (context2, index2) => verticalSpace8,
+                  itemBuilder: (context, index) {
+                    final item = _filteredItems[index];
+                    final isSelected = _selectedItems.contains(item);
+                    return GestureDetector(
+                      onTap: () => _toggleItem(item),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            widget.isMultiSelect
-                                ? (isSelected
-                                    ? Icons.check_box_rounded
-                                    : Icons.check_box_outline_blank_rounded)
-                                : (isSelected
-                                    ? Icons.radio_button_checked
-                                    : Icons.radio_button_unchecked),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? ColorsManager.primaryColor.withValues(alpha: 0.1)
+                              : ColorsManager.surfacePrimary,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
                             color: isSelected
                                 ? ColorsManager.primaryColor
-                                : ColorsManager.placeholder,
+                                : ColorsManager.borderColor,
                           ),
-                          horizontalSpace12,
-                          Expanded(
-                            child: Text(
-                              item,
-                              style: isSelected
-                                  ? TextStylesManager.bold14.copyWith(
-                                      color: ColorsManager.primaryColor)
-                                  : TextStylesManager.regular14.copyWith(
-                                      color: ColorsManager.mainText),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              widget.isMultiSelect
+                                  ? (isSelected
+                                      ? Icons.check_box_rounded
+                                      : Icons.check_box_outline_blank_rounded)
+                                  : (isSelected
+                                      ? Icons.radio_button_checked
+                                      : Icons.radio_button_unchecked),
+                              color: isSelected
+                                  ? ColorsManager.primaryColor
+                                  : ColorsManager.placeholder,
                             ),
-                          ),
-                        ],
+                            horizontalSpace12,
+                            Expanded(
+                              child: Text(
+                                item,
+                                style: isSelected
+                                    ? TextStylesManager.bold14.copyWith(
+                                        color: ColorsManager.primaryColor)
+                                    : TextStylesManager.regular14.copyWith(
+                                        color: ColorsManager.mainText),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-            // Bottom Action
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: PrimaryElevatedButton(
-                text: 'تأكيد',
-                onPressed: () {
-                  widget.onSelectionConfirmed(_selectedItems);
-                  context.pop();
-                },
+              // Bottom Action
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: PrimaryElevatedButton(
+                  text: 'تأكيد',
+                  onPressed: () {
+                    widget.onSelectionConfirmed(_selectedItems);
+                    context.pop();
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
