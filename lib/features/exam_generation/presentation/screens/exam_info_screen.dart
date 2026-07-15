@@ -157,18 +157,23 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
           ),
         ),
         Container(
-          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [
               BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5)),
             ],
           ),
-          child: PrimaryElevatedButton(
-            text: 'متابعة لتحديد عدد الأسئلة',
-            onPressed: cubit.isValid ? () {
-              context.push(Routes.examGenerationLessons);
-            } : null,
+          child: SafeArea(
+            top: false,
+            left: false,
+            right: false,
+            minimum: const EdgeInsets.all(20),
+            child: PrimaryElevatedButton(
+              text: 'متابعة لتحديد عدد الأسئلة',
+              onPressed: cubit.isValid ? () {
+                context.push(Routes.examGenerationLessons);
+              } : null,
+            ),
           ),
         ),
       ],

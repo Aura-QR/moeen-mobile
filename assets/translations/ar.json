@@ -460,5 +460,17 @@
   "question_added_success": "تم إضافة السؤال بنجاح",
   "exam_lesson_selection": "تحديد الدرس ",
   "exam_question_counts": "عدد الأسئلة",
-  "create_exam": "إنشاء الاختبار"
+  "create_exam": "إنشاء الاختبار",
+  "exam_preview_title": "معاينة الاختبار",
+  "published": "منشور",
+  "draft": "مسودة",
+  "all": "الكل",
+  "search_exam_title": "البحث عن الاختبار",
+  "title": "العنوان",
+  "questions_count": "عدد الأسئلة",
+  "last_update": "آخر تحديث",
+  "actions": "الإجراءات",
+  "no_exams_found": "لا توجد اختبارات",
+  "confirm_delete": "تأكيد الحذف",
+  "delete_exam_msg": "هل أنت متأكد من حذف هذا الاختبار؟"
 }

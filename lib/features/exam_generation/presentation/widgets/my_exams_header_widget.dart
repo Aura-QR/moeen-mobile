@@ -25,37 +25,40 @@ class MyExamsHeaderWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: ColorsManager.borderLight),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Container(
-              height: 48,
-              decoration: BoxDecoration(
-                color: ColorsManager.borderLight.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TextField(
-                onChanged: onSearchChanged,
-                decoration: InputDecoration(
-                  hintText: appTranslation().get('search_exam_title'),
-                  hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.placeholder),
-                  prefixIcon: Icon(Icons.search, color: ColorsManager.placeholder),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
+          Container(
+            height: 48,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: ColorsManager.borderLight.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: TextField(
+              onChanged: onSearchChanged,
+              decoration: InputDecoration(
+                hintText: appTranslation().get('search_exam_title'),
+                hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.placeholder),
+                prefixIcon: Icon(Icons.search, color: ColorsManager.placeholder),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),
-          horizontalSpace16,
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildTab('all', appTranslation().get('all')),
-              horizontalSpace8,
-              _buildTab('draft', appTranslation().get('draft')),
-              horizontalSpace8,
-              _buildTab('published', appTranslation().get('published')),
-            ],
+          verticalSpace16,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTab('all', appTranslation().get('all')),
+                horizontalSpace8,
+                _buildTab('draft', appTranslation().get('draft')),
+                horizontalSpace8,
+                _buildTab('published', appTranslation().get('published')),
+              ],
+            ),
           ),
         ],
       ),

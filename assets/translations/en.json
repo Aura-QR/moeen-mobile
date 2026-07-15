@@ -460,5 +460,17 @@
   "question_added_success": "Question added successfully",
   "exam_lesson_selection": "Select lesson ",
   "exam_question_counts": "Question Counts",
-  "create_exam": "Create Exam"
+  "create_exam": "Create Exam",
+  "exam_preview_title": "Exam Preview",
+  "published": "Published",
+  "draft": "Draft",
+  "all": "All",
+  "search_exam_title": "Search Exam Title",
+  "title": "Title",
+  "questions_count": "Questions Count",
+  "last_update": "Last Update",
+  "actions": "Actions",
+  "no_exams_found": "No exams found",
+  "confirm_delete": "Confirm Delete",
+  "delete_exam_msg": "Are you sure you want to delete this exam?"
 }

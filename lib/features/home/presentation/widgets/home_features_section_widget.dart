@@ -158,20 +158,20 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                   },
                 ),
                 horizontalSpace12,
-                HomeActionChipWidget(
-                  icon: Icons.description_outlined,
-                  title: appTranslation().get('home_worksheets'),
-                  onTap: () {
-                    if (token != null && token!.isNotEmpty) {
-                      final isAdmin = context.read<HomeCubit>().isAdmin;
-                      if (!isAdmin) {
-                        context.push(Routes.manualExam);
-                      }
-                    } else {
-                      context.push(Routes.login);
-                    }
-                  }, 
-                ),
+                // HomeActionChipWidget(
+                //   icon: Icons.description_outlined,
+                //   title: appTranslation().get('home_worksheets'),
+                //   onTap: () {
+                //     if (token != null && token!.isNotEmpty) {
+                //       final isAdmin = context.read<HomeCubit>().isAdmin;
+                //       if (!isAdmin) {
+                //         context.push(Routes.manualExam);
+                //       }
+                //     } else {
+                //       context.push(Routes.login);
+                //     }
+                //   }, 
+                // ),
                 horizontalSpace12,
                 HomeActionChipWidget(
                   icon: Icons.verified_outlined,

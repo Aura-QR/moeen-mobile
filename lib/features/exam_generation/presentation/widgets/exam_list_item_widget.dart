@@ -108,7 +108,7 @@ class ExamListItemWidget extends StatelessWidget {
                   children: [
                     if (exam.status == 'draft')
                       _buildActionButton(
-                        title: appTranslation().get('publish'),
+                        title: appTranslation().get('published'),
                         icon: Icons.check_circle_outline,
                         color: ColorsManager.primaryColor,
                         onTap: onPublish,
