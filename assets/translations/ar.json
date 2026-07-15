@@ -457,5 +457,8 @@
   "correct_must_match": "يجب أن تطابق الإجابة الصحيحة أحد الخيارات",
   "matching_empty": "لا يمكن ترك أعمدة المطابقة فارغة",
   "please_fill_required": "يرجى ملء جميع الحقول المطلوبة",
-  "question_added_success": "تم إضافة السؤال بنجاح"
+  "question_added_success": "تم إضافة السؤال بنجاح",
+  "exam_lesson_selection": "تحديد الدرس ",
+  "exam_question_counts": "عدد الأسئلة",
+  "create_exam": "إنشاء الاختبار"
 }

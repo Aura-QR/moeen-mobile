@@ -457,5 +457,8 @@
   "correct_must_match": "Correct answer must match one of the options",
   "matching_empty": "Matching columns cannot be empty",
   "please_fill_required": "Please fill all required fields",
-  "question_added_success": "Question added successfully"
+  "question_added_success": "Question added successfully",
+  "exam_lesson_selection": "Select lesson ",
+  "exam_question_counts": "Question Counts",
+  "create_exam": "Create Exam"
 }

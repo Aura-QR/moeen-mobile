@@ -81,7 +81,7 @@ class ExamPdfService {
             ),
             pw.SizedBox(height: 20),
             
-            pw.Center(child: pw.Text(exam.title, style: titleStyle)),
+            pw.Center(child: pw.Text(exam.title, style: titleStyle, textDirection: pw.TextDirection.rtl)),
             pw.SizedBox(height: 20),
 
             // Questions
@@ -122,12 +122,12 @@ class ExamPdfService {
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text(educationOffice.isNotEmpty ? educationOffice : 'الإدارة العامة للتعليم', style: titleStyle),
+              pw.Text(educationOffice.isNotEmpty ? educationOffice : 'الإدارة العامة للتعليم', style: titleStyle, textDirection: pw.TextDirection.rtl),
               pw.SizedBox(height: 4),
-              pw.Text(schoolName.isNotEmpty ? schoolName : 'مواهب المملكة', style: headerStyle),
+              pw.Text(schoolName.isNotEmpty ? schoolName : 'مواهب المملكة', style: headerStyle, textDirection: pw.TextDirection.rtl),
               pw.SizedBox(height: 12),
-              pw.Text('المعلم: $teacherName', style: arabicRegular.copyWith(color: PdfColors.white, fontSize: 10)),
-              pw.Text('التاريخ: $date', style: arabicRegular.copyWith(color: PdfColors.white, fontSize: 10)),
+              pw.Text('المعلم: $teacherName', style: arabicRegular.copyWith(color: PdfColors.white, fontSize: 10), textDirection: pw.TextDirection.rtl),
+              pw.Text('التاريخ: $date', style: arabicRegular.copyWith(color: PdfColors.white, fontSize: 10), textDirection: pw.TextDirection.rtl),
             ],
           ),
           pw.Row(
@@ -179,18 +179,18 @@ class ExamPdfService {
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text('${q.questionOrder}. ', style: bold),
+              pw.Text('${q.questionOrder}. ', style: bold, textDirection: pw.TextDirection.rtl),
               pw.Expanded(
-                child: pw.Text(q.questionText, style: bold),
+                child: pw.Text(q.questionText, style: bold, textDirection: pw.TextDirection.rtl),
               ),
-              pw.Text('[${q.points} درجة]', style: regular.copyWith(color: PdfColors.grey700, fontSize: 10)),
+              pw.Text('[${q.points} درجة]', style: regular.copyWith(color: PdfColors.grey700, fontSize: 10), textDirection: pw.TextDirection.rtl),
             ],
           ),
           pw.SizedBox(height: 10),
           _buildQuestionOptions(q, regular, bold, showAnswers),
           if (showAnswers && q.type != 'matching' && q.type != 'mcq') ...[
             pw.SizedBox(height: 10),
-            pw.Text('الإجابة: ${q.correctAnswer}', style: bold.copyWith(color: PdfColors.green700)),
+            pw.Text('الإجابة: ${q.correctAnswer}', style: bold.copyWith(color: PdfColors.green700), textDirection: pw.TextDirection.rtl),
           ]
         ],
       ),
@@ -219,11 +219,14 @@ class ExamPdfService {
                   ),
                 ),
                 pw.SizedBox(width: 8),
-                pw.Text(
-                  opt,
-                  style: (showAnswers && isCorrect)
-                      ? bold.copyWith(color: PdfColors.green700)
-                      : regular,
+                pw.Expanded(
+                  child: pw.Text(
+                    opt,
+                    style: (showAnswers && isCorrect)
+                        ? bold.copyWith(color: PdfColors.green700)
+                        : regular,
+                    textDirection: pw.TextDirection.rtl,
+                  ),
                 ),
               ],
             ),
@@ -246,7 +249,7 @@ class ExamPdfService {
                 ),
               ),
               pw.SizedBox(width: 8),
-              pw.Text('صح', style: regular),
+              pw.Text('صح', style: regular, textDirection: pw.TextDirection.rtl),
             ],
           ),
           pw.Row(
@@ -261,7 +264,7 @@ class ExamPdfService {
                 ),
               ),
               pw.SizedBox(width: 8),
-              pw.Text('خطأ', style: regular),
+              pw.Text('خطأ', style: regular, textDirection: pw.TextDirection.rtl),
             ],
           ),
         ],
@@ -284,14 +287,14 @@ class ExamPdfService {
           pw.Expanded(
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: columnA.map((a) => pw.Padding(padding: const pw.EdgeInsets.only(bottom: 8), child: pw.Text('• $a', style: regular))).toList(),
+              children: columnA.map((a) => pw.Padding(padding: const pw.EdgeInsets.only(bottom: 8), child: pw.Text('• $a', style: regular, textDirection: pw.TextDirection.rtl))).toList(),
             ),
           ),
           pw.SizedBox(width: 20),
           pw.Expanded(
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: columnB.map((b) => pw.Padding(padding: const pw.EdgeInsets.only(bottom: 8), child: pw.Text('• $b', style: regular))).toList(),
+              children: columnB.map((b) => pw.Padding(padding: const pw.EdgeInsets.only(bottom: 8), child: pw.Text('• $b', style: regular, textDirection: pw.TextDirection.rtl))).toList(),
             ),
           ),
         ],
