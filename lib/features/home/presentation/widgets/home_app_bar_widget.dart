@@ -62,10 +62,38 @@ class HomeAppBarWidget extends StatelessWidget {
   }
 }
 
-class _ContactIconButton extends StatelessWidget {
+class _ContactIconButton extends StatefulWidget {
   final bool isAdmin;
 
   const _ContactIconButton({required this.isAdmin});
+
+  @override
+  State<_ContactIconButton> createState() => _ContactIconButtonState();
+}
+
+class _ContactIconButtonState extends State<_ContactIconButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: -0.08, end: 0.08).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +103,7 @@ class _ContactIconButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            if (isAdmin) {
+            if (widget.isAdmin) {
               context.push(Routes.adminContact);
             } else {
               context.push(Routes.contact);
@@ -87,13 +115,16 @@ class _ContactIconButton extends StatelessWidget {
             height: 42,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: ColorsManager.borderColor),
+              border: Border.all(color: ColorsManager.goldLight, width: 1.5),
               color: ColorsManager.surfacePrimary,
             ),
-            child: Icon(
-              Icons.phone_outlined,
-              size: 20,
-              color: ColorsManager.primaryColor,
+            child: RotationTransition(
+              turns: _animation,
+              child: Icon(
+                Icons.phone_outlined,
+                size: 20,
+                color: ColorsManager.primaryColor,
+              ),
             ),
           ),
         ),

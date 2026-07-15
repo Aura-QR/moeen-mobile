@@ -18,7 +18,7 @@ class ExamModel extends ExamEntity {
       teacherId: json['teacher_id'] as int? ?? 0,
       title: json['title'] as String? ?? '',
       status: json['status'] as String? ?? '',
-      totalPoints: (json['total_points'] as num?)?.toDouble() ?? 0.0,
+      totalPoints: (json['total_points'] as num?)?.toInt() ?? 0,
       createdAt: json['created_at'] as String? ?? '',
       updatedAt: json['updated_at'] as String? ?? '',
       questions: (json['questions'] as List<dynamic>?)
@@ -65,7 +65,7 @@ class QuestionModel extends QuestionEntity {
       source: json['source'] as String? ?? '',
       usageCount: json['usage_count'] as int? ?? 0,
       questionOrder: json['question_order'] as int? ?? 0,
-      points: (json['points'] as num?)?.toDouble() ?? 0.0,
+      points: (json['points'] as num?)?.toInt() ?? 0,
     );
   }
 }
@@ -104,7 +104,7 @@ class ExamListModel extends ExamListEntity {
       title: json['title'] as String? ?? '',
       status: json['status'] as String? ?? '',
       questionsCount: json['questions_count'] as int? ?? 0,
-      totalPoints: (json['total_points'] as num?)?.toDouble() ?? 0.0,
+      totalPoints: (json['total_points'] as num?)?.toInt() ?? 0,
       createdAt: json['created_at'] as String? ?? '',
       updatedAt: json['updated_at'] as String? ?? '',
     );

@@ -214,7 +214,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+        side: BorderSide(color: Colors.grey.withValues(alpha:0.2)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -259,7 +259,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: ColorsManager.successColor.withOpacity(0.1),
+                  color: ColorsManager.successColor.withValues(alpha:0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -285,18 +285,22 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
       return Column(
         children: options.map((opt) {
           final isCorrect = opt == q.correctAnswer;
-          return RadioListTile<String>(
-            value: opt,
-            groupValue: showAnswers && isCorrect ? opt : null,
-            activeColor: ColorsManager.successColor,
-            title: Text(
-              opt,
-              style: showAnswers && isCorrect
-                  ? TextStylesManager.bold14.copyWith(color: ColorsManager.successColor)
-                  : TextStylesManager.regular14,
-            ),
-            onChanged: (_) {},
-          );
+          return RadioGroup<String>(
+  groupValue: showAnswers && isCorrect ? opt : null,
+  onChanged: (_) {},
+  child: RadioListTile<String>(
+    value: opt,
+    activeColor: ColorsManager.successColor,
+    title: Text(
+      opt,
+      style: showAnswers && isCorrect
+          ? TextStylesManager.bold14.copyWith(
+              color: ColorsManager.successColor,
+            )
+          : TextStylesManager.regular14,
+    ),
+  ),
+);
         }).toList(),
       );
     } else if (q.type == 'true_false') {

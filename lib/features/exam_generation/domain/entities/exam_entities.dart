@@ -3,7 +3,7 @@ class ExamEntity {
   final int teacherId;
   final String title;
   final String status;
-  final double totalPoints;
+  final int totalPoints;
   final String createdAt;
   final String updatedAt;
   final List<QuestionEntity> questions;
@@ -30,7 +30,7 @@ class QuestionEntity {
   final String source;
   final int usageCount;
   final int questionOrder;
-  final double points;
+  final int points;
 
   QuestionEntity({
     required this.id,
@@ -71,7 +71,7 @@ class ExamListEntity {
   final String title;
   final String status;
   final int questionsCount;
-  final double totalPoints;
+  final int totalPoints;
   final String createdAt;
   final String updatedAt;
 

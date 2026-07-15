@@ -148,31 +148,40 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                   title: appTranslation().get('home_reports'),
                   onTap: () {
                     if (token != null && token!.isNotEmpty) {
-                      context.push(Routes.reports);
+                      final isAdmin = context.read<HomeCubit>().isAdmin;
+                      if (!isAdmin) {
+                        context.push(Routes.reports);
+                      }
                     } else {
                       context.push(Routes.login);
                     }
                   },
                 ),
                 horizontalSpace12,
-                // HomeActionChipWidget(
-                //   icon: Icons.description_outlined,
-                //   title: appTranslation().get('home_worksheets'),
-                //   onTap: () {
-                //     if (token != null && token!.isNotEmpty) {
-                //       context.push(Routes.manualExam);
-                //     } else {
-                //       context.push(Routes.login);
-                //     }
-                //   }, 
-                // ),
-                // horizontalSpace12,
+                HomeActionChipWidget(
+                  icon: Icons.description_outlined,
+                  title: appTranslation().get('home_worksheets'),
+                  onTap: () {
+                    if (token != null && token!.isNotEmpty) {
+                      final isAdmin = context.read<HomeCubit>().isAdmin;
+                      if (!isAdmin) {
+                        context.push(Routes.manualExam);
+                      }
+                    } else {
+                      context.push(Routes.login);
+                    }
+                  }, 
+                ),
+                horizontalSpace12,
                 HomeActionChipWidget(
                   icon: Icons.verified_outlined,
                   title: appTranslation().get('home_tests'),
                   onTap: () {
                     if (token != null && token!.isNotEmpty) {
-                      context.push(Routes.examGenerationInfo);
+                      final isAdmin = context.read<HomeCubit>().isAdmin;
+                      if (!isAdmin) {
+                        context.push(Routes.examGenerationInfo);
+                      }
                     } else {
                       context.push(Routes.login);
                     }
@@ -184,7 +193,10 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                   title: appTranslation().get('my_exam'),
                   onTap: () {
                     if (token != null && token!.isNotEmpty) {
-                      context.push(Routes.myExams);
+                      final isAdmin = context.read<HomeCubit>().isAdmin;
+                      if (!isAdmin) {
+                        context.push(Routes.myExams);
+                      }
                     } else {
                       context.push(Routes.login);
                     }

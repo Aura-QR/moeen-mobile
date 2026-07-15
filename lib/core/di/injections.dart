@@ -13,12 +13,14 @@ import 'package:moean/features/exam_generation/data/repositories/exam_repository
 import 'package:moean/features/exam_generation/domain/usecases/generate_exam_usecase.dart' as moean_exam;
 import 'package:moean/features/exam_generation/domain/usecases/get_exam_usecase.dart' as moean_exam;
 import 'package:moean/features/exam_generation/domain/usecases/update_question_points_usecase.dart' as moean_exam;
+import 'package:moean/features/exam_generation/domain/usecases/add_manual_question_usecase.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/exam_info_cubit.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/lesson_selection_cubit.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/question_count_cubit.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/generate_exam_cubit.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/exam_preview_cubit.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/my_exams_cubit.dart' as moean_exam;
+import 'package:moean/features/exam_generation/presentation/cubit/manual_exam_cubit.dart' as moean_exam;
 
 final sl = GetIt.instance;
 
@@ -88,6 +90,7 @@ Future<void> initInjections() async {
   sl.registerLazySingleton(() => moean_exam.GenerateExamUseCase(sl()));
   sl.registerLazySingleton(() => moean_exam.GetExamUseCase(sl()));
   sl.registerLazySingleton(() => moean_exam.UpdateQuestionPointsUseCase(sl()));
+  sl.registerLazySingleton(() => moean_exam.AddManualQuestionUseCase(sl()));
 
   sl.registerLazySingleton(() => moean_exam.ExamInfoCubit());
   sl.registerLazySingleton(() => moean_exam.LessonSelectionCubit());
@@ -99,5 +102,6 @@ Future<void> initInjections() async {
         examRepository: sl(),
       ));
   sl.registerFactory(() => moean_exam.MyExamsCubit(sl()));
+  sl.registerFactory(() => moean_exam.ManualExamCubit(sl()));
 }
 
