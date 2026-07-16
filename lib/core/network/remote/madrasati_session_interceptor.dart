@@ -253,16 +253,22 @@ class MadrasatiSessionInterceptor extends QueuedInterceptor {
     final statusCode = response.statusCode;
     if (statusCode == null) return false;
 
-    // Standard 401 Unauthorized
-    if (statusCode == 401) return true;
-
-    // 422 with specific Madrasati session error codes
-    if (statusCode == 422 && response.data is Map) {
+    if (response.data is Map) {
       final data = response.data as Map;
       final code = data['code']?.toString() ?? '';
-      return code == 'missing_madrasati_auth_cookie' ||
-          code == 'madrasati_session_expired' ||
-          code == 'madrasati_session_required';
+      
+      // Standard App Authentication Error (Bearer token expired/missing)
+      // We should NOT treat this as a Madrasati session error!
+      if (statusCode == 401 && code == 'unauthenticated') {
+        return false;
+      }
+
+      // 422 with specific Madrasati session error codes
+      if (statusCode == 422 || statusCode == 401) {
+        return code == 'missing_madrasati_auth_cookie' ||
+            code == 'madrasati_session_expired' ||
+            code == 'madrasati_session_required';
+      }
     }
 
     return false;

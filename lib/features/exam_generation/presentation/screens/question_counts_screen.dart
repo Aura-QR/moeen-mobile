@@ -32,7 +32,9 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
     final lessonCubit = context.read<LessonSelectionCubit>();
     final countCubit = context.read<QuestionCountCubit>();
 
-    if (countCubit.totalRequestedQuestions == 0) {
+    final hasBankQuestions = infoCubit.selectedBankQuestionIds.isNotEmpty;
+
+    if (countCubit.totalRequestedQuestions == 0 && !hasBankQuestions) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('يجب اختيار سؤال واحد على الأقل', style: TextStylesManager.bold14),
@@ -47,6 +49,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
       subject: infoCubit.subject,
       lessons: lessonCubit.selectedLessons,
       counts: countCubit.counts,
+      selectedQuestionIds: infoCubit.selectedBankQuestionIds,
     );
   }
 
@@ -108,8 +111,27 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Text('الخطوة 3 من 3: عدد الأسئلة', style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
+                              Text('الخطوة 2 من 3: تحديد الأسئلة', style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
                               verticalSpace16,
+                              PrimaryElevatedButton(
+                                text: 'تصفح بنك الأسئلة',
+                                onPressed: () => context.push(Routes.examBankQuestions),
+                              ),
+                              verticalSpace16,
+                              if (context.read<ExamInfoCubit>().selectedBankQuestionIds.isNotEmpty) ...[
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    'تم اختيار ${context.read<ExamInfoCubit>().selectedBankQuestionIds.values.fold(0, (sum, list) => sum + (list as List).length)} سؤال من بنك الأسئلة. سيتم دمجها مع الأرقام المحددة بالأسفل للذكاء الاصطناعي.',
+                                    style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
+                                  ),
+                                ),
+                                verticalSpace16,
+                              ],
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
@@ -152,10 +174,22 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Expanded(
-                                            child: Text(
-                                              lesson['name'],
-                                              style: TextStylesManager.bold16,
-                                              maxLines: 2,
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  lesson['name'],
+                                                  style: TextStylesManager.bold16,
+                                                  maxLines: 2,
+                                                ),
+                                                if (context.read<ExamInfoCubit>().selectedBankQuestionIds[lessonId] != null && context.read<ExamInfoCubit>().selectedBankQuestionIds[lessonId]!.isNotEmpty) ...[
+                                                  verticalSpace4,
+                                                  Text(
+                                                    '${context.read<ExamInfoCubit>().selectedBankQuestionIds[lessonId]!.length} سؤال محدد من البنك',
+                                                    style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
+                                                  ),
+                                                ]
+                                              ],
                                             ),
                                           ),
                                           IconButton(

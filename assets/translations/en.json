@@ -472,5 +472,13 @@
   "actions": "Actions",
   "no_exams_found": "No exams found",
   "confirm_delete": "Confirm Delete",
-  "delete_exam_msg": "Are you sure you want to delete this exam?"
+  "delete_exam_msg": "Are you sure you want to delete this exam?",
+  "admin_pending_questions_title": "Pending Questions",
+  "admin_exam_review_success": "Question reviewed successfully",
+  "no_pending_questions": "No pending questions",
+  "reject": "Reject",
+  "approve": "Approve",
+  "approved": "Approved",
+  "rejected": "Rejected",
+  "pending": "Pending"
 }

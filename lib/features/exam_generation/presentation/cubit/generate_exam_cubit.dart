@@ -28,6 +28,7 @@ class GenerateExamCubit extends Cubit<GenerateExamState> {
     required String subject,
     required List<Map<String, dynamic>> lessons,
     required Map<int, RequestedCountsEntity> counts,
+    Map<int, List<int>>? selectedQuestionIds,
   }) async {
     emit(GenerateExamLoading());
 
@@ -36,16 +37,19 @@ class GenerateExamCubit extends Cubit<GenerateExamState> {
     for (final lesson in lessons) {
       final id = lesson['id'] as int;
       final requestedCounts = counts[id];
-      if (requestedCounts != null) {
+      final selectedIds = selectedQuestionIds?[id] ?? [];
+      
+      if (requestedCounts != null || selectedIds.isNotEmpty) {
         requestedLessons.add({
           'lesson_id': id,
           'lesson_name': lesson['name'],
+          if (selectedIds.isNotEmpty) 'selected_question_ids': selectedIds,
           'requested_counts': {
-            'mcq': requestedCounts.mcq,
-            'true_false': requestedCounts.trueFalse,
-            'fill_blank': requestedCounts.fillBlank,
-            'essay': requestedCounts.essay,
-            'matching': requestedCounts.matching,
+            'mcq': requestedCounts?.mcq ?? 0,
+            'true_false': requestedCounts?.trueFalse ?? 0,
+            'fill_blank': requestedCounts?.fillBlank ?? 0,
+            'essay': requestedCounts?.essay ?? 0,
+            'matching': requestedCounts?.matching ?? 0,
           }
         });
       }

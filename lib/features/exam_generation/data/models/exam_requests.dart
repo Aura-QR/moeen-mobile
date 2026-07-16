@@ -25,11 +25,13 @@ class LessonRequest {
   final int lessonId;
   final String lessonName;
   final RequestedCounts requestedCounts;
+  final List<int>? selectedQuestionIds;
 
   LessonRequest({
     required this.lessonId,
     required this.lessonName,
     required this.requestedCounts,
+    this.selectedQuestionIds,
   });
 
   Map<String, dynamic> toJson() {
@@ -37,6 +39,7 @@ class LessonRequest {
       'lesson_id': lessonId,
       'lesson_name': lessonName,
       'requested_counts': requestedCounts.toJson(),
+      if (selectedQuestionIds != null && selectedQuestionIds!.isNotEmpty) 'selected_question_ids': selectedQuestionIds,
     };
   }
 }

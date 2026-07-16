@@ -21,6 +21,7 @@ class ExamRepositoryImpl implements ExamRepository {
       lessons: lessons.map((e) => LessonRequest(
         lessonId: e['lesson_id'] as int? ?? 0,
         lessonName: e['lesson_name'] as String? ?? '',
+        selectedQuestionIds: e['selected_question_ids'] != null ? List<int>.from(e['selected_question_ids']) : null,
         requestedCounts: RequestedCounts(
           mcq: e['requested_counts']?['mcq'] ?? 0,
           trueFalse: e['requested_counts']?['true_false'] ?? 0,

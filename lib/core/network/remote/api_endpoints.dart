@@ -19,6 +19,8 @@ const String subscriptionsApi = '/subscriptions';
 const String adminContactStatsApi = '/admin/contact/stats';
 const String adminContactApi = '/admin/contact';
 const String adminPaymentsApi = '/admin/payments';
+const String adminPendingQuestionsApi = '/admin/questions/pending-review';
+String adminReviewQuestionApi(int id) => '/admin/questions/$id/review';
 
 // Contact API
 const String contactTypesApi = '/contact/types';
@@ -48,3 +50,4 @@ String examPublishApi(int id) => '/exams/$id/publish';
 // Curriculum API
 const String subjectsApi = '/subjects';
 String subjectLessonsApi(int id) => '/subjects/$id/lessons';
+String lessonQuestionsApi(int id) => '/lessons/$id/questions';

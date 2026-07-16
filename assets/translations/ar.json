@@ -472,5 +472,13 @@
   "actions": "الإجراءات",
   "no_exams_found": "لا توجد اختبارات",
   "confirm_delete": "تأكيد الحذف",
-  "delete_exam_msg": "هل أنت متأكد من حذف هذا الاختبار؟"
+  "delete_exam_msg": "هل أنت متأكد من حذف هذا الاختبار؟",
+  "admin_pending_questions_title": "الأسئلة المعلقة",
+  "admin_exam_review_success": "تم تقييم السؤال بنجاح",
+  "no_pending_questions": "لا توجد أسئلة معلقة",
+  "reject": "رفض",
+  "approve": "قبول",
+  "approved": "مقبول",
+  "rejected": "مرفوض",
+  "pending": "معلق"
 }

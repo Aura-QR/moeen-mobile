@@ -47,7 +47,12 @@ import 'package:moean/features/exam_generation/domain/entities/exam_entities.dar
 import 'package:moean/features/exam_generation/presentation/screens/my_exams_screen.dart';
 import 'package:moean/features/exam_generation/presentation/cubit/my_exams_cubit.dart';
 import 'package:moean/features/exam_generation/presentation/screens/my_exams_screen.dart';
+import 'package:moean/features/exam_generation/presentation/screens/my_exams_screen.dart';
 import 'package:moean/features/exam_generation/presentation/screens/manual_exam_screen.dart';
+import 'package:moean/features/exam_generation/presentation/screens/bank_questions_screen.dart';
+import 'package:moean/features/exam_generation/presentation/cubit/bank_questions_cubit.dart';
+import 'package:moean/features/admin/exams/presentation/screen/admin_exams_screen.dart';
+import 'package:moean/features/admin/exams/presentation/cubit/admin_exams_cubit.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -85,6 +90,9 @@ class Routes {
   static const String examGenerationPreview = '/exam-generation/preview';
   static const String myExams = '/my-exams';
   static const String manualExam = '/manual-exam';
+  static const String examBankQuestions = '/exam-generation/bank-questions';
+  static const String adminExams = '/admin/exams';
+  
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
     login: (context) => const LoginScreen(),
@@ -101,6 +109,7 @@ class Routes {
     adminContact: (context) => const AdminContactScreen(),
     adminTicketDetails: (context) => BlocProvider(create: (context) => AdminContactCubit(), child: const AdminTicketDetailsScreen()),
     adminPayments: (context) => const AdminPaymentsScreen(),
+    adminExams: (context) => BlocProvider(create: (_) => sl<AdminExamsCubit>()..fetchPendingQuestions(), child: const AdminExamsScreen()),
     contact: (context) => BlocProvider(create: (context) => ContactCubit(), child: const ContactSupportScreen()),
     createTicket: (context) => BlocProvider(create: (context) => ContactCubit(), child: const CreateTicketScreen()),
     myTickets: (context) => BlocProvider(create: (context) => ContactCubit(), child: const MyTicketsScreen()),
@@ -144,5 +153,13 @@ class Routes {
       child: const MyExamsScreen(),
     ),
     manualExam: (context) => const ManualExamScreen(),
+    examBankQuestions: (context) => MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<BankQuestionsCubit>()),
+        BlocProvider.value(value: sl<LessonSelectionCubit>()),
+        BlocProvider.value(value: sl<ExamInfoCubit>()),
+      ],
+      child: const BankQuestionsScreen(),
+    ),
   };
 }

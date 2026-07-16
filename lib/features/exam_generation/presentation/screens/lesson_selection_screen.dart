@@ -65,7 +65,7 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('الخطوة 2 من 3: اختيار الدروس', style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
+                Text('الخطوة 1 من 3: اختيار الدروس', style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
                 verticalSpace16,
                 PrimaryTextField(
                   controller: _searchController,

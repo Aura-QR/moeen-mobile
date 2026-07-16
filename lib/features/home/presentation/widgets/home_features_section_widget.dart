@@ -179,7 +179,9 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                   onTap: () {
                     if (token != null && token!.isNotEmpty) {
                       final isAdmin = context.read<HomeCubit>().isAdmin;
-                      if (!isAdmin) {
+                      if (isAdmin) {
+                        context.push(Routes.adminExams);
+                      } else {
                         context.push(Routes.examGenerationInfo);
                       }
                     } else {

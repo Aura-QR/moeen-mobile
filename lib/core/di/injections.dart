@@ -21,6 +21,14 @@ import 'package:moean/features/exam_generation/presentation/cubit/generate_exam_
 import 'package:moean/features/exam_generation/presentation/cubit/exam_preview_cubit.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/my_exams_cubit.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/manual_exam_cubit.dart' as moean_exam;
+import 'package:moean/features/exam_generation/presentation/cubit/bank_questions_cubit.dart' as moean_exam;
+
+import 'package:moean/features/admin/exams/data/datasources/admin_exam_remote_data_source.dart';
+import 'package:moean/features/admin/exams/data/repositories/admin_exam_repository_impl.dart';
+import 'package:moean/features/admin/exams/domain/repositories/admin_exam_repository.dart';
+import 'package:moean/features/admin/exams/domain/usecases/get_pending_questions_usecase.dart';
+import 'package:moean/features/admin/exams/domain/usecases/review_question_usecase.dart';
+import 'package:moean/features/admin/exams/presentation/cubit/admin_exams_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -103,5 +111,17 @@ Future<void> initInjections() async {
       ));
   sl.registerFactory(() => moean_exam.MyExamsCubit(sl()));
   sl.registerFactory(() => moean_exam.ManualExamCubit(sl()));
-}
+  sl.registerFactory(() => moean_exam.BankQuestionsCubit());
 
+  // ─── Admin Exams ──────────────────────────────────────────────
+  sl.registerLazySingleton<AdminExamRemoteDataSource>(
+      () => AdminExamRemoteDataSourceImpl());
+  sl.registerLazySingleton<AdminExamRepository>(
+      () => AdminExamRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => GetPendingQuestionsUseCase(sl()));
+  sl.registerLazySingleton(() => ReviewQuestionUseCase(sl()));
+  sl.registerFactory(() => AdminExamsCubit(
+        getPendingQuestionsUseCase: sl(),
+        reviewQuestionUseCase: sl(),
+      ));
+}

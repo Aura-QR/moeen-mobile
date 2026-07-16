@@ -2,6 +2,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
 
+enum GenerationSource {
+  aiOnly,
+  mixed,
+}
 abstract class ExamInfoState {}
 
 class ExamInfoInitial extends ExamInfoState {}
@@ -20,6 +24,8 @@ class ExamInfoUpdated extends ExamInfoState {
   final UnitModel? selectedUnit;
   final List<SubjectGroupModel> subjectsData;
   final String difficulty;
+  final GenerationSource generationSource;
+  final Map<int, List<int>> selectedBankQuestionIds;
 
   ExamInfoUpdated({
     required this.gradeStage,
@@ -28,6 +34,8 @@ class ExamInfoUpdated extends ExamInfoState {
     required this.selectedUnit,
     required this.subjectsData,
     required this.difficulty,
+    required this.generationSource,
+    required this.selectedBankQuestionIds,
   });
 }
 
@@ -41,6 +49,8 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
   String subject = '';
   UnitModel? selectedUnit;
   String difficulty = 'medium';
+  GenerationSource generationSource = GenerationSource.aiOnly;
+  final Map<int, List<int>> selectedBankQuestionIds = {};
   
   List<SubjectGroupModel> subjectsData = [];
 
@@ -87,6 +97,17 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
     _emitUpdated();
   }
 
+  void updateSelectedBankQuestions(Map<int, List<int>> questionIdsMap) {
+    selectedBankQuestionIds.clear();
+    selectedBankQuestionIds.addAll(questionIdsMap);
+    _emitUpdated();
+  }
+
+  void updateGenerationSource(GenerationSource source) {
+    generationSource = source;
+    _emitUpdated();
+  }
+
   void _emitUpdated() {
     emit(ExamInfoUpdated(
       gradeStage: gradeStage,
@@ -95,6 +116,8 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
       selectedUnit: selectedUnit,
       subjectsData: subjectsData,
       difficulty: difficulty,
+      generationSource: generationSource,
+      selectedBankQuestionIds: Map.from(selectedBankQuestionIds),
     ));
   }
 

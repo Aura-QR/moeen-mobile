@@ -697,5 +697,30 @@ class ApiService {
       (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
     );
   }
+
+  static Future<Either<String, Map<String, dynamic>>> getLessonQuestions({
+    required int lessonId,
+    String? type,
+    String? difficulty,
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    final query = <String, dynamic>{
+      'page': page,
+      'per_page': perPage,
+    };
+    if (type != null && type.isNotEmpty) query['type'] = type;
+    if (difficulty != null && difficulty.isNotEmpty) query['difficulty'] = difficulty;
+
+    final response = await DioHelper.getData(
+      url: lessonQuestionsApi(lessonId),
+      query: query,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
 }
 
