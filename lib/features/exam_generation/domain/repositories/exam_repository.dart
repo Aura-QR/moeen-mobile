@@ -28,4 +28,16 @@ abstract class ExamRepository {
   Future<Either<Failure, bool>> deleteExam(int id);
 
   Future<Either<Failure, ExamEntity>> addManualQuestion(Map<String, dynamic> request);
+
+  Future<Either<Failure, QuestionPaginationEntity>> getMyQuestions({
+    int page = 1,
+    int perPage = 20,
+    String? type,
+    String? difficulty,
+    String? reviewStatus,
+    int? lessonId,
+    String? search,
+  });
+
+  Future<Either<Failure, QuestionEntity>> updateCustomQuestion(int id, Map<String, dynamic> data);
 }

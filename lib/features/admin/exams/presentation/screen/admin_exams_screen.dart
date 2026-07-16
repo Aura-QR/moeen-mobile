@@ -9,6 +9,7 @@ import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/admin/exams/domain/entities/admin_exam_entities.dart';
 import 'package:moean/features/admin/exams/presentation/cubit/admin_exams_cubit.dart';
 import 'package:moean/features/admin/exams/presentation/cubit/admin_exams_state.dart';
+import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 
 class AdminExamsScreen extends StatelessWidget {
   const AdminExamsScreen({super.key});
@@ -156,7 +157,7 @@ class AdminExamsScreen extends StatelessWidget {
             children: [
               Chip(
                 label: Text(
-                  question.type.toUpperCase(),
+                  _getQuestionTypeName(question.type),
                   style: TextStylesManager.medium12.copyWith(color: Colors.white),
                 ),
                 backgroundColor: ColorsManager.primaryColor,
@@ -223,7 +224,7 @@ class AdminExamsScreen extends StatelessWidget {
                 horizontalSpace8,
                 Expanded(
                   child: Text(
-                    "${appTranslation().get('correct_answer')}: ${question.correctAnswer}",
+                    "الإجابة الصحيحة: ${question.correctAnswer}",
                     style: TextStylesManager.medium14.copyWith(color: Colors.green),
                   ),
                 ),
@@ -242,7 +243,7 @@ class AdminExamsScreen extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  "${appTranslation().get('difficulty')}: ${question.difficulty}",
+                  "الصعوبة: ${_getDifficultyName(question.difficulty)}",
                   style: TextStylesManager.regular14.copyWith(color: Colors.grey),
                 ),
               ],
@@ -262,7 +263,7 @@ class AdminExamsScreen extends StatelessWidget {
                   )
                 else ...[
                   OutlinedButton.icon(
-                    onPressed: () => cubit.reviewQuestion(question.id, 'rejected'),
+                    onPressed: () => _showRejectDialog(context, question, cubit),
                     icon: const Icon(Icons.close, color: Colors.red),
                     label: Text(
                       appTranslation().get('reject'),
@@ -274,7 +275,7 @@ class AdminExamsScreen extends StatelessWidget {
                   ),
                   horizontalSpace12,
                   ElevatedButton.icon(
-                    onPressed: () => cubit.reviewQuestion(question.id, 'approved'),
+                    onPressed: () => _showApproveDialog(context, question, cubit),
                     icon: const Icon(Icons.check, color: Colors.white),
                     label: Text(
                       appTranslation().get('approve'),
@@ -343,5 +344,407 @@ class AdminExamsScreen extends StatelessWidget {
       }
     }
     return const SizedBox();
+  }
+
+  String _getQuestionTypeName(String type) {
+    switch (type.toLowerCase()) {
+      case 'mcq': return 'اختيار من متعدد';
+      case 'matching': return 'مزاوجة';
+      case 'true_false': return 'صح وخطأ';
+      case 'fill_blank':
+      case 'fill_in_the_blank': return 'أكمل الفراغ';
+      default: return type;
+    }
+  }
+
+  String _getDifficultyName(String difficulty) {
+    switch (difficulty.toLowerCase()) {
+      case 'easy': return 'سهل';
+      case 'medium': return 'متوسط';
+      case 'hard': return 'صعب';
+      default: return difficulty;
+    }
+  }
+
+  void _showApproveDialog(BuildContext context, AdminQuestionEntity question, AdminExamsCubit cubit) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF1E9B75),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(dialogContext),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'تأكيد الإجراء',
+                          style: TextStylesManager.regular12.copyWith(color: Colors.white),
+                        ),
+                        Text(
+                          'اعتماد السؤال',
+                          style: TextStylesManager.bold18.copyWith(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Chip(
+                                label: Text(
+                                  _getDifficultyName(question.difficulty),
+                                  style: TextStylesManager.medium12.copyWith(color: const Color(0xFF1D3557)),
+                                ),
+                                backgroundColor: const Color(0xFFEDF2F7),
+                                side: BorderSide.none,
+                              ),
+                              horizontalSpace8,
+                              Chip(
+                                label: Text(
+                                  _getQuestionTypeName(question.type),
+                                  style: TextStylesManager.medium12.copyWith(color: const Color(0xFF1E9B75)),
+                                ),
+                                backgroundColor: const Color(0xFFE6F4F1),
+                                side: BorderSide.none,
+                              ),
+                            ],
+                          ),
+                          verticalSpace12,
+                          Text(
+                            question.questionText,
+                            style: TextStylesManager.bold16.copyWith(color: const Color(0xFF1D3557)),
+                            textAlign: TextAlign.right,
+                          ),
+                          verticalSpace12,
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF7E6),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'الإجابة الصحيحة: ${question.correctAnswer}',
+                              style: TextStylesManager.bold14.copyWith(color: const Color(0xFFB57D2C)),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    verticalSpace16,
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F5F2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'بعد الاعتماد، سيظهر هذا السؤال ضمن الأسئلة الجاهزة التي يمكن للمعلمين اختيارها.',
+                        style: TextStylesManager.bold14.copyWith(color: const Color(0xFF1E9B75)),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    verticalSpace24,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: Text(
+                              'إلغاء',
+                              style: TextStylesManager.bold14.copyWith(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                        horizontalSpace12,
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(dialogContext);
+                              cubit.reviewQuestion(question.id, 'approved');
+                            },
+                            icon: const Icon(Icons.check_circle_outline, color: Colors.white),
+                            label: Text(
+                              'نعم، اعتمد السؤال',
+                              style: TextStylesManager.bold14.copyWith(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1E9B75),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showRejectDialog(BuildContext context, AdminQuestionEntity question, AdminExamsCubit cubit) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return _RejectQuestionDialog(
+          question: question,
+          onReject: (reason) {
+            cubit.reviewQuestion(
+              question.id,
+              'rejected',
+              reason.isNotEmpty ? reason : null,
+            );
+          },
+          getQuestionTypeName: _getQuestionTypeName,
+          getDifficultyName: _getDifficultyName,
+        );
+      },
+    );
+  }
+}
+
+class _RejectQuestionDialog extends StatefulWidget {
+  final AdminQuestionEntity question;
+  final Function(String) onReject;
+  final String Function(String) getQuestionTypeName;
+  final String Function(String) getDifficultyName;
+
+  const _RejectQuestionDialog({
+    required this.question,
+    required this.onReject,
+    required this.getQuestionTypeName,
+    required this.getDifficultyName,
+  });
+
+  @override
+  State<_RejectQuestionDialog> createState() => _RejectQuestionDialogState();
+}
+
+class _RejectQuestionDialogState extends State<_RejectQuestionDialog> {
+  late final TextEditingController _reasonController;
+
+  @override
+  void initState() {
+    super.initState();
+    _reasonController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                color: Color(0xFFD32F2F),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'تأكيد الإجراء',
+                        style: TextStylesManager.regular12.copyWith(color: Colors.white),
+                      ),
+                      Text(
+                        'رفض السؤال',
+                        style: TextStylesManager.bold18.copyWith(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Chip(
+                              label: Text(
+                                widget.getDifficultyName(widget.question.difficulty),
+                                style: TextStylesManager.medium12.copyWith(color: const Color(0xFF1D3557)),
+                              ),
+                              backgroundColor: const Color(0xFFEDF2F7),
+                              side: BorderSide.none,
+                            ),
+                            horizontalSpace8,
+                            Chip(
+                              label: Text(
+                                widget.getQuestionTypeName(widget.question.type),
+                                style: TextStylesManager.medium12.copyWith(color: const Color(0xFF1E9B75)),
+                              ),
+                              backgroundColor: const Color(0xFFE6F4F1),
+                              side: BorderSide.none,
+                            ),
+                          ],
+                        ),
+                        verticalSpace12,
+                        Text(
+                          widget.question.questionText,
+                          style: TextStylesManager.bold16.copyWith(color: const Color(0xFF1D3557)),
+                          textAlign: TextAlign.right,
+                        ),
+                        verticalSpace12,
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF7E6),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'الإجابة الصحيحة: ${widget.question.correctAnswer}',
+                            style: TextStylesManager.bold14.copyWith(color: const Color(0xFFB57D2C)),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  verticalSpace16,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFEBEE),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'بعد الرفض، لن يظهر هذا السؤال ضمن الأسئلة الجاهزة، وسيظل محفوظاً في اختبار المعلم فقط.',
+                      style: TextStylesManager.bold14.copyWith(color: const Color(0xFFD32F2F)),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  verticalSpace16,
+                  PrimaryTextField(
+                    controller: _reasonController,
+                    hint: 'سبب الرفض (اختياري)',
+                    maxLines: 3,
+                    keyboardType: TextInputType.multiline,
+                    textInputAction: TextInputAction.newline,
+                  ),
+                  verticalSpace24,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: Text(
+                            'إلغاء',
+                            style: TextStylesManager.bold14.copyWith(color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                      horizontalSpace12,
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            final reason = _reasonController.text.trim();
+                            Navigator.pop(context);
+                            widget.onReject(reason);
+                          },
+                          icon: const Icon(Icons.cancel_outlined, color: Colors.white),
+                          label: Text(
+                            'نعم، ارفض السؤال',
+                            style: TextStylesManager.bold14.copyWith(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD32F2F),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

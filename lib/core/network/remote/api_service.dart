@@ -515,14 +515,14 @@ class ApiService {
   // Curriculum APIs (Subjects & Lessons)
   // ===========================================================================
 
-  static Future<Either<Failure, List<SubjectGroupModel>>> getSubjects() async {
+  static Future<Either<Failure, List<CurriculumStageModel>>> getSubjects() async {
     try {
       final responseEither = await DioHelper.getData(url: subjectsApi);
       return responseEither.fold(
         (error) => Left(ServerFailure(error)),
         (response) {
           final List<dynamic> data = response.data is List ? response.data : (response.data['data'] ?? []);
-          return Right(data.map((e) => SubjectGroupModel.fromJson(e)).toList());
+          return Right(data.map((e) => CurriculumStageModel.fromJson(e)).toList());
         },
       );
     } catch (e) {
@@ -530,32 +530,17 @@ class ApiService {
     }
   }
 
-  static Future<Either<Failure, List<CurriculumLessonModel>>> getSubjectLessons(int subjectId) async {
+  static Future<Either<Failure, SubjectDetailsModel>> getSubjectLessons(int subjectId) async {
     try {
       final responseEither = await DioHelper.getData(url: subjectLessonsApi(subjectId));
       return responseEither.fold(
         (error) => Left(ServerFailure(error)),
         (response) {
           final data = response.data;
-          List<dynamic> lessonsRaw = [];
-          
           if (data is Map<String, dynamic>) {
-            if (data.containsKey('chapters') && data['chapters'] is List) {
-              for (var chapter in data['chapters']) {
-                if (chapter is Map<String, dynamic> && chapter.containsKey('lessons') && chapter['lessons'] is List) {
-                  lessonsRaw.addAll(chapter['lessons']);
-                }
-              }
-            } else if (data.containsKey('data') && data['data'] is List) {
-              lessonsRaw = data['data'];
-            } else if (data.containsKey('lessons') && data['lessons'] is List) {
-              lessonsRaw = data['lessons'];
-            }
-          } else if (data is List) {
-            lessonsRaw = data;
+            return Right(SubjectDetailsModel.fromJson(data));
           }
-          
-          return Right(lessonsRaw.map((e) => CurriculumLessonModel.fromJson(e)).toList());
+          return Left(ServerFailure('Invalid data format'));
         },
       );
     } catch (e) {
@@ -715,6 +700,48 @@ class ApiService {
     final response = await DioHelper.getData(
       url: lessonQuestionsApi(lessonId),
       query: query,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getMyQuestions({
+    int page = 1,
+    int perPage = 20,
+    String? type,
+    String? difficulty,
+    String? reviewStatus,
+    int? lessonId,
+    String? search,
+  }) async {
+    final query = <String, dynamic>{
+      'page': page,
+      'per_page': perPage,
+    };
+    if (type != null && type.isNotEmpty) query['type'] = type;
+    if (difficulty != null && difficulty.isNotEmpty) query['difficulty'] = difficulty;
+    if (reviewStatus != null && reviewStatus.isNotEmpty) query['review_status'] = reviewStatus;
+    if (lessonId != null) query['lesson_id'] = lessonId;
+    if (search != null && search.isNotEmpty) query['search'] = search;
+
+    final response = await DioHelper.getData(
+      url: questionsMyApi,
+      query: query,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> updateCustomQuestion(int id, Map<String, dynamic> data) async {
+    final response = await DioHelper.patchData(
+      url: questionUpdateApi(id),
+      data: data,
     );
 
     return response.fold(

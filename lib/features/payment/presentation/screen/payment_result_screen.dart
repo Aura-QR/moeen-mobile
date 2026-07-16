@@ -57,7 +57,7 @@ class PaymentResultScreen extends StatelessWidget {
               ),
               verticalSpace40,
               PrimaryElevatedButton(
-                text: appTranslation().get('pay_go_home') ?? '',
+                text: appTranslation().get('pay_go_home'),
                 icon: Icon(Icons.home_outlined, size: 20,
                     color: ColorsManager.white),
                 onPressed: () => Navigator.pushNamedAndRemoveUntil(
@@ -65,7 +65,7 @@ class PaymentResultScreen extends StatelessWidget {
               ),
               verticalSpace12,
               PrimaryElevatedButton(
-                text: appTranslation().get('pay_view_history') ?? '',
+                text: appTranslation().get('pay_view_history'),
                 icon: Icon(Icons.history_outlined, size: 20,
                     color: ColorsManager.primaryColor),
                 backgroundColor: Colors.transparent,
@@ -90,9 +90,8 @@ class PaymentResultScreen extends StatelessWidget {
           icon: Icons.check_circle_rounded,
           iconColor: ColorsManager.successColor,
           iconBgColor: const Color(0xFFDCFCE7),
-          title: appTranslation().get('pay_result_paid_title') ?? 'تم الدفع بنجاح',
-          subtitle: appTranslation().get('pay_result_paid_subtitle') ??
-              'تم تفعيل اشتراكك بنجاح. يمكنك الآن الاستمتاع بجميع المميزات.',
+          title: appTranslation().get('pay_result_paid_title'),
+          subtitle: appTranslation().get('pay_result_paid_subtitle'),
         );
       case 'failed':
       case 'rejected':
@@ -100,9 +99,8 @@ class PaymentResultScreen extends StatelessWidget {
           icon: Icons.cancel_rounded,
           iconColor: ColorsManager.errorColor,
           iconBgColor: const Color(0xFFFEE2E2),
-          title: appTranslation().get('pay_result_failed_title') ?? 'فشل الدفع',
-          subtitle: appTranslation().get('pay_result_failed_subtitle') ??
-              'حدث خطأ أثناء عملية الدفع. يرجى المحاولة مرة أخرى.',
+          title: appTranslation().get('pay_result_failed_title'),
+          subtitle: appTranslation().get('pay_result_failed_subtitle'),
         );
       default:
         return _ResultInfo(
@@ -110,15 +108,11 @@ class PaymentResultScreen extends StatelessWidget {
           iconColor: const Color(0xFF854D0E),
           iconBgColor: const Color(0xFFFEF9C3),
           title: from == 'bank'
-              ? (appTranslation().get('pay_result_pending_bank_title') ??
-                  'بانتظار المراجعة')
-              : (appTranslation().get('pay_result_pending_title') ??
-                  'قيد المعالجة'),
+              ? appTranslation().get('pay_result_pending_bank_title')
+              : appTranslation().get('pay_result_pending_title'),
           subtitle: from == 'bank'
-              ? (appTranslation().get('pay_result_pending_bank_subtitle') ??
-                  'تم استلام الإيصال وسيتم مراجعته من قِبل الإدارة.')
-              : (appTranslation().get('pay_result_pending_subtitle') ??
-                  'جاري التحقق من عملية الدفع. سيتم تفعيل الاشتراك تلقائياً.'),
+              ? appTranslation().get('pay_result_pending_bank_subtitle')
+              : appTranslation().get('pay_result_pending_subtitle'),
         );
     }
   }

@@ -28,6 +28,8 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
   final TextEditingController _pointsController = TextEditingController(text: '1');
   final TextEditingController _questionTextController = TextEditingController();
   final TextEditingController _optionsController = TextEditingController();
+  final TextEditingController _columnAController = TextEditingController();
+  final TextEditingController _columnBController = TextEditingController();
   final TextEditingController _correctAnswerController = TextEditingController();
 
   final Map<String, String> _questionTypes = {
@@ -51,6 +53,8 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
     _pointsController.dispose();
     _questionTextController.dispose();
     _optionsController.dispose();
+    _columnAController.dispose();
+    _columnBController.dispose();
     _correctAnswerController.dispose();
     super.dispose();
   }
@@ -86,20 +90,12 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
       } else if (_selectedType == 'essay') {
         request['correct_answer'] = _correctAnswerController.text;
       } else if (_selectedType == 'matching') {
-        // Simple matching logic: split by newline and '-'
-        final lines = _optionsController.text.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-        final columnA = <String>[];
-        final columnB = <String>[];
-        for (final line in lines) {
-          final parts = line.split('-');
-          if (parts.length >= 2) {
-            columnA.add(parts[0].trim());
-            columnB.add(parts[1].trim());
-          }
-        }
+        final columnALines = _columnAController.text.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+        final columnBLines = _columnBController.text.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+        
         request['options'] = {
-          'column_a': columnA,
-          'column_b': columnB,
+          'column_a': columnALines,
+          'column_b': columnBLines,
         };
         request['correct_answer'] = _correctAnswerController.text;
       }
@@ -229,16 +225,58 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
                         validator: (value) => value!.isEmpty ? 'مطلوب' : null,
                       ),
                       verticalSpace16,
-                      if (_selectedType == 'mcq' || _selectedType == 'matching') ...[
-                        Text(_selectedType == 'matching' ? 'الخيارات (اكتب أ - ب في كل سطر)' : 'الاختيارات – كل اختيار في سطر', style: TextStylesManager.bold14),
+                      if (_selectedType == 'mcq') ...[
+                        Text('الاختيارات – كل اختيار في سطر', style: TextStylesManager.bold14),
                         verticalSpace8,
                         TextFormField(
                           controller: _optionsController,
                           maxLines: 4,
                           decoration: InputDecoration(
-                            hintText: _selectedType == 'matching' ? 'العمود أ - العمود ب' : 'الاختيار الأول\nالاختيار الثاني\nالاختيار الثالث\nالاختيار الرابع',
+                            hintText: 'الاختيار الأول\nالاختيار الثاني\nالاختيار الثالث\nالاختيار الرابع',
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                           ),
+                        ),
+                        verticalSpace16,
+                      ],
+                      if (_selectedType == 'matching') ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('العمود أ – كل عنصر في سطر', style: TextStylesManager.bold14),
+                                  verticalSpace8,
+                                  TextFormField(
+                                    controller: _columnAController,
+                                    maxLines: 4,
+                                    decoration: InputDecoration(
+                                      hintText: '1. المفهوم الأول\n2. المفهوم الثاني',
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            horizontalSpace16,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('العمود ب – كل عنصر في سطر', style: TextStylesManager.bold14),
+                                  verticalSpace8,
+                                  TextFormField(
+                                    controller: _columnBController,
+                                    maxLines: 4,
+                                    decoration: InputDecoration(
+                                      hintText: 'أ. الإجابة الأولى\nب. الإجابة الثانية\nج. مشتت إضافي',
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                         verticalSpace16,
                       ],
@@ -268,7 +306,7 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
                           controller: _correctAnswerController,
                           maxLines: 2,
                           decoration: InputDecoration(
-                            hintText: 'اكتب الإجابة الصحيحة...',
+                            hintText: _selectedType == 'matching' ? 'مثال: 1-أ, 2-ب' : 'اكتب الإجابة الصحيحة...',
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           validator: (value) => value!.isEmpty ? 'مطلوب' : null,

@@ -18,21 +18,19 @@ class ExamInfoError extends ExamInfoState {
 }
 
 class ExamInfoUpdated extends ExamInfoState {
-  final String gradeStage;
-  final String grade;
-  final String subject;
-  final UnitModel? selectedUnit;
-  final List<SubjectGroupModel> subjectsData;
+  final CurriculumStageModel? selectedStage;
+  final CurriculumGradeModel? selectedGrade;
+  final CurriculumSubjectModel? selectedSubject;
+  final List<CurriculumStageModel> stages;
   final String difficulty;
   final GenerationSource generationSource;
   final Map<int, List<int>> selectedBankQuestionIds;
 
   ExamInfoUpdated({
-    required this.gradeStage,
-    required this.grade,
-    required this.subject,
-    required this.selectedUnit,
-    required this.subjectsData,
+    required this.selectedStage,
+    required this.selectedGrade,
+    required this.selectedSubject,
+    required this.stages,
     required this.difficulty,
     required this.generationSource,
     required this.selectedBankQuestionIds,
@@ -44,15 +42,15 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
     _loadSubjects();
   }
 
-  String gradeStage = '';
-  String grade = '';
-  String subject = '';
-  UnitModel? selectedUnit;
+  CurriculumStageModel? selectedStage;
+  CurriculumGradeModel? selectedGrade;
+  CurriculumSubjectModel? selectedSubject;
+  
   String difficulty = 'medium';
   GenerationSource generationSource = GenerationSource.aiOnly;
   final Map<int, List<int>> selectedBankQuestionIds = {};
   
-  List<SubjectGroupModel> subjectsData = [];
+  List<CurriculumStageModel> stages = [];
 
   Future<void> _loadSubjects() async {
     emit(ExamInfoLoading());
@@ -60,7 +58,7 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
     result.fold(
       (dynamic failure) => emit(ExamInfoError(failure?.message ?? 'Unknown error')),
       (data) {
-        subjectsData = data;
+        stages = data;
         _emitUpdated();
       },
     );
@@ -71,24 +69,22 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
   }
 
   void updateInfo({
-    String? gradeStage,
-    String? grade,
-    String? subject,
-    UnitModel? selectedUnit,
+    CurriculumStageModel? stage,
+    CurriculumGradeModel? grade,
+    CurriculumSubjectModel? subject,
     String? difficulty,
   }) {
-    if (gradeStage != null) {
-      this.gradeStage = gradeStage;
+    if (stage != null) {
+      selectedStage = stage;
+      selectedGrade = null; // reset grade when stage changes
+      selectedSubject = null; // reset subject when stage changes
     }
     if (grade != null) {
-      this.grade = grade;
+      selectedGrade = grade;
+      selectedSubject = null; // reset subject when grade changes
     }
     if (subject != null) {
-      this.subject = subject;
-      this.selectedUnit = null; // reset unit when subject changes
-    }
-    if (selectedUnit != null) {
-      this.selectedUnit = selectedUnit;
+      selectedSubject = subject;
     }
     if (difficulty != null) {
       this.difficulty = difficulty;
@@ -110,11 +106,10 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
 
   void _emitUpdated() {
     emit(ExamInfoUpdated(
-      gradeStage: gradeStage,
-      grade: grade,
-      subject: subject,
-      selectedUnit: selectedUnit,
-      subjectsData: subjectsData,
+      selectedStage: selectedStage,
+      selectedGrade: selectedGrade,
+      selectedSubject: selectedSubject,
+      stages: stages,
       difficulty: difficulty,
       generationSource: generationSource,
       selectedBankQuestionIds: Map.from(selectedBankQuestionIds),
@@ -122,9 +117,8 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
   }
 
   bool get isValid => 
-    gradeStage.isNotEmpty && 
-    grade.isNotEmpty && 
-    subject.isNotEmpty && 
-    selectedUnit != null &&
+    selectedStage != null && 
+    selectedGrade != null && 
+    selectedSubject != null && 
     difficulty.isNotEmpty;
 }

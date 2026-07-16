@@ -37,11 +37,13 @@ class AdminExamRepositoryImpl implements AdminExamRepository {
   Future<Either<Failure, AdminQuestionEntity>> reviewQuestion({
     required int questionId,
     required String decision,
+    String? rejectionReason,
   }) async {
     try {
       final result = await remoteDataSource.reviewQuestion(
         questionId: questionId,
         decision: decision,
+        rejectionReason: rejectionReason,
       );
       return Right(result);
     } catch (e) {

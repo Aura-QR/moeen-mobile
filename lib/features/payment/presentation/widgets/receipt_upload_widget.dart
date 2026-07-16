@@ -1,4 +1,4 @@
-import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
@@ -33,7 +33,7 @@ class _ReceiptUploadWidgetState extends State<ReceiptUploadWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              appTranslation().get('pay_file_too_large') ?? '',
+              appTranslation().get('pay_file_too_large'),
               textAlign: TextAlign.center,
             ),
             backgroundColor: ColorsManager.errorColor,
@@ -82,7 +82,7 @@ class _ReceiptUploadWidgetState extends State<ReceiptUploadWidget> {
             verticalSpace10,
             Text(
               _selectedFileName ??
-                  (appTranslation().get('pay_choose_receipt') ?? ''),
+                  appTranslation().get('pay_choose_receipt'),
               style: TextStylesManager.medium14.copyWith(
                 color: _selectedFileName != null
                     ? ColorsManager.primaryColor
@@ -93,7 +93,7 @@ class _ReceiptUploadWidgetState extends State<ReceiptUploadWidget> {
             if (_selectedFileName == null) ...[
               verticalSpace4,
               Text(
-                appTranslation().get('pay_receipt_formats') ?? '',
+                appTranslation().get('pay_receipt_formats'),
                 style: TextStylesManager.regular12.copyWith(
                   color: ColorsManager.secondaryText,
                 ),

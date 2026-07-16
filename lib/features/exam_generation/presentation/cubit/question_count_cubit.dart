@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/features/exam_generation/domain/entities/exam_entities.dart';
+import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
 
 abstract class QuestionCountState {}
 
@@ -23,11 +24,11 @@ class QuestionCountCubit extends Cubit<QuestionCountState> {
   // Store counts efficiently
   final Map<int, RequestedCountsEntity> _counts = {};
 
-  void initForLessons(List<Map<String, dynamic>> selectedLessons) {
+  void initForLessons(List<CurriculumLessonModel> selectedLessons) {
     // Retain old counts for lessons still selected, initialize new ones to 0
     final newCounts = <int, RequestedCountsEntity>{};
     for (final lesson in selectedLessons) {
-      final int id = lesson['id'] as int;
+      final int id = lesson.id;
       if (_counts.containsKey(id)) {
         newCounts[id] = _counts[id]!;
       } else {

@@ -1,80 +1,119 @@
-class SubjectGroupModel {
+class CurriculumStageModel {
+  final int id;
   final String name;
-  final String title;
-  final String? titleAr;
-  final List<int> subjectIds;
-  final int? lessonCount;
-  final List<UnitModel> units;
+  final List<CurriculumGradeModel> grades;
 
-  SubjectGroupModel({
-    required this.name,
-    required this.title,
-    this.titleAr,
-    this.subjectIds = const [],
-    this.lessonCount,
-    required this.units,
-  });
+  CurriculumStageModel({required this.id, required this.name, required this.grades});
 
-  factory SubjectGroupModel.fromJson(Map<String, dynamic> json) {
-    return SubjectGroupModel(
+  factory CurriculumStageModel.fromJson(Map<String, dynamic> json) {
+    return CurriculumStageModel(
+      id: json['id'] ?? 0,
       name: json['name'] ?? '',
-      title: json['title'] ?? '',
-      titleAr: json['title_ar'],
-      subjectIds: (json['subject_ids'] as List?)?.map((e) => e as int).toList() ?? [],
-      lessonCount: json['lesson_count'],
-      units: (json['units'] as List?)
-              ?.map((e) => UnitModel.fromJson(e))
-              .toList() ??
-          [],
+      grades: (json['grades'] as List?)?.map((e) => CurriculumGradeModel.fromJson(e)).toList() ?? [],
     );
   }
 }
 
-class UnitModel {
-  final int subjectId;
+class CurriculumGradeModel {
+  final int id;
   final String name;
-  final String title;
-  final String? titleAr;
-  final String? gradeLevel;
-  final int? lessonCount;
-  final String? mappingConfidence;
+  final List<CurriculumSubjectModel> subjects;
 
-  UnitModel({
-    required this.subjectId,
-    required this.name,
+  CurriculumGradeModel({required this.id, required this.name, required this.subjects});
+
+  factory CurriculumGradeModel.fromJson(Map<String, dynamic> json) {
+    return CurriculumGradeModel(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      subjects: (json['subjects'] as List?)?.map((e) => CurriculumSubjectModel.fromJson(e)).toList() ?? [],
+    );
+  }
+}
+
+class CurriculumSubjectModel {
+  final int id;
+  final String name;
+
+  CurriculumSubjectModel({required this.id, required this.name});
+
+  factory CurriculumSubjectModel.fromJson(Map<String, dynamic> json) {
+    return CurriculumSubjectModel(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+    );
+  }
+}
+
+class SubjectDetailsModel {
+  final int subjectId;
+  final String subjectName;
+  final List<CurriculumChapterModel> chapters;
+
+  SubjectDetailsModel({required this.subjectId, required this.subjectName, required this.chapters});
+
+  factory SubjectDetailsModel.fromJson(Map<String, dynamic> json) {
+    return SubjectDetailsModel(
+      subjectId: json['subject_id'] ?? 0,
+      subjectName: json['subject_name'] ?? '',
+      chapters: (json['chapters'] as List?)?.map((e) => CurriculumChapterModel.fromJson(e)).toList() ?? [],
+    );
+  }
+}
+
+class CurriculumChapterModel {
+  final int chapterId;
+  final String title;
+  final String? unitId;
+  final String? unitName;
+  final String semester;
+  final List<CurriculumLessonModel> lessons;
+
+  CurriculumChapterModel({
+    required this.chapterId,
     required this.title,
-    this.titleAr,
-    this.gradeLevel,
-    this.lessonCount,
-    this.mappingConfidence,
+    this.unitId,
+    this.unitName,
+    required this.semester,
+    required this.lessons,
   });
 
-  factory UnitModel.fromJson(Map<String, dynamic> json) {
-    return UnitModel(
-      subjectId: json['subject_id'] ?? 0,
-      name: json['name'] ?? '',
+  factory CurriculumChapterModel.fromJson(Map<String, dynamic> json) {
+    return CurriculumChapterModel(
+      chapterId: json['chapter_id'] ?? 0,
       title: json['title'] ?? '',
-      titleAr: json['title_ar'],
-      gradeLevel: json['grade_level']?.toString(),
-      lessonCount: json['lesson_count'],
-      mappingConfidence: json['mapping_confidence']?.toString(),
+      unitId: json['unit_id']?.toString(),
+      unitName: json['unit_name']?.toString(),
+      semester: json['semester']?.toString() ?? '1',
+      lessons: (json['lessons'] as List?)?.map((e) => CurriculumLessonModel.fromJson(e)).toList() ?? [],
     );
   }
 }
 
 class CurriculumLessonModel {
   final int id;
-  final String name;
+  final String title;
+  final int orderIndex;
+  final String semester;
+  final int? sourceLessonId;
+  final int? lessonApiId;
 
   CurriculumLessonModel({
     required this.id,
-    required this.name,
+    required this.title,
+    required this.orderIndex,
+    required this.semester,
+    this.sourceLessonId,
+    this.lessonApiId,
   });
 
   factory CurriculumLessonModel.fromJson(Map<String, dynamic> json) {
     return CurriculumLessonModel(
       id: json['id'] ?? 0,
-      name: json['name'] ?? json['title'] ?? '',
+      title: json['title'] ?? json['name'] ?? '',
+      orderIndex: json['order_index'] ?? 0,
+      semester: json['semester']?.toString() ?? '1',
+      sourceLessonId: json['source_lesson_id'],
+      lessonApiId: json['lesson_api_id'],
     );
   }
 }

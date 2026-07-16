@@ -32,7 +32,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          appTranslation().get('pay_history_title') ?? '',
+          appTranslation().get('pay_history_title'),
           style: TextStylesManager.bold16.copyWith(
             color: ColorsManager.textPrimary,
           ),
@@ -73,7 +73,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                       size: 60, color: ColorsManager.secondaryText),
                   verticalSpace16,
                   Text(
-                    appTranslation().get('pay_no_history') ?? '',
+                    appTranslation().get('pay_no_history'),
                     style: TextStylesManager.regular14.copyWith(
                       color: ColorsManager.secondaryText,
                     ),

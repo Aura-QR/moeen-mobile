@@ -101,43 +101,43 @@ class PaymentHistoryItemWidget extends StatelessWidget {
     switch (status) {
       case 'paid':
         return _StatusInfo(
-          label: appTranslation().get('pay_status_paid') ?? 'مدفوع',
+          label: appTranslation().get('pay_status_paid'),
           bgColor: const Color(0xFFDCFCE7),
           textColor: const Color(0xFF15803D),
         );
       case 'processing':
         return _StatusInfo(
-          label: appTranslation().get('pay_status_processing') ?? 'قيد المعالجة',
+          label: appTranslation().get('pay_status_processing'),
           bgColor: const Color(0xFFE0F2FE),
           textColor: const Color(0xFF0369A1),
         );
       case 'waiting_verification':
         return _StatusInfo(
-          label: appTranslation().get('pay_status_waiting_verification') ?? 'بانتظار المراجعة',
+          label: appTranslation().get('pay_status_waiting_verification'),
           bgColor: const Color(0xFFFEF9C3),
           textColor: const Color(0xFF854D0E),
         );
       case 'failed':
         return _StatusInfo(
-          label: appTranslation().get('pay_status_failed') ?? 'فشل الدفع',
+          label: appTranslation().get('pay_status_failed'),
           bgColor: const Color(0xFFFEE2E2),
           textColor: const Color(0xFFB91C1C),
         );
       case 'rejected':
         return _StatusInfo(
-          label: appTranslation().get('pay_status_rejected') ?? 'مرفوض',
+          label: appTranslation().get('pay_status_rejected'),
           bgColor: const Color(0xFFFEE2E2),
           textColor: const Color(0xFFB91C1C),
         );
       case 'cancelled':
         return _StatusInfo(
-          label: appTranslation().get('pay_status_cancelled') ?? 'ملغي',
+          label: appTranslation().get('pay_status_cancelled'),
           bgColor: const Color(0xFFF1F5F9),
           textColor: const Color(0xFF64748B),
         );
       default:
         return _StatusInfo(
-          label: appTranslation().get('pay_status_pending') ?? 'بانتظار الدفع',
+          label: appTranslation().get('pay_status_pending'),
           bgColor: const Color(0xFFFEF9C3),
           textColor: const Color(0xFF854D0E),
         );
@@ -146,9 +146,9 @@ class PaymentHistoryItemWidget extends StatelessWidget {
 
   String _methodLabel(String method) {
     if (method == 'moyasar') {
-      return appTranslation().get('pay_method_online') ?? 'دفع إلكتروني';
+      return appTranslation().get('pay_method_online');
     }
-    return appTranslation().get('pay_method_bank') ?? 'تحويل بنكي';
+    return appTranslation().get('pay_method_bank');
   }
 
   IconData _methodIcon(String method) {

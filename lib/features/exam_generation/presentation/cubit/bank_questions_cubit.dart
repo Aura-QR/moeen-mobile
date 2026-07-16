@@ -19,6 +19,7 @@ class BankQuestionsUpdated extends BankQuestionsState {
   final int currentPage;
   final int lastPage;
   final bool hasMore;
+  final String? selectedType;
   
   BankQuestionsUpdated({
     required this.questions,
@@ -27,6 +28,7 @@ class BankQuestionsUpdated extends BankQuestionsState {
     required this.currentPage,
     required this.lastPage,
     required this.hasMore,
+    this.selectedType,
   });
 }
 
@@ -39,6 +41,18 @@ class BankQuestionsCubit extends Cubit<BankQuestionsState> {
   int _currentPage = 1;
   int _lastPage = 1;
   bool _isLoadingMore = false;
+  String? _selectedType;
+
+  void setFilter(String? type) {
+    if (_selectedType == type) return;
+    _selectedType = type;
+    if (_currentLessonId != -1) {
+      _currentPage = 1;
+      _allQuestions = [];
+      emit(BankQuestionsLoading());
+      loadQuestionsForLesson(_currentLessonId, refresh: true);
+    }
+  }
 
   Future<void> loadQuestionsForLesson(int lessonId, {bool refresh = false}) async {
     if (refresh || _currentLessonId != lessonId) {
@@ -57,6 +71,7 @@ class BankQuestionsCubit extends Cubit<BankQuestionsState> {
 
     final result = await ApiService.getLessonQuestions(
       lessonId: _currentLessonId,
+      type: _selectedType,
       page: _currentPage,
     );
 
@@ -131,6 +146,7 @@ class BankQuestionsCubit extends Cubit<BankQuestionsState> {
       currentPage: _currentPage,
       lastPage: _lastPage,
       hasMore: _currentPage < _lastPage,
+      selectedType: _selectedType,
     ));
   }
   

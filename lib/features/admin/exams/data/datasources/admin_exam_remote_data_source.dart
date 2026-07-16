@@ -13,6 +13,7 @@ abstract class AdminExamRemoteDataSource {
   Future<AdminQuestionModel> reviewQuestion({
     required int questionId,
     required String decision,
+    String? rejectionReason,
   });
 }
 
@@ -48,11 +49,13 @@ class AdminExamRemoteDataSourceImpl implements AdminExamRemoteDataSource {
   Future<AdminQuestionModel> reviewQuestion({
     required int questionId,
     required String decision,
+    String? rejectionReason,
   }) async {
     final response = await DioHelper.patchData(
       url: adminReviewQuestionApi(questionId),
       data: {
         'decision': decision,
+        if (rejectionReason != null) 'rejection_reason': rejectionReason,
       },
     );
 

@@ -47,7 +47,7 @@ class _BankTransferScreenState extends State<BankTransferScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          appTranslation().get('pay_bank_transfer_title') ?? '',
+          appTranslation().get('pay_bank_transfer_title'),
           style: TextStylesManager.bold16.copyWith(
             color: ColorsManager.textPrimary,
           ),
@@ -135,7 +135,7 @@ class _BankTransferScreenState extends State<BankTransferScreen> {
                   ),
                   verticalSpace24,
                   PrimaryElevatedButton(
-                    text: appTranslation().get('pay_send_receipt') ?? '',
+                    text: appTranslation().get('pay_send_receipt'),
                     icon: Icon(
                       Icons.check_circle_outline,
                       size: 20,
@@ -150,8 +150,7 @@ class _BankTransferScreenState extends State<BankTransferScreen> {
                                 SnackBar(
                                   content: Text(
                                     appTranslation().get(
-                                            'pay_please_choose_receipt') ??
-                                        '',
+                                            'pay_please_choose_receipt'),
                                     textAlign: TextAlign.center,
                                   ),
                                   backgroundColor: ColorsManager.errorColor,

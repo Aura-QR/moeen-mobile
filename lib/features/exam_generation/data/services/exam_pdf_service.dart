@@ -6,6 +6,7 @@ import 'package:moean/features/exam_generation/domain/entities/exam_entities.dar
 import 'package:moean/features/exam_generation/data/models/exam_models.dart';
 
 class ExamPdfService {
+
   static final PdfColor _primaryColor = PdfColor.fromHex('073F49');
   static final PdfColor _headerBg = PdfColor.fromHex('0B4A45');
   static final PdfColor _textDark = PdfColor.fromHex('1E293B');
@@ -179,7 +180,7 @@ class ExamPdfService {
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text('${q.questionOrder}. ', style: bold, textDirection: pw.TextDirection.rtl),
+              pw.Text('${q.questionOrder}.', style: bold, textDirection: pw.TextDirection.ltr),
               pw.Expanded(
                 child: pw.Text(q.questionText, style: bold, textDirection: pw.TextDirection.rtl),
               ),

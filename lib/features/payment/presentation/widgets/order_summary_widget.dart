@@ -27,7 +27,7 @@ class OrderSummaryWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            appTranslation().get('pay_order_summary') ?? '',
+            appTranslation().get('pay_order_summary'),
             style: TextStylesManager.bold14.copyWith(
               color: ColorsManager.textPrimary,
             ),
@@ -74,7 +74,7 @@ class OrderSummaryWidget extends StatelessWidget {
               horizontalSpace6,
               Flexible(
                 child: Text(
-                  appTranslation().get('pay_server_amount_note') ?? '',
+                  appTranslation().get('pay_server_amount_note'),
                   style: TextStylesManager.regular12.copyWith(
                     color: ColorsManager.secondaryText,
                   ),

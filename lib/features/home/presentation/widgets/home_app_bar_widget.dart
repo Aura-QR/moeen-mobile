@@ -98,7 +98,7 @@ class _ContactIconButtonState extends State<_ContactIconButton>
   @override
   Widget build(BuildContext context) {
     return Tooltip(
-      message: appTranslation().get('contact_support') ?? '',
+      message: appTranslation().get('contact_support'),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -142,7 +142,7 @@ class _AdminPaymentsButton extends StatelessWidget {
         size: 18,
         color: ColorsManager.white,
       ),
-      text: appTranslation().get('admin_payments_title') ?? 'Payments',
+      text: appTranslation().get('admin_payments_title'),
       textStyle: TextStylesManager.bold13.copyWith(
         color: ColorsManager.white,
       ),
@@ -163,7 +163,7 @@ class _SubscriptionButton extends StatelessWidget {
         size: 18,
         color: ColorsManager.white,
       ),
-      text: appTranslation().get('pay_subscription_btn') ?? '',
+      text: appTranslation().get('pay_subscription_btn'),
       textStyle: TextStylesManager.bold13.copyWith(
         color: ColorsManager.white,
       ),
@@ -197,7 +197,7 @@ class _GuestMenuButton extends StatelessWidget {
               const Icon(Icons.person_add_alt_1_outlined, size: 20),
               horizontalSpace10,
               Text(
-                appTranslation().get('create_account') ?? '',
+                appTranslation().get('create_account'),
                 style: TextStylesManager.bold14,
               ),
             ],
@@ -210,7 +210,7 @@ class _GuestMenuButton extends StatelessWidget {
               const Icon(Icons.login_outlined, size: 20),
               horizontalSpace10,
               Text(
-                appTranslation().get('login') ?? '',
+                appTranslation().get('login'),
                 style: TextStylesManager.bold14,
               ),
             ],
@@ -230,7 +230,7 @@ class _GuestMenuButton extends StatelessWidget {
                 size: 20, color: ColorsManager.white),
             horizontalSpace8,
             Text(
-              appTranslation().get('create_account') ?? '',
+              appTranslation().get('create_account'),
               style: TextStylesManager.bold14.copyWith(
                   color: ColorsManager.white),
             ),

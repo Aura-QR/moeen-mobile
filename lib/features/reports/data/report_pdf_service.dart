@@ -11,7 +11,16 @@ class ReportPdfService {
   static final PdfColor _borderColor = PdfColor.fromHex('E2E8F0');
   static final PdfColor _textDark = PdfColor.fromHex('1E293B');
   static final PdfColor _textMuted = PdfColor.fromHex('64748B');
-  static final PdfColor _sectionBg = PdfColor.fromHex('064E3B');
+
+  static String _fixArabic(String text) {
+    if (text.isEmpty) return text;
+    return text
+        .replaceAll('مسار إداري', 'مسار\u00A0إداري')
+        .replaceAll('مسار ادارى', 'مسار\u00A0ادارى')
+        .replaceAll('مسار اداري', 'مسار\u00A0اداري')
+        .replaceAll('مسار إدارى', 'مسار\u00A0إدارى');
+  }
+
 
   static Future<Uint8List> generatePdf({
     required Map<String, dynamic> reportData,
@@ -90,9 +99,9 @@ class ReportPdfService {
           return [
             // ── Page Header ──
             _buildPageHeader(
-              teacherName: teacherName,
-              grade: grade,
-              subject: subject,
+              teacherName: _fixArabic(teacherName),
+              grade: _fixArabic(grade),
+              subject: _fixArabic(subject),
               unit: unit,
               semester: semester,
               schoolName: schoolName,
@@ -220,7 +229,20 @@ class ReportPdfService {
                   pw.SizedBox(height: 4),
                   pw.Text('مواهب المملكة', style: headerStyle.copyWith(fontSize: 10, color: PdfColors.cyan200)),
                   pw.SizedBox(height: 12),
-                  pw.Text('Moean للإدارة (مسار إداري)', style: arabicRegular.copyWith(color: PdfColors.white, fontSize: 8)),
+                  pw.Directionality(
+                    textDirection: pw.TextDirection.ltr,
+                    child: pw.Row(
+                      mainAxisSize: pw.MainAxisSize.min,
+                      children: [
+                        pw.Text('Moean', style: arabicRegular.copyWith(color: PdfColors.white, fontSize: 8)),
+                        pw.SizedBox(width: 4),
+                        pw.Directionality(
+                          textDirection: pw.TextDirection.rtl,
+                          child: pw.Text('للإدارة (مسار\u00A0إداري)', style: arabicRegular.copyWith(color: PdfColors.white, fontSize: 8)),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
               pw.Row(
@@ -336,10 +358,10 @@ class ReportPdfService {
       headers: ['الدرس', 'وصف الإنجاز', 'المشاركة', 'مستوى الفهم'],
       data: rows
           .map((r) => [
-                r['lesson'] ?? '',
-                r['description'] ?? '',
-                r['participation'] ?? '',
-                r['understanding'] ?? '',
+                _fixArabic(r['lesson'] ?? ''),
+                _fixArabic(r['description'] ?? ''),
+                _fixArabic(r['participation'] ?? ''),
+                _fixArabic(r['understanding'] ?? ''),
               ])
           .toList(),
       border: pw.TableBorder.all(color: _borderColor, width: 0.5),
@@ -371,9 +393,9 @@ class ReportPdfService {
       headers: ['الدرس', 'المفاهيم', 'الأهداف'],
       data: rows
           .map((r) => [
-                r['lesson'] ?? '',
-                r['concepts'] ?? '',
-                r['objectives'] ?? '',
+                _fixArabic(r['lesson'] ?? ''),
+                _fixArabic(r['concepts'] ?? ''),
+                _fixArabic(r['objectives'] ?? ''),
               ])
           .toList(),
       border: pw.TableBorder.all(color: _borderColor, width: 0.5),
@@ -398,9 +420,9 @@ class ReportPdfService {
       headers: ['الدرس', 'الهدف', 'مستوى الفهم المستهدف'],
       data: rows
           .map((r) => [
-                r['lesson'] ?? '',
-                r['goal'] ?? '',
-                r['targetUnderstanding'] ?? '',
+                _fixArabic(r['lesson'] ?? ''),
+                _fixArabic(r['goal'] ?? ''),
+                _fixArabic(r['targetUnderstanding'] ?? ''),
               ])
           .toList(),
       border: pw.TableBorder.all(color: _borderColor, width: 0.5),
@@ -420,9 +442,9 @@ class ReportPdfService {
       headers: ['الدرس', 'التحدي', 'الخطة المقترحة'],
       data: rows
           .map((r) => [
-                r['lesson'] ?? '',
-                r['challenge'] ?? '',
-                r['plan'] ?? '',
+                _fixArabic(r['lesson'] ?? ''),
+                _fixArabic(r['challenge'] ?? ''),
+                _fixArabic(r['plan'] ?? ''),
               ])
           .toList(),
       border: pw.TableBorder.all(color: _borderColor, width: 0.5),
@@ -442,9 +464,9 @@ class ReportPdfService {
       headers: ['الدرس', 'أسلوب التحقق', 'النتيجة'],
       data: rows
           .map((r) => [
-                r['lesson'] ?? '',
-                r['method'] ?? '',
-                r['result'] ?? '',
+                _fixArabic(r['lesson'] ?? ''),
+                _fixArabic(r['method'] ?? ''),
+                _fixArabic(r['result'] ?? ''),
               ])
           .toList(),
       border: pw.TableBorder.all(color: _borderColor, width: 0.5),
@@ -464,9 +486,9 @@ class ReportPdfService {
       headers: ['الدرس', 'أسلوب النمذجة', 'الملاحظات'],
       data: rows
           .map((r) => [
-                r['lesson'] ?? '',
-                r['modelingMethod'] ?? '',
-                r['notes'] ?? '',
+                _fixArabic(r['lesson'] ?? ''),
+                _fixArabic(r['modelingMethod'] ?? ''),
+                _fixArabic(r['notes'] ?? ''),
               ])
           .toList(),
       border: pw.TableBorder.all(color: _borderColor, width: 0.5),
@@ -486,9 +508,9 @@ class ReportPdfService {
       headers: ['الاستراتيجية', 'الوصف', 'الدروس المطبقة'],
       data: rows
           .map((r) => [
-                r['strategy'] ?? '',
-                r['description'] ?? '',
-                r['appliedLessons'] ?? '',
+                _fixArabic(r['strategy'] ?? ''),
+                _fixArabic(r['description'] ?? ''),
+                _fixArabic(r['appliedLessons'] ?? ''),
               ])
           .toList(),
       border: pw.TableBorder.all(color: _borderColor, width: 0.5),

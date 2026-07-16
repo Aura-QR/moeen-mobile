@@ -109,7 +109,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     emptyBuilder: (_) => Center(
                       child: Text(
-                        appTranslation().get('pay_no_plans') ?? '',
+                        appTranslation().get('pay_no_plans'),
                         style: TextStylesManager.regular14,
                       ),
                     ),
@@ -126,38 +126,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 }
 
-class _CheckoutHeader extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: ColorsManager.surfacePrimary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: ColorsManager.borderColor),
-      ),
-      child: Column(
-        children: [
-          Text(
-            appTranslation().get('pay_subscription_label') ?? '',
-            style: TextStylesManager.regular12.copyWith(
-              color: ColorsManager.secondaryText,
-            ),
-          ),
-          verticalSpace4,
-          Text(
-            appTranslation().get('pay_checkout_title') ?? '',
-            style: TextStylesManager.bold22.copyWith(
-              color: ColorsManager.textPrimary,
-            ),
-          ),
-         ],
-      ),
-    );
-  }
-}
 
 
 class _CheckoutBody extends StatelessWidget {
@@ -181,7 +149,7 @@ class _CheckoutBody extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               _SectionCard(
-                title: appTranslation().get('pay_plan_label') ?? '',
+                title: appTranslation().get('pay_plan_label'),
                 child: Column(
                   children: List.generate(
                     plans.length,
@@ -198,21 +166,21 @@ class _CheckoutBody extends StatelessWidget {
               ),
               verticalSpace16,
               _SectionCard(
-                title: appTranslation().get('pay_method_label') ?? '',
+                title: appTranslation().get('pay_method_label'),
                 child: Column(
                   children: [
                     _PaymentMethodTile(
                       icon: Icons.credit_card_outlined,
-                      title: appTranslation().get('pay_method_online') ?? '',
-                      subtitle: 'Moyasar - ${appTranslation().get('pay_method_online_subtitle') ?? ''}',
+                      title: appTranslation().get('pay_method_online'),
+                      subtitle: 'Moyasar - ${appTranslation().get('pay_method_online_subtitle')}',
                       isSelected: cubit.selectedMethodIndex == 0,
                       onTap: () => cubit.selectMethod(0),
                     ),
                     verticalSpace10,
                     _PaymentMethodTile(
                       icon: Icons.account_balance_outlined,
-                      title: appTranslation().get('pay_method_bank') ?? '',
-                      subtitle: appTranslation().get('pay_method_bank_subtitle') ?? '',
+                      title: appTranslation().get('pay_method_bank'),
+                      subtitle: appTranslation().get('pay_method_bank_subtitle'),
                       isSelected: cubit.selectedMethodIndex == 1,
                       onTap: () => cubit.selectMethod(1),
                     ),
@@ -222,7 +190,7 @@ class _CheckoutBody extends StatelessWidget {
               if (selectedPlan != null) ...[
                 verticalSpace16,
                 _SectionCard(
-                  title: appTranslation().get('pay_order_summary') ?? '',
+                  title: appTranslation().get('pay_order_summary'),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -258,7 +226,7 @@ class _CheckoutBody extends StatelessWidget {
                           horizontalSpace6,
                           Flexible(
                             child: Text(
-                              appTranslation().get('pay_server_amount_note') ?? '',
+                              appTranslation().get('pay_server_amount_note'),
                               style: TextStylesManager.regular12.copyWith(
                                   color: ColorsManager.secondaryText),
                               textAlign: TextAlign.end,
@@ -273,8 +241,8 @@ class _CheckoutBody extends StatelessWidget {
               verticalSpace24,
               PrimaryElevatedButton(
                 text: cubit.selectedMethodIndex == 0
-                    ? (appTranslation().get('pay_proceed_online') ?? '')
-                    : (appTranslation().get('pay_proceed_bank') ?? ''),
+                    ? appTranslation().get('pay_proceed_online')
+                    : appTranslation().get('pay_proceed_bank'),
                 icon: Icon(
                   cubit.selectedMethodIndex == 0
                       ? Icons.credit_card_outlined

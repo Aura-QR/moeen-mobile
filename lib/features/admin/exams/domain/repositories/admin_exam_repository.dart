@@ -13,5 +13,6 @@ abstract class AdminExamRepository {
   Future<Either<Failure, AdminQuestionEntity>> reviewQuestion({
     required int questionId,
     required String decision,
+    String? rejectionReason,
   });
 }

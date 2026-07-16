@@ -39,24 +39,27 @@ class ReportFormWidget extends StatefulWidget {
 
 class _ReportFormWidgetState extends State<ReportFormWidget> {
   final _formKey = GlobalKey<FormState>();
+  final _stageController = TextEditingController();
+  final _gradeController = TextEditingController();
   final _subjectController = TextEditingController();
   final _unitController = TextEditingController();
-  final _gradeController = TextEditingController();
   final _semesterController = TextEditingController();
   final _schoolController = TextEditingController();
   final _educationOfficeController = TextEditingController();
   final _reportDateController = TextEditingController();
-  final _addLessonController = TextEditingController();
 
   String _selectedType = 'اسبوعي';
   List<String> _selectedLessons = [];
 
   bool _isLoadingSubjects = false;
-  List<SubjectGroupModel> _subjectGroups = [];
-  SubjectGroupModel? _selectedSubjectGroup;
+  List<CurriculumStageModel> _stages = [];
   
-  final Map<int, List<CurriculumLessonModel>> _lessonsCache = {};
+  CurriculumStageModel? _selectedStage;
+  CurriculumGradeModel? _selectedGrade;
+  CurriculumSubjectModel? _selectedSubject;
+  
   bool _isLoadingLessons = false;
+  SubjectDetailsModel? _subjectDetails;
 
   @override
   void initState() {
@@ -72,9 +75,9 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
         (failure) {
           setState(() => _isLoadingSubjects = false);
         },
-        (subjectGroups) {
+        (stagesData) {
           setState(() {
-            _subjectGroups = subjectGroups;
+            _stages = stagesData;
             _isLoadingSubjects = false;
           });
         },
@@ -82,59 +85,142 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
     }
   }
 
-  void _showSubjectSelector() {
+  void _showStageSelector() {
     if (_isLoadingSubjects) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('جاري تحميل المواد...', style: TextStylesManager.bold14),
+          content: Text('جاري التحميل...', style: TextStylesManager.bold14),
           backgroundColor: ColorsManager.primaryColor,
         ),
       );
       return;
     }
 
-    final subjectTitles = _subjectGroups.map((e) => e.title).toList();
+    final stageNames = _stages.map((e) => e.name).toList();
 
     SelectionBottomSheet.show(
       context: context,
-      title: 'اختر المادة',
-      items: subjectTitles,
-      initialSelectedItems: _subjectController.text.isNotEmpty 
-          ? [_subjectController.text] 
-          : [],
+      title: 'اختر المرحلة الدراسية',
+      items: stageNames,
+      initialSelectedItems: _stageController.text.isNotEmpty ? [_stageController.text] : [],
       isMultiSelect: false,
       onSelectionConfirmed: (selected) {
         if (selected.isNotEmpty) {
           setState(() {
-            _subjectController.text = selected.first;
-            _selectedSubjectGroup = _subjectGroups.firstWhere((e) => e.title == selected.first);
-            // Clear unit and lessons
+            _stageController.text = selected.first;
+            _selectedStage = _stages.firstWhere((e) => e.name == selected.first);
+            
+            _gradeController.clear();
+            _selectedGrade = null;
+            
+            _subjectController.clear();
+            _selectedSubject = null;
+            
             _unitController.clear();
             _selectedLessons.clear();
+            _subjectDetails = null;
           });
         }
       },
     );
   }
 
-  @override
-  void dispose() {
-    _subjectController.dispose();
-    _unitController.dispose();
-    _gradeController.dispose();
-    _semesterController.dispose();
-    _schoolController.dispose();
-    _educationOfficeController.dispose();
-    _reportDateController.dispose();
-    _addLessonController.dispose();
-    super.dispose();
+  void _showGradeSelector() {
+    if (_selectedStage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('الرجاء اختيار المرحلة أولاً', style: TextStylesManager.bold14),
+          backgroundColor: ColorsManager.errorColor,
+        ),
+      );
+      return;
+    }
+
+    final gradeNames = _selectedStage!.grades.map((e) => e.name).toList();
+
+    SelectionBottomSheet.show(
+      context: context,
+      title: 'اختر الصف',
+      items: gradeNames,
+      initialSelectedItems: _gradeController.text.isNotEmpty ? [_gradeController.text] : [],
+      isMultiSelect: false,
+      onSelectionConfirmed: (selected) {
+        if (selected.isNotEmpty) {
+          setState(() {
+            _gradeController.text = selected.first;
+            _selectedGrade = _selectedStage!.grades.firstWhere((e) => e.name == selected.first);
+            
+            _subjectController.clear();
+            _selectedSubject = null;
+            
+            _unitController.clear();
+            _selectedLessons.clear();
+            _subjectDetails = null;
+          });
+        }
+      },
+    );
+  }
+
+  void _showSubjectSelector() {
+    if (_selectedGrade == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('الرجاء اختيار الصف أولاً', style: TextStylesManager.bold14),
+          backgroundColor: ColorsManager.errorColor,
+        ),
+      );
+      return;
+    }
+
+    final subjectNames = _selectedGrade!.subjects.map((e) => e.name).toList();
+
+    SelectionBottomSheet.show(
+      context: context,
+      title: 'اختر المادة',
+      items: subjectNames,
+      initialSelectedItems: _subjectController.text.isNotEmpty ? [_subjectController.text] : [],
+      isMultiSelect: false,
+      onSelectionConfirmed: (selected) {
+        if (selected.isNotEmpty) {
+          setState(() {
+            _subjectController.text = selected.first;
+            _selectedSubject = _selectedGrade!.subjects.firstWhere((e) => e.name == selected.first);
+            
+            _unitController.clear();
+            _selectedLessons.clear();
+            _subjectDetails = null;
+            
+            _fetchSubjectDetails(_selectedSubject!.id);
+          });
+        }
+      },
+    );
+  }
+
+  Future<void> _fetchSubjectDetails(int subjectId) async {
+    setState(() => _isLoadingLessons = true);
+    final result = await ApiService.getSubjectLessons(subjectId);
+    if (mounted) {
+      result.fold(
+        (failure) {
+          setState(() => _isLoadingLessons = false);
+        },
+        (details) {
+          setState(() {
+            _subjectDetails = details;
+            _isLoadingLessons = false;
+          });
+        },
+      );
+    }
   }
 
   void _showUnitSelector() {
-    if (_selectedSubjectGroup == null) {
+    if (_selectedSubject == null || _subjectDetails == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('الرجاء اختيار المادة أولاً', style: TextStylesManager.bold14),
+          content: Text('الرجاء اختيار المادة والانتظار للتحميل', style: TextStylesManager.bold14),
           backgroundColor: ColorsManager.errorColor,
         ),
       );
@@ -142,12 +228,12 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
     }
 
     final isMonthly = _selectedType == 'شهري';
-    final unitTitles = _selectedSubjectGroup!.units.map((e) => e.title).toList();
+    final chapterTitles = _subjectDetails!.chapters.map((e) => e.title).toSet().toList();
 
     SelectionBottomSheet.show(
       context: context,
-      title: isMonthly ? 'اختر الوحدات / المجالات' : 'اختر الوحدة / المجال',
-      items: unitTitles,
+      title: isMonthly ? 'اختر الفصول' : 'اختر الفصل',
+      items: chapterTitles,
       initialSelectedItems: _unitController.text.isNotEmpty 
           ? _unitController.text.split('، ').map((e) => e.trim()).toList() 
           : [],
@@ -155,76 +241,42 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
       onSelectionConfirmed: (selected) {
         setState(() {
           _unitController.text = selected.join('، ');
-          // Clear selected lessons when unit changes
           _selectedLessons.clear();
         });
       },
     );
   }
 
-  void _showLessonsSelector() async {
+  void _showLessonsSelector() {
     if (_unitController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('الرجاء اختيار الوحدة أولاً', style: TextStylesManager.bold14),
+          content: Text('الرجاء اختيار الفصل أولاً', style: TextStylesManager.bold14),
           backgroundColor: ColorsManager.errorColor,
         ),
       );
       return;
     }
 
-    if (_selectedType == 'شهري') return;
+    if (_selectedType == 'شهري' || _subjectDetails == null) return;
 
-    final selectedUnitTitle = _unitController.text;
-    final unitModel = _selectedSubjectGroup!.units.cast<UnitModel?>().firstWhere(
-      (e) => e?.title == selectedUnitTitle,
+    final selectedChapterTitle = _unitController.text;
+    final chapterModel = _subjectDetails!.chapters.cast<CurriculumChapterModel?>().firstWhere(
+      (e) => e?.title == selectedChapterTitle,
       orElse: () => null,
     );
 
-    if (unitModel == null) return;
+    if (chapterModel == null) return;
+    
+    // Auto-fill semester based on selected chapter
+    _semesterController.text = chapterModel.semester;
 
-    List<CurriculumLessonModel> availableLessons = [];
+    final availableLessons = chapterModel.lessons;
 
-    if (_lessonsCache.containsKey(unitModel.subjectId)) {
-      availableLessons = _lessonsCache[unitModel.subjectId]!;
-      _showLessonsBottomSheet(availableLessons);
-    } else {
-      if (_isLoadingLessons) return;
-      setState(() => _isLoadingLessons = true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('جاري تحميل الدروس...', style: TextStylesManager.bold14),
-          backgroundColor: ColorsManager.primaryColor,
-          duration: const Duration(seconds: 1),
-        ),
-      );
-
-      final result = await ApiService.getSubjectLessons(unitModel.subjectId);
-      if (mounted) {
-        setState(() => _isLoadingLessons = false);
-        result.fold(
-          (failure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('فشل في تحميل الدروس', style: TextStylesManager.bold14),
-                backgroundColor: ColorsManager.errorColor,
-              ),
-            );
-          },
-          (lessons) {
-            _lessonsCache[unitModel.subjectId] = lessons;
-            _showLessonsBottomSheet(lessons);
-          },
-        );
-      }
-    }
-  }
-
-  void _showLessonsBottomSheet(List<CurriculumLessonModel> availableLessons) {
     if (availableLessons.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('لا توجد دروس متاحة لهذه الوحدة', style: TextStylesManager.bold14),
+          content: Text('لا توجد دروس متاحة لهذا الفصل', style: TextStylesManager.bold14),
           backgroundColor: ColorsManager.errorColor,
         ),
       );
@@ -234,7 +286,7 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
     SelectionBottomSheet.show(
       context: context,
       title: 'اختر الدروس',
-      items: availableLessons.map((e) => e.name).toList(),
+      items: availableLessons.map((e) => e.title).toList(),
       initialSelectedItems: _selectedLessons,
       isMultiSelect: true,
       onSelectionConfirmed: (selected) {
@@ -273,6 +325,19 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
   }
 
   @override
+  void dispose() {
+    _stageController.dispose();
+    _subjectController.dispose();
+    _unitController.dispose();
+    _gradeController.dispose();
+    _semesterController.dispose();
+    _schoolController.dispose();
+    _educationOfficeController.dispose();
+    _reportDateController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
@@ -291,41 +356,21 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
           ),
           verticalSpace16,
 
-          // Subject
-          _FormLabel(label: appTranslation().get('report_subject')),
+          // Stage
+          _FormLabel(label: 'المرحلة الدراسية'),
           verticalSpace8,
           GestureDetector(
-            onTap: _showSubjectSelector,
+            onTap: _showStageSelector,
             child: AbsorbPointer(
               child: PrimaryTextField(
-                controller: _subjectController,
-                hint: _isLoadingSubjects ? 'جاري التحميل...' : 'اختر المادة',
+                controller: _stageController,
+                hint: _isLoadingSubjects ? 'جاري التحميل...' : 'اختر المرحلة',
                 prefixIcon: _isLoadingSubjects 
                     ? const Padding(
                         padding: EdgeInsets.all(12.0),
                         child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
                       )
-                    : const Icon(Icons.book_outlined),
-                validator: (v) => (v == null || v.isEmpty)
-                    ? appTranslation().get('field_required')
-                    : null,
-              ),
-            ),
-          ),
-          verticalSpace16,
-
-          // Unit/Field
-          _FormLabel(label: appTranslation().get('report_unit')),
-          verticalSpace8,
-          GestureDetector(
-            onTap: _showUnitSelector,
-            child: AbsorbPointer(
-              child: PrimaryTextField(
-                controller: _unitController,
-                hint: _selectedType == 'شهري' 
-                    ? 'اختر الوحدات' 
-                    : appTranslation().get('report_unit_hint'),
-                prefixIcon: const Icon(Icons.layers_outlined),
+                    : const Icon(Icons.school_outlined),
                 validator: (v) => (v == null || v.isEmpty)
                     ? appTranslation().get('field_required')
                     : null,
@@ -337,13 +382,61 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
           // Grade
           _FormLabel(label: appTranslation().get('report_grade')),
           verticalSpace8,
-          PrimaryTextField(
-            controller: _gradeController,
-            hint: appTranslation().get('report_grade_hint'),
-            prefixIcon: const Icon(Icons.school_outlined),
-            validator: (v) => (v == null || v.isEmpty)
-                ? appTranslation().get('field_required')
-                : null,
+          GestureDetector(
+            onTap: _showGradeSelector,
+            child: AbsorbPointer(
+              child: PrimaryTextField(
+                controller: _gradeController,
+                hint: 'اختر الصف',
+                prefixIcon: const Icon(Icons.school_outlined),
+                validator: (v) => (v == null || v.isEmpty)
+                    ? appTranslation().get('field_required')
+                    : null,
+              ),
+            ),
+          ),
+          verticalSpace16,
+
+          // Subject
+          _FormLabel(label: appTranslation().get('report_subject')),
+          verticalSpace8,
+          GestureDetector(
+            onTap: _showSubjectSelector,
+            child: AbsorbPointer(
+              child: PrimaryTextField(
+                controller: _subjectController,
+                hint: 'اختر المادة',
+                prefixIcon: const Icon(Icons.book_outlined),
+                validator: (v) => (v == null || v.isEmpty)
+                    ? appTranslation().get('field_required')
+                    : null,
+              ),
+            ),
+          ),
+          verticalSpace16,
+
+          // Unit/Chapter
+          _FormLabel(label: appTranslation().get('report_unit')),
+          verticalSpace8,
+          GestureDetector(
+            onTap: _showUnitSelector,
+            child: AbsorbPointer(
+              child: PrimaryTextField(
+                controller: _unitController,
+                hint: _selectedType == 'شهري' 
+                    ? 'اختر الفصول' 
+                    : 'اختر الفصل',
+                prefixIcon: _isLoadingLessons
+                    ? const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                      )
+                    : const Icon(Icons.layers_outlined),
+                validator: (v) => (v == null || v.isEmpty)
+                    ? appTranslation().get('field_required')
+                    : null,
+              ),
+            ),
           ),
           verticalSpace16,
 

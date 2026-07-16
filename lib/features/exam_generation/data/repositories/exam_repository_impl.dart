@@ -225,4 +225,62 @@ class ExamRepositoryImpl implements ExamRepository {
     }
     return ServerFailure(errorString);
   }
+
+  @override
+  Future<Either<Failure, QuestionPaginationEntity>> getMyQuestions({
+    int page = 1,
+    int perPage = 20,
+    String? type,
+    String? difficulty,
+    String? reviewStatus,
+    int? lessonId,
+    String? search,
+  }) async {
+    final result = await ApiService.getMyQuestions(
+      page: page,
+      perPage: perPage,
+      type: type,
+      difficulty: difficulty,
+      reviewStatus: reviewStatus,
+      lessonId: lessonId,
+      search: search,
+    );
+
+    return result.fold(
+      (errorString) => Left(_parseApiError(errorString)),
+      (data) {
+        if (data['success'] == true) {
+          try {
+            final paginationModel = QuestionPaginationModel.fromJson(data);
+            return Right(paginationModel);
+          } catch (e) {
+            return Left(ServerFailure('Failed to parse questions list: $e'));
+          }
+        } else {
+          return Left(ServerFailure(data['message']?.toString() ?? 'Failed to fetch questions'));
+        }
+      },
+    );
+  }
+
+  @override
+  Future<Either<Failure, QuestionEntity>> updateCustomQuestion(int id, Map<String, dynamic> data) async {
+    final result = await ApiService.updateCustomQuestion(id, data);
+
+    return result.fold(
+      (errorString) => Left(_parseApiError(errorString)),
+      (dataResponse) {
+        if (dataResponse['success'] == true && dataResponse['question'] != null) {
+          try {
+            final questionModel = QuestionModel.fromJson(dataResponse['question']);
+            return Right(questionModel);
+          } catch (e) {
+            return Left(ServerFailure('Failed to parse updated question: $e'));
+          }
+        } else {
+          return Left(ValidationFailure(dataResponse['message']?.toString() ?? 'Failed to update question', {}));
+        }
+      },
+    );
+  }
 }

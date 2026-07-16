@@ -41,6 +41,8 @@ class QuestionModel extends QuestionEntity {
     required super.usageCount,
     required super.questionOrder,
     required super.points,
+    super.reviewStatus,
+    super.rejectionReason,
   });
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) {
@@ -66,6 +68,8 @@ class QuestionModel extends QuestionEntity {
       usageCount: json['usage_count'] as int? ?? 0,
       questionOrder: json['question_order'] as int? ?? 0,
       points: (json['points'] as num?)?.toInt() ?? 0,
+      reviewStatus: json['review_status'] as String? ?? '',
+      rejectionReason: json['rejection_reason'] as String?,
     );
   }
 }
@@ -129,6 +133,30 @@ class ExamPaginationModel extends ExamPaginationEntity {
       total: meta['total'] as int? ?? 0,
       data: (json['data'] as List<dynamic>?)
               ?.map((e) => ExamListModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+class QuestionPaginationModel extends QuestionPaginationEntity {
+  QuestionPaginationModel({
+    required super.currentPage,
+    required super.lastPage,
+    required super.perPage,
+    required super.total,
+    required super.data,
+  });
+
+  factory QuestionPaginationModel.fromJson(Map<String, dynamic> json) {
+    final meta = json['meta'] as Map<String, dynamic>? ?? {};
+    return QuestionPaginationModel(
+      currentPage: meta['current_page'] as int? ?? 1,
+      lastPage: meta['last_page'] as int? ?? 1,
+      perPage: meta['per_page'] as int? ?? 20,
+      total: meta['total'] as int? ?? 0,
+      data: (json['data'] as List<dynamic>?)
+              ?.map((e) => QuestionModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
     );

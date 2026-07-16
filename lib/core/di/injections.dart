@@ -22,6 +22,9 @@ import 'package:moean/features/exam_generation/presentation/cubit/exam_preview_c
 import 'package:moean/features/exam_generation/presentation/cubit/my_exams_cubit.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/manual_exam_cubit.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/bank_questions_cubit.dart' as moean_exam;
+import 'package:moean/features/exam_generation/domain/usecases/get_my_questions_usecase.dart' as moean_exam;
+import 'package:moean/features/exam_generation/domain/usecases/update_custom_question_usecase.dart' as moean_exam;
+import 'package:moean/features/exam_generation/presentation/cubit/custom_questions_cubit.dart' as moean_exam;
 
 import 'package:moean/features/admin/exams/data/datasources/admin_exam_remote_data_source.dart';
 import 'package:moean/features/admin/exams/data/repositories/admin_exam_repository_impl.dart';
@@ -99,6 +102,8 @@ Future<void> initInjections() async {
   sl.registerLazySingleton(() => moean_exam.GetExamUseCase(sl()));
   sl.registerLazySingleton(() => moean_exam.UpdateQuestionPointsUseCase(sl()));
   sl.registerLazySingleton(() => moean_exam.AddManualQuestionUseCase(sl()));
+  sl.registerLazySingleton(() => moean_exam.GetMyQuestionsUseCase(sl()));
+  sl.registerLazySingleton(() => moean_exam.UpdateCustomQuestionUseCase(sl()));
 
   sl.registerLazySingleton(() => moean_exam.ExamInfoCubit());
   sl.registerLazySingleton(() => moean_exam.LessonSelectionCubit());
@@ -112,6 +117,7 @@ Future<void> initInjections() async {
   sl.registerFactory(() => moean_exam.MyExamsCubit(sl()));
   sl.registerFactory(() => moean_exam.ManualExamCubit(sl()));
   sl.registerFactory(() => moean_exam.BankQuestionsCubit());
+  sl.registerFactory(() => moean_exam.CustomQuestionsCubit(sl(), sl()));
 
   // ─── Admin Exams ──────────────────────────────────────────────
   sl.registerLazySingleton<AdminExamRemoteDataSource>(

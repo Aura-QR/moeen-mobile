@@ -31,7 +31,7 @@ class BankInfoWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Text(
-                appTranslation().get('pay_bank_details') ?? '',
+                appTranslation().get('pay_bank_details'),
                 style: TextStylesManager.bold16.copyWith(
                   color: ColorsManager.textPrimary,
                 ),
@@ -46,19 +46,19 @@ class BankInfoWidget extends StatelessWidget {
           ),
           verticalSpace4,
           Text(
-            appTranslation().get('pay_upload_after_transfer') ?? '',
+            appTranslation().get('pay_upload_after_transfer'),
             style: TextStylesManager.regular12.copyWith(
               color: ColorsManager.secondaryText,
             ),
           ),
           verticalSpace16,
           _BankInfoRow(
-            label: appTranslation().get('pay_bank_name') ?? '',
+            label: appTranslation().get('pay_bank_name'),
             value: bankName,
           ),
           verticalSpace10,
           _BankInfoRow(
-            label: appTranslation().get('pay_account_holder') ?? '',
+            label: appTranslation().get('pay_account_holder'),
             value: holder,
           ),
           verticalSpace10,
@@ -123,7 +123,7 @@ class _IbanRow extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  appTranslation().get('pay_iban_copied') ?? '',
+                  appTranslation().get('pay_iban_copied'),
                   textAlign: TextAlign.center,
                 ),
                 duration: const Duration(seconds: 2),

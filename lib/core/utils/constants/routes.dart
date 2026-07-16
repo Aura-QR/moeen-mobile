@@ -46,8 +46,8 @@ import 'package:moean/features/exam_generation/presentation/cubit/my_exams_cubit
 import 'package:moean/features/exam_generation/domain/entities/exam_entities.dart';
 import 'package:moean/features/exam_generation/presentation/screens/my_exams_screen.dart';
 import 'package:moean/features/exam_generation/presentation/cubit/my_exams_cubit.dart';
-import 'package:moean/features/exam_generation/presentation/screens/my_exams_screen.dart';
-import 'package:moean/features/exam_generation/presentation/screens/my_exams_screen.dart';
+import 'package:moean/features/exam_generation/presentation/screens/custom_questions_screen.dart';
+import 'package:moean/features/exam_generation/presentation/cubit/custom_questions_cubit.dart';
 import 'package:moean/features/exam_generation/presentation/screens/manual_exam_screen.dart';
 import 'package:moean/features/exam_generation/presentation/screens/bank_questions_screen.dart';
 import 'package:moean/features/exam_generation/presentation/cubit/bank_questions_cubit.dart';
@@ -89,6 +89,7 @@ class Routes {
   static const String examGenerationCounts = '/exam-generation/counts';
   static const String examGenerationPreview = '/exam-generation/preview';
   static const String myExams = '/my-exams';
+  static const String customQuestions = '/my-custom-questions';
   static const String manualExam = '/manual-exam';
   static const String examBankQuestions = '/exam-generation/bank-questions';
   static const String adminExams = '/admin/exams';
@@ -141,6 +142,10 @@ class Routes {
       create: (_) => sl<MyExamsCubit>(),
       child: const MyExamsScreen(),
     ),
+    customQuestions: (context) => BlocProvider(
+      create: (_) => sl<CustomQuestionsCubit>(),
+      child: const CustomQuestionsScreen(),
+    ),
     examGenerationPreview: (context) {
       final initialExam = ModalRoute.of(context)!.settings.arguments as ExamEntity;
       return BlocProvider(
@@ -148,10 +153,6 @@ class Routes {
         child: ExamPreviewScreen(initialExam: initialExam),
       );
     },
-    myExams: (context) => BlocProvider.value(
-      value: sl<MyExamsCubit>(),
-      child: const MyExamsScreen(),
-    ),
     manualExam: (context) => const ManualExamScreen(),
     examBankQuestions: (context) => MultiBlocProvider(
       providers: [

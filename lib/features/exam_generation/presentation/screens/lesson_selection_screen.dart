@@ -24,9 +24,9 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
   @override
   void initState() {
     super.initState();
-    final selectedUnit = context.read<ExamInfoCubit>().selectedUnit;
-    if (selectedUnit != null) {
-      context.read<LessonSelectionCubit>().loadLessonsForSubjectId(selectedUnit.subjectId);
+    final selectedSubject = context.read<ExamInfoCubit>().selectedSubject;
+    if (selectedSubject != null) {
+      context.read<LessonSelectionCubit>().loadLessonsForSubjectId(selectedSubject.id);
     }
   }
 
@@ -63,9 +63,9 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('الخطوة 1 من 3: اختيار الدروس', style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
+                Text('الخطوة 2 من 3: اختيار الدروس', style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
                 verticalSpace16,
                 PrimaryTextField(
                   controller: _searchController,
@@ -76,6 +76,49 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
                   onFieldSubmitted: (val) => cubit.search(val),
                 ),
                 verticalSpace16,
+                if (state.availableSemesters.isNotEmpty) ...[
+                  SizedBox(
+                    height: 40,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: state.availableSemesters.length + 1,
+                      separatorBuilder: (context, index) => horizontalSpace8,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          final isSelected = state.selectedSemester == null;
+                          return ChoiceChip(
+                            label: Text('الكل', style: isSelected ? TextStylesManager.bold12.copyWith(color: Colors.white) : TextStylesManager.regular12.copyWith(color: ColorsManager.mainText)),
+                            selected: isSelected,
+                            selectedColor: ColorsManager.primaryColor,
+                            backgroundColor: Colors.white,
+                            onSelected: (_) => cubit.selectSemester(null),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(color: isSelected ? ColorsManager.primaryColor : Colors.grey.withValues(alpha: 0.2)),
+                            ),
+                            showCheckmark: false,
+                          );
+                        }
+                        
+                        final semester = state.availableSemesters[index - 1];
+                        final isSelected = state.selectedSemester == semester;
+                        return ChoiceChip(
+                          label: Text('الفصل الدراسى  $semester', style: isSelected ? TextStylesManager.bold12.copyWith(color: Colors.white) : TextStylesManager.regular12.copyWith(color: ColorsManager.mainText)),
+                          selected: isSelected,
+                          selectedColor: ColorsManager.primaryColor,
+                          backgroundColor: Colors.white,
+                          onSelected: (_) => cubit.selectSemester(semester),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide(color: isSelected ? ColorsManager.primaryColor : Colors.grey.withValues(alpha: 0.2)),
+                          ),
+                          showCheckmark: false,
+                        );
+                      },
+                    ),
+                  ),
+                  verticalSpace16,
+                ],
                 Text(
                   'دروس محددة ${state.selectedLessons.length}',
                   style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor),
@@ -97,14 +140,14 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
                           children: [
                             Flexible(
                               child: Text(
-                                lesson['name'],
+                                lesson.title,
                                 style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             const SizedBox(width: 8),
                             InkWell(
-                              onTap: () => cubit.removeLesson(lesson['id']),
+                              onTap: () => cubit.removeLesson(lesson.id),
                               child: const Icon(Icons.close, size: 16, color: Colors.red),
                             ),
                           ],
@@ -119,31 +162,53 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: state.filteredLessons.length,
+              itemCount: state.filteredChapters.length,
               itemBuilder: (context, index) {
-                final lesson = state.filteredLessons[index];
-                final isSelected = state.selectedLessons.any((l) => l['id'] == lesson['id']);
+                final chapter = state.filteredChapters[index];
+                
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'الفصل: ${chapter.title} (الفصل: ${chapter.semester})',
+                        style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor),
+                      ),
+                    ),
+                    verticalSpace8,
+                    ...chapter.lessons.map((lesson) {
+                      final isSelected = state.selectedLessons.any((l) => l.id == lesson.id);
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: isSelected ? ColorsManager.primaryColor.withValues(alpha: 0.1) : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? ColorsManager.primaryColor : Colors.grey.withValues(alpha: 0.2),
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: CheckboxListTile(
-                    value: isSelected,
-                    activeColor: ColorsManager.primaryColor,
-                    title: Text(
-                      lesson['name'],
-                      style: isSelected ? TextStylesManager.bold14 : TextStylesManager.regular14,
-                    ),
-                    onChanged: (_) => cubit.toggleLesson(lesson),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected ? ColorsManager.primaryColor.withValues(alpha: 0.1) : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected ? ColorsManager.primaryColor : Colors.grey.withValues(alpha: 0.2),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: CheckboxListTile(
+                          value: isSelected,
+                          activeColor: ColorsManager.primaryColor,
+                          title: Text(
+                            lesson.title,
+                            style: isSelected ? TextStylesManager.bold14 : TextStylesManager.regular14,
+                          ),
+                          onChanged: (_) => cubit.toggleLesson(lesson),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      );
+                    }),
+                    verticalSpace16,
+                  ],
                 );
               },
             ),
@@ -161,7 +226,7 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
               right: false,
               minimum: const EdgeInsets.all(20),
               child: PrimaryElevatedButton(
-                text: appTranslation().get('continue'),
+                text: appTranslation().get('chose_app_continue'),
                 onPressed: cubit.hasSelection ? () {
                   context.push(Routes.examGenerationCounts);
                 } : null,

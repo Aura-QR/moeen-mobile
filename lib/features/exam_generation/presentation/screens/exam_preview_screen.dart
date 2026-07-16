@@ -4,6 +4,7 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
+import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/exam_generation/domain/entities/exam_entities.dart';
@@ -229,24 +230,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                   child: Text(q.questionText, style: TextStylesManager.bold16),
                 ),
                 if (state.exam.status == 'draft')
-                  SizedBox(
-                    width: 60,
-                    child: TextFormField(
-                      initialValue: (state.pendingPointsChanges[q.id] ?? q.points).toString(),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      textAlign: TextAlign.center,
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                        border: OutlineInputBorder(),
-                      ),
-                      onChanged: (val) {
-                        final parsed = double.tryParse(val);
-                        if (parsed != null && parsed >= 0) {
-                          context.read<ExamPreviewCubit>().updatePendingPoints(q.id, parsed);
-                        }
-                      },
-                    ),
+                  _PointsEditor(
+                    initialPoints: state.pendingPointsChanges[q.id] ?? q.points.toDouble(),
+                    onChanged: (parsed) {
+                      context.read<ExamPreviewCubit>().updatePendingPoints(q.id, parsed);
+                    },
                   )
                 else
                   Text('${q.points} درجة', style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
@@ -371,5 +359,98 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
       );
     }
     return const SizedBox.shrink(); // fill_blank text is already rendered in questionText
+  }
+}
+
+class _PointsEditor extends StatefulWidget {
+  final double initialPoints;
+  final ValueChanged<double> onChanged;
+
+  const _PointsEditor({required this.initialPoints, required this.onChanged});
+
+  @override
+  State<_PointsEditor> createState() => _PointsEditorState();
+}
+
+class _PointsEditorState extends State<_PointsEditor> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialPoints.toString());
+  }
+
+  @override
+  void didUpdateWidget(covariant _PointsEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialPoints != widget.initialPoints) {
+      if (double.tryParse(_controller.text) != widget.initialPoints) {
+        _controller.text = widget.initialPoints.toString();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _increment() {
+    double current = double.tryParse(_controller.text) ?? widget.initialPoints;
+    current += 1.0;
+    _controller.text = current.toString();
+    widget.onChanged(current);
+  }
+
+  void _decrement() {
+    double current = double.tryParse(_controller.text) ?? widget.initialPoints;
+    if (current >= 1.0) {
+      current -= 1.0;
+      _controller.text = current.toString();
+      widget.onChanged(current);
+    } else if (current > 0) {
+      current = 0.0;
+      _controller.text = current.toString();
+      widget.onChanged(current);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: Icon(Icons.add_circle_outline, size: 24, color: ColorsManager.primaryColor),
+          onPressed: _increment,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 80,
+          child: PrimaryTextField(
+            controller: _controller,
+            hint: 'الدرجة',
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (val) {
+              final parsed = double.tryParse(val);
+              if (parsed != null && parsed >= 0) {
+                widget.onChanged(parsed);
+              }
+            },
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          icon: Icon(Icons.remove_circle_outline, size: 24, color: ColorsManager.primaryColor),
+          onPressed: _decrement,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+      ],
+    );
   }
 }

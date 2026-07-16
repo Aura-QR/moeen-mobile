@@ -247,7 +247,7 @@ class _TicketChatHistoryState extends State<TicketChatHistory> {
                     maxLines: 5,
                     minLines: 1,
                     decoration: InputDecoration(
-                      hintText: appTranslation().get('write_your_reply_here') ?? 'اكتب ردك هنا...',
+                      hintText: appTranslation().get('write_your_reply_here'),
                       hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -267,7 +267,7 @@ class _TicketChatHistoryState extends State<TicketChatHistory> {
       crossAxisAlignment: CrossAxisAlignment.start, // Right aligned in RTL
       children: [
         Text(
-          '${appTranslation().get('chat_date') ?? 'تاريخ الدردشة'} / ${_formatDateShort(rawDate)}',
+          '${appTranslation().get('chat_date')} / ${_formatDateShort(rawDate)}',
           style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText),
         ),
         verticalSpace8,

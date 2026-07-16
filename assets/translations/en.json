@@ -476,9 +476,13 @@
   "admin_pending_questions_title": "Pending Questions",
   "admin_exam_review_success": "Question reviewed successfully",
   "no_pending_questions": "No pending questions",
-  "reject": "Reject",
-  "approve": "Approve",
   "approved": "Approved",
   "rejected": "Rejected",
-  "pending": "Pending"
+  "my_custom_questions": "My Custom Questions",
+  "rejection_reason": "Rejection Reason",
+  "edit_question": "Edit Question",
+  "no_questions_found": "No questions found",
+  "search_questions": "Search questions",
+  "save": "Save",
+  "total_tickets": "Total Tickets"
 }

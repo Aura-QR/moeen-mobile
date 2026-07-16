@@ -55,12 +55,13 @@ class AdminExamsCubit extends Cubit<AdminExamsState> {
           total: pagination.total,
           data: List.from(_questions),
         );
+        currentPagination = updatedPagination;
         emit(AdminExamsLoaded(updatedPagination));
       },
     );
   }
 
-  Future<void> reviewQuestion(int questionId, String decision) async {
+  Future<void> reviewQuestion(int questionId, String decision, [String? rejectionReason]) async {
     final currentState = state;
     
     emit(AdminExamReviewLoading(questionId));
@@ -68,6 +69,7 @@ class AdminExamsCubit extends Cubit<AdminExamsState> {
     final result = await reviewQuestionUseCase(
       questionId: questionId,
       decision: decision,
+      rejectionReason: rejectionReason,
     );
 
     result.fold(
@@ -83,6 +85,7 @@ class AdminExamsCubit extends Cubit<AdminExamsState> {
             total: currentPagination!.total,
             data: List.from(_questions),
           );
+          currentPagination = updatedPagination;
           emit(AdminExamsLoaded(updatedPagination));
         }
       },
@@ -101,6 +104,7 @@ class AdminExamsCubit extends Cubit<AdminExamsState> {
             total: currentPagination!.total,
             data: List.from(_questions),
           );
+          currentPagination = updatedPagination;
           emit(AdminExamsLoaded(updatedPagination));
         }
       },

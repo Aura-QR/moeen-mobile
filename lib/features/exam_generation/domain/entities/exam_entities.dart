@@ -31,6 +31,8 @@ class QuestionEntity {
   final int usageCount;
   final int questionOrder;
   final int points;
+  final String reviewStatus;
+  final String? rejectionReason;
 
   QuestionEntity({
     required this.id,
@@ -43,6 +45,8 @@ class QuestionEntity {
     required this.usageCount,
     required this.questionOrder,
     required this.points,
+    this.reviewStatus = '',
+    this.rejectionReason,
   });
 }
 
@@ -94,6 +98,22 @@ class ExamPaginationEntity {
   final List<ExamListEntity> data;
 
   ExamPaginationEntity({
+    required this.currentPage,
+    required this.lastPage,
+    required this.perPage,
+    required this.total,
+    required this.data,
+  });
+}
+
+class QuestionPaginationEntity {
+  final int currentPage;
+  final int lastPage;
+  final int perPage;
+  final int total;
+  final List<QuestionEntity> data;
+
+  QuestionPaginationEntity({
     required this.currentPage,
     required this.lastPage,
     required this.perPage,

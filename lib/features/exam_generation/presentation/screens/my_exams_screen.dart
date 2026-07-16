@@ -42,13 +42,35 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ColorsManager.background,
-      appBar: AppBar(
-        title: Text(
+      appBar: 
+      // AppBar(
+      //   title: Text(
+      //     appTranslation().get('my_exam'),
+      //     style: TextStylesManager.bold18,
+      //   ),
+      //   backgroundColor: ColorsManager.background,
+      //   elevation: 0,
+      // ),
+       AppBar(
+        backgroundColor: ColorsManager.background,
+        elevation: 0,
+        centerTitle: true,
+       title: Text(
           appTranslation().get('my_exam'),
           style: TextStylesManager.bold18,
         ),
-        backgroundColor: ColorsManager.background,
-        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: ColorsManager.mainText),
+          onPressed: () => context.pop(),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.quiz_outlined, color: ColorsManager.mainText),
+            onPressed: () {
+              context.push(Routes.customQuestions);
+            },
+          ),
+        ],
       ),
       body: Directionality(
         textDirection: TextDirection.rtl,

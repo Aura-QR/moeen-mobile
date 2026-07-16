@@ -126,7 +126,7 @@
   "profile": "الملف الشخصي",
   "logout": "تسجيل الخروج",
   "logout_desc": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
-  "role": "الدور",
+  "role": "الفصل",
   "phone_number": "رقم الجوال",
   "subscription": "الاشتراك",
   "ai_quota": "الرصيد المتبقي للذكاء الاصطناعي",
@@ -476,9 +476,13 @@
   "admin_pending_questions_title": "الأسئلة المعلقة",
   "admin_exam_review_success": "تم تقييم السؤال بنجاح",
   "no_pending_questions": "لا توجد أسئلة معلقة",
-  "reject": "رفض",
-  "approve": "قبول",
   "approved": "مقبول",
   "rejected": "مرفوض",
-  "pending": "معلق"
+  "my_custom_questions": "أسئلتي المخصصة",
+  "rejection_reason": "سبب الرفض",
+  "edit_question": "تعديل السؤال",
+  "no_questions_found": "لا توجد أسئلة",
+  "search_questions": "ابحث في الأسئلة",
+  "save": "حفظ",
+  "total_tickets":"كل المشاكل"
 }

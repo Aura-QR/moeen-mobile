@@ -8,7 +8,7 @@ import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/exam_generation/presentation/cubit/exam_info_cubit.dart';
 import 'package:moean/features/reports/presentation/widgets/selection_bottom_sheet.dart';
-import 'package:moean/features/exam_generation/data/datasources/local_curriculum_provider.dart';
+import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
 
 class ExamInfoScreen extends StatefulWidget {
   const ExamInfoScreen({super.key});
@@ -82,7 +82,7 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
                       ),
                      verticalSpace8,
                       Text(
-                        'اختاري المرحلة والصف والمادة والوحدة\nثم اختاري أكثر من درس من نفس الشاشة.',
+                        'اختاري المرحلة والصف والمادة\nثم اختاري الفصل والدروس من الشاشة التالية.',
                         textAlign: TextAlign.center,
                         style: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
                       ),
@@ -90,24 +90,46 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
                   ),
                   verticalSpace24,
           
-                  _buildChipsSelection(
+                  _buildChipsSelection<CurriculumStageModel>(
                     label: 'اختر المرحلة الدراسية',
-                    items: LocalCurriculumProvider.gradeStages,
-                    selectedValue: cubit.gradeStage,
-                    onSelected: (v) => cubit.updateInfo(gradeStage: v, grade: ''),
+                    items: cubit.stages,
+                    selectedValue: cubit.selectedStage,
+                    onSelected: (v) => cubit.updateInfo(stage: v),
+                    itemLabelBuilder: (item) => item.name,
                   ),
                   
-                  if (cubit.gradeStage.isNotEmpty) ...[
+                  if (cubit.selectedStage != null) ...[
                     verticalSpace24,
-                    _buildChipsSelection(
+                    _buildChipsSelection<CurriculumGradeModel>(
                       label: 'اختر الصف',
-                      items: LocalCurriculumProvider.gradesByStage[cubit.gradeStage] ?? [],
-                      selectedValue: cubit.grade,
+                      items: cubit.selectedStage!.grades,
+                      selectedValue: cubit.selectedGrade,
                       onSelected: (v) => cubit.updateInfo(grade: v),
+                      itemLabelBuilder: (item) => item.name,
                     ),
                   ],
+
+                  if (cubit.selectedGrade != null) ...[
+                    verticalSpace24,
+                    _buildDropdownField(
+                      label: 'اختر المادة',
+                      value: cubit.selectedSubject?.name ?? '',
+                      onTap: () {
+                        final subjects = cubit.selectedGrade!.subjects;
+                        _showSelector(
+                          'اختر المادة',
+                          subjects.map((e) => e.name).toSet().toList(),
+                          (v) {
+                            final selectedSub = subjects.firstWhere((e) => e.name == v);
+                            cubit.updateInfo(subject: selectedSub);
+                          }
+                        );
+                      },
+                    ),
+                  ],
+                  
                   verticalSpace24,
-           _buildChipsSelection(
+                  _buildChipsSelection<String>(
                     label: 'مستوى الاختبار',
                     items: ['easy', 'medium', 'hard'],
                     selectedValue: cubit.difficulty,
@@ -119,35 +141,6 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
                         case 'hard': return 'صعب';
                         default: return item;
                       }
-                    },
-                  ),
-                
-                verticalSpace24,
-                  _buildDropdownField(
-                    label: 'اختر المادة',
-                    value: cubit.subject,
-                    onTap: () => _showSelector(
-                      'اختر المادة',
-                      cubit.subjectsData.map((e) => e.name).toSet().toList(),
-                      (v) => cubit.updateInfo(subject: v),
-                    ),
-                  ),
-                  verticalSpace16,
-          
-                  _buildDropdownField(
-                    label: 'اختر الوحدة',
-                    value: cubit.selectedUnit?.name ?? '',
-                    onTap: () {
-                      if (cubit.subject.isEmpty) return;
-                      final subjectModel = cubit.subjectsData.firstWhere((e) => e.name == cubit.subject);
-                      _showSelector(
-                        'اختر الوحدة',
-                        subjectModel.units.map((e) => e.name).toSet().toList(),
-                        (v) {
-                          final selectedUnit = subjectModel.units.firstWhere((e) => e.name == v);
-                          cubit.updateInfo(selectedUnit: selectedUnit);
-                        }
-                      );
                     },
                   ),
                   
@@ -169,7 +162,7 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
             right: false,
             minimum: const EdgeInsets.all(20),
             child: PrimaryElevatedButton(
-              text: 'متابعة لتحديد عدد الأسئلة',
+              text: 'متابعة لاختيار الدروس',
               onPressed: cubit.isValid ? () {
                 context.push(Routes.examGenerationLessons);
               } : null,
@@ -244,12 +237,12 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
     );
   }
 
-  Widget _buildChipsSelection({
+  Widget _buildChipsSelection<T>({
     required String label, 
-    required List<String> items, 
-    required String selectedValue, 
-    required Function(String) onSelected,
-    String Function(String)? itemLabelBuilder,
+    required List<T> items, 
+    required T? selectedValue, 
+    required Function(T) onSelected,
+    required String Function(T) itemLabelBuilder,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -266,7 +259,7 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
           alignment: WrapAlignment.center,
           children: items.map((item) {
             final isSelected = selectedValue == item;
-            final displayText = itemLabelBuilder != null ? itemLabelBuilder(item) : item;
+            final displayText = itemLabelBuilder(item);
             return InkWell(
               onTap: () => onSelected(item),
               borderRadius: BorderRadius.circular(20),

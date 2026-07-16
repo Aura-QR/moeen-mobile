@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/network/remote/api_service.dart';
+import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
 
 abstract class LessonSelectionState {}
 
@@ -13,29 +14,34 @@ class LessonSelectionError extends LessonSelectionState {
 }
 
 class LessonSelectionUpdated extends LessonSelectionState {
-  final List<Map<String, dynamic>> allLessons;
-  final List<Map<String, dynamic>> filteredLessons;
-  final List<Map<String, dynamic>> selectedLessons;
+  final SubjectDetailsModel? subjectDetails;
+  final List<CurriculumChapterModel> filteredChapters;
+  final List<CurriculumLessonModel> selectedLessons;
   final String searchQuery;
+  final List<String> availableSemesters;
+  final String? selectedSemester;
 
   LessonSelectionUpdated({
-    required this.allLessons,
-    required this.filteredLessons,
+    required this.subjectDetails,
+    required this.filteredChapters,
     required this.selectedLessons,
     required this.searchQuery,
+    required this.availableSemesters,
+    required this.selectedSemester,
   });
 }
 
 class LessonSelectionCubit extends Cubit<LessonSelectionState> {
   LessonSelectionCubit() : super(LessonSelectionInitial());
 
-  List<Map<String, dynamic>> _allLessons = [];
-  final List<Map<String, dynamic>> _selectedLessons = [];
+  SubjectDetailsModel? _subjectDetails;
+  final List<CurriculumLessonModel> _selectedLessons = [];
   String _searchQuery = '';
   int? _currentSubjectId;
+  String? _selectedSemester;
 
   Future<void> loadLessonsForSubjectId(int subjectId) async {
-    if (_currentSubjectId == subjectId && _allLessons.isNotEmpty) {
+    if (_currentSubjectId == subjectId && _subjectDetails != null) {
       _emitState();
       return; // Already loaded
     }
@@ -47,18 +53,21 @@ class LessonSelectionCubit extends Cubit<LessonSelectionState> {
     
     result.fold(
       (dynamic failure) => emit(LessonSelectionError(failure?.message ?? 'Unknown error')),
-      (lessonsData) {
-        _allLessons = lessonsData.map((e) => {
-          'id': e.id,
-          'name': e.name,
-        }).toList();
+      (details) {
+        _subjectDetails = details;
         
-        // Keep previously selected lessons if they still exist in the new unit, otherwise clear
-        _selectedLessons.removeWhere((selected) => !_allLessons.any((l) => l['id'] == selected['id']));
+        // Remove selected lessons that are no longer in this subject
+        final allLessonsIds = details.chapters.expand((c) => c.lessons).map((l) => l.id).toSet();
+        _selectedLessons.removeWhere((selected) => !allLessonsIds.contains(selected.id));
         
         _emitState();
       },
     );
+  }
+
+  void selectSemester(String? semester) {
+    _selectedSemester = semester;
+    _emitState();
   }
 
   void retry() {
@@ -68,7 +77,6 @@ class LessonSelectionCubit extends Cubit<LessonSelectionState> {
   }
 
   void search(String query) {
-    print('Search query received: $query');
     _searchQuery = query.toLowerCase();
     _emitState();
   }
@@ -81,9 +89,9 @@ class LessonSelectionCubit extends Cubit<LessonSelectionState> {
         .replaceAll('ة', 'ه');
   }
 
-  void toggleLesson(Map<String, dynamic> lesson) {
-    if (_selectedLessons.any((l) => l['id'] == lesson['id'])) {
-      _selectedLessons.removeWhere((l) => l['id'] == lesson['id']);
+  void toggleLesson(CurriculumLessonModel lesson) {
+    if (_selectedLessons.any((l) => l.id == lesson.id)) {
+      _selectedLessons.removeWhere((l) => l.id == lesson.id);
     } else {
       _selectedLessons.add(lesson);
     }
@@ -91,31 +99,49 @@ class LessonSelectionCubit extends Cubit<LessonSelectionState> {
   }
 
   void removeLesson(int lessonId) {
-    _selectedLessons.removeWhere((l) => l['id'] == lessonId);
+    _selectedLessons.removeWhere((l) => l.id == lessonId);
     _emitState();
   }
 
   void _emitState() {
     final normalizedQuery = _normalizeArabic(_searchQuery);
-    print('Normalized Search query: $normalizedQuery');
-    print('All lessons count: ${_allLessons.length}');
-
-    final filtered = _allLessons.where((l) {
-      final name = (l['name'] as String).toLowerCase();
-      final normalizedName = _normalizeArabic(name);
-      return normalizedName.contains(normalizedQuery);
-    }).toList();
     
-    print('Filtered lessons count: ${filtered.length}');
+    List<CurriculumChapterModel> filtered = [];
+    if (_subjectDetails != null) {
+      for (var chapter in _subjectDetails!.chapters) {
+        if (_selectedSemester != null && chapter.semester != _selectedSemester) {
+          continue;
+        }
+        
+        final matchingLessons = chapter.lessons.where((l) {
+          final name = l.title.toLowerCase();
+          final normalizedName = _normalizeArabic(name);
+          return normalizedName.contains(normalizedQuery);
+        }).toList();
+        
+        if (matchingLessons.isNotEmpty) {
+          filtered.add(CurriculumChapterModel(
+            chapterId: chapter.chapterId,
+            title: chapter.title,
+            semester: chapter.semester,
+            unitId: chapter.unitId,
+            unitName: chapter.unitName,
+            lessons: matchingLessons,
+          ));
+        }
+      }
+    }
 
     emit(LessonSelectionUpdated(
-      allLessons: List.from(_allLessons),
-      filteredLessons: filtered,
+      subjectDetails: _subjectDetails,
+      filteredChapters: filtered,
       selectedLessons: List.from(_selectedLessons),
       searchQuery: _searchQuery,
+      availableSemesters: _subjectDetails?.chapters.map((c) => c.semester).toSet().toList() ?? [],
+      selectedSemester: _selectedSemester,
     ));
   }
   
-  List<Map<String, dynamic>> get selectedLessons => _selectedLessons;
+  List<CurriculumLessonModel> get selectedLessons => _selectedLessons;
   bool get hasSelection => _selectedLessons.isNotEmpty;
 }

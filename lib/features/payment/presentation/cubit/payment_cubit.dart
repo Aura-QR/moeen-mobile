@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/features/payment/data/models/order_model.dart';
@@ -8,7 +9,7 @@ import 'package:moean/features/payment/presentation/cubit/payment_state.dart';
 class PaymentCubit extends Cubit<PaymentState> {
   PaymentCubit() : super(PaymentInitial());
 
-  static PaymentCubit get(context) => BlocProvider.of(context);
+  static PaymentCubit get(BuildContext context) => BlocProvider.of(context);
 
   List<SubscriptionPlanModel> plans = [];
   OrderModel? currentOrder;

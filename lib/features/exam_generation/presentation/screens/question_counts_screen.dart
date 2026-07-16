@@ -45,9 +45,9 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
     }
 
     context.read<GenerateExamCubit>().generate(
-      grade: infoCubit.grade,
-      subject: infoCubit.subject,
-      lessons: lessonCubit.selectedLessons,
+      grade: infoCubit.selectedGrade?.name ?? '',
+      subject: infoCubit.selectedSubject?.name ?? '',
+      lessons: lessonCubit.selectedLessons.map((l) => {'id': l.id, 'name': l.title}).toList(),
       counts: countCubit.counts,
       selectedQuestionIds: infoCubit.selectedBankQuestionIds,
     );
@@ -113,9 +113,84 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                             children: [
                               Text('الخطوة 2 من 3: تحديد الأسئلة', style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
                               verticalSpace16,
-                              PrimaryElevatedButton(
-                                text: 'تصفح بنك الأسئلة',
-                                onPressed: () => context.push(Routes.examBankQuestions),
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: () => context.push(Routes.examBankQuestions),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            'من بنك الأسئلة',
+                                            style: TextStylesManager.bold14.copyWith(color: ColorsManager.secondaryText),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        decoration: BoxDecoration(
+                                          color: ColorsManager.primaryColor,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          'إنشاء تلقائي',
+                                          style: TextStylesManager.bold14.copyWith(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              verticalSpace24,
+                              Text('الدروس المختارة', style: TextStylesManager.bold16.copyWith(color: const Color(0xFF0F172A))),
+                              verticalSpace12,
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: selectedLessons.asMap().entries.map((entry) {
+                                  final index = entry.key;
+                                  final lesson = entry.value;
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: BoxDecoration(
+                                            color: ColorsManager.primaryColor.withOpacity(0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: Text('${index + 1}', style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor)),
+                                        ),
+                                        horizontalSpace8,
+                                        Text(lesson.title, style: TextStylesManager.bold14.copyWith(color: const Color(0xFF0F172A))),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
                               ),
                               verticalSpace16,
                               if (context.read<ExamInfoCubit>().selectedBankQuestionIds.isNotEmpty) ...[
@@ -154,15 +229,16 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                             itemCount: selectedLessons.length,
                             itemBuilder: (context, index) {
                               final lesson = selectedLessons[index];
-                              final lessonId = lesson['id'] as int;
+                              final lessonId = lesson.id;
                               final counts = state.counts[lessonId];
                               if (counts == null) return const SizedBox.shrink();
 
                               return Card(
                                 margin: const EdgeInsets.only(bottom: 16),
                                 elevation: 0,
+                                color: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(16),
                                   side: BorderSide(color: Colors.grey.withOpacity(0.2)),
                                 ),
                                 child: Padding(
@@ -178,7 +254,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  lesson['name'],
+                                                  lesson.title,
                                                   style: TextStylesManager.bold16,
                                                   maxLines: 2,
                                                 ),
@@ -204,11 +280,14 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                         ],
                                       ),
                                       const Divider(),
+                                      verticalSpace8,
+                                      Text('أنواع الأسئلة والدرجات', style: TextStylesManager.bold16.copyWith(color: const Color(0xFF0F172A))),
+                                      verticalSpace16,
                                       _buildCounterRow(context, lessonId, 'اختيار من متعدد', 'mcq', counts.mcq),
-                                      _buildCounterRow(context, lessonId, 'صح / خطأ', 'true_false', counts.trueFalse),
-                                      _buildCounterRow(context, lessonId, 'إكمال الفراغ', 'fill_blank', counts.fillBlank),
-                                      _buildCounterRow(context, lessonId, 'مقال مقيد', 'essay', counts.essay),
-                                      _buildCounterRow(context, lessonId, 'مزاوجة', 'matching', counts.matching),
+                                      _buildCounterRow(context, lessonId, 'صح أو خطأ', 'true_false', counts.trueFalse),
+                                      _buildCounterRow(context, lessonId, 'أكمل الفراغ', 'fill_blank', counts.fillBlank),
+                                      _buildCounterRow(context, lessonId, 'سؤال مقالي', 'essay', counts.essay),
+                                      _buildCounterRow(context, lessonId, 'مطابقة', 'matching', counts.matching),
                                     ],
                                   ),
                                 ),
@@ -266,33 +345,62 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
   }
 
   Widget _buildCounterRow(BuildContext context, int lessonId, String label, String type, int value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    int defaultGrade = 1;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ColorsManager.primaryColor.withOpacity(0.15)),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStylesManager.regular14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStylesManager.bold16.copyWith(color: const Color(0xFF0F172A))),
+              verticalSpace4,
+              Text('عدد الأسئلة', style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText)),
+            ],
+          ),
           Row(
             children: [
-              _CounterButton(
-                icon: Icons.remove,
-                onTap: () => context.read<QuestionCountCubit>().updateCount(lessonId, type, -1),
-                enabled: value > 0,
-              ),
-              horizontalSpace12,
-              SizedBox(
-                width: 30,
-                child: Text(
-                  value.toString(),
-                  textAlign: TextAlign.center,
-                  style: TextStylesManager.bold16,
-                ),
-              ),
-              horizontalSpace12,
               _CounterButton(
                 icon: Icons.add,
                 onTap: () => context.read<QuestionCountCubit>().updateCount(lessonId, type, 1),
                 enabled: true,
+                isAdd: true,
+              ),
+              horizontalSpace8,
+              SizedBox(
+                width: 24,
+                child: Text(
+                  value.toString(),
+                  textAlign: TextAlign.center,
+                  style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor),
+                ),
+              ),
+              horizontalSpace8,
+              _CounterButton(
+                icon: Icons.remove,
+                onTap: () => context.read<QuestionCountCubit>().updateCount(lessonId, type, -1),
+                enabled: value > 0,
+                isAdd: false,
+              ),
+              horizontalSpace12,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF9E6),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '$defaultGrade درجة',
+                  style: TextStylesManager.bold14.copyWith(color: const Color(0xFF0F172A)),
+                ),
               ),
             ],
           ),
@@ -306,24 +414,29 @@ class _CounterButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final bool enabled;
+  final bool isAdd;
 
-  const _CounterButton({required this.icon, required this.onTap, required this.enabled});
+  const _CounterButton({required this.icon, required this.onTap, required this.enabled, this.isAdd = false});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: enabled ? onTap : null,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: enabled ? ColorsManager.primaryColor.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-          shape: BoxShape.circle,
+          color: isAdd 
+              ? ColorsManager.primaryColor 
+              : ColorsManager.primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
           icon,
           size: 20,
-          color: enabled ? ColorsManager.primaryColor : Colors.grey,
+          color: isAdd 
+              ? Colors.white 
+              : (enabled ? ColorsManager.primaryColor : Colors.grey),
         ),
       ),
     );

@@ -137,75 +137,62 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
           verticalSpace40,
 
           // Action Chips Row
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            child: Row(
-              children: [
-                HomeActionChipWidget(
-                  icon: Icons.monitor,
-                  title: appTranslation().get('home_reports'),
-                  onTap: () {
-                    if (token != null && token!.isNotEmpty) {
-                      final isAdmin = context.read<HomeCubit>().isAdmin;
-                      if (!isAdmin) {
-                        context.push(Routes.reports);
-                      }
-                    } else {
-                      context.push(Routes.login);
-                    }
-                  },
+          BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
+              final isAdmin = context.read<HomeCubit>().isAdmin;
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Row(
+                  children: [
+                    if (!isAdmin) ...[
+                      HomeActionChipWidget(
+                        icon: Icons.monitor,
+                        title: appTranslation().get('home_reports'),
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.reports);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
+                      horizontalSpace12,
+                    ],
+                    HomeActionChipWidget(
+                      icon: Icons.verified_outlined,
+                      title: appTranslation().get('home_tests'),
+                      onTap: () {
+                        if (token != null && token!.isNotEmpty) {
+                          if (isAdmin) {
+                            context.push(Routes.adminExams);
+                          } else {
+                            context.push(Routes.examGenerationInfo);
+                          }
+                        } else {
+                          context.push(Routes.login);
+                        }
+                      },
+                    ),
+                    if (!isAdmin) ...[
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.description_outlined,
+                        title: appTranslation().get('my_exam'),
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.myExams);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
+                    ],
+                  ],
                 ),
-                horizontalSpace12,
-                // HomeActionChipWidget(
-                //   icon: Icons.description_outlined,
-                //   title: appTranslation().get('home_worksheets'),
-                //   onTap: () {
-                //     if (token != null && token!.isNotEmpty) {
-                //       final isAdmin = context.read<HomeCubit>().isAdmin;
-                //       if (!isAdmin) {
-                //         context.push(Routes.manualExam);
-                //       }
-                //     } else {
-                //       context.push(Routes.login);
-                //     }
-                //   }, 
-                // ),
-                horizontalSpace12,
-                HomeActionChipWidget(
-                  icon: Icons.verified_outlined,
-                  title: appTranslation().get('home_tests'),
-                  onTap: () {
-                    if (token != null && token!.isNotEmpty) {
-                      final isAdmin = context.read<HomeCubit>().isAdmin;
-                      if (isAdmin) {
-                        context.push(Routes.adminExams);
-                      } else {
-                        context.push(Routes.examGenerationInfo);
-                      }
-                    } else {
-                      context.push(Routes.login);
-                    }
-                  },
-                ),
-                horizontalSpace12,
-                HomeActionChipWidget(
-                  icon: Icons.description_outlined,
-                  title: appTranslation().get('my_exam'),
-                  onTap: () {
-                    if (token != null && token!.isNotEmpty) {
-                      final isAdmin = context.read<HomeCubit>().isAdmin;
-                      if (!isAdmin) {
-                        context.push(Routes.myExams);
-                      }
-                    } else {
-                      context.push(Routes.login);
-                    }
-                  }, 
-                ),
-              ],
-            ),
+              );
+            },
           ),
           verticalSpace24,
 

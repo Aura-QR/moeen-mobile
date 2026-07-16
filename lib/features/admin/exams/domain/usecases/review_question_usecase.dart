@@ -11,10 +11,12 @@ class ReviewQuestionUseCase {
   Future<Either<Failure, AdminQuestionEntity>> call({
     required int questionId,
     required String decision,
+    String? rejectionReason,
   }) {
     return repository.reviewQuestion(
       questionId: questionId,
       decision: decision,
+      rejectionReason: rejectionReason,
     );
   }
 }

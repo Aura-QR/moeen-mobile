@@ -287,13 +287,99 @@ Force a full sync of the teacher's timetable from Madrasati.
 ## 📚 Lesson Catalogue
 
 ### `GET /subjects`
-List all subjects.
+List all educational stages, grades, and subjects in a hierarchical format.
+
+**Response `200`**
+```json
+[
+  {
+    "id": 1,
+    "name": "المرحلة المتوسطة",
+    "grades": [
+      {
+        "id": 1,
+        "name": "الصف الأول المتوسط",
+        "subjects": [
+          {
+            "id": 1,
+            "name": "الرياضيات"
+          },
+          {
+            "id": 2,
+            "name": "اللغة الإنجليزية"
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
+---
 
 ### `GET /subjects/{id}/lessons`
-List all lessons within a subject.
+List all chapters and lessons within a subject, grouped by chapters (and showing unit mapping if any).
+
+**Response `200`**
+```json
+{
+  "subject_id": 1,
+  "subject_name": "الرياضيات",
+  "chapters": [
+    {
+      "chapter_id": 1,
+      "title": "الجبر و الدوال",
+      "unit_id": null,
+      "unit_name": null,
+      "semester": "1",
+      "lessons": [
+        {
+          "id": 1,
+          "title": "التهيئة",
+          "order_index": 1,
+          "semester": "1",
+          "source_lesson_id": 7550,
+          "lesson_api_id": 44052
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
 
 ### `GET /lessons/{id}`
-Get full details for a single lesson.
+Get full details for a single lesson, including its complete Stage -> Grade -> Subject context breadcrumb.
+
+**Response `200`**
+```json
+{
+  "id": 1,
+  "title": "التهيئة",
+  "order_index": 1,
+  "semester": "1",
+  "source_lesson_id": 7550,
+  "lesson_api_id": 44052,
+  "chapter": {
+    "id": 1,
+    "name": "الجبر و الدوال",
+    "semester": "1"
+  },
+  "subject": {
+    "id": 1,
+    "name": "الرياضيات"
+  },
+  "grade": {
+    "id": 1,
+    "name": "الصف الأول المتوسط"
+  },
+  "stage": {
+    "id": 1,
+    "name": "المرحلة المتوسطة"
+  }
+}
+```
 
 ---
 
@@ -812,9 +898,13 @@ Permanently delete a ticket and all its replies.
 
 The exam API supports quick generation, detailed browse-and-select generation, exam history, per-question points, manual question submission, and admin review. See [EXAM_GENERATION_FRONTEND_INTEGRATION.md](EXAM_GENERATION_FRONTEND_INTEGRATION.md) for the complete request and response contracts for:
 
+Exam generation and manual questions support `difficulty: "easy" | "medium" | "hard"`; generation defaults to `medium` and forwards the selected value to n8n.
+
 - `POST /exams/generate`
 - `GET /exams`
 - `GET /exams/{exam}`
+- `POST /exams/{exam}/publish`
+- `DELETE /exams/{exam}`
 - `PATCH /exams/{exam}/questions/points`
 - `GET /lessons/{lesson}/questions`
 - `POST /questions`
