@@ -98,11 +98,22 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
                     itemLabelBuilder: (item) => item.name,
                   ),
                   
-                  if (cubit.selectedStage != null) ...[
+                  if (cubit.availableTracks.isNotEmpty) ...[
+                    verticalSpace24,
+                    _buildChipsSelection<String>(
+                      label: 'المسار',
+                      items: cubit.availableTracks,
+                      selectedValue: cubit.selectedTrack,
+                      onSelected: (v) => cubit.updateInfo(track: v),
+                      itemLabelBuilder: (item) => item,
+                    ),
+                  ],
+
+                  if (cubit.selectedStage != null && (cubit.availableTracks.isEmpty || cubit.selectedTrack != null)) ...[
                     verticalSpace24,
                     _buildChipsSelection<CurriculumGradeModel>(
-                      label: 'اختر الصف',
-                      items: cubit.selectedStage!.grades,
+                      label: 'الصف الدراسي',
+                      items: cubit.availableGrades,
                       selectedValue: cubit.selectedGrade,
                       onSelected: (v) => cubit.updateInfo(grade: v),
                       itemLabelBuilder: (item) => item.name,

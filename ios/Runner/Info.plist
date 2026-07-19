@@ -65,6 +65,13 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+	    <string>يحتاج تطبيق حضّر إلى إذن الوصول لمكتبة الصور لاختيار ورفع الملفات التعليمية.</string>
+	    <key>NSCameraUsageDescription</key>
+	    <string>يحتاج تطبيق حضّر إلى إذن الوصول للكاميرا لالتقاط صور للملفات أو المستندات.</string>
+	    <key>NSMicrophoneUsageDescription</key>
+	    <string>يحتاج تطبيق حضّر إلى إذن الوصول للميكروفون لتسجيل الملاحظات الصوتية.</string>
+		 
 	</array>
 </dict>
 </plist>

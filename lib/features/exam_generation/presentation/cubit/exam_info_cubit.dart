@@ -19,6 +19,7 @@ class ExamInfoError extends ExamInfoState {
 
 class ExamInfoUpdated extends ExamInfoState {
   final CurriculumStageModel? selectedStage;
+  final String? selectedTrack;
   final CurriculumGradeModel? selectedGrade;
   final CurriculumSubjectModel? selectedSubject;
   final List<CurriculumStageModel> stages;
@@ -28,6 +29,7 @@ class ExamInfoUpdated extends ExamInfoState {
 
   ExamInfoUpdated({
     required this.selectedStage,
+    required this.selectedTrack,
     required this.selectedGrade,
     required this.selectedSubject,
     required this.stages,
@@ -43,6 +45,7 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
   }
 
   CurriculumStageModel? selectedStage;
+  String? selectedTrack;
   CurriculumGradeModel? selectedGrade;
   CurriculumSubjectModel? selectedSubject;
   
@@ -51,6 +54,25 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
   final Map<int, List<int>> selectedBankQuestionIds = {};
   
   List<CurriculumStageModel> stages = [];
+
+  List<String> get availableTracks {
+    if (selectedStage == null) return [];
+    return selectedStage!.grades
+        .map((g) => g.track)
+        .whereType<String>()
+        .where((t) => t.isNotEmpty)
+        .toSet()
+        .toList();
+  }
+
+  List<CurriculumGradeModel> get availableGrades {
+    if (selectedStage == null) return [];
+    if (availableTracks.isNotEmpty) {
+      if (selectedTrack == null) return [];
+      return selectedStage!.grades.where((g) => g.track == selectedTrack).toList();
+    }
+    return selectedStage!.grades;
+  }
 
   Future<void> _loadSubjects() async {
     emit(ExamInfoLoading());
@@ -70,18 +92,25 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
 
   void updateInfo({
     CurriculumStageModel? stage,
+    String? track,
     CurriculumGradeModel? grade,
     CurriculumSubjectModel? subject,
     String? difficulty,
   }) {
     if (stage != null) {
       selectedStage = stage;
-      selectedGrade = null; // reset grade when stage changes
-      selectedSubject = null; // reset subject when stage changes
+      selectedTrack = null;
+      selectedGrade = null;
+      selectedSubject = null;
+    }
+    if (track != null) {
+      selectedTrack = track;
+      selectedGrade = null;
+      selectedSubject = null;
     }
     if (grade != null) {
       selectedGrade = grade;
-      selectedSubject = null; // reset subject when grade changes
+      selectedSubject = null;
     }
     if (subject != null) {
       selectedSubject = subject;
@@ -107,6 +136,7 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
   void _emitUpdated() {
     emit(ExamInfoUpdated(
       selectedStage: selectedStage,
+      selectedTrack: selectedTrack,
       selectedGrade: selectedGrade,
       selectedSubject: selectedSubject,
       stages: stages,
@@ -118,6 +148,7 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
 
   bool get isValid => 
     selectedStage != null && 
+    (availableTracks.isEmpty || selectedTrack != null) &&
     selectedGrade != null && 
     selectedSubject != null && 
     difficulty.isNotEmpty;

@@ -146,6 +146,13 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Row(
                   children: [
+                    // Search chip — visible for all users
+                    HomeActionChipWidget(
+                      icon: Icons.search_rounded,
+                      title: appTranslation().get('search_title'),
+                      onTap: () => context.push(Routes.search),
+                    ),
+                    horizontalSpace12,
                     if (!isAdmin) ...[
                       HomeActionChipWidget(
                         icon: Icons.monitor,
@@ -183,6 +190,18 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                         onTap: () {
                           if (token != null && token!.isNotEmpty) {
                             context.push(Routes.myExams);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.workspace_premium_rounded,
+                        title: appTranslation().get('certificates'),
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.certificates);
                           } else {
                             context.push(Routes.login);
                           }

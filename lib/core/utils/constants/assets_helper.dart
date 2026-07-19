@@ -16,5 +16,7 @@ class AssetsHelper {
   static const String icon = 'assets/images/logo_icon-removebg-preview.png';
   static const String tips = 'assets/images/tips.png';
   static const String microsoft = 'assets/images/microsoft.png';
+  static const String roaa = 'assets/images/roaa.png';
+
 
 }

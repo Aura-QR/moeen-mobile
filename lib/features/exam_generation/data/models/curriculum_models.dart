@@ -17,14 +17,16 @@ class CurriculumStageModel {
 class CurriculumGradeModel {
   final int id;
   final String name;
+  final String? track;
   final List<CurriculumSubjectModel> subjects;
 
-  CurriculumGradeModel({required this.id, required this.name, required this.subjects});
+  CurriculumGradeModel({required this.id, required this.name, this.track, required this.subjects});
 
   factory CurriculumGradeModel.fromJson(Map<String, dynamic> json) {
     return CurriculumGradeModel(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
+      track: json['track']?.toString(),
       subjects: (json['subjects'] as List?)?.map((e) => CurriculumSubjectModel.fromJson(e)).toList() ?? [],
     );
   }

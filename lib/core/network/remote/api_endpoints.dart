@@ -49,6 +49,9 @@ String examDetailsApi(int id) => '/exams/$id';
 String examPointsApi(int id) => '/exams/$id/questions/points';
 String examPublishApi(int id) => '/exams/$id/publish';
 
+// Search API
+const String searchApi = '/search';
+
 // Curriculum API
 const String subjectsApi = '/subjects';
 String subjectLessonsApi(int id) => '/subjects/$id/lessons';

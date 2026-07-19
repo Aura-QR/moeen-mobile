@@ -45,7 +45,6 @@ import 'package:moean/features/exam_generation/presentation/cubit/generate_exam_
 import 'package:moean/features/exam_generation/presentation/cubit/my_exams_cubit.dart';
 import 'package:moean/features/exam_generation/domain/entities/exam_entities.dart';
 import 'package:moean/features/exam_generation/presentation/screens/my_exams_screen.dart';
-import 'package:moean/features/exam_generation/presentation/cubit/my_exams_cubit.dart';
 import 'package:moean/features/exam_generation/presentation/screens/custom_questions_screen.dart';
 import 'package:moean/features/exam_generation/presentation/cubit/custom_questions_cubit.dart';
 import 'package:moean/features/exam_generation/presentation/screens/manual_exam_screen.dart';
@@ -53,6 +52,10 @@ import 'package:moean/features/exam_generation/presentation/screens/bank_questio
 import 'package:moean/features/exam_generation/presentation/cubit/bank_questions_cubit.dart';
 import 'package:moean/features/admin/exams/presentation/screen/admin_exams_screen.dart';
 import 'package:moean/features/admin/exams/presentation/cubit/admin_exams_cubit.dart';
+import 'package:moean/features/search/presentation/screen/search_screen.dart';
+import 'package:moean/features/search/presentation/cubit/search_cubit.dart';
+import 'package:moean/features/certificates/presentation/screens/certificate_screen.dart';
+import 'package:moean/features/certificates/presentation/cubit/certificate_cubit.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -93,7 +96,9 @@ class Routes {
   static const String manualExam = '/manual-exam';
   static const String examBankQuestions = '/exam-generation/bank-questions';
   static const String adminExams = '/admin/exams';
-  
+  static const String search = '/search';
+  static const String certificates = '/certificates';
+
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
     login: (context) => const LoginScreen(),
@@ -154,6 +159,14 @@ class Routes {
       );
     },
     manualExam: (context) => const ManualExamScreen(),
+    search: (context) => BlocProvider(
+      create: (_) => SearchCubit(),
+      child: const SearchScreen(),
+    ),
+    certificates: (context) => BlocProvider(
+      create: (_) => CertificateCubit(),
+      child: const CertificateScreen(),
+    ),
     examBankQuestions: (context) => MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<BankQuestionsCubit>()),
