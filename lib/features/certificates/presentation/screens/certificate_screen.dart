@@ -81,8 +81,8 @@ class _CertificateBodyWidget extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Image.asset('assets/images/roaa.png', height: 60),
-                  Image.asset('assets/images/minstry.jpg', height: 60),
+                  Image.asset('assets/images/roaa.png', height: 38),
+                  Image.asset('assets/images/minstry.jpg', height: 38),
                 ],
               ),
               verticalSpace20,

@@ -128,6 +128,12 @@ class CertificateCubit extends Cubit<CertificateState> {
     final bg = PdfColor.fromInt(template.bgColor.toARGB32());
     final txtColor = PdfColor.fromInt(template.textColor.toARGB32());
     final white = PdfColors.white;
+    // Light version of primary for the class pill
+    final lightPrimary = PdfColor(
+      (primary.red * 0.25 + 0.75).clamp(0.0, 1.0),
+      (primary.green * 0.25 + 0.75).clamp(0.0, 1.0),
+      (primary.blue * 0.25 + 0.75).clamp(0.0, 1.0),
+    );
 
     return pw.Page(
       pageFormat: PdfPageFormat.a4.landscape,
@@ -135,49 +141,61 @@ class CertificateCubit extends Cubit<CertificateState> {
       margin: pw.EdgeInsets.zero,
       build: (ctx) => pw.Stack(
         children: [
+          // White/bg background
           pw.Container(
             color: bg,
             width: double.infinity,
             height: double.infinity,
           ),
+          // Teal header bar
           pw.Container(
-            height: 160,
+            height: 125,
             width: double.infinity,
             color: primary,
           ),
+          // Logos overlapping below the header
           pw.Positioned(
-            top: 100,
+            top: 78,
             left: 0,
             right: 0,
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.center,
               children: [
                 _imageLogoBox(roaaImage),
-                pw.SizedBox(width: 24),
+                pw.SizedBox(width: 16),
                 _imageLogoBox(minstryImage),
               ],
             ),
           ),
-          pw.Positioned.fill(
-            top: 240,
+          // Main content
+          pw.Positioned(
+            top: 175,
+            left: 50,
+            right: 50,
+            bottom: 0,
             child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
+                pw.SizedBox(height: 18),
+                // Title
                 pw.Text(
                   'شهادة شكر وتقدير',
                   textDirection: pw.TextDirection.rtl,
                   style: pw.TextStyle(
                     font: boldFont,
-                    fontSize: 48,
+                    fontSize: 38,
                     color: primary,
                   ),
                 ),
-                pw.SizedBox(height: 12),
+                pw.SizedBox(height: 8),
+                // Thin divider full width
                 pw.Container(
                   height: 1,
-                  width: 600,
+                  width: double.infinity,
                   color: PdfColors.grey300,
                 ),
-                pw.SizedBox(height: 24),
+                pw.SizedBox(height: 12),
+                // School line
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.center,
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
@@ -185,10 +203,10 @@ class CertificateCubit extends Cubit<CertificateState> {
                     pw.Text(
                       'يسر إدارة مدرسة  ',
                       textDirection: pw.TextDirection.rtl,
-                      style: pw.TextStyle(font: boldFont, fontSize: 18, color: txtColor),
+                      style: pw.TextStyle(font: regularFont, fontSize: 16, color: txtColor),
                     ),
                     pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      padding: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                       decoration: pw.BoxDecoration(
                         color: primary,
                         borderRadius: const pw.BorderRadius.all(pw.Radius.circular(20)),
@@ -196,97 +214,105 @@ class CertificateCubit extends Cubit<CertificateState> {
                       child: pw.Text(
                         entity.schoolName,
                         textDirection: pw.TextDirection.rtl,
-                        style: pw.TextStyle(font: boldFont, fontSize: 18, color: white),
+                        style: pw.TextStyle(font: boldFont, fontSize: 16, color: white),
                       ),
                     ),
                     pw.Text(
                       '  أن تتقدم بوافر الشكر والتقدير',
                       textDirection: pw.TextDirection.rtl,
-                      style: pw.TextStyle(font: boldFont, fontSize: 18, color: txtColor),
+                      style: pw.TextStyle(font: regularFont, fontSize: 16, color: txtColor),
                     ),
                   ],
                 ),
-                pw.SizedBox(height: 32),
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.center,
-                  crossAxisAlignment: pw.CrossAxisAlignment.center,
-                  children: [
-                    pw.Text(
-                      'الصف',
-                      textDirection: pw.TextDirection.rtl,
-                      style: pw.TextStyle(font: boldFont, fontSize: 22, color: txtColor),
-                    ),
-                    pw.SizedBox(width: 20),
-                    pw.Container(
-                      width: 110,
-                      height: 110,
-                      decoration: pw.BoxDecoration(
-                        color: primary,
-                        shape: pw.BoxShape.circle,
-                        boxShadow: const [
-                          pw.BoxShadow(
-                            color: PdfColors.grey300,
-                            blurRadius: 4,
-                            offset: PdfPoint(0, 4),
-                          ),
-                        ],
-                      ),
-                      alignment: pw.Alignment.center,
-                      child: pw.Text(
-                        'الصف\n${entity.className.replaceAll(' ', '\n')}',
-                        textDirection: pw.TextDirection.rtl,
-                        textAlign: pw.TextAlign.center,
-                        style: pw.TextStyle(font: boldFont, fontSize: 18, color: white, lineSpacing: 4),
-                      ),
-                    ),
-                    pw.SizedBox(width: 20),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(horizontal: 60, vertical: 16),
-                      decoration: pw.BoxDecoration(
-                        color: primary,
-                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(40)),
-                        boxShadow: const [
-                          pw.BoxShadow(
-                            color: PdfColors.grey300,
-                            blurRadius: 4,
-                            offset: PdfPoint(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: pw.Text(
-                        entity.studentName,
-                        textDirection: pw.TextDirection.rtl,
-                        style: pw.TextStyle(font: boldFont, fontSize: 28, color: white),
-                      ),
-                    ),
-                    pw.SizedBox(width: 20),
-                    pw.Text(
-                      entity.gender == 'female' ? 'للطالبة' : 'للطالب',
-                      textDirection: pw.TextDirection.rtl,
-                      style: pw.TextStyle(font: boldFont, fontSize: 22, color: txtColor),
-                    ),
-                  ].reversed.toList(),
+                pw.SizedBox(height: 14),
+                // للطالب label – right-aligned
+                pw.Align(
+                  alignment: pw.Alignment.centerRight,
+                  child: pw.Text(
+                    entity.gender == 'female' ? 'للطالبة' : 'للطالب',
+                    textDirection: pw.TextDirection.rtl,
+                    style: pw.TextStyle(font: boldFont, fontSize: 18, color: txtColor),
+                  ),
                 ),
-                pw.SizedBox(height: 40),
+                pw.SizedBox(height: 6),
+                // Student name – full-width dark pill
                 pw.Container(
                   width: double.infinity,
-                  padding: const pw.EdgeInsets.symmetric(horizontal: 60),
+                  padding: const pw.EdgeInsets.symmetric(vertical: 14),
+                  decoration: pw.BoxDecoration(
+                    color: primary,
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(30)),
+                  ),
+                  child: pw.Text(
+                    entity.studentName,
+                    textDirection: pw.TextDirection.rtl,
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(font: boldFont, fontSize: 22, color: white),
+                  ),
+                ),
+                pw.SizedBox(height: 8),
+                // الصف label – right-aligned ABOVE class pill
+                pw.Align(
+                  alignment: pw.Alignment.centerRight,
+                  child: pw.Text(
+                    'الصف',
+                    textDirection: pw.TextDirection.rtl,
+                    style: pw.TextStyle(font: regularFont, fontSize: 15, color: txtColor),
+                  ),
+                ),
+                pw.SizedBox(height: 4),
+                // Class – full-width light pill
+                pw.Container(
+                  width: double.infinity,
+                  padding: const pw.EdgeInsets.symmetric(vertical: 12),
+                  decoration: pw.BoxDecoration(
+                    color: lightPrimary,
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(30)),
+                  ),
+                  child: pw.Text(
+                    entity.className,
+                    textDirection: pw.TextDirection.rtl,
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(font: boldFont, fontSize: 18, color: primary),
+                  ),
+                ),
+                pw.SizedBox(height: 14),
+                // Certificate body text
+                pw.Container(
+                  width: double.infinity,
                   child: pw.Text(
                     entity.certText,
                     textDirection: pw.TextDirection.rtl,
                     textAlign: pw.TextAlign.center,
-                    style: pw.TextStyle(font: boldFont, fontSize: 22, color: txtColor),
+                    style: pw.TextStyle(font: boldFont, fontSize: 20, color: txtColor),
                   ),
                 ),
                 pw.Spacer(),
+                // Signatures + circular seal
                 pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
-                    _signatureBox(entity.directorName, 'المدير', regularFont, boldFont, txtColor),
                     _signatureBox(entity.teacherName, 'المعلم', regularFont, boldFont, txtColor),
+                    pw.Container(
+                      width: 72,
+                      height: 72,
+                      decoration: pw.BoxDecoration(
+                        shape: pw.BoxShape.circle,
+                        border: pw.Border.all(color: primary, width: 2),
+                      ),
+                      alignment: pw.Alignment.center,
+                      child: pw.Text(
+                        'شهادة\nحضر',
+                        textDirection: pw.TextDirection.rtl,
+                        textAlign: pw.TextAlign.center,
+                        style: pw.TextStyle(font: boldFont, fontSize: 13, color: primary),
+                      ),
+                    ),
+                    _signatureBox(entity.directorName, 'المدير', regularFont, boldFont, txtColor),
                   ],
                 ),
-                pw.SizedBox(height: 40),
+                pw.SizedBox(height: 28),
               ],
             ),
           ),
@@ -297,17 +323,17 @@ class CertificateCubit extends Cubit<CertificateState> {
 
   pw.Widget _imageLogoBox(pw.ImageProvider image) {
     return pw.Container(
-      width: 130,
-      height: 130,
-      padding: const pw.EdgeInsets.all(16),
+      width: 86,
+      height: 86,
+      padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
         color: PdfColors.white,
-        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(24)),
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(16)),
         boxShadow: const [
           pw.BoxShadow(
             color: PdfColors.grey300,
-            blurRadius: 8,
-            offset: PdfPoint(0, 4),
+            blurRadius: 6,
+            offset: PdfPoint(0, 3),
           ),
         ],
       ),
