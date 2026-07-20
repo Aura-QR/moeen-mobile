@@ -56,3 +56,5 @@ const String searchApi = '/search';
 const String subjectsApi = '/subjects';
 String subjectLessonsApi(int id) => '/subjects/$id/lessons';
 String lessonQuestionsApi(int id) => '/lessons/$id/questions';
+String lessonPresentationApi(int id) => '/lessons/$id/presentation';
+String lessonPresentationGenerateApi(int id) => '/lessons/$id/presentation/generate';

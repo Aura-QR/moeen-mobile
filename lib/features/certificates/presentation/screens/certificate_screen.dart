@@ -86,7 +86,7 @@ class _CertificateBodyWidget extends StatelessWidget {
                 ],
               ),
               verticalSpace20,
-              _CertificateSectionHeaderWidget(),
+              const _CertificateSectionHeaderWidget(),
               verticalSpace20,
               const CertificateGenderTabWidget(),
               verticalSpace20,
@@ -115,6 +115,8 @@ class _CertificateBodyWidget extends StatelessWidget {
 }
 
 class _CertificateSectionHeaderWidget extends StatelessWidget {
+  const _CertificateSectionHeaderWidget();
+
   @override
   Widget build(BuildContext context) {
     return Column(

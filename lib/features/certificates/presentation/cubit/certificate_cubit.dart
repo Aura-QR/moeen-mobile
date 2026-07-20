@@ -3,15 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/features/certificates/data/models/certificate_template_model.dart';
-import 'package:moean/features/certificates/domain/entities/certificate_entity.dart';
+import 'package:moean/features/certificates/domain/entities/certificate_data.dart';
+import 'package:moean/features/certificates/presentation/widgets/certificate_preview_widget.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:screenshot/screenshot.dart';
 
 part 'certificate_state.dart';
 
 class CertificateCubit extends Cubit<CertificateState> {
-  CertificateCubit() : super(CertificateInitial());
+  CertificateCubit() : super(CertificateInitial()) {
+    _addControllerListeners();
+  }
 
   static CertificateCubit get(BuildContext context) => BlocProvider.of(context);
 
@@ -64,7 +68,7 @@ class CertificateCubit extends Cubit<CertificateState> {
       .where((e) => e.isNotEmpty)
       .toList();
 
-  Future<void> generatePdf() async {
+  Future<void> generatePdf(BuildContext context) async {
     if (studentNames.isEmpty) {
       emit(const CertificateError('no_students'));
       return;
@@ -72,8 +76,9 @@ class CertificateCubit extends Cubit<CertificateState> {
     emit(CertificateGenerating());
     try {
       await Printing.layoutPdf(
-        onLayout: (_) => _buildPdfBytes(),
+        onLayout: (_) => _buildPdfBytes(context),
         name: 'certificates',
+        format: PdfPageFormat.a4,
       );
       emit(const CertificateLoaded());
     } catch (e) {
@@ -81,289 +86,128 @@ class CertificateCubit extends Cubit<CertificateState> {
     }
   }
 
-  Future<Uint8List> _buildPdfBytes() async {
-    final boldBytes =
-        await rootBundle.load('assets/fonts/Tajawal-Bold.ttf');
-    final regularBytes =
-        await rootBundle.load('assets/fonts/Tajawal-Regular.ttf');
-    final roaaBytes = await rootBundle.load('assets/images/roaa.png');
-    final minstryBytes = await rootBundle.load('assets/images/minstry.jpg');
-
-    final boldFont = pw.Font.ttf(boldBytes);
-    final regularFont = pw.Font.ttf(regularBytes);
-    final roaaImage = pw.MemoryImage(roaaBytes.buffer.asUint8List());
-    final minstryImage = pw.MemoryImage(minstryBytes.buffer.asUint8List());
-
+  Future<Uint8List> _buildPdfBytes(BuildContext context) async {
     final doc = pw.Document();
     final template = CertificateTemplateModel.all[selectedTemplate];
     final formattedDate =
         '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
 
+    final screenshotController = ScreenshotController();
+
     for (final name in studentNames) {
-      final entity = CertificateEntity(
+      final data = CertificateData(
         studentName: name,
-        gender: selectedGender,
         schoolName: schoolNameController.text,
         className: classNameController.text,
-        directorName: directorNameController.text,
         teacherName: teacherNameController.text,
+        principalName: directorNameController.text,
         certDate: formattedDate,
         certText: certTextController.text,
-        templateIndex: selectedTemplate,
+        gender: selectedGender,
       );
-      doc.addPage(_buildPage(entity, template, boldFont, regularFont, roaaImage, minstryImage));
+
+      final widget = Directionality(
+        textDirection: TextDirection.rtl,
+        child: Material(
+          color: Colors.white,
+          child: RotatedBox(
+            quarterTurns: 1,
+            child: CertificatePreviewWidget(
+              template: template,
+              data: data,
+              availableWidth: 1080.0,
+            ),
+          ),
+        ),
+      );
+
+      // Render image at 1.5 pixel ratio for high print quality
+      final imageBytes = await screenshotController.captureFromWidget(
+        widget,
+        delay: const Duration(milliseconds: 150),
+        pixelRatio: 1.5,
+        context: context,
+        targetSize: const Size(1080.0 / 1.414, 1080.0),
+      );
+
+      final pdfImage = pw.MemoryImage(imageBytes);
+
+      doc.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          margin: pw.EdgeInsets.zero,
+          build: (context) {
+            return pw.FullPage(
+              ignoreMargins: true,
+              child: pw.Image(pdfImage, fit: pw.BoxFit.fill),
+            );
+          },
+        ),
+      );
     }
+    
     return doc.save();
   }
 
-  pw.Page _buildPage(
-    CertificateEntity entity,
-    CertificateTemplateModel template,
-    pw.Font boldFont,
-    pw.Font regularFont,
-    pw.ImageProvider roaaImage,
-    pw.ImageProvider minstryImage,
-  ) {
-    final primary = PdfColor.fromInt(template.primaryColor.toARGB32());
-    final bg = PdfColor.fromInt(template.bgColor.toARGB32());
-    final txtColor = PdfColor.fromInt(template.textColor.toARGB32());
-    final white = PdfColors.white;
-    // Light version of primary for the class pill
-    final lightPrimary = PdfColor(
-      (primary.red * 0.25 + 0.75).clamp(0.0, 1.0),
-      (primary.green * 0.25 + 0.75).clamp(0.0, 1.0),
-      (primary.blue * 0.25 + 0.75).clamp(0.0, 1.0),
-    );
+  // ── Listeners ──────────────────────────────────────────────────────────
 
-    return pw.Page(
-      pageFormat: PdfPageFormat.a4.landscape,
-      textDirection: pw.TextDirection.rtl,
-      margin: pw.EdgeInsets.zero,
-      build: (ctx) => pw.Stack(
-        children: [
-          // White/bg background
-          pw.Container(
-            color: bg,
-            width: double.infinity,
-            height: double.infinity,
-          ),
-          // Teal header bar
-          pw.Container(
-            height: 125,
-            width: double.infinity,
-            color: primary,
-          ),
-          // Logos overlapping below the header
-          pw.Positioned(
-            top: 78,
-            left: 0,
-            right: 0,
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.center,
-              children: [
-                _imageLogoBox(roaaImage),
-                pw.SizedBox(width: 16),
-                _imageLogoBox(minstryImage),
-              ],
-            ),
-          ),
-          // Main content
-          pw.Positioned(
-            top: 175,
-            left: 50,
-            right: 50,
-            bottom: 0,
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.center,
-              children: [
-                pw.SizedBox(height: 18),
-                // Title
-                pw.Text(
-                  'شهادة شكر وتقدير',
-                  textDirection: pw.TextDirection.rtl,
-                  style: pw.TextStyle(
-                    font: boldFont,
-                    fontSize: 38,
-                    color: primary,
-                  ),
-                ),
-                pw.SizedBox(height: 8),
-                // Thin divider full width
-                pw.Container(
-                  height: 1,
-                  width: double.infinity,
-                  color: PdfColors.grey300,
-                ),
-                pw.SizedBox(height: 12),
-                // School line
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.center,
-                  crossAxisAlignment: pw.CrossAxisAlignment.center,
-                  children: [
-                    pw.Text(
-                      'يسر إدارة مدرسة  ',
-                      textDirection: pw.TextDirection.rtl,
-                      style: pw.TextStyle(font: regularFont, fontSize: 16, color: txtColor),
-                    ),
-                    pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                      decoration: pw.BoxDecoration(
-                        color: primary,
-                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(20)),
-                      ),
-                      child: pw.Text(
-                        entity.schoolName,
-                        textDirection: pw.TextDirection.rtl,
-                        style: pw.TextStyle(font: boldFont, fontSize: 16, color: white),
-                      ),
-                    ),
-                    pw.Text(
-                      '  أن تتقدم بوافر الشكر والتقدير',
-                      textDirection: pw.TextDirection.rtl,
-                      style: pw.TextStyle(font: regularFont, fontSize: 16, color: txtColor),
-                    ),
-                  ],
-                ),
-                pw.SizedBox(height: 14),
-                // للطالب label – right-aligned
-                pw.Align(
-                  alignment: pw.Alignment.centerRight,
-                  child: pw.Text(
-                    entity.gender == 'female' ? 'للطالبة' : 'للطالب',
-                    textDirection: pw.TextDirection.rtl,
-                    style: pw.TextStyle(font: boldFont, fontSize: 18, color: txtColor),
-                  ),
-                ),
-                pw.SizedBox(height: 6),
-                // Student name – full-width dark pill
-                pw.Container(
-                  width: double.infinity,
-                  padding: const pw.EdgeInsets.symmetric(vertical: 14),
-                  decoration: pw.BoxDecoration(
-                    color: primary,
-                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(30)),
-                  ),
-                  child: pw.Text(
-                    entity.studentName,
-                    textDirection: pw.TextDirection.rtl,
-                    textAlign: pw.TextAlign.center,
-                    style: pw.TextStyle(font: boldFont, fontSize: 22, color: white),
-                  ),
-                ),
-                pw.SizedBox(height: 8),
-                // الصف label – right-aligned ABOVE class pill
-                pw.Align(
-                  alignment: pw.Alignment.centerRight,
-                  child: pw.Text(
-                    'الصف',
-                    textDirection: pw.TextDirection.rtl,
-                    style: pw.TextStyle(font: regularFont, fontSize: 15, color: txtColor),
-                  ),
-                ),
-                pw.SizedBox(height: 4),
-                // Class – full-width light pill
-                pw.Container(
-                  width: double.infinity,
-                  padding: const pw.EdgeInsets.symmetric(vertical: 12),
-                  decoration: pw.BoxDecoration(
-                    color: lightPrimary,
-                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(30)),
-                  ),
-                  child: pw.Text(
-                    entity.className,
-                    textDirection: pw.TextDirection.rtl,
-                    textAlign: pw.TextAlign.center,
-                    style: pw.TextStyle(font: boldFont, fontSize: 18, color: primary),
-                  ),
-                ),
-                pw.SizedBox(height: 14),
-                // Certificate body text
-                pw.Container(
-                  width: double.infinity,
-                  child: pw.Text(
-                    entity.certText,
-                    textDirection: pw.TextDirection.rtl,
-                    textAlign: pw.TextAlign.center,
-                    style: pw.TextStyle(font: boldFont, fontSize: 20, color: txtColor),
-                  ),
-                ),
-                pw.Spacer(),
-                // Signatures + circular seal
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: pw.CrossAxisAlignment.center,
-                  children: [
-                    _signatureBox(entity.teacherName, 'المعلم', regularFont, boldFont, txtColor),
-                    pw.Container(
-                      width: 72,
-                      height: 72,
-                      decoration: pw.BoxDecoration(
-                        shape: pw.BoxShape.circle,
-                        border: pw.Border.all(color: primary, width: 2),
-                      ),
-                      alignment: pw.Alignment.center,
-                      child: pw.Text(
-                        'شهادة\nحضر',
-                        textDirection: pw.TextDirection.rtl,
-                        textAlign: pw.TextAlign.center,
-                        style: pw.TextStyle(font: boldFont, fontSize: 13, color: primary),
-                      ),
-                    ),
-                    _signatureBox(entity.directorName, 'المدير', regularFont, boldFont, txtColor),
-                  ],
-                ),
-                pw.SizedBox(height: 28),
-              ],
-            ),
-          ),
-        ],
-      ),
+  void _addControllerListeners() {
+    studentNamesController.addListener(_onPreviewChange);
+    schoolNameController.addListener(_onPreviewChange);
+    classNameController.addListener(_onPreviewChange);
+    directorNameController.addListener(_onPreviewChange);
+    teacherNameController.addListener(_onPreviewChange);
+    certTextController.addListener(_onPreviewChange);
+  }
+
+  void _removeControllerListeners() {
+    studentNamesController.removeListener(_onPreviewChange);
+    schoolNameController.removeListener(_onPreviewChange);
+    classNameController.removeListener(_onPreviewChange);
+    directorNameController.removeListener(_onPreviewChange);
+    teacherNameController.removeListener(_onPreviewChange);
+    certTextController.removeListener(_onPreviewChange);
+  }
+
+  void _onPreviewChange() => emit(const CertificatePreviewUpdated());
+
+  // ── Preview data ───────────────────────────────────────────────────────
+
+  /// Builds a [CertificateData] snapshot from the current form state for the
+  /// live certificate preview. Shows placeholder text when fields are empty.
+  CertificateData buildPreviewData() {
+    final names = studentNames;
+    final date = selectedDate;
+    final formattedDate =
+        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+    return CertificateData(
+      studentName: names.isNotEmpty ? names.first : 'اسم الطالب',
+      schoolName: schoolNameController.text.isNotEmpty
+          ? schoolNameController.text
+          : 'مدرسة حضّر النموذجية',
+      className: classNameController.text.isNotEmpty
+          ? classNameController.text
+          : 'الصف الأول المتوسط',
+      teacherName: teacherNameController.text.isNotEmpty
+          ? teacherNameController.text
+          : 'اسم المعلم',
+      principalName: directorNameController.text.isNotEmpty
+          ? directorNameController.text
+          : 'اسم المدير',
+      certDate: formattedDate,
+      certText: certTextController.text.isNotEmpty
+          ? certTextController.text
+          : 'لتفوقه الدراسي وسمو أخلاقه، ونتمنى له دوام التفوق والنجاح بإذن الله.',
+      gender: selectedGender,
     );
   }
 
-  pw.Widget _imageLogoBox(pw.ImageProvider image) {
-    return pw.Container(
-      width: 86,
-      height: 86,
-      padding: const pw.EdgeInsets.all(10),
-      decoration: pw.BoxDecoration(
-        color: PdfColors.white,
-        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(16)),
-        boxShadow: const [
-          pw.BoxShadow(
-            color: PdfColors.grey300,
-            blurRadius: 6,
-            offset: PdfPoint(0, 3),
-          ),
-        ],
-      ),
-      child: pw.Image(image, fit: pw.BoxFit.contain),
-    );
-  }
-
-  pw.Widget _signatureBox(String name, String label, pw.Font regular,
-      pw.Font bold, PdfColor txtColor) {
-    return pw.Column(
-      children: [
-        pw.Text(
-          label,
-          textDirection: pw.TextDirection.rtl,
-          style: pw.TextStyle(font: regular, fontSize: 14, color: txtColor),
-        ),
-        pw.SizedBox(height: 4),
-        pw.Container(width: 120, height: 1, color: PdfColors.grey),
-        pw.SizedBox(height: 4),
-        pw.Text(
-          name,
-          textDirection: pw.TextDirection.rtl,
-          style: pw.TextStyle(font: bold, fontSize: 14, color: txtColor),
-        ),
-      ],
-    );
-  }
+  // ── Lifecycle ──────────────────────────────────────────────────────────
 
   @override
   Future<void> close() {
+    _removeControllerListeners();
     studentNamesController.dispose();
     schoolNameController.dispose();
     classNameController.dispose();

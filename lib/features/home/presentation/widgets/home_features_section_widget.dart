@@ -207,6 +207,18 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                           }
                         },
                       ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.co_present_rounded,
+                        title: appTranslation().get('presentations_title'),
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.presentations);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
                     ],
                   ],
                 ),

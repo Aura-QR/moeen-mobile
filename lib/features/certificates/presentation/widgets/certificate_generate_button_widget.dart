@@ -54,7 +54,7 @@ class CertificateGenerateButtonWidget extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: isGenerating ? null : cubit.generatePdf,
+                onPressed: isGenerating ? null : () => cubit.generatePdf(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ColorsManager.primaryColor,
                   disabledBackgroundColor:

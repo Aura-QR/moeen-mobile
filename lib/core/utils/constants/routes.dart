@@ -56,6 +56,9 @@ import 'package:moean/features/search/presentation/screen/search_screen.dart';
 import 'package:moean/features/search/presentation/cubit/search_cubit.dart';
 import 'package:moean/features/certificates/presentation/screens/certificate_screen.dart';
 import 'package:moean/features/certificates/presentation/cubit/certificate_cubit.dart';
+import 'package:moean/features/presentations/presentation/screens/presentations_screen.dart';
+import 'package:moean/features/presentations/presentation/cubit/presentations_cubit.dart';
+import 'package:moean/features/presentations/data/repositories/presentations_repository.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -98,6 +101,7 @@ class Routes {
   static const String adminExams = '/admin/exams';
   static const String search = '/search';
   static const String certificates = '/certificates';
+  static const String presentations = '/presentations';
 
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
@@ -174,6 +178,10 @@ class Routes {
         BlocProvider.value(value: sl<ExamInfoCubit>()),
       ],
       child: const BankQuestionsScreen(),
+    ),
+    presentations: (context) => BlocProvider(
+      create: (_) => PresentationsCubit(PresentationsRepository()),
+      child: const PresentationsScreen(),
     ),
   };
 }

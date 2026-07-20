@@ -32,6 +32,10 @@ class CertificateReadyTextSelected extends CertificateState {
   const CertificateReadyTextSelected(this.text);
 }
 
+class CertificatePreviewUpdated extends CertificateState {
+  const CertificatePreviewUpdated();
+}
+
 class CertificateGenerating extends CertificateState {}
 
 class CertificateError extends CertificateState {
