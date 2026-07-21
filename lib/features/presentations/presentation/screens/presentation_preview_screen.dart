@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:iconify_design/iconify_design.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
@@ -9,8 +8,7 @@ import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/presentations/data/models/presentation_models.dart';
 import 'package:moean/features/presentations/presentation/cubit/presentations_cubit.dart';
-import 'package:lucide_icons/lucide_icons.dart';
-
+import  'package:lucide_icons_flutter/lucide_icons.dart';
 class PresentationPreviewScreen extends StatelessWidget {
   final PresentationModel presentation;
   final PresentationsCubit cubit;
