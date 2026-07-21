@@ -5,9 +5,12 @@ import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+
 import 'package:moean/features/presentations/presentation/cubit/presentations_cubit.dart';
 import 'package:moean/features/presentations/presentation/cubit/presentations_state.dart';
 import 'package:moean/features/reports/presentation/widgets/selection_bottom_sheet.dart';
+
+import 'presentation_preview_screen.dart';
 
 class PresentationsScreen extends StatefulWidget {
   const PresentationsScreen({super.key});
@@ -44,7 +47,25 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: BlocBuilder<PresentationsCubit, PresentationsState>(
+      body: BlocConsumer<PresentationsCubit, PresentationsState>(
+        listener: (context, state) {
+          if (state is PresentationsSuccess) {
+            final cubit = context.read<PresentationsCubit>();
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PresentationPreviewScreen(
+                  presentation: state.presentation,
+                  cubit: cubit,
+                ),
+              ),
+            );
+          } else if (state is PresentationsError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+            );
+          }
+        },
         builder: (context, state) {
           final cubit = context.read<PresentationsCubit>();
           final isWide = MediaQuery.of(context).size.width > 800;
@@ -91,7 +112,7 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: ColorsManager.white,
+            color: ColorsManager.surfacePrimary,
             borderRadius: BorderRadius.circular(30),
             border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
           ),
@@ -138,7 +159,7 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: ColorsManager.white,
+        color: ColorsManager.surfacePrimary,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
       ),
@@ -160,7 +181,7 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: ColorsManager.white,
+        color: ColorsManager.surfacePrimary,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
       ),
@@ -209,22 +230,40 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
               );
             },
           ),
-          verticalSpace16,
-          _buildDropdownField(
-            label: appTranslation().get('presentations_grade'),
-            value: cubit.selectedGrade?.name,
-            onTap: () {
-              if (cubit.selectedStage == null) return;
-              _showSelector(
-                appTranslation().get('presentations_grade'),
-                cubit.selectedStage!.grades.map((e) => e.name).toList(),
-                (v) {
-                  final selected = cubit.selectedStage!.grades.firstWhere((e) => e.name == v);
-                  cubit.updateSelection(grade: selected);
-                },
-              );
-            },
-          ),
+          if (cubit.availableTracks.isNotEmpty) ...[
+            verticalSpace16,
+            _buildDropdownField(
+              label: 'المسار',
+              value: cubit.selectedTrack,
+              onTap: () {
+                _showSelector(
+                  'المسار',
+                  cubit.availableTracks,
+                  (v) {
+                    cubit.updateSelection(track: v);
+                  },
+                );
+              },
+            ),
+          ],
+          if (cubit.selectedStage != null && (cubit.availableTracks.isEmpty || cubit.selectedTrack != null)) ...[
+            verticalSpace16,
+            _buildDropdownField(
+              label: appTranslation().get('presentations_grade'),
+              value: cubit.selectedGrade?.name,
+              onTap: () {
+                if (cubit.selectedStage == null) return;
+                _showSelector(
+                  appTranslation().get('presentations_grade'),
+                  cubit.availableGrades.map((e) => e.name).toList(),
+                  (v) {
+                    final selected = cubit.availableGrades.firstWhere((e) => e.name == v);
+                    cubit.updateSelection(grade: selected);
+                  },
+                );
+              },
+            ),
+          ],
           verticalSpace16,
           _buildDropdownField(
             label: appTranslation().get('presentations_subject'),
@@ -284,8 +323,8 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
             title: appTranslation().get('presentations_classic'),
             desc: appTranslation().get('presentations_classic_desc'),
             color: Colors.teal,
-            isSelected: cubit.selectedTemplate == 'classic',
-            onTap: () => cubit.updateSelection(template: 'classic'),
+            isSelected: cubit.selectedTemplate == 'emerald-green',
+            onTap: () => cubit.updateSelection(template: 'emerald-green'),
           ),
           verticalSpace8,
           _buildTemplateOption(
@@ -293,8 +332,8 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
             title: appTranslation().get('presentations_academic'),
             desc: appTranslation().get('presentations_academic_desc'),
             color: Colors.blue.shade700,
-            isSelected: cubit.selectedTemplate == 'academic',
-            onTap: () => cubit.updateSelection(template: 'academic'),
+            isSelected: cubit.selectedTemplate == 'academic-blue',
+            onTap: () => cubit.updateSelection(template: 'academic-blue'),
           ),
           verticalSpace8,
           _buildTemplateOption(
@@ -302,8 +341,8 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
             title: appTranslation().get('presentations_warm'),
             desc: appTranslation().get('presentations_warm_desc'),
             color: Colors.orange.shade400,
-            isSelected: cubit.selectedTemplate == 'warm',
-            onTap: () => cubit.updateSelection(template: 'warm'),
+            isSelected: cubit.selectedTemplate == 'warm-orange',
+            onTap: () => cubit.updateSelection(template: 'warm-orange'),
           ),
           verticalSpace24,
           Text(
@@ -346,6 +385,7 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
             text: appTranslation().get('presentations_create'),
             onPressed: cubit.canCreate ? () => cubit.createPresentation() : null,
             icon: const Icon(Icons.auto_awesome),
+            isLoading: cubit.state is PresentationsLoading,
           ),
         ],
       ),
@@ -364,9 +404,9 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: ColorsManager.borderColor),
               borderRadius: BorderRadius.circular(12),
-              color: Colors.white,
+              color: ColorsManager.surfacePrimary,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -396,7 +436,7 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected ? color.withValues(alpha: 0.1) : Colors.transparent,
-          border: Border.all(color: isSelected ? color : Colors.grey.shade300, width: isSelected ? 2 : 1),
+          border: Border.all(color: isSelected ? color : ColorsManager.borderColor, width: isSelected ? 2 : 1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -440,8 +480,8 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? ColorsManager.primaryColor : Colors.white,
-          border: Border.all(color: isSelected ? ColorsManager.primaryColor : Colors.grey.shade300),
+          color: isSelected ? ColorsManager.primaryColor : ColorsManager.surfacePrimary,
+          border: Border.all(color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderColor),
           borderRadius: BorderRadius.circular(12),
         ),
         alignment: Alignment.center,
@@ -454,94 +494,12 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
   }
   Widget _buildPreviewArea(PresentationsState state, PresentationsCubit cubit) {
     if (state is PresentationsSuccess) {
-      final presentation = state.presentation;
-      final titleSlide = presentation.slides.isNotEmpty 
-          ? presentation.slides.first.title 
-          : cubit.selectedLesson?.title ?? 'الدرس';
-          
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: ColorsManager.white,
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.teal.shade700,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Icon(Icons.auto_awesome, color: Colors.white),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          cubit.selectedSubject?.name ?? 'المادة',
-                          style: TextStylesManager.bold12.copyWith(color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                  verticalSpace32,
-                  Center(
-                    child: Text(
-                      titleSlide,
-                      style: TextStylesManager.bold24.copyWith(color: Colors.white),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  verticalSpace12,
-                  Center(
-                    child: Text(
-                      'تم إنشاء عرض تقديمي يحتوي على ${presentation.slideCount ?? presentation.slides.length} شرائح جاهزة للتحميل.',
-                      style: TextStylesManager.regular14.copyWith(color: Colors.white),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  verticalSpace32,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(2))),
-                      horizontalSpace8,
-                      Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(2))),
-                      horizontalSpace8,
-                      Container(width: 60, height: 4, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(2))),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            verticalSpace16,
-            Row(
-              children: [
-                Expanded(child: _buildFeatureCard(Icons.check_circle_outline, 'الأهداف')),
-                horizontalSpace12,
-                Expanded(child: _buildFeatureCard(Icons.menu_book, 'المحتوى')),
-                horizontalSpace12,
-                Expanded(child: _buildFeatureCard(Icons.auto_awesome, 'الأنشطة')),
-              ],
-            ),
-          ],
-        ),
-      );
+      return const SizedBox.shrink();
     } else if (state is PresentationsLoading) {
       return Container(
         height: 300,
         decoration: BoxDecoration(
-          color: ColorsManager.white,
+          color: ColorsManager.surfacePrimary,
           borderRadius: BorderRadius.circular(32),
           border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
         ),
@@ -551,35 +509,47 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
       );
     } else if (state is PresentationsError) {
       return Container(
-        height: 300,
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: ColorsManager.white,
+          color: ColorsManager.surfacePrimary,
           borderRadius: BorderRadius.circular(32),
           border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
         ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 48),
-              verticalSpace16,
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Text(
-                  state.message,
-                  style: TextStylesManager.bold16.copyWith(color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
               ),
-            ],
-          ),
+              child: Column(
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                  verticalSpace16,
+                  Text(
+                    'تعذر تجهيز العرض',
+                    style: TextStylesManager.bold16.copyWith(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                  verticalSpace8,
+                  Text(
+                    state.message,
+                    style: TextStylesManager.regular14.copyWith(color: Colors.red.shade700),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       );
     } else {
       return Container(
         padding: const EdgeInsets.all(40),
         decoration: BoxDecoration(
-          color: ColorsManager.white,
+          color: ColorsManager.surfacePrimary,
           borderRadius: BorderRadius.circular(32),
           border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
         ),
@@ -633,21 +603,4 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
     }
   }
 
-  Widget _buildFeatureCard(IconData icon, String title) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: BoxDecoration(
-        color: ColorsManager.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: ColorsManager.primaryColor),
-          verticalSpace12,
-          Text(title, style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
-        ],
-      ),
-    );
-  }
 }

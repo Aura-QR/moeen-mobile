@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>PPTX Generator</title>
+    <!-- Load Tajawal font for Arabic text rendering -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; }
+    </style>
+</head>
+<body>
+    <!-- Local bundle for pptxgenjs -->
+    <script src="../js/pptxgen.bundle.js"></script>
+    <script>
+        const THEMES = {
+            "default": {
+                accent: "2F78B7", accentDark: "173E61", soft: "EAF3FB",
+                background: "F7FAFE", white: "FFFFFF", text: "20343F", muted: "667985"
+            },
+            "emerald-green": {
+                accent: "0E7A5E", accentDark: "075244", soft: "EAF7F2",
+                background: "F7FCFA", white: "FFFFFF", text: "24443D", muted: "6B7C78"
+            },
+            "warm-orange": {
+                accent: "D89C22", accentDark: "865806", soft: "FFF4D8",
+                background: "FFFCF5", white: "FFFFFF", text: "4E4028", muted: "786D59"
+            }
+        };
+
+        function getSlideLabel(type) {
+            const labels = {
+                title: "عنوان الدرس",
+                objectives: "أهداف التعلم",
+                content: "شرح الدرس",
+                example: "مثال تطبيقي",
+                summary: "ملخص الدرس",
+                quiz_prompt: "أسئلة ومناقشة",
+            };
+            return labels[type] || "محتوى تعليمي";
+        }
+
+        function normalizeLucideIconName(value) {
+            return String(value || "")
+                .trim()
+                .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+                .replace(/[_\s]+/g, "-")
+                .replace(/-+/g, "-")
+                .toLowerCase();
+        }
+
+        function svgToDataUri(svgMarkup) {
+            const bytes = new TextEncoder().encode(svgMarkup);
+            let binary = "";
+            bytes.forEach((byte) => {
+                binary += String.fromCharCode(byte);
+            });
+            return `data:image/svg+xml;base64,${btoa(binary)}`;
+        }
+
+        const iconDataCache = new Map();
+
+        async function fetchLucideSvg(iconName) {
+            const normalizedName = normalizeLucideIconName(iconName) || "sparkles";
+            try {
+                // Fetch SVG from unpkg
+                const response = await fetch(`https://unpkg.com/lucide-static@0.257.0/icons/${normalizedName}.svg`);
+                if (!response.ok) throw new Error("Icon not found");
+                return await response.text();
+            } catch (e) {
+                // Fallback to sparkles if network fails or icon missing
+                const fallback = await fetch(`https://unpkg.com/lucide-static@0.257.0/icons/sparkles.svg`);
+                return await fallback.text();
+            }
+        }
+
+        async function getLucideIconImage(iconName, color = "FFFFFF") {
+            const normalizedName = normalizeLucideIconName(iconName) || "sparkles";
+            const cacheKey = `${normalizedName}:${color}`;
+            if (iconDataCache.has(cacheKey)) return iconDataCache.get(cacheKey);
+
+            let svgText = await fetchLucideSvg(normalizedName);
+            // Replace standard stroke with our color and attributes
+            svgText = svgText
+                .replace(/stroke="currentColor"/g, `stroke="#${color}"`)
+                .replace(/stroke-width="2"/g, `stroke-width="1.8"`)
+                .replace(/<svg /, `<svg width="128" height="128" absoluteStrokeWidth="true" aria-hidden="true" `);
+
+            const data = svgToDataUri(svgText);
+            iconDataCache.set(cacheKey, data);
+            return data;
+        }
+
+        async function getSlideIconImages(slide, theme) {
+            const iconName = slide.icon_keyword || (slide.type === "title" ? "graduation-cap" : "sparkles");
+            const [white, accent] = await Promise.all([
+                getLucideIconImage(iconName, theme.white),
+                getLucideIconImage(iconName, theme.accent)
+            ]);
+            return { white, accent };
+        }
+
+        function buildCoverBackgroundData(theme) {
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+                <defs>
+                    <linearGradient id="base" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#${theme.background}" />
+                    <stop offset="55%" stop-color="#${theme.soft}" />
+                    <stop offset="100%" stop-color="#${theme.background}" />
+                    </linearGradient>
+                    <radialGradient id="glowTop" cx="0.2" cy="0.1" r="0.65">
+                    <stop offset="0%" stop-color="#${theme.accent}" stop-opacity="0.13" />
+                    <stop offset="100%" stop-color="#${theme.accent}" stop-opacity="0" />
+                    </radialGradient>
+                    <radialGradient id="glowBottom" cx="0.82" cy="0.9" r="0.62">
+                    <stop offset="0%" stop-color="#${theme.accentDark}" stop-opacity="0.1" />
+                    <stop offset="100%" stop-color="#${theme.accentDark}" stop-opacity="0" />
+                    </radialGradient>
+                </defs>
+                <rect width="1600" height="900" fill="url(#base)" />
+                <rect width="1600" height="900" fill="url(#glowTop)" />
+                <rect width="1600" height="900" fill="url(#glowBottom)" />
+                </svg>
+            `;
+            return svgToDataUri(svg);
+        }
+
+        function wrapCanvasText(context, text, maxWidth) {
+            const words = text.trim().split(/\s+/);
+            const lines = [];
+            let currentLine = "";
+
+            words.forEach((word) => {
+                const candidate = currentLine ? `${currentLine} ${word}` : word;
+                if (currentLine && context.measureText(candidate).width > maxWidth) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                    return;
+                }
+                currentLine = candidate;
+            });
+
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+            return lines;
+        }
+
+        async function createArabicTitleImage(title, color) {
+            await document.fonts?.ready;
+            
+            const canvas = document.createElement("canvas");
+            canvas.width = 1800;
+            canvas.height = 420;
+            const context = canvas.getContext("2d");
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.direction = "rtl";
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+
+            let fontSize = title.length > 60 ? 62 : title.length > 42 ? 70 : 80;
+            let lines = [];
+
+            while (fontSize >= 48) {
+                context.font = `800 ${fontSize}px Tajawal, Tahoma, Arial`;
+                lines = wrapCanvasText(context, title, 1540);
+                if (lines.length <= 2) break;
+                fontSize -= 4;
+            }
+
+            const lineHeight = fontSize * 1.35;
+            const totalHeight = lines.length * lineHeight;
+            const startY = canvas.height / 2 - totalHeight / 2 + lineHeight / 2;
+
+            context.fillStyle = `#${color}`;
+
+            lines.forEach((line, index) => {
+                context.fillText(line, canvas.width / 2, startY + index * lineHeight);
+            });
+
+            return canvas.toDataURL("image/png");
+        }
+
+        function addFooter(slide, theme, index, total) {
+            slide.addText(`حضّر  •  ${index + 1} / ${total}`, {
+                x: 0.55, y: 7.12, w: 3.1, h: 0.22,
+                fontFace: "Arial", fontSize: 9, color: theme.muted,
+                margin: 0, rtlMode: true, align: "right",
+            });
+            slide.addShape("line", {
+                x: 0.55, y: 6.98, w: 12.2, h: 0,
+                line: { color: theme.soft, width: 1 },
+            });
+        }
+
+        function addHeader(slide, item, theme, index, iconData) {
+            slide.addShape("roundRect", {
+                x: 0.58, y: 0.45, w: 0.62, h: 0.62, rectRadius: 0.08,
+                fill: { color: theme.accent }, line: { color: theme.accent },
+            });
+            slide.addImage({ data: iconData, x: 0.72, y: 0.59, w: 0.34, h: 0.34 });
+            slide.addText(getSlideLabel(item.type), {
+                x: 9.95, y: 0.42, w: 2.1, h: 0.25,
+                fontFace: "Arial", fontSize: 10, bold: true, color: theme.accent,
+                margin: 0, align: "right", rtlMode: true,
+            });
+            slide.addText(item.title || `الشريحة ${index + 1}`, {
+                x: 4.25, y: 0.68, w: 7.8, h: 0.58,
+                fontFace: "Arial", fontSize: 25, bold: true, color: theme.accentDark,
+                margin: 0, align: "right", rtlMode: true, fit: "shrink",
+            });
+            slide.addShape("roundRect", {
+                x: 12.12, y: 0.45, w: 0.58, h: 0.58, rectRadius: 0.08,
+                fill: { color: theme.accent }, line: { color: theme.accent },
+            });
+            slide.addText(String(index + 1), {
+                x: 12.12, y: 0.54, w: 0.58, h: 0.22,
+                fontFace: "Arial", fontSize: 11, bold: true, color: theme.white,
+                margin: 0, align: "center",
+            });
+        }
+
+        function addBulletColumns(slide, items, theme, options = {}) {
+            const x = options.x ?? 0.78;
+            const y = options.y ?? 1.52;
+            const w = options.w ?? 11.75;
+            const h = options.h ?? 5.1;
+
+            const normalized = items.filter(Boolean);
+            const useTwoColumns = normalized.length > 6;
+            const columns = useTwoColumns
+                ? [
+                    normalized.slice(0, Math.ceil(normalized.length / 2)),
+                    normalized.slice(Math.ceil(normalized.length / 2)),
+                ]
+                : [normalized];
+
+            const gap = 0.25;
+            const columnWidth = (w - gap * (columns.length - 1)) / columns.length;
+            const fontSize = normalized.length <= 5 ? 19 : normalized.length <= 8 ? 16 : 14;
+
+            columns.forEach((column, columnIndex) => {
+                const columnX = x + columnIndex * (columnWidth + gap);
+                const cardGap = 0.12;
+                const cardHeight = Math.min(
+                    0.75,
+                    (h - cardGap * Math.max(0, column.length - 1)) / Math.max(column.length, 1)
+                );
+
+                column.forEach((text, itemIndex) => {
+                    const cardY = y + itemIndex * (cardHeight + cardGap);
+                    slide.addShape("roundRect", {
+                        x: columnX, y: cardY, w: columnWidth, h: cardHeight, rectRadius: 0.06,
+                        fill: { color: theme.white, transparency: 8 },
+                        line: { color: theme.soft, width: 1 },
+                    });
+                    slide.addShape("ellipse", {
+                        x: columnX + columnWidth - 0.34, y: cardY + 0.22, w: 0.11, h: 0.11,
+                        fill: { color: theme.accent }, line: { color: theme.accent },
+                    });
+                    slide.addText(text, {
+                        x: columnX + 0.18, y: cardY + 0.08, w: columnWidth - 0.62, h: cardHeight - 0.12,
+                        fontFace: "Arial", fontSize, bold: true, color: theme.text,
+                        margin: 0.03, rtlMode: true, align: "right", valign: "middle",
+                        fit: "shrink", breakLine: false,
+                    });
+                });
+            });
+        }
+
+        async function addCoverSlide(pptx, context, theme) {
+            const slide = pptx.addSlide();
+            slide.background = { color: theme.background };
+
+            const backgroundData = buildCoverBackgroundData(theme);
+            const coverIconData = await getLucideIconImage("graduation-cap", theme.white);
+            const titleImageData = await createArabicTitleImage(context.lessonTitle, theme.accentDark);
+
+            slide.addImage({ data: backgroundData, x: 0, y: 0, w: 13.333, h: 7.5 });
+            slide.addShape("roundRect", {
+                x: 0.38, y: 0.3, w: 12.57, h: 6.9, rectRadius: 0.18,
+                fill: { color: theme.white, transparency: 54 },
+                line: { color: theme.white, transparency: 18, width: 1.2 },
+            });
+            slide.addShape("roundRect", {
+                x: 6.03, y: 0.72, w: 1.28, h: 1.28, rectRadius: 0.16,
+                fill: { color: theme.accentDark }, line: { color: theme.accentDark },
+            });
+            slide.addImage({ data: coverIconData, x: 6.37, y: 1.08, w: 0.6, h: 0.6 });
+            slide.addShape("roundRect", {
+                x: 5.75, y: 2.23, w: 1.84, h: 0.39, rectRadius: 0.08,
+                fill: { color: theme.soft, transparency: 5 },
+                line: { color: theme.soft, transparency: 100 },
+            });
+            slide.addText("عرض تعليمي", {
+                x: 5.75, y: 2.31, w: 1.84, h: 0.16,
+                fontFace: "Tahoma", fontSize: 10.5, bold: true, color: theme.accentDark,
+                margin: 0, align: "center", rtlMode: true,
+            });
+            slide.addImage({ data: titleImageData, x: 1.22, y: 2.66, w: 10.9, h: 1.72 });
+
+            const tags = [context.subjectName, context.gradeName, context.unitName].filter(Boolean);
+            const tagWidth = 2.2;
+            const tagGap = 0.18;
+            const totalWidth = tags.length * tagWidth + Math.max(0, tags.length - 1) * tagGap;
+            const startX = (13.333 - totalWidth) / 2;
+
+            tags.forEach((tag, index) => {
+                const visualIndex = tags.length - 1 - index;
+                const tagX = startX + visualIndex * (tagWidth + tagGap);
+                slide.addShape("roundRect", {
+                    x: tagX, y: 4.75, w: tagWidth, h: 0.48, rectRadius: 0.09,
+                    fill: { color: theme.white, transparency: 4 },
+                    line: { color: theme.soft, width: 1 },
+                });
+                slide.addText(tag, {
+                    x: tagX + 0.08, y: 4.88, w: tagWidth - 0.16, h: 0.16,
+                    fontFace: "Tahoma", fontSize: 10.5, bold: true, color: theme.muted,
+                    margin: 0, align: "center", rtlMode: true, fit: "shrink",
+                });
+            });
+
+            slide.addText("تم إنشاؤه بواسطة منصة حضّر", {
+                x: 4.5, y: 6.45, w: 4.33, h: 0.24,
+                fontFace: "Tahoma", fontSize: 9, color: theme.muted,
+                margin: 0, align: "center", rtlMode: true,
+            });
+        }
+
+        async function addContentSlide(pptx, item, theme, index, total) {
+            const { white: whiteIconData, accent: accentIconData } = await getSlideIconImages(item, theme);
+            const slide = pptx.addSlide();
+            slide.background = { color: theme.background };
+
+            slide.addShape("rect", {
+                x: 0, y: 0, w: 13.333, h: 0.12,
+                fill: { color: theme.accent }, line: { color: theme.accent },
+            });
+
+            addHeader(slide, item, theme, index, whiteIconData);
+
+            if (item.type === "example") {
+                slide.addShape("roundRect", {
+                    x: 0.75, y: 1.55, w: 2.35, h: 4.75, rectRadius: 0.12,
+                    fill: { color: theme.accent }, line: { color: theme.accent },
+                });
+                slide.addImage({ data: whiteIconData, x: 1.45, y: 2.25, w: 0.95, h: 0.95 });
+                slide.addText("مثال تطبيقي", {
+                    x: 0.9, y: 3.4, w: 2.05, h: 0.45,
+                    fontFace: "Arial", fontSize: 15, bold: true, color: theme.white,
+                    margin: 0, align: "center", rtlMode: true,
+                });
+                addBulletColumns(slide, item.body, theme, { x: 3.38, y: 1.55, w: 9.15, h: 4.75 });
+            } else if (item.type === "quiz_prompt" || item.type === "summary") {
+                addBulletColumns(slide, item.body, theme, { x: 0.78, y: 1.55, w: 11.75, h: 4.95 });
+            } else {
+                addBulletColumns(slide, item.body, theme, { x: 0.78, y: 1.55, w: 9.75, h: 4.95 });
+                slide.addShape("roundRect", {
+                    x: 10.78, y: 1.55, w: 1.75, h: 4.95, rectRadius: 0.12,
+                    fill: { color: theme.soft }, line: { color: theme.soft, width: 1 },
+                });
+                slide.addImage({ data: accentIconData, x: 11.2, y: 2.72, w: 0.92, h: 0.92 });
+                slide.addText(getSlideLabel(item.type), {
+                    x: 10.9, y: 4.0, w: 1.5, h: 0.55,
+                    fontFace: "Arial", fontSize: 11, bold: true, color: theme.accentDark,
+                    margin: 0, align: "center", rtlMode: true, fit: "shrink",
+                });
+            }
+            addFooter(slide, theme, index, total);
+        }
+
+        // Expose function to Dart WebView
+        window.generatePptxBase64 = async function(jsonDataString) {
+            try {
+                // Wait for document to be ready and fonts loaded
+                await document.fonts.ready;
+                
+                const data = JSON.parse(jsonDataString);
+                const presentation = data.presentation;
+                const context = data.context;
+
+                if (!presentation.slides || !presentation.slides.length) {
+                    throw new Error("يجب انتظار اكتمال العرض قبل تحميل ملف PowerPoint.");
+                }
+
+                const templateId = presentation.template_id || 'emerald-green';
+                const theme = THEMES[templateId] || THEMES['default'];
+                const pptx = new PptxGenJS(); // Provided by pptxgen.bundle.js
+
+                pptx.layout = "LAYOUT_WIDE";
+                pptx.rtlMode = true;
+                pptx.author = "حضّر";
+                pptx.company = "حضّر";
+                pptx.subject = context.subjectName || "";
+                pptx.title = context.lessonTitle || "";
+                pptx.theme = { headFontFace: "Arial", bodyFontFace: "Arial" };
+
+                // Handle string body or array body mapping from Flutter model
+                const slidesMapped = presentation.slides.map(s => {
+                    let bodyArray = [];
+                    if (Array.isArray(s.body)) {
+                        bodyArray = s.body;
+                    } else if (typeof s.bodyText === 'string') {
+                        bodyArray = s.bodyText.split('\n').filter(Boolean);
+                    }
+                    return {
+                        title: s.title,
+                        type: s.slideType || s.type,
+                        icon_keyword: s.iconKeyword || s.icon_keyword,
+                        body: bodyArray,
+                        order: s.order || 0
+                    };
+                });
+
+                const hasTitleSlide = slidesMapped.some((slide) => slide.type === "title");
+
+                if (!hasTitleSlide) {
+                    await addCoverSlide(pptx, context, theme);
+                }
+
+                for (let index = 0; index < slidesMapped.length; index++) {
+                    const item = slidesMapped[index];
+                    if (item.type === "title") {
+                        await addCoverSlide(pptx, { ...context, lessonTitle: item.title || context.lessonTitle }, theme);
+                        continue;
+                    }
+                    await addContentSlide(pptx, item, theme, index, slidesMapped.length);
+                }
+
+                // Generate and return base64
+                const base64 = await pptx.write({ outputType: 'base64' });
+                return { success: true, base64: base64 };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        };
+    </script>
+</body>
+</html>
