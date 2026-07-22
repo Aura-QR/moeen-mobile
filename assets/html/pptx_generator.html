@@ -284,11 +284,19 @@
                 fill: { color: theme.white, transparency: 54 },
                 line: { color: theme.white, transparency: 18, width: 1.2 },
             });
-            slide.addShape("roundRect", {
-                x: 6.03, y: 0.72, w: 1.28, h: 1.28, rectRadius: 0.16,
-                fill: { color: theme.accentDark }, line: { color: theme.accentDark },
-            });
-            slide.addImage({ data: coverIconData, x: 6.37, y: 1.08, w: 0.6, h: 0.6 });
+            if (context.coverImageBase64) {
+                slide.addImage({ 
+                    data: context.coverImageBase64, 
+                    x: 4.66, y: 0.2, w: 4, h: 2.3,
+                    sizing: { type: "contain", w: 4, h: 2.3 }
+                });
+            } else {
+                slide.addShape("roundRect", {
+                    x: 6.03, y: 0.72, w: 1.28, h: 1.28, rectRadius: 0.16,
+                    fill: { color: theme.accentDark }, line: { color: theme.accentDark },
+                });
+                slide.addImage({ data: coverIconData, x: 6.37, y: 1.08, w: 0.6, h: 0.6 });
+            }
             slide.addShape("roundRect", {
                 x: 5.75, y: 2.23, w: 1.84, h: 0.39, rectRadius: 0.08,
                 fill: { color: theme.soft, transparency: 5 },

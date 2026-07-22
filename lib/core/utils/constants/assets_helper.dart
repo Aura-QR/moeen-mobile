@@ -17,6 +17,20 @@ class AssetsHelper {
   static const String tips = 'assets/images/tips.png';
   static const String microsoft = 'assets/images/microsoft.png';
   static const String roaa = 'assets/images/roaa.png';
-
+static const String scr1 = 'assets/images/scr1.jpeg';
+  static const String scr2 = 'assets/images/scr2.jpeg';
+  static const String scr3 = 'assets/images/scr3.jpeg';
+  static const String scr4 = 'assets/images/scr4.jpeg';
+  static const String scr5 = 'assets/images/scr5.jpeg';
+  static const String scr6 = 'assets/images/scr6.jpeg';
+  static const String scr7 = 'assets/images/scr7.jpeg';
+  static const String scr8 = 'assets/images/scr8.jpeg';
+  static const String scr9 = 'assets/images/scr9.jpeg';
+  static const String scr10 = 'assets/images/scr10.jpeg';
+  static const String scr11 = 'assets/images/scr11.jpeg';
+  static const String scr12 = 'assets/images/scr12.jpeg';
+  static const String scr13 = 'assets/images/scr13.jpeg';
+  static const String scr14 = 'assets/images/scr1.jpeg';
+  static const String scr15 = 'assets/images/scr15.jpeg';
 
 }

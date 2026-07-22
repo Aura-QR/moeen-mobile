@@ -9,6 +9,7 @@ import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/presentations/data/models/presentation_models.dart';
 import 'package:moean/features/presentations/presentation/cubit/presentations_cubit.dart';
 import  'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:moean/core/utils/constants/assets_helper.dart';
 class PresentationPreviewScreen extends StatelessWidget {
   final PresentationModel presentation;
   final PresentationsCubit cubit;
@@ -21,6 +22,27 @@ class PresentationPreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool hasTitleSlide = presentation.slides.any((s) => s.slideType == 'title');
+    final List<PresentationSlideModel> displaySlides = [];
+    
+    if (!hasTitleSlide) {
+      displaySlides.add(
+        PresentationSlideModel(
+          id: -1,
+          slideOrder: 0,
+          slideType: 'title',
+          title: cubit.selectedLesson?.title ?? 'عرض تعليمي',
+          bodyText: [
+            if (cubit.selectedSubject?.name != null) cubit.selectedSubject!.name,
+            if (cubit.selectedGrade?.name != null) cubit.selectedGrade!.name,
+            if (cubit.selectedUnit?.title != null) cubit.selectedUnit!.title,
+          ].where((e) => e.isNotEmpty).join('\n'),
+          iconKeyword: 'graduation_cap',
+        ),
+      );
+    }
+    displaySlides.addAll(presentation.slides);
+
     return BlocProvider.value(
       value: cubit,
       child: SafeArea(
@@ -72,9 +94,9 @@ class PresentationPreviewScreen extends StatelessWidget {
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.all(20),
-                  itemCount: presentation.slides.length,
+                  itemCount: displaySlides.length,
                   itemBuilder: (context, index) {
-                    final slide = presentation.slides[index];
+                    final slide = displaySlides[index];
                     return _buildSlideCard(slide, index + 1);
                   },
                 ),
@@ -100,7 +122,107 @@ class PresentationPreviewScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildCoverSlideCard(PresentationSlideModel slide, int slideNumber) {
+    final randomImages = [
+      AssetsHelper.scr1, AssetsHelper.scr2, AssetsHelper.scr3, AssetsHelper.scr4,
+      AssetsHelper.scr5, AssetsHelper.scr6, AssetsHelper.scr7, AssetsHelper.scr8,
+      AssetsHelper.scr9, AssetsHelper.scr10, AssetsHelper.scr11, AssetsHelper.scr12,
+      AssetsHelper.scr13, AssetsHelper.scr14, AssetsHelper.scr15,
+    ];
+    final stableIndex = slide.title.length % randomImages.length;
+    final coverImageAsset = randomImages[stableIndex];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7FCFA),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(height: 4, color: const Color(0xFF0E7A5E)),
+            
+            // Slide Number & Label (Header)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0E7A5E),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '$slideNumber',
+                      style: TextStylesManager.bold14.copyWith(color: Colors.white),
+                    ),
+                  ),
+                  Text(
+                    'عنوان الدرس',
+                    style: TextStylesManager.bold12.copyWith(color: const Color(0xFF0E7A5E)),
+                  ),
+                ],
+              ),
+            ),
+
+            // Image
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    coverImageAsset,
+                    height: 120,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+            
+            // Title
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                slide.title,
+                textAlign: TextAlign.center,
+                style: TextStylesManager.bold18.copyWith(
+                  color: const Color(0xFF075244),
+                  height: 1.4,
+                ),
+              ),
+            ),
+            
+            verticalSpace16,
+            
+            // Body text
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: _buildSlideContent(slide.bodyText),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSlideCard(PresentationSlideModel slide, int slideNumber) {
+    if (slide.slideType == 'title') {
+      return _buildCoverSlideCard(slide, slideNumber);
+    }
+    
     // Determine the type label
     String typeLabel = _getSlideLabel(slide.slideType);
 

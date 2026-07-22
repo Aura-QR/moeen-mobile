@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:moean/features/presentations/data/models/presentation_models.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:moean/core/utils/constants/assets_helper.dart';
 
 class PptxGeneratorService {
   static Future<String> generatePresentation(
@@ -23,6 +26,24 @@ class PptxGeneratorService {
     
     // Inline JS
     final combinedHtml = rawHtml.replaceFirst('<script src="../js/pptxgen.bundle.js"></script>', '<script>\n$rawJs\n</script>');
+
+    final randomImages = [
+      AssetsHelper.scr1, AssetsHelper.scr2, AssetsHelper.scr3, AssetsHelper.scr4,
+      AssetsHelper.scr5, AssetsHelper.scr6, AssetsHelper.scr7, AssetsHelper.scr8,
+      AssetsHelper.scr9, AssetsHelper.scr10, AssetsHelper.scr11, AssetsHelper.scr12,
+      AssetsHelper.scr13, AssetsHelper.scr14, AssetsHelper.scr15,
+    ];
+    final selectedImage = randomImages[Random().nextInt(randomImages.length)];
+    
+    String coverImageBase64 = '';
+    try {
+      final ByteData data = await rootBundle.load(selectedImage);
+      final Uint8List bytes = data.buffer.asUint8List();
+      final base64Str = base64Encode(bytes);
+      coverImageBase64 = 'data:image/jpeg;base64,$base64Str';
+    } catch (e) {
+      print('Could not load random cover image: $e');
+    }
 
     // Build context
     final jsonData = jsonEncode({
@@ -43,6 +64,7 @@ class PptxGeneratorService {
         'subjectName': subjectName,
         'gradeName': gradeName,
         'unitName': unitName,
+        'coverImageBase64': coverImageBase64,
       }
     });
 
