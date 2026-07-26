@@ -38,29 +38,31 @@ class AdminStatsCardsWidget extends StatelessWidget {
                   title: appTranslation().get('admin_total_teachers'),
                   count: total,
                   icon: Icons.people_outline,
-                  color: ColorsManager.primaryColor,
-                  bgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                  
+                  color: Colors.red,
+                  bgColor: Colors.red.withValues(alpha: 0.1),
                 ),
                 _buildStatCard(
                   title: appTranslation().get('admin_active_teachers'),
                   count: activeCount, // Showing current page stats for demo
                   icon: Icons.person_outline,
-                  color: Colors.green,
-                  bgColor: Colors.green.withValues(alpha: 0.1),
+                  
+                  color: Colors.purple,
+                  bgColor: Colors.purple.withValues(alpha: 0.1),
                 ),
                 _buildStatCard(
                   title: appTranslation().get('admin_suspended_accounts'),
                   count: suspendedCount, // Showing current page stats for demo
                   icon: Icons.person_off_outlined,
-                  color: Colors.red,
-                  bgColor: Colors.red.withValues(alpha: 0.1),
+                  color: ColorsManager.primaryColor,
+                  bgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
                 ),
                 _buildStatCard(
                   title: appTranslation().get('admin_subscribed_plans'),
                   count: subscribedCount, // Showing current page stats for demo
                   icon: Icons.bolt_outlined,
-                  color: Colors.purple,
-                  bgColor: Colors.purple.withValues(alpha: 0.1),
+                  color: Colors.green,
+                  bgColor: Colors.green.withValues(alpha: 0.1),
                 ),
               ],
             );

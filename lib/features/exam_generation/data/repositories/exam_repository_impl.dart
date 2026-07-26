@@ -218,7 +218,7 @@ class ExamRepositoryImpl implements ExamRepository {
       return ValidationFailure(errorString, {});
     }
     if (errorString.contains('502')) {
-      return const AiGenerationFailure('حدث خطأ أثناء توليد الأسئلة، الرجاء المحاولة مرة أخرى لاحقاً');
+      return const AiGenerationFailure('حدث خطأ أثناء انشاء الأسئلة، الرجاء المحاولة مرة أخرى لاحقاً');
     }
     if (errorString.contains('503') || errorString.contains('504') || errorString.contains('timeout')) {
       return const TimeoutFailure('Service unavailable or timed out');

@@ -93,9 +93,9 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
                     ],
                   )
                 else ...[
-                  _buildPreviewArea(state, cubit),
-                  verticalSpace32,
                   _buildForm(cubit),
+                  verticalSpace32,
+                  _buildPreviewArea(state, cubit),
                 ],
               ],
             ),
@@ -546,6 +546,19 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
         ),
       );
     } else {
+      final selectedTemplateName = cubit.selectedTemplate == 'academic-blue'
+          ? appTranslation().get('presentations_academic')
+          : cubit.selectedTemplate == 'warm-orange'
+              ? appTranslation().get('presentations_warm')
+              : appTranslation().get('presentations_classic');
+
+      final details = [
+        if (cubit.selectedSubject != null) cubit.selectedSubject!.name,
+        if (cubit.selectedGrade != null) cubit.selectedGrade!.name,
+        selectedTemplateName,
+      ];
+      final detailsText = details.isNotEmpty ? details.join(' • ') : 'الرياضيات • الصف الأول المتوسط • حضّر الكلاسيكي';
+
       return Container(
         padding: const EdgeInsets.all(40),
         decoration: BoxDecoration(
@@ -565,11 +578,11 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
                     style: TextStylesManager.bold12.copyWith(color: ColorsManager.secondaryText),
                   ),
                   Text(
-                    'التهيئة',
+                    cubit.selectedLesson?.title ?? 'التهيئة',
                     style: TextStylesManager.bold24.copyWith(color: ColorsManager.primaryColor),
                   ),
                   Text(
-                    'الرياضيات • الصف الأول المتوسط • حضّر الكلاسيكي',
+                    detailsText,
                     style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText),
                   ),
                 ],

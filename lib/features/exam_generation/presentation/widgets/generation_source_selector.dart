@@ -22,7 +22,7 @@ class GenerationSourceSelector extends StatelessWidget {
               children: [
                 Expanded(
                   child: _SourceOptionCard(
-                    title: 'توليد تلقائي بالذكاء الاصطناعي',
+                    title: 'انشاء تلقائي',
                     value: GenerationSource.aiOnly,
                     groupValue: cubit.generationSource,
                     onChanged: (val) => cubit.updateGenerationSource(val!),

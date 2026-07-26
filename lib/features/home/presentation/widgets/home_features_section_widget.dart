@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/features/home/presentation/cubit/home_cubit.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
@@ -135,7 +136,17 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
             ),
           ),
           verticalSpace40,
-
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: PrimaryTextField(
+              controller: TextEditingController(),
+              hint: appTranslation().get('search_title'),
+              readOnly: true,
+              prefixIcon:  Icon(Icons.search_rounded, color: ColorsManager.textSecondary),
+              onTap: () => context.push(Routes.search),
+            ),
+          ),
+          verticalSpace24,
           // Action Chips Row
           BlocBuilder<HomeCubit, HomeState>(
             builder: (context, state) {
@@ -147,11 +158,24 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                 child: Row(
                   children: [
                     // Search chip — visible for all users
-                    HomeActionChipWidget(
-                      icon: Icons.search_rounded,
-                      title: appTranslation().get('search_title'),
-                      onTap: () => context.push(Routes.search),
-                    ),
+                    // HomeActionChipWidget(
+                    //   icon: Icons.search_rounded,
+                    //   title: appTranslation().get('search_title'),
+                    //   onTap: () => context.push(Routes.search),
+                    // ),
+                    //  horizontalSpace12,
+                     
+                      HomeActionChipWidget(
+                        icon: Icons.co_present_rounded,
+                        title: appTranslation().get('presentations_title'),
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.presentations);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
                     horizontalSpace12,
                     if (!isAdmin) ...[
                       HomeActionChipWidget(
@@ -195,25 +219,15 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                           }
                         },
                       ),
+                     
                       horizontalSpace12,
-                      HomeActionChipWidget(
+
+                       HomeActionChipWidget(
                         icon: Icons.workspace_premium_rounded,
                         title: appTranslation().get('certificates'),
                         onTap: () {
                           if (token != null && token!.isNotEmpty) {
                             context.push(Routes.certificates);
-                          } else {
-                            context.push(Routes.login);
-                          }
-                        },
-                      ),
-                      horizontalSpace12,
-                      HomeActionChipWidget(
-                        icon: Icons.co_present_rounded,
-                        title: appTranslation().get('presentations_title'),
-                        onTap: () {
-                          if (token != null && token!.isNotEmpty) {
-                            context.push(Routes.presentations);
                           } else {
                             context.push(Routes.login);
                           }

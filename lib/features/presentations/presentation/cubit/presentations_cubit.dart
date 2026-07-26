@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
@@ -163,6 +166,12 @@ class PresentationsCubit extends Cubit<PresentationsState> {
       "lesson_title": selectedLesson!.title,
     };
 
+    final prettyJsonPayload = const JsonEncoder.withIndent('  ').convert(payload);
+    log('================ PRESENTATION PAYLOAD JSON ================');
+    log(prettyJsonPayload);
+    log('===========================================================');
+    debugPrint('PRESENTATION PAYLOAD JSON:\n$prettyJsonPayload');
+
     final result = await repository.generatePresentation(
       lessonId: lessonId,
       payload: payload,
@@ -199,6 +208,7 @@ class PresentationsCubit extends Cubit<PresentationsState> {
       final path = await PptxGeneratorService.generatePresentation(
         generatedPresentation!, 
         title,
+        templateId: generatedPresentation!.templateId ?? selectedTemplate,
         subjectName: selectedSubject?.name ?? '',
         gradeName: selectedGrade?.name ?? '',
         unitName: selectedUnit?.title ?? '',

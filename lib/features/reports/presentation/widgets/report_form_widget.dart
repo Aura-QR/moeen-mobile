@@ -297,6 +297,29 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
     );
   }
 
+  Future<void> _selectReportDate() async {
+    DateTime initialDate = DateTime.now();
+    if (_reportDateController.text.isNotEmpty) {
+      final parsed = DateTime.tryParse(_reportDateController.text);
+      if (parsed != null) {
+        initialDate = parsed;
+      }
+    }
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) {
+      setState(() {
+        _reportDateController.text =
+            '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      });
+    }
+  }
+
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedType == 'اسبوعي' && _selectedLessons.isEmpty) {
@@ -456,13 +479,19 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
           // Report Date
           _FormLabel(label: appTranslation().get('report_date')),
           verticalSpace8,
-          PrimaryTextField(
-            controller: _reportDateController,
-            hint: appTranslation().get('report_date_hint'),
-            prefixIcon: const Icon(Icons.date_range_outlined),
-            validator: (v) => (v == null || v.isEmpty)
-                ? appTranslation().get('field_required')
-                : null,
+          GestureDetector(
+            onTap: _selectReportDate,
+            child: AbsorbPointer(
+              child: PrimaryTextField(
+                controller: _reportDateController,
+                readOnly: true,
+                hint: appTranslation().get('report_date_hint'),
+                prefixIcon: const Icon(Icons.date_range_outlined),
+                validator: (v) => (v == null || v.isEmpty)
+                    ? appTranslation().get('field_required')
+                    : null,
+              ),
+            ),
           ),
           verticalSpace16,
 

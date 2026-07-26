@@ -536,7 +536,7 @@ class ReportPdfService {
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
           pw.Text(
-            'تم التوليد بواسطة نظام معين التعليمي',
+            'تم انشاء بواسطة نظام معين التعليمي',
             style: regular.copyWith(color: _textMuted, fontSize: 8),
           ),
           pw.Text(

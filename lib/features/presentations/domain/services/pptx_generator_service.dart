@@ -14,6 +14,7 @@ class PptxGeneratorService {
   static Future<String> generatePresentation(
     PresentationModel presentation,
     String title, {
+    String? templateId,
     String subjectName = '',
     String gradeName = '',
     String unitName = '',
@@ -48,8 +49,7 @@ class PptxGeneratorService {
     // Build context
     final jsonData = jsonEncode({
       'presentation': {
-        // Hardcode emerald-green if not provided to match user request
-        'template_id': presentation.templateId ?? 'emerald-green', 
+        'template_id': templateId ?? presentation.templateId ?? 'emerald-green', 
         'slides': presentation.slides.map((s) => {
           'title': s.title,
           'type': s.slideType,

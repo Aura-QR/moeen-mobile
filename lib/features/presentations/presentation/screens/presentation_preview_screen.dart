@@ -10,6 +10,57 @@ import 'package:moean/features/presentations/data/models/presentation_models.dar
 import 'package:moean/features/presentations/presentation/cubit/presentations_cubit.dart';
 import  'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
+class PresentationThemeData {
+  final Color primaryAccent;
+  final Color darkAccent;
+  final Color softContainer;
+  final Color backgroundColor;
+  final Color textColor;
+  final Color borderColor;
+
+  const PresentationThemeData({
+    required this.primaryAccent,
+    required this.darkAccent,
+    required this.softContainer,
+    required this.backgroundColor,
+    required this.textColor,
+    required this.borderColor,
+  });
+
+  factory PresentationThemeData.fromTemplateId(String? templateId) {
+    switch (templateId) {
+      case 'academic-blue':
+        return const PresentationThemeData(
+          primaryAccent: Color(0xFF1976D2),
+          darkAccent: Color(0xFF173E61),
+          softContainer: Color(0xFFEAF3FB),
+          backgroundColor: Color(0xFFF7FAFE),
+          textColor: Color(0xFF20343F),
+          borderColor: Color(0xFFD4E4F7),
+        );
+      case 'warm-orange':
+        return const PresentationThemeData(
+          primaryAccent: Color(0xFFD89C22),
+          darkAccent: Color(0xFF865806),
+          softContainer: Color(0xFFFFF4D8),
+          backgroundColor: Color(0xFFFFFCF5),
+          textColor: Color(0xFF4E4028),
+          borderColor: Color(0xFFFBE8C3),
+        );
+      case 'emerald-green':
+      default:
+        return const PresentationThemeData(
+          primaryAccent: Color(0xFF0E7A5E),
+          darkAccent: Color(0xFF075244),
+          softContainer: Color(0xFFEAF7F2),
+          backgroundColor: Color(0xFFF7FCFA),
+          textColor: Color(0xFF24443D),
+          borderColor: Color(0xFFEAF7F2),
+        );
+    }
+  }
+}
+
 class PresentationPreviewScreen extends StatelessWidget {
   final PresentationModel presentation;
   final PresentationsCubit cubit;
@@ -43,6 +94,9 @@ class PresentationPreviewScreen extends StatelessWidget {
     }
     displaySlides.addAll(presentation.slides);
 
+    final String selectedTemplate = presentation.templateId ?? cubit.selectedTemplate;
+    final theme = PresentationThemeData.fromTemplateId(selectedTemplate);
+
     return BlocProvider.value(
       value: cubit,
       child: SafeArea(
@@ -62,42 +116,20 @@ class PresentationPreviewScreen extends StatelessWidget {
             ),
             actions: [
               IconButton(
-                icon: Icon(Icons.download, color: ColorsManager.primaryColor),
+                icon: Icon(Icons.download, color: theme.primaryAccent),
                 onPressed: () => cubit.downloadPresentation(),
               ),
             ],
           ),
           body: Column(
             children: [
-              // Container(
-              //   padding: const EdgeInsets.all(24),
-              //   decoration: BoxDecoration(
-              //     color: ColorsManager.primaryColor,
-              //   ),
-              //   child: Column(
-              //     children: [
-              //       const Icon(Icons.auto_awesome, color: Colors.white, size: 48),
-              //       verticalSpace16,
-              //       Text(
-              //         'تم إنشاء العرض التقديمي بنجاح!',
-              //         style: TextStylesManager.bold20.copyWith(color: Colors.white),
-              //       ),
-              //       verticalSpace8,
-              //       Text(
-              //         'يحتوي العرض على ${presentation.slideCount ?? presentation.slides.length} شرائح جاهزة للتحميل.',
-              //         style: TextStylesManager.regular14.copyWith(color: Colors.white.withValues(alpha: 0.8)),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-             
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.all(20),
                   itemCount: displaySlides.length,
                   itemBuilder: (context, index) {
                     final slide = displaySlides[index];
-                    return _buildSlideCard(slide, index + 1);
+                    return _buildSlideCard(slide, index + 1, theme);
                   },
                 ),
               ),
@@ -122,7 +154,7 @@ class PresentationPreviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCoverSlideCard(PresentationSlideModel slide, int slideNumber) {
+  Widget _buildCoverSlideCard(PresentationSlideModel slide, int slideNumber, PresentationThemeData theme) {
     final randomImages = [
       AssetsHelper.scr1, AssetsHelper.scr2, AssetsHelper.scr3, AssetsHelper.scr4,
       AssetsHelper.scr5, AssetsHelper.scr6, AssetsHelper.scr7, AssetsHelper.scr8,
@@ -135,7 +167,7 @@ class PresentationPreviewScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7FCFA),
+        color: theme.backgroundColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -150,7 +182,7 @@ class PresentationPreviewScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(height: 4, color: const Color(0xFF0E7A5E)),
+            Container(height: 4, color: theme.primaryAccent),
             
             // Slide Number & Label (Header)
             Padding(
@@ -161,7 +193,7 @@ class PresentationPreviewScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0E7A5E),
+                      color: theme.primaryAccent,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -171,7 +203,7 @@ class PresentationPreviewScreen extends StatelessWidget {
                   ),
                   Text(
                     'عنوان الدرس',
-                    style: TextStylesManager.bold12.copyWith(color: const Color(0xFF0E7A5E)),
+                    style: TextStylesManager.bold12.copyWith(color: theme.primaryAccent),
                   ),
                 ],
               ),
@@ -199,7 +231,7 @@ class PresentationPreviewScreen extends StatelessWidget {
                 slide.title,
                 textAlign: TextAlign.center,
                 style: TextStylesManager.bold18.copyWith(
-                  color: const Color(0xFF075244),
+                  color: theme.darkAccent,
                   height: 1.4,
                 ),
               ),
@@ -210,7 +242,7 @@ class PresentationPreviewScreen extends StatelessWidget {
             // Body text
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: _buildSlideContent(slide.bodyText),
+              child: _buildSlideContent(slide.bodyText, theme),
             ),
           ],
         ),
@@ -218,9 +250,9 @@ class PresentationPreviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSlideCard(PresentationSlideModel slide, int slideNumber) {
+  Widget _buildSlideCard(PresentationSlideModel slide, int slideNumber, PresentationThemeData theme) {
     if (slide.slideType == 'title') {
-      return _buildCoverSlideCard(slide, slideNumber);
+      return _buildCoverSlideCard(slide, slideNumber, theme);
     }
     
     // Determine the type label
@@ -229,7 +261,7 @@ class PresentationPreviewScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7FCFA), // Emerald Green Background
+        color: theme.backgroundColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -247,7 +279,7 @@ class PresentationPreviewScreen extends StatelessWidget {
             // Top Accent Line
             Container(
               height: 4,
-              color: const Color(0xFF0E7A5E),
+              color: theme.primaryAccent,
             ),
             
             // Header Section
@@ -260,7 +292,7 @@ class PresentationPreviewScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0E7A5E),
+                      color: theme.primaryAccent,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -274,7 +306,7 @@ class PresentationPreviewScreen extends StatelessWidget {
                     child: Text(
                       slide.title,
                       style: TextStylesManager.bold18.copyWith(
-                        color: const Color(0xFF075244),
+                        color: theme.darkAccent,
                         height: 1.4,
                       ),
                     ),
@@ -285,7 +317,7 @@ class PresentationPreviewScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       typeLabel,
-                      style: TextStylesManager.bold12.copyWith(color: const Color(0xFF0E7A5E)),
+                      style: TextStylesManager.bold12.copyWith(color: theme.primaryAccent),
                     ),
                   ),
                   horizontalSpace12,
@@ -293,7 +325,7 @@ class PresentationPreviewScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0E7A5E),
+                      color: theme.primaryAccent,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -309,7 +341,7 @@ class PresentationPreviewScreen extends StatelessWidget {
             // Content Section
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: _buildSlideContent(slide.bodyText),
+              child: _buildSlideContent(slide.bodyText, theme),
             ),
           ],
         ),
@@ -317,7 +349,7 @@ class PresentationPreviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSlideContent(String bodyText) {
+  Widget _buildSlideContent(String bodyText, PresentationThemeData theme) {
     // Split bullet points by new line or bullet character
     final lines = bodyText.split('\n').where((l) => l.trim().isNotEmpty).toList();
 
@@ -335,7 +367,7 @@ class PresentationPreviewScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFEAF7F2), width: 1.5),
+            border: Border.all(color: theme.borderColor, width: 1.5),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,8 +376,8 @@ class PresentationPreviewScreen extends StatelessWidget {
                 margin: const EdgeInsets.only(top: 4, left: 12), // RTL Support
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF0E7A5E),
+                decoration: BoxDecoration(
+                  color: theme.primaryAccent,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -353,7 +385,7 @@ class PresentationPreviewScreen extends StatelessWidget {
                 child: Text(
                   text,
                   style: TextStylesManager.bold14.copyWith(
-                    color: const Color(0xFF24443D), // Text color from theme
+                    color: theme.textColor,
                     height: 1.5,
                   ),
                 ),

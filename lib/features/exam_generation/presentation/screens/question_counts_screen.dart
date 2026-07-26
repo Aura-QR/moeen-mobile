@@ -324,7 +324,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                            CircularProgressIndicator(color: ColorsManager.primaryColor),
                           verticalSpace24,
                           Text(
-                            'جاري توليد الاختبار بالذكاء الاصطناعي...',
+                            'جاري الانشاء الاختبار  ...',
                             style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
                           ),
                           verticalSpace8,

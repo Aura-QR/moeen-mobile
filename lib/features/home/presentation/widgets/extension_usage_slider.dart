@@ -100,12 +100,12 @@ class _ExtensionUsageSliderState extends State<ExtensionUsageSlider>
             ),
 
             // ── Top bar with close button only ───────────────────────────
-            FadeTransition(
-              opacity: _overlayFade,
-              child: Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: FadeTransition(
+                opacity: _overlayFade,
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -152,12 +152,12 @@ class _ExtensionUsageSliderState extends State<ExtensionUsageSlider>
             ),
 
             // ── Bottom bar: counter + dots + navigation ──────────────────
-            FadeTransition(
-              opacity: _overlayFade,
-              child: Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: FadeTransition(
+                opacity: _overlayFade,
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -242,12 +242,12 @@ class _ExtensionUsageSliderState extends State<ExtensionUsageSlider>
 
             // ── Swipe hint label (first page only) ───────────────────────
             if (_currentPage == 0)
-              FadeTransition(
-                opacity: _overlayFade,
-                child: Positioned(
-                  bottom: 100,
-                  left: 0,
-                  right: 0,
+              Positioned(
+                bottom: 100,
+                left: 0,
+                right: 0,
+                child: FadeTransition(
+                  opacity: _overlayFade,
                   child: Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(

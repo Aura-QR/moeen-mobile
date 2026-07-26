@@ -173,9 +173,11 @@ class AdminTeachersScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    const AdminStatsCardsWidget(),
-                    verticalSpace24,
                     const AdminTeachersSearchFilterWidget(),
+
+                    verticalSpace24,
+                    const AdminStatsCardsWidget(),
+
                     verticalSpace24,
                      Row(
                       mainAxisAlignment: MainAxisAlignment.end,

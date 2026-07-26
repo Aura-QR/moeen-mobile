@@ -511,7 +511,7 @@ Returned when n8n cannot generate a valid response after its internal retries.
 ```json
 {
   "success": false,
-  "message": "حدث خطأ أثناء توليد الأسئلة، الرجاء المحاولة مرة أخرى لاحقاً",
+  "message": "حدث خطأ أثناء انشاء الأسئلة، الرجاء المحاولة مرة أخرى لاحقاً",
   "code": "exam_generation_ai_failed",
   "status": 502
 }
