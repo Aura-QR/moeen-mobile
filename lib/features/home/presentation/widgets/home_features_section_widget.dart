@@ -136,17 +136,33 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
             ),
           ),
           verticalSpace40,
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: PrimaryTextField(
-              controller: TextEditingController(),
-              hint: appTranslation().get('search_title'),
-              readOnly: true,
-              prefixIcon:  Icon(Icons.search_rounded, color: ColorsManager.textSecondary),
-              onTap: () => context.push(Routes.search),
-            ),
+          BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
+              final isAdmin = context.read<HomeCubit>().isAdmin;
+              if (isAdmin) return const SizedBox.shrink();
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: PrimaryTextField(
+                      controller: TextEditingController(),
+                      hint: appTranslation().get('search_title'),
+                      readOnly: true,
+                      prefixIcon: Icon(Icons.search_rounded, color: ColorsManager.textSecondary),
+                      onTap: () {
+                        if (token != null && token!.isNotEmpty) {
+                          context.push(Routes.search);
+                        } else {
+                          context.push(Routes.login);
+                        }
+                      },
+                    ),
+                  ),
+                  verticalSpace24,
+                ],
+              );
+            },
           ),
-          verticalSpace24,
           // Action Chips Row
           BlocBuilder<HomeCubit, HomeState>(
             builder: (context, state) {
@@ -165,6 +181,7 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                     // ),
                     //  horizontalSpace12,
                      
+                     if (!isAdmin) ...[
                       HomeActionChipWidget(
                         icon: Icons.co_present_rounded,
                         title: appTranslation().get('presentations_title'),
@@ -176,7 +193,8 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                           }
                         },
                       ),
-                    horizontalSpace12,
+                      horizontalSpace12,
+                    ],
                     if (!isAdmin) ...[
                       HomeActionChipWidget(
                         icon: Icons.monitor,
@@ -193,7 +211,7 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                     ],
                     HomeActionChipWidget(
                       icon: Icons.verified_outlined,
-                      title: appTranslation().get('home_tests'),
+                      title: appTranslation().get('my_exam'),
                       onTap: () {
                         if (token != null && token!.isNotEmpty) {
                           if (isAdmin) {
@@ -210,7 +228,9 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                       horizontalSpace12,
                       HomeActionChipWidget(
                         icon: Icons.description_outlined,
-                        title: appTranslation().get('my_exam'),
+                        title: "الاختبارات السابقه",
+                        
+                        //appTranslation().get('home_tests'),
                         onTap: () {
                           if (token != null && token!.isNotEmpty) {
                             context.push(Routes.myExams);

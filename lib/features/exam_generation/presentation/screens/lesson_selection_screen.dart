@@ -24,9 +24,14 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
   @override
   void initState() {
     super.initState();
-    final selectedSubject = context.read<ExamInfoCubit>().selectedSubject;
+    final examInfoCubit = context.read<ExamInfoCubit>();
+    final selectedSubject = examInfoCubit.selectedSubject;
+    final selectedUnit = examInfoCubit.unitName;
     if (selectedSubject != null) {
-      context.read<LessonSelectionCubit>().loadLessonsForSubjectId(selectedSubject.id);
+      context.read<LessonSelectionCubit>().loadLessonsForSubjectId(
+        selectedSubject.id,
+        unitName: selectedUnit,
+      );
     }
   }
 
@@ -76,49 +81,7 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
                   onFieldSubmitted: (val) => cubit.search(val),
                 ),
                 verticalSpace16,
-                if (state.availableSemesters.isNotEmpty) ...[
-                  SizedBox(
-                    height: 40,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: state.availableSemesters.length + 1,
-                      separatorBuilder: (context, index) => horizontalSpace8,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          final isSelected = state.selectedSemester == null;
-                          return ChoiceChip(
-                            label: Text('الكل', style: isSelected ? TextStylesManager.bold12.copyWith(color: Colors.white) : TextStylesManager.regular12.copyWith(color: ColorsManager.mainText)),
-                            selected: isSelected,
-                            selectedColor: ColorsManager.primaryColor,
-                            backgroundColor: Colors.white,
-                            onSelected: (_) => cubit.selectSemester(null),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(color: isSelected ? ColorsManager.primaryColor : Colors.grey.withValues(alpha: 0.2)),
-                            ),
-                            showCheckmark: false,
-                          );
-                        }
-                        
-                        final semester = state.availableSemesters[index - 1];
-                        final isSelected = state.selectedSemester == semester;
-                        return ChoiceChip(
-                          label: Text('الفصل الدراسى  $semester', style: isSelected ? TextStylesManager.bold12.copyWith(color: Colors.white) : TextStylesManager.regular12.copyWith(color: ColorsManager.mainText)),
-                          selected: isSelected,
-                          selectedColor: ColorsManager.primaryColor,
-                          backgroundColor: Colors.white,
-                          onSelected: (_) => cubit.selectSemester(semester),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            side: BorderSide(color: isSelected ? ColorsManager.primaryColor : Colors.grey.withValues(alpha: 0.2)),
-                          ),
-                          showCheckmark: false,
-                        );
-                      },
-                    ),
-                  ),
-                  verticalSpace16,
-                ],
+
                 Text(
                   'دروس محددة ${state.selectedLessons.length}',
                   style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor),
@@ -173,8 +136,9 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
+                        color: ColorsManager.surfacePrimary,
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: ColorsManager.borderLightGray),
                       ),
                       child: Text(
                         'الفصل: ${chapter.title} (الفصل: ${chapter.semester})',
@@ -188,10 +152,10 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
                       return Container(
                         margin: const EdgeInsets.only(bottom: 12),
                         decoration: BoxDecoration(
-                          color: isSelected ? ColorsManager.primaryColor.withValues(alpha: 0.1) : Colors.white,
+                          color: isSelected ? ColorsManager.primaryColor.withValues(alpha: 0.1) : ColorsManager.surfacePrimary,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected ? ColorsManager.primaryColor : Colors.grey.withValues(alpha: 0.2),
+                            color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderLightGray,
                             width: isSelected ? 2 : 1,
                           ),
                         ),
@@ -200,7 +164,7 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
                           activeColor: ColorsManager.primaryColor,
                           title: Text(
                             lesson.title,
-                            style: isSelected ? TextStylesManager.bold14 : TextStylesManager.regular14,
+                            style: isSelected ? TextStylesManager.bold14.copyWith(color: ColorsManager.mainText) : TextStylesManager.regular14.copyWith(color: ColorsManager.mainText),
                           ),
                           onChanged: (_) => cubit.toggleLesson(lesson),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -215,7 +179,7 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
           ),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: ColorsManager.surfacePrimary,
               boxShadow: [
                 BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5)),
               ],

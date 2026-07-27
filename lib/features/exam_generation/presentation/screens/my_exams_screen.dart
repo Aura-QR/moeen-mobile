@@ -56,7 +56,7 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
         elevation: 0,
         centerTitle: true,
        title: Text(
-          appTranslation().get('my_exam'),
+         "الاختبارات السابقه",
           style: TextStylesManager.bold18,
         ),
         leading: IconButton(
@@ -128,9 +128,9 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
                         emptyState: loadedState.exams.data.isEmpty,
                         successBuilder: (context) => Container(
                           decoration: BoxDecoration(
-                            color: ColorsManager.white,
+                            color: ColorsManager.surfacePrimary,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: ColorsManager.borderLight),
+                            border: Border.all(color: ColorsManager.borderLightGray),
                           ),
                           child: Scrollbar(
                             controller: _horizontalController,
@@ -148,7 +148,7 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
                                         controller: _verticalController,
                                         physics: const AlwaysScrollableScrollPhysics(),
                                         itemCount: loadedState.exams.data.length,
-                                        separatorBuilder: (_, __) => Divider(color: ColorsManager.borderLight, height: 1),
+                                        separatorBuilder: (_, __) => Divider(color: ColorsManager.borderLightGray, height: 1),
                                         itemBuilder: (context, index) {
                                           final exam = loadedState.exams.data[index];
                                           return ExamListItemWidget(
@@ -193,15 +193,15 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
   }
 
   Widget _buildTableHeader(double c1, double c2, double c3, double c4, double c5, double c6) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headerColor = isDark ? const Color(0xFF2C2C2E) : Colors.grey.withValues(alpha: 0.1);
+    final isDark = ColorsManager.isDark;
+    final headerColor = isDark ? ColorsManager.backgroundDark : Colors.grey.withValues(alpha: 0.1);
 
     return Container(
       height: 50,
       decoration: BoxDecoration(
         color: headerColor,
         borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
-        border: Border(bottom: BorderSide(color: ColorsManager.borderLight)),
+        border: Border(bottom: BorderSide(color: ColorsManager.borderLightGray)),
       ),
       child: Row(
         children: [
@@ -223,7 +223,7 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Align(
           alignment: alignCenter ? Alignment.center : AlignmentDirectional.centerStart,
-          child: Text(text, style: TextStylesManager.bold14.copyWith(color: ColorsManager.mutedDark)),
+          child: Text(text, style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
         ),
       ),
     );

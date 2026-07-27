@@ -11,6 +11,23 @@ class ExamPdfService {
   static final PdfColor _headerBg = PdfColor.fromHex('0B4A45');
   static final PdfColor _textDark = PdfColor.fromHex('1E293B');
 
+  static bool isEnglishText(String text) {
+    if (text.trim().isEmpty) return false;
+
+    int englishCount = 0;
+    int arabicCount = 0;
+
+    for (final rune in text.runes) {
+      if ((rune >= 0x0041 && rune <= 0x005A) || (rune >= 0x0061 && rune <= 0x007A)) {
+        englishCount++;
+      } else if (rune >= 0x0600 && rune <= 0x06FF) {
+        arabicCount++;
+      }
+    }
+
+    return englishCount > arabicCount;
+  }
+
   static Future<Uint8List> generatePdf({
     required ExamEntity exam,
     required bool showAnswers,
@@ -60,6 +77,8 @@ class ExamPdfService {
     final questions = List<QuestionEntity>.from(exam.questions)
       ..sort((a, b) => a.questionOrder.compareTo(b.questionOrder));
 
+    final isExamTitleEnglish = isEnglishText(exam.title);
+
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -82,11 +101,17 @@ class ExamPdfService {
             ),
             pw.SizedBox(height: 20),
             
-            pw.Center(child: pw.Text(exam.title, style: titleStyle, textDirection: pw.TextDirection.rtl)),
+            pw.Center(
+              child: pw.Text(
+                exam.title,
+                style: titleStyle,
+                textDirection: isExamTitleEnglish ? pw.TextDirection.ltr : pw.TextDirection.rtl,
+              ),
+            ),
             pw.SizedBox(height: 20),
 
             // Questions
-            ...questions.map((q) => _buildQuestion(q, arabicRegular, arabicBold, showAnswers)).toList(),
+            ...questions.map((q) => _buildQuestion(q, arabicRegular, arabicBold, showAnswers)),
           ];
         },
       ),
@@ -172,34 +197,52 @@ class ExamPdfService {
 
   static pw.Widget _buildQuestion(
       QuestionEntity q, pw.TextStyle regular, pw.TextStyle bold, bool showAnswers) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.only(bottom: 20),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Row(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text('${q.questionOrder}.', style: bold, textDirection: pw.TextDirection.ltr),
-              pw.Expanded(
-                child: pw.Text(q.questionText, style: bold, textDirection: pw.TextDirection.rtl),
-              ),
-              pw.Text('[${q.points} درجة]', style: regular.copyWith(color: PdfColors.grey700, fontSize: 10), textDirection: pw.TextDirection.rtl),
-            ],
-          ),
-          pw.SizedBox(height: 10),
-          _buildQuestionOptions(q, regular, bold, showAnswers),
-          if (showAnswers && q.type != 'matching' && q.type != 'mcq') ...[
+    final isEnglish = isEnglishText(q.questionText);
+    final textDir = isEnglish ? pw.TextDirection.ltr : pw.TextDirection.rtl;
+
+    return pw.Directionality(
+      textDirection: textDir,
+      child: pw.Padding(
+        padding: const pw.EdgeInsets.only(bottom: 20),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('${q.questionOrder}.', style: bold, textDirection: textDir),
+                pw.SizedBox(width: 4),
+                pw.Expanded(
+                  child: pw.Text(q.questionText, style: bold, textDirection: textDir),
+                ),
+                pw.SizedBox(width: 8),
+                pw.Text(
+                  isEnglish ? '[${q.points} point${q.points > 1 ? "s" : ""}]' : '[${q.points} درجة]',
+                  style: regular.copyWith(color: PdfColors.grey700, fontSize: 10),
+                  textDirection: textDir,
+                ),
+              ],
+            ),
             pw.SizedBox(height: 10),
-            pw.Text('الإجابة: ${q.correctAnswer}', style: bold.copyWith(color: PdfColors.green700), textDirection: pw.TextDirection.rtl),
-          ]
-        ],
+            _buildQuestionOptions(q, regular, bold, showAnswers, isEnglish),
+            if (showAnswers && q.type != 'matching' && q.type != 'mcq') ...[
+              pw.SizedBox(height: 10),
+              pw.Text(
+                isEnglish ? 'Answer: ${q.correctAnswer}' : 'الإجابة: ${q.correctAnswer}',
+                style: bold.copyWith(color: PdfColors.green700),
+                textDirection: textDir,
+              ),
+            ]
+          ],
+        ),
       ),
     );
   }
 
   static pw.Widget _buildQuestionOptions(
-      QuestionEntity q, pw.TextStyle regular, pw.TextStyle bold, bool showAnswers) {
+      QuestionEntity q, pw.TextStyle regular, pw.TextStyle bold, bool showAnswers, bool isEnglish) {
+    final textDir = isEnglish ? pw.TextDirection.ltr : pw.TextDirection.rtl;
+
     if (q.type == 'mcq') {
       final options = List<String>.from(q.options ?? []);
       return pw.Column(
@@ -209,6 +252,7 @@ class ExamPdfService {
           return pw.Padding(
             padding: const pw.EdgeInsets.only(bottom: 4),
             child: pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 pw.Container(
                   width: 12,
@@ -226,7 +270,7 @@ class ExamPdfService {
                     style: (showAnswers && isCorrect)
                         ? bold.copyWith(color: PdfColors.green700)
                         : regular,
-                    textDirection: pw.TextDirection.rtl,
+                    textDirection: textDir,
                   ),
                 ),
               ],
@@ -235,6 +279,9 @@ class ExamPdfService {
         }).toList(),
       );
     } else if (q.type == 'true_false') {
+      final isTrueCorrect = showAnswers && (q.correctAnswer == 'صح' || q.correctAnswer.toLowerCase() == 'true');
+      final isFalseCorrect = showAnswers && (q.correctAnswer == 'خطأ' || q.correctAnswer.toLowerCase() == 'false');
+
       return pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
         children: [
@@ -246,11 +293,11 @@ class ExamPdfService {
                 decoration: pw.BoxDecoration(
                   shape: pw.BoxShape.circle,
                   border: pw.Border.all(color: PdfColors.grey),
-                  color: (showAnswers && q.correctAnswer == 'صح') ? PdfColors.green700 : null,
+                  color: isTrueCorrect ? PdfColors.green700 : null,
                 ),
               ),
               pw.SizedBox(width: 8),
-              pw.Text('صح', style: regular, textDirection: pw.TextDirection.rtl),
+              pw.Text(isEnglish ? 'True' : 'صح', style: regular, textDirection: textDir),
             ],
           ),
           pw.Row(
@@ -261,11 +308,11 @@ class ExamPdfService {
                 decoration: pw.BoxDecoration(
                   shape: pw.BoxShape.circle,
                   border: pw.Border.all(color: PdfColors.grey),
-                  color: (showAnswers && q.correctAnswer == 'خطأ') ? PdfColors.green700 : null,
+                  color: isFalseCorrect ? PdfColors.green700 : null,
                 ),
               ),
               pw.SizedBox(width: 8),
-              pw.Text('خطأ', style: regular, textDirection: pw.TextDirection.rtl),
+              pw.Text(isEnglish ? 'False' : 'خطأ', style: regular, textDirection: textDir),
             ],
           ),
         ],
@@ -288,14 +335,20 @@ class ExamPdfService {
           pw.Expanded(
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: columnA.map((a) => pw.Padding(padding: const pw.EdgeInsets.only(bottom: 8), child: pw.Text('• $a', style: regular, textDirection: pw.TextDirection.rtl))).toList(),
+              children: columnA.map((a) => pw.Padding(
+                padding: const pw.EdgeInsets.only(bottom: 8),
+                child: pw.Text('• $a', style: regular, textDirection: textDir),
+              )).toList(),
             ),
           ),
           pw.SizedBox(width: 20),
           pw.Expanded(
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: columnB.map((b) => pw.Padding(padding: const pw.EdgeInsets.only(bottom: 8), child: pw.Text('• $b', style: regular, textDirection: pw.TextDirection.rtl))).toList(),
+              children: columnB.map((b) => pw.Padding(
+                padding: const pw.EdgeInsets.only(bottom: 8),
+                child: pw.Text('• $b', style: regular, textDirection: textDir),
+              )).toList(),
             ),
           ),
         ],
@@ -313,3 +366,4 @@ class ExamPdfService {
     return pw.SizedBox();
   }
 }
+

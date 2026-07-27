@@ -21,9 +21,9 @@ class MyExamsHeaderWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: ColorsManager.white,
+        color: ColorsManager.surfacePrimary,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: ColorsManager.borderLight),
+        border: Border.all(color: ColorsManager.borderLightGray),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,15 +32,16 @@ class MyExamsHeaderWidget extends StatelessWidget {
             height: 48,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: ColorsManager.borderLight.withValues(alpha: 0.3),
+          //    color: ColorsManager.borderLightGray.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: TextField(
               onChanged: onSearchChanged,
+              style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
               decoration: InputDecoration(
                 hintText: appTranslation().get('search_exam_title'),
-                hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.placeholder),
-                prefixIcon: Icon(Icons.search, color: ColorsManager.placeholder),
+                hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
+                prefixIcon: Icon(Icons.search, color: ColorsManager.secondaryText),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
@@ -72,17 +73,17 @@ class MyExamsHeaderWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? ColorsManager.primaryColor : ColorsManager.white,
+          color: isSelected ? ColorsManager.primaryColor : ColorsManager.surfacePrimary,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderLight,
+            color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderLightGray,
           ),
         ),
         child: Text(
           label,
           style: isSelected
-              ? TextStylesManager.bold14.copyWith(color: ColorsManager.white)
-              : TextStylesManager.medium14.copyWith(color: ColorsManager.placeholder),
+              ? TextStylesManager.bold14.copyWith(color: Colors.white)
+              : TextStylesManager.medium14.copyWith(color: ColorsManager.mainText),
         ),
       ),
     );

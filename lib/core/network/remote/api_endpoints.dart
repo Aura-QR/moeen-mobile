@@ -29,6 +29,7 @@ const String contactMyApi = '/contact/my';
 
 // Reports API
 const String educationalReportApi = '/reports/educational/generate';
+const String savedEducationalReportsApi = '/reports/educational';
 
 // Payment & Subscription API
 const String subscriptionCurrentApi = '/subscription/current';

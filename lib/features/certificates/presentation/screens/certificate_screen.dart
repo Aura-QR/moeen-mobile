@@ -42,7 +42,7 @@ class _CertificateScreenState extends State<CertificateScreen> {
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
             icon: Icon(
-              Icons.arrow_forward_ios_rounded,
+              Icons.arrow_back_ios_rounded,
               color: ColorsManager.mainText,
               size: 20,
             ),

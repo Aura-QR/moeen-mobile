@@ -39,8 +39,10 @@ class LessonSelectionCubit extends Cubit<LessonSelectionState> {
   String _searchQuery = '';
   int? _currentSubjectId;
   String? _selectedSemester;
+  String? _selectedUnitName;
 
-  Future<void> loadLessonsForSubjectId(int subjectId) async {
+  Future<void> loadLessonsForSubjectId(int subjectId, {String? unitName}) async {
+    _selectedUnitName = unitName;
     if (_currentSubjectId == subjectId && _subjectDetails != null) {
       _emitState();
       return; // Already loaded
@@ -72,7 +74,7 @@ class LessonSelectionCubit extends Cubit<LessonSelectionState> {
 
   void retry() {
     if (_currentSubjectId != null) {
-      loadLessonsForSubjectId(_currentSubjectId!);
+      loadLessonsForSubjectId(_currentSubjectId!, unitName: _selectedUnitName);
     }
   }
 
@@ -111,6 +113,13 @@ class LessonSelectionCubit extends Cubit<LessonSelectionState> {
       for (var chapter in _subjectDetails!.chapters) {
         if (_selectedSemester != null && chapter.semester != _selectedSemester) {
           continue;
+        }
+
+        if (_selectedUnitName != null && _selectedUnitName!.isNotEmpty) {
+          final chapterUnitName = (chapter.unitName != null && chapter.unitName!.isNotEmpty) ? chapter.unitName! : chapter.title;
+          if (chapterUnitName != _selectedUnitName) {
+            continue;
+          }
         }
         
         final matchingLessons = chapter.lessons.where((l) {

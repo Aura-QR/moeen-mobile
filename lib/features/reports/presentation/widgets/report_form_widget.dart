@@ -77,6 +77,15 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
         },
         (stagesData) {
           setState(() {
+            stagesData.sort((a, b) {
+              int getWeight(String name) {
+                if (name.contains('الابتدائية')) return 1;
+                if (name.contains('المتوسطة')) return 2;
+                if (name.contains('الثانوية')) return 3;
+                return 4;
+              }
+              return getWeight(a.name).compareTo(getWeight(b.name));
+            });
             _stages = stagesData;
             _isLoadingSubjects = false;
           });

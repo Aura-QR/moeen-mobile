@@ -18,6 +18,20 @@ class ExamInfoScreen extends StatefulWidget {
 }
 
 class _ExamInfoScreenState extends State<ExamInfoScreen> {
+  late final TextEditingController _examTitleController;
+
+  @override
+  void initState() {
+    super.initState();
+    final cubit = context.read<ExamInfoCubit>();
+    _examTitleController = TextEditingController(text: cubit.examTitle);
+  }
+
+  @override
+  void dispose() {
+    _examTitleController.dispose();
+    super.dispose();
+  }
   void _showSelector(String title, List<String> items, Function(String) onSelected) {
     SelectionBottomSheet.show(
       context: context,
@@ -69,7 +83,7 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
                     children: [
                       Text('الخطوة الأولى', style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
                       verticalSpace4,
-                      Text('اختيار بيانات الاختبار', style: TextStylesManager.bold24.copyWith(color: ColorsManager.primaryColor)),
+                      Text('اختيار بيانات الاختبار', style: TextStylesManager.bold24.copyWith(color: ColorsManager.mainText)),
                        verticalSpace8,
                       
                       Container(
@@ -82,7 +96,7 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
                       ),
                      verticalSpace8,
                       Text(
-                        'اختاري المرحلة والصف والمادة\nثم اختاري الفصل والدروس من الشاشة التالية.',
+                        'اختار المرحلة والصف والمادة\nثم اختار الفصل والدروس من الشاشة التالية.',
                         textAlign: TextAlign.center,
                         style: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
                       ),
@@ -92,11 +106,30 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
           
                   _buildChipsSelection<CurriculumStageModel>(
                     label: 'اختر المرحلة الدراسية',
-                    items: cubit.stages,
+                    items: List.of(cubit.stages)..sort((a, b) {
+                      int getWeight(String name) {
+                        if (name.contains('الابتدائية')) return 1;
+                        if (name.contains('المتوسطة')) return 2;
+                        if (name.contains('الثانوية')) return 3;
+                        return 4;
+                      }
+                      return getWeight(a.name).compareTo(getWeight(b.name));
+                    }),
                     selectedValue: cubit.selectedStage,
                     onSelected: (v) => cubit.updateInfo(stage: v),
                     itemLabelBuilder: (item) => item.name,
                   ),
+                  
+                  if (cubit.selectedStage != null) ...[
+                    verticalSpace24,
+                    _buildChipsSelection<String>(
+                      label: 'اختر الفصل الدراسي',
+                      items: ['1', '2'],
+                      selectedValue: cubit.selectedSemester,
+                      onSelected: (v) => cubit.updateInfo(semester: v),
+                      itemLabelBuilder: (item) => 'الفصل الدراسى $item',
+                    ),
+                  ],
                   
                   if (cubit.availableTracks.isNotEmpty) ...[
                     verticalSpace24,
@@ -138,6 +171,36 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
                       },
                     ),
                   ],
+
+                  if (cubit.selectedSubject != null) ...[
+                    verticalSpace24,
+                    cubit.isUnitsLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _buildDropdownField(
+                            label: 'الوحدة',
+                            value: cubit.unitName ?? '',
+                            onTap: () {
+                              if (cubit.availableUnits.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('لا توجد وحدات متاحة لهذه المادة')),
+                                );
+                                return;
+                              }
+                              _showSelector(
+                                'اختر الوحدة',
+                                cubit.availableUnits,
+                                (v) => cubit.updateInfo(unitName: v),
+                              );
+                            },
+                          ),
+                    verticalSpace24,
+                    _buildTextField(
+                      label: 'عنوان الاختبار',
+                      hint: 'مثال: اختبار الوحدة الثانية',
+                      controller: _examTitleController,
+                      onChanged: (v) => cubit.updateInfo(examTitle: v),
+                    ),
+                  ],
                   
                   verticalSpace24,
                   _buildChipsSelection<String>(
@@ -156,13 +219,13 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
                   ),
                   
                  ],
-              ),
+               ),
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: ColorsManager.surfacePrimary,
             boxShadow: [
               BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5)),
             ],
@@ -196,7 +259,14 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: BlocBuilder<ExamInfoCubit, ExamInfoState>(
+      body: BlocConsumer<ExamInfoCubit, ExamInfoState>(
+        listener: (context, state) {
+          if (state is ExamInfoUpdated) {
+            if (state.examTitle == null && _examTitleController.text.isNotEmpty) {
+              _examTitleController.clear();
+            }
+          }
+        },
         builder: (context, state) {
           final cubit = context.read<ExamInfoCubit>();
           return _buildBody(context, state, cubit);
@@ -211,7 +281,7 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
       children: [
         Row(
           children: [
-            Text(label, style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
+            Text(label, style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
           ],
         ),
         verticalSpace12,
@@ -221,9 +291,9 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: ColorsManager.borderLightGray),
               borderRadius: BorderRadius.circular(12),
-              color: Colors.white,
+              color: ColorsManager.surfacePrimary,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -248,6 +318,52 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
     );
   }
 
+  Widget _buildTextField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    required ValueChanged<String> onChanged,
+    bool showDropdownIcon = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Row(
+          children: [
+            Text(label, style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
+          ],
+        ),
+        verticalSpace12,
+        TextFormField(
+          controller: controller,
+          onChanged: onChanged,
+          textAlign: TextAlign.start,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
+            filled: true,
+            fillColor: ColorsManager.surfacePrimary,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            suffixIcon: showDropdownIcon ? Icon(Icons.keyboard_arrow_down, color: ColorsManager.mainText) : null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: ColorsManager.borderLightGray),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: ColorsManager.borderLightGray),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: ColorsManager.primaryColor),
+            ),
+          ),
+          style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
+        ),
+      ],
+    );
+  }
+
   Widget _buildChipsSelection<T>({
     required String label, 
     required List<T> items, 
@@ -260,7 +376,7 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
       children: [
         Row(
           children: [
-            Text(label, style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
+            Text(label, style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
           ],
         ),
         verticalSpace12,
@@ -277,16 +393,16 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected ? ColorsManager.primaryColor : Colors.white,
+                  color: isSelected ? ColorsManager.primaryColor : ColorsManager.surfacePrimary,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected ? ColorsManager.primaryColor : Colors.grey.shade300,
+                    color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderLightGray,
                   ),
                 ),
                 child: Text(
                   displayText,
                   style: TextStylesManager.bold14.copyWith(
-                    color: isSelected ? Colors.white : ColorsManager.secondaryText,
+                    color: isSelected ? Colors.white : ColorsManager.mainText,
                   ),
                 ),
               ),

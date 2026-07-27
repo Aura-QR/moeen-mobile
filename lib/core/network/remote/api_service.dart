@@ -411,6 +411,30 @@ class ApiService {
     );
   }
 
+  static Future<Either<String, Map<String, dynamic>>> getSavedEducationalReports({
+    String? reportType,
+    int page = 1,
+    int perPage = 15,
+  }) async {
+    final query = <String, dynamic>{
+      'page': page,
+      'per_page': perPage,
+    };
+    if (reportType != null && reportType.isNotEmpty) {
+      query['report_type'] = reportType;
+    }
+
+    final response = await DioHelper.getData(
+      url: savedEducationalReportsApi,
+      query: query,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
   // --- Payment & Subscription API ---
 
   static Future<Either<String, List<dynamic>>> getSubscriptions() async {

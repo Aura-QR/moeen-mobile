@@ -136,7 +136,7 @@
   "home_start_prep": "Start Preparation",
   "home_reports": "Reports",
   "home_worksheets": "manual Test",
-  "home_tests": "Tests",
+  "home_tests": "Latest Exams",
   "feature_curriculum_title": "Curriculum Compatible",
   "feature_curriculum_subtitle": "According to Ministry of Education standards",
   "feature_time_title": "Saves your time",
@@ -417,6 +417,7 @@
   "approve": "Approve",
   "reject": "Reject",
   "no_action": "No Action",
+  "no_payments_yet": "No payments yet",
   "view": "View",
   "required": "Required",
   "currency_sar": "SAR",
@@ -549,5 +550,11 @@
   "presentations_create_to_preview": "Create the presentation for the 'Preparation' lesson, and after preparation, the slides will appear here.",
   "presentations_download": "Download PowerPoint",
   "presentations_templates_ready": "Ready Educational Templates",
-  "presentations_slides_range": "From 6 to 10 slides"
+  "presentations_slides_range": "From 6 to 10 slides",
+  "saved_reports_title": "Reports History",
+  "saved_reports_subtitle": "Saved Reports",
+  "saved_reports_desc": "Open any previous report to preview or print it again.",
+  "filter_all_reports": "All Reports",
+  "open_report_btn": "Open Report",
+  "no_saved_reports": "No saved reports found"
 }

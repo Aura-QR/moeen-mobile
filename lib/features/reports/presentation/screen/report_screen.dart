@@ -11,6 +11,7 @@ import 'package:moean/features/reports/data/report_pdf_service.dart';
 import 'package:moean/features/reports/presentation/cubit/report_cubit.dart';
 import 'package:moean/features/reports/presentation/cubit/report_state.dart';
 import 'package:moean/features/reports/presentation/screen/pdf_preview_screen.dart';
+import 'package:moean/features/reports/presentation/screen/saved_reports_screen.dart';
 import 'package:moean/features/reports/presentation/widgets/report_form_widget.dart';
 import 'package:moean/features/reports/presentation/widgets/report_result_section_widget.dart';
 
@@ -114,6 +115,20 @@ class _ReportScreenState extends State<ReportScreen> {
                 onPressed: () => context.pop(),
               ),
               actions: [
+                IconButton(
+                  tooltip: appTranslation().get('saved_reports_subtitle'),
+                  icon: Icon(
+                    Icons.inventory_2_outlined,
+                    color: ColorsManager.primaryColor,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => SavedReportsScreen(teacherName: _teacherName),
+                      ),
+                    );
+                  },
+                ),
                 if (state is ReportSuccess)
                   IconButton(
                     tooltip: appTranslation().get('report_new'),
@@ -128,49 +143,120 @@ class _ReportScreenState extends State<ReportScreen> {
             body: SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: state is ReportSuccess
-                    ? _ReportResultView(
-                        data: state.data,
-                        teacherName: _teacherName,
-                        onPrint: () => _handlePrint(state.data),
-                      )
-                    : ReportFormWidget(
-                        teacherName: _teacherName,
-                        isLoading: state is ReportLoading,
-                        onSubmit: ({
-                          required reportType,
-                          required grade,
-                          required subject,
-                          required unit,
-                          required semester,
-                          required schoolName,
-                          required educationOffice,
-                          required reportDate,
-                          required selectedLessons,
-                        }) {
-                          _lastGrade = grade;
-                          _lastSubject = subject;
-                          _lastUnit = unit;
-                          _lastSemester = semester;
-                          _lastSchool = schoolName;
-                          _lastOffice = educationOffice;
-                          _lastReportType = reportType;
-                          _lastReportDate = reportDate;
-                          _lastLessons = selectedLessons;
-              
-                          // For monthly reports, send units as list. For weekly, combine subject and unit.
-                          final dynamic apiSubject = reportType == 'شهري'
-                              ? unit.split('،').map((e) => e.trim()).where((e) => e.isNotEmpty).toList()
-                              : '$subject - $unit';
-              
-                          ReportCubit.get(context).generateReport(
-                            reportType: reportType,
-                            grade: grade,
-                            subject: apiSubject,
-                            selectedLessons: selectedLessons,
-                          );
-                        },
+                child: Column(
+                  children: [
+                    // Banner link to Saved Reports above the form/results
+                    InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => SavedReportsScreen(teacherName: _teacherName),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: ColorsManager.primaryColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: ColorsManager.primaryColor.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: ColorsManager.primaryColor.withValues(alpha: 0.12),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.inventory_2_outlined,
+                                    color: ColorsManager.primaryColor,
+                                    size: 18,
+                                  ),
+                                ),
+                                horizontalSpace10,
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      appTranslation().get('saved_reports_subtitle'),
+                                      style: TextStylesManager.bold14.copyWith(
+                                        color: ColorsManager.primaryColor,
+                                      ),
+                                    ),
+                                    Text(
+                                      appTranslation().get('saved_reports_desc'),
+                                      style: TextStylesManager.regular12.copyWith(
+                                        color: ColorsManager.secondaryText,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            Icon(
+                              Icons.arrow_back_ios_new,
+                              size: 16,
+                              color: ColorsManager.primaryColor,
+                            ),
+                          ],
+                        ),
                       ),
+                    ),
+                    verticalSpace16,
+
+                    state is ReportSuccess
+                        ? _ReportResultView(
+                            data: state.data,
+                            teacherName: _teacherName,
+                            onPrint: () => _handlePrint(state.data),
+                          )
+                        : ReportFormWidget(
+                            teacherName: _teacherName,
+                            isLoading: state is ReportLoading,
+                            onSubmit: ({
+                              required reportType,
+                              required grade,
+                              required subject,
+                              required unit,
+                              required semester,
+                              required schoolName,
+                              required educationOffice,
+                              required reportDate,
+                              required selectedLessons,
+                            }) {
+                              _lastGrade = grade;
+                              _lastSubject = subject;
+                              _lastUnit = unit;
+                              _lastSemester = semester;
+                              _lastSchool = schoolName;
+                              _lastOffice = educationOffice;
+                              _lastReportType = reportType;
+                              _lastReportDate = reportDate;
+                              _lastLessons = selectedLessons;
+
+                              // For monthly reports, send units as list. For weekly, combine subject and unit.
+                              final dynamic apiSubject = reportType == 'شهري'
+                                  ? unit.split('،').map((e) => e.trim()).where((e) => e.isNotEmpty).toList()
+                                  : '$subject - $unit';
+
+                              ReportCubit.get(context).generateReport(
+                                reportType: reportType,
+                                grade: grade,
+                                subject: apiSubject,
+                                selectedLessons: selectedLessons,
+                              );
+                            },
+                          ),
+                  ],
+                ),
               ),
             ),
           ),

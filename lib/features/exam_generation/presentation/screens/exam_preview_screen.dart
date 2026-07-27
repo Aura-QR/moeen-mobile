@@ -103,13 +103,13 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
               // Settings Header
               Container(
                 padding: const EdgeInsets.all(16),
-                color: Colors.white,
+                color: ColorsManager.surfacePrimary,
                 child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('وضع المعلم', style: TextStylesManager.bold14),
+                        Text('وضع المعلم', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                         Switch(
                           value: loadedState.isTeacherMode,
                           activeColor: ColorsManager.primaryColor,
@@ -121,7 +121,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('إظهار الإجابات', style: TextStylesManager.bold14),
+                          Text('إظهار الإجابات', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                           Switch(
                             value: loadedState.showAnswers,
                             activeColor: ColorsManager.primaryColor,
@@ -136,11 +136,11 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
               // Total points live calculator
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                color: ColorsManager.primaryColor.withOpacity(0.05),
+                color: ColorsManager.primaryColor.withValues(alpha: 0.1),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('إجمالي الدرجات:', style: TextStylesManager.bold14),
+                    Text('إجمالي الدرجات:', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                     Text(
                       loadedState.provisionalTotalPoints.toStringAsFixed(2),
                       style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor),
@@ -165,7 +165,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: ColorsManager.surfacePrimary,
                     boxShadow: [
                       BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
                     ],
@@ -210,88 +210,114 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
   }
 
   Widget _buildQuestionCard(BuildContext context, QuestionEntity q, ExamPreviewLoaded state) {
+    final isEnglish = ExamPdfService.isEnglishText(q.questionText);
+    final textDir = isEnglish ? TextDirection.ltr : TextDirection.rtl;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 20),
       elevation: 0,
+      color: ColorsManager.surfacePrimary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.withValues(alpha:0.2)),
+        side: BorderSide(color: ColorsManager.borderLightGray),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('${q.questionOrder}. ', style: TextStylesManager.bold16),
-                Expanded(
-                  child: Text(q.questionText, style: TextStylesManager.bold16),
-                ),
-                if (state.exam.status == 'draft')
-                  _PointsEditor(
-                    initialPoints: state.pendingPointsChanges[q.id] ?? q.points.toDouble(),
-                    onChanged: (parsed) {
-                      context.read<ExamPreviewCubit>().updatePendingPoints(q.id, parsed);
-                    },
-                  )
-                else
-                  Text('${q.points} درجة', style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
-              ],
-            ),
-            verticalSpace12,
-            _buildQuestionOptions(q, state.showAnswers),
-            if (state.isTeacherMode && state.showAnswers && q.type != 'matching' && q.type != 'mcq') ...[
-              verticalSpace12,
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: ColorsManager.successColor.withValues(alpha:0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check_circle, color: ColorsManager.successColor, size: 16),
-                    horizontalSpace8,
-                    Expanded(
-                      child: Text('الإجابة: ${q.correctAnswer}', style: TextStylesManager.bold14.copyWith(color: ColorsManager.successColor)),
+      child: Directionality(
+        textDirection: textDir,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${q.questionOrder}. ', style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
+                  Expanded(
+                    child: Text(
+                      q.questionText,
+                      style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
+                      textDirection: textDir,
                     ),
-                  ],
-                ),
+                  ),
+                  if (state.exam.status == 'draft')
+                    _PointsEditor(
+                      initialPoints: state.pendingPointsChanges[q.id] ?? q.points.toDouble(),
+                      onChanged: (parsed) {
+                        context.read<ExamPreviewCubit>().updatePendingPoints(q.id, parsed);
+                      },
+                    )
+                  else
+                    Text(
+                      isEnglish ? '${q.points} point${q.points > 1 ? "s" : ""}' : '${q.points} درجة',
+                      style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor),
+                    ),
+                ],
               ),
-            ]
-          ],
+              verticalSpace12,
+              _buildQuestionOptions(q, state.showAnswers, isEnglish),
+              if (state.isTeacherMode && state.showAnswers && q.type != 'matching' && q.type != 'mcq') ...[
+                verticalSpace12,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: ColorsManager.successColor.withValues(alpha:0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: ColorsManager.successColor, size: 16),
+                      horizontalSpace8,
+                      Expanded(
+                        child: Text(
+                          isEnglish ? 'Answer: ${q.correctAnswer}' : 'الإجابة: ${q.correctAnswer}',
+                          style: TextStylesManager.bold14.copyWith(color: ColorsManager.successColor),
+                          textDirection: textDir,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ]
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildQuestionOptions(QuestionEntity q, bool showAnswers) {
+  Widget _buildQuestionOptions(QuestionEntity q, bool showAnswers, bool isEnglish) {
+    final textDir = isEnglish ? TextDirection.ltr : TextDirection.rtl;
+
     if (q.type == 'mcq') {
       final options = List<String>.from(q.options ?? []);
       return Column(
         children: options.map((opt) {
           final isCorrect = opt == q.correctAnswer;
           return RadioGroup<String>(
-  groupValue: showAnswers && isCorrect ? opt : null,
-  onChanged: (_) {},
-  child: RadioListTile<String>(
-    value: opt,
-    activeColor: ColorsManager.successColor,
-    title: Text(
-      opt,
-      style: showAnswers && isCorrect
-          ? TextStylesManager.bold14.copyWith(
-              color: ColorsManager.successColor,
-            )
-          : TextStylesManager.regular14,
-    ),
-  ),
-);
+            groupValue: showAnswers && isCorrect ? opt : null,
+            onChanged: (_) {},
+            child: RadioListTile<String>(
+              value: opt,
+              activeColor: ColorsManager.successColor,
+              title: Text(
+                opt,
+                style: showAnswers && isCorrect
+                    ? TextStylesManager.bold14.copyWith(
+                        color: ColorsManager.successColor,
+                      )
+                    : TextStylesManager.regular14.copyWith(
+                        color: ColorsManager.mainText,
+                      ),
+                textDirection: textDir,
+              ),
+            ),
+          );
         }).toList(),
       );
     } else if (q.type == 'true_false') {
+      final isTrueCorrect = showAnswers && (q.correctAnswer == 'صح' || q.correctAnswer.toLowerCase() == 'true');
+      final isFalseCorrect = showAnswers && (q.correctAnswer == 'خطأ' || q.correctAnswer.toLowerCase() == 'false');
+
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -299,22 +325,22 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
             children: [
               Radio<String>(
                 value: 'صح',
-                groupValue: showAnswers && q.correctAnswer == 'صح' ? 'صح' : null,
+                groupValue: isTrueCorrect ? 'صح' : null,
                 activeColor: ColorsManager.successColor,
                 onChanged: (_) {},
               ),
-              const Text('صح'),
+              Text(isEnglish ? 'True' : 'صح', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
             ],
           ),
           Row(
             children: [
               Radio<String>(
                 value: 'خطأ',
-                groupValue: showAnswers && q.correctAnswer == 'خطأ' ? 'خطأ' : null,
+                groupValue: isFalseCorrect ? 'خطأ' : null,
                 activeColor: ColorsManager.successColor,
                 onChanged: (_) {},
               ),
-              const Text('خطأ'),
+              Text(isEnglish ? 'False' : 'خطأ', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
             ],
           ),
         ],
@@ -337,13 +363,20 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: columnA.map((a) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Text(a))).toList(),
+              children: columnA.map((a) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(a, textDirection: textDir, style: TextStylesManager.regular14.copyWith(color: ColorsManager.mainText)),
+              )).toList(),
             ),
           ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: columnB.map((b) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Text(b))).toList(),
+              children: columnB.map((b) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(b, textDirection: textDir, style: TextStylesManager.regular14.copyWith(color: ColorsManager.mainText)),
+              )).toList(),
             ),
           ),
         ],
@@ -353,12 +386,13 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
         height: 100,
         width: double.infinity,
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.withOpacity(0.3)),
+          color: ColorsManager.surfacePrimary,
+          border: Border.all(color: ColorsManager.borderLightGray),
           borderRadius: BorderRadius.circular(8),
         ),
       );
     }
-    return const SizedBox.shrink(); // fill_blank text is already rendered in questionText
+    return const SizedBox.shrink();
   }
 }
 

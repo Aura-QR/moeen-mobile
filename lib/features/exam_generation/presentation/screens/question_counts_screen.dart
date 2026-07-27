@@ -45,6 +45,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
     }
 
     context.read<GenerateExamCubit>().generate(
+      title: infoCubit.examTitle,
       grade: infoCubit.selectedGrade?.name ?? '',
       subject: infoCubit.selectedSubject?.name ?? '',
       lessons: lessonCubit.selectedLessons.map((l) => {'id': l.id, 'name': l.title}).toList(),
@@ -116,9 +117,9 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: ColorsManager.surfacePrimary,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                  border: Border.all(color: ColorsManager.borderLightGray),
                                 ),
                                 child: Row(
                                   children: [
@@ -128,7 +129,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(vertical: 12),
                                           decoration: BoxDecoration(
-                                            color: Colors.white,
+                                            color: ColorsManager.surfacePrimary,
                                             borderRadius: BorderRadius.circular(8),
                                           ),
                                           alignment: Alignment.center,
@@ -157,7 +158,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                 ),
                               ),
                               verticalSpace24,
-                              Text('الدروس المختارة', style: TextStylesManager.bold16.copyWith(color: const Color(0xFF0F172A))),
+                              Text('الدروس المختارة', style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
                               verticalSpace12,
                               Wrap(
                                 spacing: 8,
@@ -168,9 +169,9 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                   return Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: ColorsManager.surfacePrimary,
                                       borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                      border: Border.all(color: ColorsManager.borderLightGray),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -186,7 +187,13 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                           child: Text('${index + 1}', style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor)),
                                         ),
                                         horizontalSpace8,
-                                        Text(lesson.title, style: TextStylesManager.bold14.copyWith(color: const Color(0xFF0F172A))),
+                                        Flexible(
+                                          child: Text(
+                                            lesson.title,
+                                            style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   );
@@ -201,7 +208,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
-                                    'تم اختيار ${context.read<ExamInfoCubit>().selectedBankQuestionIds.values.fold(0, (sum, list) => sum + (list as List).length)} سؤال من بنك الأسئلة. سيتم دمجها مع الأرقام المحددة بالأسفل للذكاء الاصطناعي.',
+                                    'تم اختيار ${context.read<ExamInfoCubit>().selectedBankQuestionIds.values.fold(0, (sum, list) => sum + (list as List).length)} سؤال من بنك الأسئلة. سيتم دمجها مع الأرقام المحددة بالأسفل.',
                                     style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
                                   ),
                                 ),
@@ -236,10 +243,10 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                               return Card(
                                 margin: const EdgeInsets.only(bottom: 16),
                                 elevation: 0,
-                                color: Colors.white,
+                                color: ColorsManager.surfacePrimary,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                                  side: BorderSide(color: ColorsManager.borderLightGray),
                                 ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16),
@@ -255,7 +262,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                               children: [
                                                 Text(
                                                   lesson.title,
-                                                  style: TextStylesManager.bold16,
+                                                  style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
                                                   maxLines: 2,
                                                 ),
                                                 if (context.read<ExamInfoCubit>().selectedBankQuestionIds[lessonId] != null && context.read<ExamInfoCubit>().selectedBankQuestionIds[lessonId]!.isNotEmpty) ...[
@@ -281,7 +288,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                       ),
                                       const Divider(),
                                       verticalSpace8,
-                                      Text('أنواع الأسئلة والدرجات', style: TextStylesManager.bold16.copyWith(color: const Color(0xFF0F172A))),
+                                      Text('أنواع الأسئلة والدرجات', style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
                                       verticalSpace16,
                                       _buildCounterRow(context, lessonId, 'اختيار من متعدد', 'mcq', counts.mcq),
                                       _buildCounterRow(context, lessonId, 'صح أو خطأ', 'true_false', counts.trueFalse),
@@ -298,7 +305,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: ColorsManager.surfacePrimary,
                             boxShadow: [
                               BoxShadow(color: Colors.black.withValues(alpha:0.05), blurRadius: 10, offset: const Offset(0, -5)),
                             ],
@@ -351,9 +358,9 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorsManager.surfacePrimary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: ColorsManager.primaryColor.withOpacity(0.15)),
+        border: Border.all(color: ColorsManager.borderLightGray),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -361,7 +368,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStylesManager.bold16.copyWith(color: const Color(0xFF0F172A))),
+              Text(label, style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
               verticalSpace4,
               Text('عدد الأسئلة', style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText)),
             ],
@@ -394,12 +401,12 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF9E6),
+                  color: ColorsManager.primaryColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '$defaultGrade درجة',
-                  style: TextStylesManager.bold14.copyWith(color: const Color(0xFF0F172A)),
+                  style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor),
                 ),
               ),
             ],

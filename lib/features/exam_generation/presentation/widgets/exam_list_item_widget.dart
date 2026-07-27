@@ -48,7 +48,7 @@ class ExamListItemWidget extends StatelessWidget {
                   alignment: AlignmentDirectional.centerStart,
                   child: Text(
                     exam.title,
-                    style: TextStylesManager.bold14,
+                    style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -70,7 +70,7 @@ class ExamListItemWidget extends StatelessWidget {
                 child: Center(
                   child: Text(
                     '${exam.questionsCount}',
-                    style: TextStylesManager.medium14,
+                    style: TextStylesManager.medium14.copyWith(color: ColorsManager.mainText),
                   ),
                 ),
               ),
@@ -82,7 +82,7 @@ class ExamListItemWidget extends StatelessWidget {
                 child: Center(
                   child: Text(
                     '${exam.totalPoints}',
-                    style: TextStylesManager.medium14,
+                    style: TextStylesManager.medium14.copyWith(color: ColorsManager.mainText),
                   ),
                 ),
               ),
@@ -94,7 +94,7 @@ class ExamListItemWidget extends StatelessWidget {
                 child: Center(
                   child: Text(
                     _formatDate(exam.updatedAt),
-                    style: TextStylesManager.medium14,
+                    style: TextStylesManager.medium14.copyWith(color: ColorsManager.secondaryText),
                   ),
                 ),
               ),
@@ -132,7 +132,7 @@ class ExamListItemWidget extends StatelessWidget {
 
   Widget _buildStatusBadge() {
     final isPublished = exam.status == 'published';
-    final color = isPublished ? ColorsManager.primaryColor : ColorsManager.placeholder;
+    final color = isPublished ? ColorsManager.primaryColor : ColorsManager.secondaryText;
     final text = appTranslation().get(isPublished ? 'published' : 'draft');
     
     return Container(

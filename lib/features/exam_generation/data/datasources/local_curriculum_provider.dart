@@ -28,7 +28,6 @@ class LocalCurriculumProvider {
   static const List<String> semesters = [
     'الفصل الدراسي الأول',
     'الفصل الدراسي الثاني',
-    'الفصل الدراسي الثالث',
   ];
 
   // Dummy Units based on Subject

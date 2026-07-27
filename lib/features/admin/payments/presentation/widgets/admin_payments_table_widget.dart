@@ -44,6 +44,22 @@ class AdminPaymentsTableWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (payments.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.payment_outlined, size: 64, color: ColorsManager.primaryColor.withValues(alpha: 0.2)),
+            const SizedBox(height: 16),
+            Text(
+              appTranslation().get('no_payments_yet'),
+              style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor),
+            ),
+          ],
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: SingleChildScrollView(

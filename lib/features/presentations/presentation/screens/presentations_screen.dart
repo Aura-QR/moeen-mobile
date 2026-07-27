@@ -220,11 +220,20 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
             value: cubit.selectedStage?.name,
             onTap: () {
               if (cubit.stages.isEmpty) return;
+              final sortedStages = List.of(cubit.stages)..sort((a, b) {
+                int getWeight(String name) {
+                  if (name.contains('الابتدائية')) return 1;
+                  if (name.contains('المتوسطة')) return 2;
+                  if (name.contains('الثانوية')) return 3;
+                  return 4;
+                }
+                return getWeight(a.name).compareTo(getWeight(b.name));
+              });
               _showSelector(
                 appTranslation().get('presentations_stage'),
-                cubit.stages.map((e) => e.name).toList(),
+                sortedStages.map((e) => e.name).toList(),
                 (v) {
-                  final selected = cubit.stages.firstWhere((e) => e.name == v);
+                  final selected = sortedStages.firstWhere((e) => e.name == v);
                   cubit.updateSelection(stage: selected);
                 },
               );
@@ -355,30 +364,12 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
               Expanded(
                 child: _buildSlideCountOption(
                   cubit,
-                  count: '10 شرائح',
+                  count: '11 شريحه',
                   isSelected: cubit.selectedSlidesCount == '10',
                   onTap: () => cubit.updateSelection(slidesCount: '10'),
                 ),
               ),
-              horizontalSpace8,
-              Expanded(
-                child: _buildSlideCountOption(
-                  cubit,
-                  count: '8 شرائح',
-                  isSelected: cubit.selectedSlidesCount == '8',
-                  onTap: () => cubit.updateSelection(slidesCount: '8'),
-                ),
-              ),
-              horizontalSpace8,
-              Expanded(
-                child: _buildSlideCountOption(
-                  cubit,
-                  count: '6 شرائح',
-                  isSelected: cubit.selectedSlidesCount == '6',
-                  onTap: () => cubit.updateSelection(slidesCount: '6'),
-                ),
-              ),
-            ],
+             ],
           ),
           verticalSpace32,
           PrimaryElevatedButton(

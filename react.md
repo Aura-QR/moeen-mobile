@@ -354,7 +354,7 @@ export default function CertificatesPage() {
                   بيانات الشهادة
                 </p>
                 <h2 className="mt-1 text-xl font-black text-[#075244]">
-                  اختاري القالب واملئي البيانات
+                  اختار القالب واملئي البيانات
                 </h2>
               </div>
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#FFF7E3] text-[#D89C22]">

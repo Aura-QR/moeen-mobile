@@ -370,8 +370,19 @@ class AdminExamsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+        final isDark = theme.brightness == Brightness.dark;
+        final dialogBg = theme.dialogTheme.backgroundColor ?? theme.colorScheme.surface;
+        final textColor = theme.colorScheme.onSurface;
+        final chipBg = isDark ? const Color(0xFF2A3A4A) : const Color(0xFFEDF2F7);
+        final chipTextColor = isDark ? const Color(0xFF90CAF9) : const Color(0xFF1D3557);
+        final typeChipBg = isDark ? const Color(0xFF1A3A30) : const Color(0xFFE6F4F1);
+        final answerBg = isDark ? const Color(0xFF3A2E1A) : const Color(0xFFFFF7E6);
+        final answerTextColor = isDark ? const Color(0xFFFFCC80) : const Color(0xFFB57D2C);
+        final infoBg = isDark ? const Color(0xFF1A3A30) : const Color(0xFFE8F5F2);
+
         return Dialog(
-          backgroundColor: Colors.white,
+          backgroundColor: dialogBg,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -424,9 +435,9 @@ class AdminExamsScreen extends StatelessWidget {
                               Chip(
                                 label: Text(
                                   _getDifficultyName(question.difficulty),
-                                  style: TextStylesManager.medium12.copyWith(color: const Color(0xFF1D3557)),
+                                  style: TextStylesManager.medium12.copyWith(color: chipTextColor),
                                 ),
-                                backgroundColor: const Color(0xFFEDF2F7),
+                                backgroundColor: chipBg,
                                 side: BorderSide.none,
                               ),
                               horizontalSpace8,
@@ -435,7 +446,7 @@ class AdminExamsScreen extends StatelessWidget {
                                   _getQuestionTypeName(question.type),
                                   style: TextStylesManager.medium12.copyWith(color: const Color(0xFF1E9B75)),
                                 ),
-                                backgroundColor: const Color(0xFFE6F4F1),
+                                backgroundColor: typeChipBg,
                                 side: BorderSide.none,
                               ),
                             ],
@@ -443,7 +454,7 @@ class AdminExamsScreen extends StatelessWidget {
                           verticalSpace12,
                           Text(
                             question.questionText,
-                            style: TextStylesManager.bold16.copyWith(color: const Color(0xFF1D3557)),
+                            style: TextStylesManager.bold16.copyWith(color: textColor),
                             textAlign: TextAlign.right,
                           ),
                           verticalSpace12,
@@ -451,12 +462,12 @@ class AdminExamsScreen extends StatelessWidget {
                             width: double.infinity,
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFF7E6),
+                              color: answerBg,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               'الإجابة الصحيحة: ${question.correctAnswer}',
-                              style: TextStylesManager.bold14.copyWith(color: const Color(0xFFB57D2C)),
+                              style: TextStylesManager.bold14.copyWith(color: answerTextColor),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -468,7 +479,7 @@ class AdminExamsScreen extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE8F5F2),
+                        color: infoBg,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -582,8 +593,19 @@ class _RejectQuestionDialogState extends State<_RejectQuestionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final dialogBg = theme.dialogTheme.backgroundColor ?? theme.colorScheme.surface;
+    final textColor = theme.colorScheme.onSurface;
+    final chipBg = isDark ? const Color(0xFF2A3A4A) : const Color(0xFFEDF2F7);
+    final chipTextColor = isDark ? const Color(0xFF90CAF9) : const Color(0xFF1D3557);
+    final typeChipBg = isDark ? const Color(0xFF1A3A30) : const Color(0xFFE6F4F1);
+    final answerBg = isDark ? const Color(0xFF3A2E1A) : const Color(0xFFFFF7E6);
+    final answerTextColor = isDark ? const Color(0xFFFFCC80) : const Color(0xFFB57D2C);
+    final rejectInfoBg = isDark ? const Color(0xFF3A1A1A) : const Color(0xFFFFEBEE);
+
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: dialogBg,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: SingleChildScrollView(
         child: Column(
@@ -637,9 +659,9 @@ class _RejectQuestionDialogState extends State<_RejectQuestionDialog> {
                             Chip(
                               label: Text(
                                 widget.getDifficultyName(widget.question.difficulty),
-                                style: TextStylesManager.medium12.copyWith(color: const Color(0xFF1D3557)),
+                                style: TextStylesManager.medium12.copyWith(color: chipTextColor),
                               ),
-                              backgroundColor: const Color(0xFFEDF2F7),
+                              backgroundColor: chipBg,
                               side: BorderSide.none,
                             ),
                             horizontalSpace8,
@@ -648,7 +670,7 @@ class _RejectQuestionDialogState extends State<_RejectQuestionDialog> {
                                 widget.getQuestionTypeName(widget.question.type),
                                 style: TextStylesManager.medium12.copyWith(color: const Color(0xFF1E9B75)),
                               ),
-                              backgroundColor: const Color(0xFFE6F4F1),
+                              backgroundColor: typeChipBg,
                               side: BorderSide.none,
                             ),
                           ],
@@ -656,7 +678,7 @@ class _RejectQuestionDialogState extends State<_RejectQuestionDialog> {
                         verticalSpace12,
                         Text(
                           widget.question.questionText,
-                          style: TextStylesManager.bold16.copyWith(color: const Color(0xFF1D3557)),
+                          style: TextStylesManager.bold16.copyWith(color: textColor),
                           textAlign: TextAlign.right,
                         ),
                         verticalSpace12,
@@ -664,12 +686,12 @@ class _RejectQuestionDialogState extends State<_RejectQuestionDialog> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFF7E6),
+                            color: answerBg,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             'الإجابة الصحيحة: ${widget.question.correctAnswer}',
-                            style: TextStylesManager.bold14.copyWith(color: const Color(0xFFB57D2C)),
+                            style: TextStylesManager.bold14.copyWith(color: answerTextColor),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -681,7 +703,7 @@ class _RejectQuestionDialogState extends State<_RejectQuestionDialog> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFEBEE),
+                      color: rejectInfoBg,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(

@@ -91,9 +91,9 @@ class _BankQuestionsScreenState extends State<BankQuestionsScreen> {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: ColorsManager.surfacePrimary,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                border: Border.all(color: ColorsManager.borderLightGray),
               ),
               child: Row(
                 children: [
@@ -117,7 +117,7 @@ class _BankQuestionsScreenState extends State<BankQuestionsScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: ColorsManager.surfacePrimary,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         alignment: Alignment.center,
@@ -157,11 +157,11 @@ class _BankQuestionsScreenState extends State<BankQuestionsScreen> {
                     ),
                     selected: isSelected,
                     selectedColor: ColorsManager.primaryColor,
-                    backgroundColor: Colors.white,
+                    backgroundColor: ColorsManager.surfacePrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                       side: BorderSide(
-                        color: isSelected ? ColorsManager.primaryColor : Colors.grey.withValues(alpha: 0.3),
+                        color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderLightGray,
                       ),
                     ),
                     onSelected: (_) => _onLessonSelected(lessonId),
@@ -215,11 +215,11 @@ class _BankQuestionsScreenState extends State<BankQuestionsScreen> {
                       selected: isSelected,
                       showCheckmark: false,
                       selectedColor: ColorsManager.primaryColor,
-                      backgroundColor: Colors.white,
+                      backgroundColor: ColorsManager.surfacePrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                         side: BorderSide(
-                          color: isSelected ? ColorsManager.primaryColor : Colors.grey.withValues(alpha: 0.3),
+                          color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderLightGray,
                         ),
                       ),
                       onSelected: (_) => context.read<BankQuestionsCubit>().setFilter(filter['value'] as String?),
@@ -284,10 +284,10 @@ class _BankQuestionsScreenState extends State<BankQuestionsScreen> {
                       return Container(
                         margin: const EdgeInsets.only(bottom: 12),
                         decoration: BoxDecoration(
-                          color: isSelected ? ColorsManager.primaryColor.withValues(alpha: 0.05) : Colors.white,
+                          color: isSelected ? ColorsManager.primaryColor.withValues(alpha: 0.1) : ColorsManager.surfacePrimary,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected ? ColorsManager.primaryColor : Colors.grey.withValues(alpha: 0.2),
+                            color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderLightGray,
                             width: isSelected ? 2 : 1,
                           ),
                         ),
@@ -313,12 +313,12 @@ class _BankQuestionsScreenState extends State<BankQuestionsScreen> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: Colors.grey.withValues(alpha: 0.1),
+                                              color: ColorsManager.primaryColor.withValues(alpha: 0.1),
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: Text(
                                               _getQuestionTypeArabic(question['type'] ?? ''),
-                                              style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText),
+                                              style: TextStylesManager.regular12.copyWith(color: ColorsManager.primaryColor),
                                             ),
                                           ),
                                           horizontalSpace8,
@@ -360,7 +360,7 @@ class _BankQuestionsScreenState extends State<BankQuestionsScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: ColorsManager.surfacePrimary,
               boxShadow: [
                 BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5)),
               ],

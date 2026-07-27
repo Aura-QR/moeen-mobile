@@ -108,11 +108,16 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: ColorsManager.surfacePrimary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       insetPadding: const EdgeInsets.all(16),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: ColorsManager.surfacePrimary,
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: Form(
           key: _formKey,
           child: Column(
@@ -141,7 +146,7 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('نوع السؤال', style: TextStylesManager.bold14),
+                      Text('نوع السؤال', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                       verticalSpace8,
                       Wrap(
                         spacing: 8,
@@ -149,11 +154,11 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
                         children: _questionTypes.entries.map((entry) {
                           final isSelected = _selectedType == entry.key;
                           return ChoiceChip(
-                            label: Text(entry.value, style: TextStylesManager.bold12.copyWith(color: isSelected ? Colors.white : ColorsManager.secondaryText)),
+                            label: Text(entry.value, style: TextStylesManager.bold12.copyWith(color: isSelected ? Colors.white : ColorsManager.mainText)),
                             selected: isSelected,
                             selectedColor: ColorsManager.primaryColor,
-                            backgroundColor: Colors.white,
-                            side: BorderSide(color: isSelected ? ColorsManager.primaryColor : Colors.grey.shade300),
+                            backgroundColor: ColorsManager.surfacePrimary,
+                            side: BorderSide(color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderLightGray),
                             onSelected: (selected) {
                               if (selected) setState(() => _selectedType = entry.key);
                             },
@@ -168,13 +173,17 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('الدرجة', style: TextStylesManager.bold14),
+                                Text('الدرجة', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                                 verticalSpace8,
                                 TextFormField(
                                   controller: _pointsController,
+                                  style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
                                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                   decoration: InputDecoration(
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                    filled: true,
+                                    fillColor: ColorsManager.surfacePrimary,
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
+                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
                                     isDense: true,
                                   ),
                                   validator: (value) => value!.isEmpty ? 'مطلوب' : null,
@@ -188,18 +197,22 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('الدرس المرتبط بالسؤال', style: TextStylesManager.bold14),
+                                Text('الدرس المرتبط بالسؤال', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                                 verticalSpace8,
                                 DropdownButtonFormField<int>(
                                   value: _selectedLessonId,
+                                  dropdownColor: ColorsManager.surfacePrimary,
                                   decoration: InputDecoration(
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                    filled: true,
+                                    fillColor: ColorsManager.surfacePrimary,
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
+                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
                                     isDense: true,
                                   ),
                                   items: widget.availableLessonIds.map((id) {
                                     return DropdownMenuItem<int>(
                                       value: id,
-                                      child: Text('الدرس $id', style: TextStylesManager.regular14),
+                                      child: Text('الدرس $id', style: TextStylesManager.regular14.copyWith(color: ColorsManager.mainText)),
                                     );
                                   }).toList(),
                                   onChanged: (val) {
@@ -213,27 +226,37 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
                         ],
                       ),
                       verticalSpace16,
-                      Text('نص السؤال', style: TextStylesManager.bold14),
+                      Text('نص السؤال', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                       verticalSpace8,
                       TextFormField(
                         controller: _questionTextController,
+                        style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
                         maxLines: 3,
                         decoration: InputDecoration(
                           hintText: 'اكتب نص السؤال...',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
+                          filled: true,
+                          fillColor: ColorsManager.surfacePrimary,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
                         ),
                         validator: (value) => value!.isEmpty ? 'مطلوب' : null,
                       ),
                       verticalSpace16,
                       if (_selectedType == 'mcq') ...[
-                        Text('الاختيارات – كل اختيار في سطر', style: TextStylesManager.bold14),
+                        Text('الاختيارات – كل اختيار في سطر', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                         verticalSpace8,
                         TextFormField(
                           controller: _optionsController,
+                          style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
                           maxLines: 4,
                           decoration: InputDecoration(
                             hintText: 'الاختيار الأول\nالاختيار الثاني\nالاختيار الثالث\nالاختيار الرابع',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
+                            filled: true,
+                            fillColor: ColorsManager.surfacePrimary,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
                           ),
                         ),
                         verticalSpace16,
@@ -245,14 +268,19 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('العمود أ – كل عنصر في سطر', style: TextStylesManager.bold14),
+                                  Text('العمود أ – كل عنصر في سطر', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                                   verticalSpace8,
                                   TextFormField(
                                     controller: _columnAController,
+                                    style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
                                     maxLines: 4,
                                     decoration: InputDecoration(
                                       hintText: '1. المفهوم الأول\n2. المفهوم الثاني',
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                      hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
+                                      filled: true,
+                                      fillColor: ColorsManager.surfacePrimary,
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
                                     ),
                                   ),
                                 ],
@@ -263,14 +291,19 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('العمود ب – كل عنصر في سطر', style: TextStylesManager.bold14),
+                                  Text('العمود ب – كل عنصر في سطر', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                                   verticalSpace8,
                                   TextFormField(
                                     controller: _columnBController,
+                                    style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
                                     maxLines: 4,
                                     decoration: InputDecoration(
                                       hintText: 'أ. الإجابة الأولى\nب. الإجابة الثانية\nج. مشتت إضافي',
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                      hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
+                                      filled: true,
+                                      fillColor: ColorsManager.surfacePrimary,
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
                                     ),
                                   ),
                                 ],
@@ -281,17 +314,21 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
                         verticalSpace16,
                       ],
                       if (_selectedType == 'true_false') ...[
-                         Text('الإجابة الصحيحة', style: TextStylesManager.bold14),
+                         Text('الإجابة الصحيحة', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                          verticalSpace8,
                          DropdownButtonFormField<String>(
                             value: _correctAnswerController.text.isEmpty ? null : _correctAnswerController.text,
+                            dropdownColor: ColorsManager.surfacePrimary,
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              filled: true,
+                              fillColor: ColorsManager.surfacePrimary,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
                               isDense: true,
                             ),
-                            items: const [
-                              DropdownMenuItem(value: 'صح', child: Text('صح')),
-                              DropdownMenuItem(value: 'خطأ', child: Text('خطأ')),
+                            items: [
+                              DropdownMenuItem(value: 'صح', child: Text('صح', style: TextStylesManager.regular14.copyWith(color: ColorsManager.mainText))),
+                              DropdownMenuItem(value: 'خطأ', child: Text('خطأ', style: TextStylesManager.regular14.copyWith(color: ColorsManager.mainText))),
                             ],
                             onChanged: (val) {
                               setState(() => _correctAnswerController.text = val ?? '');
@@ -300,14 +337,19 @@ class _AddManualQuestionDialogState extends State<AddManualQuestionDialog> {
                           ),
                           verticalSpace16,
                       ] else ...[
-                        Text('الإجابة الصحيحة / النموذجية', style: TextStylesManager.bold14),
+                        Text('الإجابة الصحيحة / النموذجية', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                         verticalSpace8,
                         TextFormField(
                           controller: _correctAnswerController,
+                          style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
                           maxLines: 2,
                           decoration: InputDecoration(
                             hintText: _selectedType == 'matching' ? 'مثال: 1-أ, 2-ب' : 'اكتب الإجابة الصحيحة...',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
+                            filled: true,
+                            fillColor: ColorsManager.surfacePrimary,
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderLightGray)),
                           ),
                           validator: (value) => value!.isEmpty ? 'مطلوب' : null,
                         ),
