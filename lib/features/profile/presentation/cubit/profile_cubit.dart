@@ -30,24 +30,28 @@ class ProfileCubit extends Cubit<ProfileState> {
   Future<void> logout() async {
     emit(ProfileLogoutLoadingState());
 
-    final result = await ApiService.logout();
+    try {
+      // 1. مسح التوكن فوراً من الذاكرة والـ Storage
+      final secureStorage = sl<SecureStorageHelper>();
+      await secureStorage.deleteToken();
+      token = null;
 
-    result.fold(
-      (error) {
-        _clearLocalAuthData();
-        emit(ProfileLogoutSuccessState()); // Even on error, we clear local session
-      },
-      (success) {
-        _clearLocalAuthData();
-        emit(ProfileLogoutSuccessState());
-      },
-    );
+      // 2. إرسال حالة النجاح فوراً لكي تلتقطها الشاشة قبل أي Rebuild
+      emit(ProfileLogoutSuccessState());
+
+      // 3. تصفير جلسة مدرستي وطلب السيرفر في الخلفية
+      sl<MadrasatiSessionService>().reset();
+      ApiService.logout(); 
+
+    } catch (e) {
+      debugPrint('Logout error: $e');
+      // في حال حدوث خطأ، نضمن أيضاً إرسال النجاح لتسجيل الخروج محلياً
+      token = null;
+      emit(ProfileLogoutSuccessState());
+    }
   }
 
-  Future<void> _clearLocalAuthData() async {
-    final secureStorage = sl<SecureStorageHelper>();
-    await secureStorage.deleteToken();
-    token = null;
-    sl<MadrasatiSessionService>().reset();
+  void clearData() {
+    profileModel = null;
   }
 }

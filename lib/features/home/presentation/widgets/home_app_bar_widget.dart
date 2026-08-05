@@ -9,6 +9,10 @@ import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/home/presentation/cubit/home_cubit.dart';
+import 'package:moean/features/profile/presentation/widgets/logout_dialog.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
+import 'package:moean/main.dart'; 
 
 class HomeAppBarWidget extends StatelessWidget {
   const HomeAppBarWidget({super.key});
@@ -38,12 +42,11 @@ class HomeAppBarWidget extends StatelessWidget {
               if (isLoggedIn)
                 Row(
                   children: [
-                    // Phone icon button — contact
-                    _ContactIconButton(isAdmin: isAdmin),
+                    // Phone icon button — contact (Hidden for Admin)
+                    if (!isAdmin) _ContactIconButton(isAdmin: isAdmin),
                     if (isAdmin) ...[
-                      horizontalSpace8,
-                      // Admin Payments button — admin only
-                      _AdminPaymentsButton(),
+                      // Logout button — admin only
+                      _AdminLogoutButton(),
                     ],
                     if (!isAdmin) ...[
                       horizontalSpace8,
@@ -133,23 +136,47 @@ class _ContactIconButtonState extends State<_ContactIconButton>
   }
 }
 
-class _AdminPaymentsButton extends StatelessWidget {
+class _AdminLogoutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return PrimaryElevatedButton(
-      icon: Icon(
-        Icons.payments_outlined,
-        size: 18,
-        color: ColorsManager.white,
+    return BlocProvider(
+      create: (context) => ProfileCubit(),
+      child: BlocListener<ProfileCubit, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileLogoutSuccessState) {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              Routes.login,
+              (route) => false,
+            );
+          }
+        },
+        child: Builder(
+          builder: (context) {
+            return PrimaryElevatedButton(
+              icon: const Icon(
+                Icons.logout,
+                size: 18,
+                color: ColorsManager.white,
+              ),
+              text: appTranslation().get('logout'),
+              textStyle: TextStylesManager.bold13.copyWith(
+                color: ColorsManager.white,
+              ),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (dialogContext) => LogoutDialog(
+                    onConfirm: () => context.read<ProfileCubit>().logout(),
+                  ),
+                );
+              },
+              width: 140,
+              height: 42,
+              radius: 24,
+            );
+          }
+        ),
       ),
-      text: appTranslation().get('admin_payments_title'),
-      textStyle: TextStylesManager.bold13.copyWith(
-        color: ColorsManager.white,
-      ),
-      onPressed: () => context.push(Routes.adminPayments),
-      width: 140,
-      height: 42,
-      radius: 24,
     );
   }
 }
@@ -158,7 +185,7 @@ class _SubscriptionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PrimaryElevatedButton(
-      icon: Icon(
+      icon: const Icon(
         Icons.workspace_premium_outlined,
         size: 18,
         color: ColorsManager.white,

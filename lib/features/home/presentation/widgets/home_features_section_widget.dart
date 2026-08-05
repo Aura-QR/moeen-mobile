@@ -210,8 +210,8 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                       horizontalSpace12,
                     ],
                     HomeActionChipWidget(
-                      icon: Icons.verified_outlined,
-                      title: appTranslation().get('my_exam'),
+                      icon: isAdmin ? Icons.assignment_turned_in_outlined : Icons.verified_outlined,
+                      title: isAdmin ? "مراجعة الأسئلة" : appTranslation().get('my_exam'),
                       onTap: () {
                         if (token != null && token!.isNotEmpty) {
                           if (isAdmin) {
@@ -224,6 +224,32 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                         }
                       },
                     ),
+                    if (isAdmin) ...[
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.check_circle_outline,
+                        title: "المدفوعات",
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.adminPayments);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.verified_user_outlined,
+                        title: "تذاكر التواصل",
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.adminContact);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
+                    ],
                     if (!isAdmin) ...[
                       horizontalSpace12,
                       HomeActionChipWidget(
