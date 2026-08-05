@@ -32,5 +32,7 @@ static const String scr1 = 'assets/images/scr1.jpeg';
   static const String scr13 = 'assets/images/scr13.jpeg';
   static const String scr14 = 'assets/images/scr1.jpeg';
   static const String scr15 = 'assets/images/scr15.jpeg';
+  static const String scr16 = 'assets/images/img16.jpg';
+
 
 }

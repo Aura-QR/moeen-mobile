@@ -140,40 +140,7 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
           style: TextStylesManager.regular16.copyWith(color: ColorsManager.secondaryText),
           textAlign: TextAlign.center,
         ),
-        verticalSpace24,
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          alignment: WrapAlignment.center,
-          children: [
-            _buildStaticChip(Icons.download, appTranslation().get('presentations_download')),
-            _buildStaticChip(Icons.palette_outlined, appTranslation().get('presentations_templates_ready')),
-            _buildStaticChip(Icons.layers_outlined, appTranslation().get('presentations_slides_range')),
-          ],
-        ),
       ],
-    );
-  }
-
-  Widget _buildStaticChip(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: ColorsManager.surfacePrimary,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: ColorsManager.primaryColor, size: 18),
-          horizontalSpace8,
-          Text(
-            label,
-            style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
-          ),
-        ],
-      ),
     );
   }
 
@@ -364,7 +331,7 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
               Expanded(
                 child: _buildSlideCountOption(
                   cubit,
-                  count: '11 شريحه',
+                  count: 'عدد الشرائح تلقائي',
                   isSelected: cubit.selectedSlidesCount == '10',
                   onTap: () => cubit.updateSelection(slidesCount: '10'),
                 ),
@@ -496,44 +463,6 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
         ),
         child: const Center(
           child: CircularProgressIndicator(),
-        ),
-      );
-    } else if (state is PresentationsError) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: ColorsManager.surfacePrimary,
-          borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                  verticalSpace16,
-                  Text(
-                    'تعذر تجهيز العرض',
-                    style: TextStylesManager.bold16.copyWith(color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
-                  verticalSpace8,
-                  Text(
-                    state.message,
-                    style: TextStylesManager.regular14.copyWith(color: Colors.red.shade700),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       );
     } else {

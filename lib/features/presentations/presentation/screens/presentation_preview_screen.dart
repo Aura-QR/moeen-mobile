@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
@@ -269,6 +271,14 @@ class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
                       style: TextStylesManager.bold14.copyWith(color: Colors.white),
                     ),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      slide.title,
+                      style: TextStylesManager.bold14.copyWith(color: Colors.white),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   Text(
                     'عنوان الدرس',
                     style: TextStylesManager.bold12.copyWith(color: theme.primaryAccent),
@@ -418,30 +428,15 @@ class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
   }
 
   Widget _buildSlideContent(PresentationSlideModel slide, PresentationThemeData theme) {
+    if (slide.slideType == 'static_greeting') {
+      return GreetingWidget(text: slide.bodyText, theme: theme, cubit: widget.cubit);
+    }
+
     // Split bullet points by new line or bullet character
     final lines = slide.bodyText.split('\n').where((l) => l.trim().isNotEmpty).toList();
 
     if (slide.slideType == 'random_picker') {
-      return Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: lines.map((name) {
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: theme.softContainer,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: theme.primaryAccent.withOpacity(0.3), width: 1),
-            ),
-            child: Text(
-              name.trim(),
-              style: TextStylesManager.bold14.copyWith(
-                color: theme.darkAccent,
-              ),
-            ),
-          );
-        }).toList(),
-      );
+      return RandomPickerWidget(names: lines, theme: theme);
     }
 
     return Column(
@@ -488,32 +483,37 @@ class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
     );
   }
 
-  String _getSlideLabel(String type) {
-    final Map<String, String> labels = {
-      'title': 'عنوان الدرس',
-      'static_opening': 'افتتاحية',
-      'static_greeting': 'ترحيب',
-      'static_dua': 'دعاء اليوم',
-      'static_classroom_rules': 'قواعد الصف',
-      'static_success_criteria': 'محققات النجاح',
-      'lesson_info': 'معلومات الدرس',
-      'kwl_open': 'ماذا نعرف',
-      'vocabulary': 'مفردات الدرس',
-      'hook': 'تمهيد الدرس',
-      'random_picker': 'اختيار عشوائي',
-      'content': 'شرح الدرس',
-      'cross_curricular': 'الربط بالمواد الأخرى',
-      'reading_stages': 'مراحل القراءة',
-      'closing_strategy': 'استراتيجية الإغلاق',
-      'worksheet': 'ورقة عمل',
-      'kwl_close': 'ماذا تعلمنا',
-      'homework': 'الواجب المنزلي',
-      'objectives': 'أهداف التعلم',
-      'example': 'مثال تطبيقي',
-      'summary': 'ملخص الدرس',
-      'quiz_prompt': 'أسئلة ومناقشة',
-    };
-    return labels[type] ?? 'محتوى تعليمي';
+  String _getSlideLabel(String? type) {
+    try {
+      final Map<String, String> labels = {
+        'title': 'عنوان الدرس',
+        'static_opening': 'افتتاحية',
+        'static_greeting': 'ترحيب',
+        'static_dua': 'دعاء اليوم',
+        'static_classroom_rules': 'قواعد الصف',
+        'static_success_criteria': 'محققات النجاح',
+        'lesson_info': 'معلومات الدرس',
+        'kwl_open': 'ماذا نعرف',
+        'vocabulary': 'مفردات الدرس',
+        'hook': 'تمهيد الدرس',
+        'random_picker': 'اختيار عشوائي',
+        'content': 'شرح الدرس',
+        'cross_curricular': 'الربط بالمواد الأخرى',
+        'reading_stages': 'مراحل القراءة',
+        'closing_strategy': 'استراتيجية الإغلاق',
+        'worksheet': 'ورقة عمل',
+        'kwl_close': 'ماذا تعلمنا',
+        'homework': 'الواجب المنزلي',
+        'objectives': 'أهداف التعلم',
+        'example': 'مثال تطبيقي',
+        'summary': 'ملخص الدرس',
+        'quiz_prompt': 'أسئلة ومناقشة',
+      };
+      return labels[type] ?? 'محتوى تعليمي';
+    } catch (e) {
+      print('Error in _getSlideLabel for type $type: $e');
+      return 'محتوى تعليمي';
+    }
   }
 
   IconData _getIconData(String? keyword) {
@@ -544,5 +544,246 @@ class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
       case 'sparkles': return LucideIcons.sparkles;
       default: return LucideIcons.layoutTemplate;
     }
+  }
+}
+
+class RandomPickerWidget extends StatefulWidget {
+  final List<String> names;
+  final PresentationThemeData theme;
+
+  const RandomPickerWidget({
+    Key? key,
+    required this.names,
+    required this.theme,
+  }) : super(key: key);
+
+  @override
+  State<RandomPickerWidget> createState() => _RandomPickerWidgetState();
+}
+
+class _RandomPickerWidgetState extends State<RandomPickerWidget> {
+  int? _highlightedIndex;
+  int? _selectedIndex;
+  bool _isSpinning = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) _spin();
+    });
+  }
+
+  void _spin() async {
+    if (_isSpinning || widget.names.isEmpty) return;
+    setState(() {
+      _isSpinning = true;
+      _selectedIndex = null;
+      _highlightedIndex = null;
+    });
+
+    final random = Random();
+    final targetIndex = random.nextInt(widget.names.length);
+    
+    // Total steps to take
+    int steps = widget.names.length * 3 + targetIndex;
+    
+    for (int i = 0; i < steps; i++) {
+      if (!mounted) return;
+      setState(() {
+        _highlightedIndex = i % widget.names.length;
+      });
+      
+      // Calculate delay: starts fast (50ms), slows down near the end (up to 400ms)
+      int delay = 50 + (i / steps * 200).toInt();
+      if (i > steps - 5) delay += 100; // Extra slow at the very end
+      
+      await Future.delayed(Duration(milliseconds: delay));
+    }
+    
+    if (!mounted) return;
+    setState(() {
+      _isSpinning = false;
+      _selectedIndex = targetIndex;
+      _highlightedIndex = targetIndex;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: List.generate(widget.names.length, (index) {
+            final name = widget.names[index];
+            final isHighlighted = _highlightedIndex == index;
+            final isSelected = _selectedIndex == index;
+
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? widget.theme.primaryAccent 
+                    : isHighlighted 
+                        ? widget.theme.primaryAccent.withOpacity(0.5) 
+                        : widget.theme.softContainer,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isHighlighted || isSelected 
+                      ? widget.theme.primaryAccent 
+                      : widget.theme.primaryAccent.withOpacity(0.3), 
+                  width: isHighlighted || isSelected ? 2 : 1,
+                ),
+                boxShadow: isSelected ? [
+                  BoxShadow(
+                    color: widget.theme.primaryAccent.withOpacity(0.4),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                  )
+                ] : null,
+              ),
+              child: Text(
+                name.trim(),
+                style: TextStylesManager.bold14.copyWith(
+                  color: isSelected || isHighlighted ? Colors.white : widget.theme.darkAccent,
+                ),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+}
+
+class GreetingWidget extends StatelessWidget {
+  final String text;
+  final PresentationThemeData theme;
+  final PresentationsCubit cubit;
+
+  const GreetingWidget({
+    Key? key,
+    required this.text,
+    required this.theme,
+    required this.cubit,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final lines = text.isEmpty 
+      ? [
+          'نبدأ يومنا بطاقة إيجابية وحماس للتعلم.',
+          'نتمنى لكم درسًا ممتعًا ومليئًا بالإنجاز.'
+        ]
+      : text.split('\n').where((l) => l.trim().isNotEmpty).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Left side in mockup: Image
+        Container(
+          height: 180,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: theme.primaryAccent, width: 2),
+            image: const DecorationImage(
+              image: AssetImage(AssetsHelper.scr16),
+              fit: BoxFit.cover,
+            ),
+          ),
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10)),
+              color: theme.primaryAccent.withValues(alpha: 0.8),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'التعليم في المملكة العربية السعودية',
+                  style: TextStylesManager.bold14.copyWith(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Right side in mockup: Bullets
+        ...List.generate(lines.length, (index) {
+          String lineText = lines[index].trim();
+          if (lineText.startsWith('-') || lineText.startsWith('•')) {
+            lineText = lineText.substring(1).trim();
+          }
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.borderColor, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: theme.primaryAccent,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '${index + 1}',
+                    style: TextStylesManager.bold12.copyWith(color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    lineText,
+                    style: TextStylesManager.bold14.copyWith(color: theme.darkAccent, height: 1.5),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+        const SizedBox(height: 8),
+        // Bottom tags
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          alignment: WrapAlignment.center,
+          children: [
+            if (cubit.selectedSubject?.name != null) _buildTag(cubit.selectedSubject!.name, theme),
+            if (cubit.selectedGrade?.name != null) _buildTag(cubit.selectedGrade!.name, theme),
+            if (cubit.selectedUnit?.title != null) _buildTag(cubit.selectedUnit!.title, theme),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTag(String label, PresentationThemeData theme) {
+    if (label.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.borderColor),
+      ),
+      child: Text(
+        label,
+        style: TextStylesManager.bold12.copyWith(color: theme.primaryAccent),
+      ),
+    );
   }
 }

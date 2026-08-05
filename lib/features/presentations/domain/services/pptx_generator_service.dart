@@ -46,6 +46,15 @@ class PptxGeneratorService {
       print('Could not load random cover image: $e');
     }
 
+    String greetingImageBase64 = '';
+    try {
+      final ByteData data = await rootBundle.load(AssetsHelper.scr16);
+      final Uint8List bytes = data.buffer.asUint8List();
+      greetingImageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+    } catch (e) {
+      print('Could not load greeting image: $e');
+    }
+
     // Build context
     final jsonData = jsonEncode({
       'presentation': {
@@ -65,6 +74,7 @@ class PptxGeneratorService {
         'gradeName': gradeName,
         'unitName': unitName,
         'coverImageBase64': coverImageBase64,
+        'greetingImageBase64': greetingImageBase64,
       }
     });
 

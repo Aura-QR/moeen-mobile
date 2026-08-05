@@ -406,7 +406,7 @@
             });
         }
 
-        async function addContentSlide(pptx, item, theme, index, total) {
+        async function addContentSlide(pptx, item, theme, index, total, context) {
             const { white: whiteIconData, accent: accentIconData } = await getSlideIconImages(item, theme);
             const slide = pptx.addSlide();
             slide.background = { color: theme.background };
@@ -430,6 +430,83 @@
                     margin: 0, align: "center", rtlMode: true,
                 });
                 addBulletColumns(slide, item.body, theme, { x: 3.38, y: 1.55, w: 9.15, h: 4.75 });
+            } else if (item.type === "static_greeting") {
+                if (context && context.greetingImageBase64) {
+                    slide.addImage({ 
+                        data: context.greetingImageBase64, 
+                        x: 0.7, y: 1.55, w: 5.8, h: 4.75,
+                        sizing: { type: "cover", w: 5.8, h: 4.75 }
+                    });
+                    slide.addShape("roundRect", {
+                        x: 0.7, y: 1.55, w: 5.8, h: 4.75, rectRadius: 0.12,
+                        fill: { color: theme.accentDark, transparency: 100 },
+                        line: { color: theme.white, width: 2 },
+                    });
+                    slide.addShape("rect", {
+                        x: 0.71, y: 5.1, w: 5.78, h: 1.15,
+                        fill: { color: theme.accentDark, transparency: 20 },
+                        line: { color: theme.accentDark, transparency: 100 },
+                    });
+                    slide.addText("التعليم في المملكة العربية السعودية", {
+                        x: 0.71, y: 5.3, w: 5.78, h: 0.6,
+                        fontFace: "Tahoma", fontSize: 18, bold: true, color: theme.white,
+                        margin: 0, align: "center", rtlMode: true,
+                    });
+                } else {
+                    slide.addShape("roundRect", {
+                        x: 0.7, y: 1.55, w: 5.8, h: 4.75, rectRadius: 0.12,
+                        fill: { color: theme.soft }, line: { color: theme.soft },
+                    });
+                }
+
+                const bullets = item.body && item.body.length ? item.body : ["نبدأ يومنا بطاقة إيجابية وحماس للتعلم.", "نتمنى لكم درسًا ممتعًا ومليئًا بالإنجاز."];
+                const bulletY = 1.7;
+                const cardHeight = 0.85;
+                bullets.forEach((text, i) => {
+                    const cy = bulletY + i * (cardHeight + 0.3);
+                    slide.addShape("roundRect", {
+                        x: 6.8, y: cy, w: 5.8, h: cardHeight, rectRadius: 0.1,
+                        fill: { color: theme.white, transparency: 5 },
+                        line: { color: theme.soft, width: 1.2 },
+                    });
+                    slide.addShape("ellipse", {
+                        x: 12.1, y: cy + 0.22, w: 0.4, h: 0.4,
+                        fill: { color: theme.accent }, line: { color: theme.accent },
+                    });
+                    slide.addText(String(i + 1), {
+                        x: 12.1, y: cy + 0.22, w: 0.4, h: 0.4,
+                        fontFace: "Arial", fontSize: 12, bold: true, color: theme.white,
+                        margin: 0, align: "center",
+                    });
+                    slide.addText(text, {
+                        x: 6.9, y: cy + 0.12, w: 5.0, h: 0.6,
+                        fontFace: "Arial", fontSize: 14, bold: true, color: theme.text,
+                        margin: 0, align: "right", rtlMode: true,
+                    });
+                });
+
+                const tags = context ? [context.subjectName, context.gradeName, context.unitName].filter(Boolean) : [];
+                if (tags.length > 0) {
+                    const tagWidth = 1.5;
+                    const tagGap = 0.25;
+                    const totalWidth = tags.length * tagWidth + Math.max(0, tags.length - 1) * tagGap;
+                    const startX = 6.8 + (5.8 - totalWidth) / 2;
+
+                    tags.forEach((tag, idx) => {
+                        const visualIndex = tags.length - 1 - idx;
+                        const tagX = startX + visualIndex * (tagWidth + tagGap);
+                        slide.addShape("roundRect", {
+                            x: tagX, y: 4.3, w: tagWidth, h: 0.45, rectRadius: 0.2,
+                            fill: { color: theme.white, transparency: 5 },
+                            line: { color: theme.soft, width: 1.2 },
+                        });
+                        slide.addText(tag, {
+                            x: tagX + 0.05, y: 4.37, w: tagWidth - 0.1, h: 0.3,
+                            fontFace: "Tahoma", fontSize: 10.5, bold: true, color: theme.muted,
+                            margin: 0, align: "center", rtlMode: true, fit: "shrink",
+                        });
+                    });
+                }
             } else if (item.type === "quiz_prompt" || item.type === "summary") {
                 addBulletColumns(slide, item.body, theme, { x: 0.78, y: 1.55, w: 11.75, h: 4.95 });
             } else if (item.type === "random_picker") {
@@ -505,7 +582,7 @@
                         await addCoverSlide(pptx, { ...context, lessonTitle: item.title || context.lessonTitle }, theme);
                         continue;
                     }
-                    await addContentSlide(pptx, item, theme, index, slidesMapped.length);
+                    await addContentSlide(pptx, item, theme, index, slidesMapped.length, context);
                 }
 
                 // Generate and return base64

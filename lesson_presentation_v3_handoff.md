@@ -1,132 +1,93 @@
-# Lesson Presentation — Backend & Frontend Changes
+# Lesson Presentation — Decoupling the Random Student Picker
 
-## Backend (Laravel)
+## Context
 
-Accept 2 new optional fields in the lesson-creation request and forward them **unchanged** to the n8n webhook, alongside the existing fields:
+The Moeen platform generates AI-written lesson presentations (PPTX slide outlines) for Saudi teachers, built from three pieces:
 
-```json
-{
-  "include_random_picker": true,
-  "student_names": ["Ahmed", "Sara", "Faisal"]
-}
-```
+- **`moeen-backend`** (Laravel) — orchestrates generation, persists presentations/slides in Postgres.
+- **`Lesson Presentation - AI Outline Generator`** (n8n workflow) — calls OpenRouter (GPT-4.1-mini) to generate the slide outline, validates it, resolves icons, merges it with fixed intro slides.
+- **`moeen_front`** (Next.js) — lets teachers pick a lesson, trigger generation, preview slides, and export to PPTX.
 
-- `include_random_picker`: boolean, optional, default `false`.
-- `student_names`: array of non-empty strings, optional, default `[]`.
-- If `include_random_picker` is `true` but `student_names` is empty, no picker slide is produced — validate loosely, no error needed.
-
-No other backend changes.
+The lesson content itself is meant to be generated **once per lesson** and reused. Teachers also want an in-class "random student picker" tool, and its roster changes every session — but currently that roster is entangled with the AI generation pipeline, which breaks the caching.
 
 ---
 
-## Frontend (`moeen_front`)
+## The bug: every "generate" click re-runs the full AI pipeline
 
-### 1. New UI in lesson-creation form
-- Toggle: **"Enable random student picker"**.
-- When enabled, show a field to enter/select student names.
-- Send `include_random_picker` + `student_names` with the create-lesson request.
+**File:** `moeen_front/src/app/presentations/page.tsx`, lines 768–770
 
-### 2. `src/lib/presentations/presentation-pptx.ts` — two edits
-
-**a) `getSlideLabel()` — add the new slide-type labels:**
 ```ts
-function getSlideLabel(type: string) {
-  const labels: Record<string, string> = {
-    title: "عنوان الدرس",
-    static_opening: "افتتاحية",
-    static_greeting: "ترحيب",
-    static_dua: "دعاء اليوم",
-    static_classroom_rules: "قواعد الصف",
-    static_success_criteria: "محققات النجاح",
-    lesson_info: "معلومات الدرس",
-    kwl_open: "ماذا نعرف",
-    vocabulary: "مفردات الدرس",
-    hook: "تمهيد الدرس",
-    random_picker: "اختيار عشوائي",
-    content: "شرح الدرس",
-    cross_curricular: "الربط بالمواد الأخرى",
-    reading_stages: "مراحل القراءة",
-    closing_strategy: "استراتيجية الإغلاق",
-    worksheet: "ورقة عمل",
-    kwl_close: "ماذا تعلمنا",
-    homework: "الواجب المنزلي",
-  };
-  return labels[type] || "محتوى تعليمي";
-}
+const shouldRegenerate =
+  presentationData?.status === "ready" ||
+  presentationData?.status === "failed";
 ```
 
-**b) `addContentSlide()` — add a dedicated grid layout for `random_picker` instead of letting it fall into the generic bullet layout.**
+Once a presentation already exists for a lesson (`status: "ready"`), **every subsequent call** — including just opening the random-picker toggle and typing today's names — goes through `regenerateLessonPresentation()` instead of `generateLessonPresentation()`.
 
-Add this new function anywhere near `addBulletColumns`:
+The backend distinguishes these two on purpose (`app/Application/Http/Controllers/PresentationController.php`):
+
+- `POST /presentation/generate` — looks up the existing `Presentation` row by `(lesson_id, template_id)`. If it's already `ready`, **returns it straight from Postgres, no n8n call.**
+- `POST /presentation/regenerate` — **always** deletes the old slides and re-triggers the n8n webhook, regardless of whether anything actually changed.
+
+Because `shouldRegenerate` treats "presentation already exists" as "must regenerate," the frontend is calling the expensive, always-fresh endpoint on effectively every interaction after the first generation — including ones that only relate to the roster, not the lesson content.
+
+The payload sent to both endpoints makes the entanglement explicit (same file, lines 783–787):
+
 ```ts
-function addNameGrid(
-  slide: pptxgen.Slide,
-  names: string[],
-  theme: Theme,
-) {
-  const normalized = names.filter(Boolean);
-  const columns = 4;
-  const gap = 0.2;
-  const areaX = 0.78;
-  const areaY = 1.6;
-  const areaW = 11.75;
-  const areaH = 4.9;
-
-  const rows = Math.ceil(normalized.length / columns) || 1;
-  const cardW = (areaW - gap * (columns - 1)) / columns;
-  const cardH = Math.min(
-    1.1,
-    (areaH - gap * (rows - 1)) / rows,
-  );
-
-  normalized.forEach((name, i) => {
-    const col = i % columns;
-    const row = Math.floor(i / columns);
-    const cardX = areaX + col * (cardW + gap);
-    const cardY = areaY + row * (cardH + gap);
-
-    slide.addShape("roundRect", {
-      x: cardX,
-      y: cardY,
-      w: cardW,
-      h: cardH,
-      rectRadius: 0.1,
-      fill: { color: theme.soft },
-      line: { color: theme.accent, width: 1.2 },
-    });
-
-    slide.addText(name, {
-      x: cardX,
-      y: cardY,
-      w: cardW,
-      h: cardH,
-      fontFace: "Arial",
-      fontSize: 16,
-      bold: true,
-      color: theme.accentDark,
-      align: "center",
-      valign: "middle",
-      rtlMode: true,
-      fit: "shrink",
-    });
-  });
-}
+const payload = {
+  template_id: templateId,
+  include_random_picker: includeRandomPicker,
+  student_names: studentNames,
+};
 ```
 
-Then update the branching in `addContentSlide()`:
-```ts
-if (item.type === "example") {
-  // ...existing example branch, unchanged
-} else if (item.type === "quiz_prompt" || item.type === "summary") {
-  // ...existing full-width bullets branch, unchanged
-} else if (item.type === "random_picker") {
-  addNameGrid(slide, item.body, theme);
-} else {
-  // ...existing default branch, unchanged — used by all other new types
-  // (lesson_info, kwl_open, vocabulary, hook, content, cross_curricular,
-  // reading_stages, closing_strategy, worksheet, kwl_close, homework,
-  // and all static_* slides)
-}
-```
+`student_names` is currently treated as an input to the AI generation itself, flowing all the way through: Laravel → n8n webhook → `Build Prompt` node → `Merge Static + AI Slides` node, which bakes a `random_picker` slide (with the real names) into the persisted slide list.
 
-That's it — no other file needs to change. All other new slide types already render correctly through the existing default branch; only `random_picker` needed its own layout.
+**Even without the `shouldRegenerate` bug**, this design has a structural problem: since the DB cache key is only `(lesson_id, template_id)`, a second `generate` call with *different* student names would just return the *old* cached presentation with the *old* names. There's no way to keep the lesson content cached **and** get a fresh roster without a full regenerate — the two concerns can't both be right at the same time as long as they share one pipeline.
+
+---
+
+## The fix: two independent concerns, two independent paths
+
+| Concern | Changes per | Should live in |
+|---|---|---|
+| Lesson content (slides) | Rarely — only when the lesson itself changes | Backend + n8n, generated once, cached in Postgres |
+| Student roster / picker | Every class session | Frontend only, ephemeral, never touches the backend |
+
+### 1. Frontend (`moeen_front`)
+
+**`src/app/presentations/page.tsx`**
+- Remove the `shouldRegenerate` logic shown above. Default every normal open/view action to `generateLessonPresentation()` — it already does the right thing (serve cached, or generate if missing).
+- Reserve `regenerateLessonPresentation()` for one explicit action only: a dedicated "Regenerate" button the teacher clicks when they deliberately want the AI content rebuilt (e.g. after editing the lesson metadata). It should never fire as a side effect of the picker toggle.
+- Drop `include_random_picker` and `student_names` from the payload sent to both `generate` and `regenerate` entirely.
+- Keep `includeRandomPicker` / `studentNamesInput` as local component state only. Use them to:
+  - Render an on-screen randomizer widget while presenting (pure client-side JS — no request needed), and/or
+  - Inject a `random_picker` slide at **export time**, using the `addNameGrid()` function already implemented in `src/lib/presentations/presentation-pptx.ts`, built from the local names — not from anything fetched from the backend.
+
+**`src/lib/api/presentations.ts`**
+- `GeneratePresentationPayload` can drop `include_random_picker` / `student_names` (or keep them typed as unused/optional for backward compatibility, but stop populating them).
+
+### 2. Backend (`moeen-backend`)
+
+**`app/Application/Http/Controllers/PresentationController.php`**
+- `generate()` / `regenerate()` can stop reading `include_random_picker` / `student_names` from the request, since the frontend will no longer send them.
+- `app/Domain/Lessons/Jobs/GenerateLessonPresentation.php` — drop the `$includeRandomPicker` / `$studentNames` constructor args and whatever passes them into `LessonOutlineGenerator::generate()`, once nothing upstream sends them.
+
+No changes needed to the caching logic itself (`Presentation::updateOrCreate` keyed on `lesson_id` + `template_id`, `isReady()` check) — that part was already correct.
+
+### 3. n8n (`Lesson Presentation - AI Outline Generator`)
+
+**`Merge Static + AI Slides` node**
+- Remove section (ب) — the `includeRandomPicker` check and the `randomPickerSlide` block — entirely. The static intro slides + AI slides merge/renumber logic stays as-is.
+
+**`Build Prompt` node**
+- The `include_random_picker` / `student_names` passthrough in its output becomes unused; safe to delete once the payload from Laravel no longer includes them.
+
+---
+
+## Why this is the right split, not just a workaround
+
+- The lesson content becomes a pure function of `(lesson_id, template_id)` — generated once, reused indefinitely, exactly matching what the `Presentation` DB schema and `generate()` caching logic were already built for.
+- The roster becomes a pure function of "who's in class today" — never needs a network round trip, never invalidates the cached presentation, and updates instantly.
+- No more wasted OpenRouter calls just to swap a name list.
+- `regenerate` keeps a clear, single meaning: "the lesson content itself needs to be rebuilt" — not overloaded with "the roster changed."
