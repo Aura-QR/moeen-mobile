@@ -201,12 +201,27 @@ class PresentationsCubit extends Cubit<PresentationsState> {
     );
   }
 
-  Future<void> downloadPresentation() async {
+  Future<void> downloadPresentation({List<PresentationSlideModel>? extraSlides}) async {
     if (generatedPresentation == null) return;
     try {
       final title = selectedLesson?.title ?? 'Presentation';
+      
+      final presentationToDownload = extraSlides != null && extraSlides.isNotEmpty
+          ? PresentationModel(
+              id: generatedPresentation!.id,
+              lessonId: generatedPresentation!.lessonId,
+              status: generatedPresentation!.status,
+              templateId: generatedPresentation!.templateId,
+              filePath: generatedPresentation!.filePath,
+              slideCount: generatedPresentation!.slideCount,
+              generatedAt: generatedPresentation!.generatedAt,
+              generationError: generatedPresentation!.generationError,
+              slides: [...generatedPresentation!.slides, ...extraSlides],
+            )
+          : generatedPresentation!;
+
       final path = await PptxGeneratorService.generatePresentation(
-        generatedPresentation!, 
+        presentationToDownload, 
         title,
         templateId: generatedPresentation!.templateId ?? selectedTemplate,
         subjectName: selectedSubject?.name ?? '',

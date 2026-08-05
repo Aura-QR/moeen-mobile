@@ -61,7 +61,7 @@ class PresentationThemeData {
   }
 }
 
-class PresentationPreviewScreen extends StatelessWidget {
+class PresentationPreviewScreen extends StatefulWidget {
   final PresentationModel presentation;
   final PresentationsCubit cubit;
 
@@ -72,8 +72,22 @@ class PresentationPreviewScreen extends StatelessWidget {
   });
 
   @override
+  State<PresentationPreviewScreen> createState() => _PresentationPreviewScreenState();
+}
+
+class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
+  bool _isRandomPickerEnabled = false;
+  final TextEditingController _namesController = TextEditingController();
+
+  @override
+  void dispose() {
+    _namesController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bool hasTitleSlide = presentation.slides.any((s) => s.slideType == 'title');
+    final bool hasTitleSlide = widget.presentation.slides.any((s) => s.slideType == 'title');
     final List<PresentationSlideModel> displaySlides = [];
     
     if (!hasTitleSlide) {
@@ -82,23 +96,39 @@ class PresentationPreviewScreen extends StatelessWidget {
           id: -1,
           slideOrder: 0,
           slideType: 'title',
-          title: cubit.selectedLesson?.title ?? 'عرض تعليمي',
+          title: widget.cubit.selectedLesson?.title ?? 'عرض تعليمي',
           bodyText: [
-            if (cubit.selectedSubject?.name != null) cubit.selectedSubject!.name,
-            if (cubit.selectedGrade?.name != null) cubit.selectedGrade!.name,
-            if (cubit.selectedUnit?.title != null) cubit.selectedUnit!.title,
+            if (widget.cubit.selectedSubject?.name != null) widget.cubit.selectedSubject!.name,
+            if (widget.cubit.selectedGrade?.name != null) widget.cubit.selectedGrade!.name,
+            if (widget.cubit.selectedUnit?.title != null) widget.cubit.selectedUnit!.title,
           ].where((e) => e.isNotEmpty).join('\n'),
           iconKeyword: 'graduation_cap',
         ),
       );
     }
-    displaySlides.addAll(presentation.slides);
+    displaySlides.addAll(widget.presentation.slides);
 
-    final String selectedTemplate = presentation.templateId ?? cubit.selectedTemplate;
+    PresentationSlideModel? randomPickerSlide;
+    if (_isRandomPickerEnabled && _namesController.text.trim().isNotEmpty) {
+      final names = _namesController.text.split(RegExp(r'[,\n]+')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      if (names.isNotEmpty) {
+        randomPickerSlide = PresentationSlideModel(
+          id: -2,
+          slideOrder: 999,
+          slideType: 'random_picker',
+          title: 'اختيار عشوائي',
+          bodyText: names.join('\n'),
+          iconKeyword: 'users',
+        );
+        displaySlides.add(randomPickerSlide);
+      }
+    }
+
+    final String selectedTemplate = widget.presentation.templateId ?? widget.cubit.selectedTemplate;
     final theme = PresentationThemeData.fromTemplateId(selectedTemplate);
 
     return BlocProvider.value(
-      value: cubit,
+      value: widget.cubit,
       child: SafeArea(
         child: Scaffold(
           backgroundColor: ColorsManager.background,
@@ -117,12 +147,56 @@ class PresentationPreviewScreen extends StatelessWidget {
             actions: [
               IconButton(
                 icon: Icon(Icons.download, color: theme.primaryAccent),
-                onPressed: () => cubit.downloadPresentation(),
+                onPressed: () => widget.cubit.downloadPresentation(extraSlides: randomPickerSlide != null ? [randomPickerSlide] : null),
               ),
             ],
           ),
           body: Column(
             children: [
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                      title: Text(
+                        'إضافة شريحة الاختيار العشوائي للطلاب',
+                        style: TextStylesManager.bold14.copyWith(color: theme.darkAccent),
+                      ),
+                      value: _isRandomPickerEnabled,
+                      activeColor: theme.primaryAccent,
+                      onChanged: (val) {
+                        setState(() {
+                          _isRandomPickerEnabled = val;
+                        });
+                      },
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    if (_isRandomPickerEnabled)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                        child: TextField(
+                          controller: _namesController,
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            hintText: 'أدخل أسماء الطلاب (مفصولين بفاصلة أو سطر جديد)',
+                            hintStyle: TextStylesManager.regular14.copyWith(color: Colors.grey),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: theme.borderColor),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: theme.primaryAccent),
+                            ),
+                            contentPadding: const EdgeInsets.all(12),
+                          ),
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.all(20),
@@ -133,10 +207,13 @@ class PresentationPreviewScreen extends StatelessWidget {
                   },
                 ),
               ),
-              PrimaryElevatedButton(
-                text: 'حفظ وتحميل (PPTX)',
-                icon: const Icon(Icons.download),
-                onPressed: () => cubit.downloadPresentation(),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: PrimaryElevatedButton(
+                  text: 'حفظ وتحميل (PPTX)',
+                  icon: const Icon(Icons.download),
+                  onPressed: () => widget.cubit.downloadPresentation(extraSlides: randomPickerSlide != null ? [randomPickerSlide] : null),
+                ),
               ),
             ],
           ),
@@ -233,7 +310,7 @@ class PresentationPreviewScreen extends StatelessWidget {
             // Body text
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: _buildSlideContent(slide.bodyText, theme),
+              child: _buildSlideContent(slide, theme),
             ),
           ],
         ),
@@ -332,7 +409,7 @@ class PresentationPreviewScreen extends StatelessWidget {
             // Content Section
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: _buildSlideContent(slide.bodyText, theme),
+              child: _buildSlideContent(slide, theme),
             ),
           ],
         ),
@@ -340,9 +417,32 @@ class PresentationPreviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSlideContent(String bodyText, PresentationThemeData theme) {
+  Widget _buildSlideContent(PresentationSlideModel slide, PresentationThemeData theme) {
     // Split bullet points by new line or bullet character
-    final lines = bodyText.split('\n').where((l) => l.trim().isNotEmpty).toList();
+    final lines = slide.bodyText.split('\n').where((l) => l.trim().isNotEmpty).toList();
+
+    if (slide.slideType == 'random_picker') {
+      return Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: lines.map((name) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: theme.softContainer,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: theme.primaryAccent.withOpacity(0.3), width: 1),
+            ),
+            child: Text(
+              name.trim(),
+              style: TextStylesManager.bold14.copyWith(
+                color: theme.darkAccent,
+              ),
+            ),
+          );
+        }).toList(),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -391,8 +491,24 @@ class PresentationPreviewScreen extends StatelessWidget {
   String _getSlideLabel(String type) {
     final Map<String, String> labels = {
       'title': 'عنوان الدرس',
-      'objectives': 'أهداف التعلم',
+      'static_opening': 'افتتاحية',
+      'static_greeting': 'ترحيب',
+      'static_dua': 'دعاء اليوم',
+      'static_classroom_rules': 'قواعد الصف',
+      'static_success_criteria': 'محققات النجاح',
+      'lesson_info': 'معلومات الدرس',
+      'kwl_open': 'ماذا نعرف',
+      'vocabulary': 'مفردات الدرس',
+      'hook': 'تمهيد الدرس',
+      'random_picker': 'اختيار عشوائي',
       'content': 'شرح الدرس',
+      'cross_curricular': 'الربط بالمواد الأخرى',
+      'reading_stages': 'مراحل القراءة',
+      'closing_strategy': 'استراتيجية الإغلاق',
+      'worksheet': 'ورقة عمل',
+      'kwl_close': 'ماذا تعلمنا',
+      'homework': 'الواجب المنزلي',
+      'objectives': 'أهداف التعلم',
       'example': 'مثال تطبيقي',
       'summary': 'ملخص الدرس',
       'quiz_prompt': 'أسئلة ومناقشة',
