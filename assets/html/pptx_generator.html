@@ -430,82 +430,131 @@
                     margin: 0, align: "center", rtlMode: true,
                 });
                 addBulletColumns(slide, item.body, theme, { x: 3.38, y: 1.55, w: 9.15, h: 4.75 });
-            } else if (item.type === "static_greeting") {
-                if (context && context.greetingImageBase64) {
+            } else if (item.type === "static_opening" || item.type === "static_greeting" || item.type === "static_dua") {
+                let imageBase64;
+                let titleText = "";
+                
+                if (item.type === "static_opening") {
+                    imageBase64 = context.openingImageBase64;
+                    titleText = "نبدأ باسم الله";
+                } else if (item.type === "static_greeting") {
+                    imageBase64 = context.greetingImageBase64;
+                    titleText = "";
+                } else if (item.type === "static_dua") {
+                    imageBase64 = context.duaImageBase64;
+                    titleText = "دعاء قبل التعلم";
+                }
+
+                if (imageBase64) {
                     slide.addImage({ 
-                        data: context.greetingImageBase64, 
-                        x: 0.7, y: 1.55, w: 5.8, h: 4.75,
-                        sizing: { type: "cover", w: 5.8, h: 4.75 }
-                    });
-                    slide.addShape("roundRect", {
-                        x: 0.7, y: 1.55, w: 5.8, h: 4.75, rectRadius: 0.12,
-                        fill: { color: theme.accentDark, transparency: 100 },
-                        line: { color: theme.white, width: 2 },
-                    });
-                    slide.addShape("rect", {
-                        x: 0.71, y: 5.1, w: 5.78, h: 1.15,
-                        fill: { color: theme.accentDark, transparency: 20 },
-                        line: { color: theme.accentDark, transparency: 100 },
-                    });
-                    slide.addText("التعليم في المملكة العربية السعودية", {
-                        x: 0.71, y: 5.3, w: 5.78, h: 0.6,
-                        fontFace: "Tahoma", fontSize: 18, bold: true, color: theme.white,
-                        margin: 0, align: "center", rtlMode: true,
-                    });
-                } else {
-                    slide.addShape("roundRect", {
-                        x: 0.7, y: 1.55, w: 5.8, h: 4.75, rectRadius: 0.12,
-                        fill: { color: theme.soft }, line: { color: theme.soft },
+                        data: imageBase64, 
+                        x: 0.7, y: 1.55, w: 7.0, h: 4.75, // Image on the left
+                        sizing: { type: "cover", w: 7.0, h: 4.75 }
                     });
                 }
 
-                const bullets = item.body && item.body.length ? item.body : ["نبدأ يومنا بطاقة إيجابية وحماس للتعلم.", "نتمنى لكم درسًا ممتعًا ومليئًا بالإنجاز."];
-                const bulletY = 1.7;
-                const cardHeight = 0.85;
-                bullets.forEach((text, i) => {
-                    const cy = bulletY + i * (cardHeight + 0.3);
-                    slide.addShape("roundRect", {
-                        x: 6.8, y: cy, w: 5.8, h: cardHeight, rectRadius: 0.1,
-                        fill: { color: theme.white, transparency: 5 },
-                        line: { color: theme.soft, width: 1.2 },
-                    });
-                    slide.addShape("ellipse", {
-                        x: 12.1, y: cy + 0.22, w: 0.4, h: 0.4,
-                        fill: { color: theme.accent }, line: { color: theme.accent },
-                    });
-                    slide.addText(String(i + 1), {
-                        x: 12.1, y: cy + 0.22, w: 0.4, h: 0.4,
-                        fontFace: "Arial", fontSize: 12, bold: true, color: theme.white,
-                        margin: 0, align: "center",
-                    });
-                    slide.addText(text, {
-                        x: 6.9, y: cy + 0.12, w: 5.0, h: 0.6,
-                        fontFace: "Arial", fontSize: 14, bold: true, color: theme.text,
-                        margin: 0, align: "right", rtlMode: true,
-                    });
+                // White card on the right
+                slide.addShape("roundRect", {
+                    x: 5.8, y: (item.type === "static_dua" ? 2.0 : 1.7), w: 6.7, h: (item.type === "static_dua" ? 3.8 : 4.2), rectRadius: 0.12,
+                    fill: { color: theme.white },
+                    line: { color: "E5E5E5", width: 1 },
+                    shadow: { type: 'outer', color: '000000', opacity: 0.1, blur: 10 }
                 });
 
-                const tags = context ? [context.subjectName, context.gradeName, context.unitName].filter(Boolean) : [];
-                if (tags.length > 0) {
-                    const tagWidth = 1.5;
-                    const tagGap = 0.25;
-                    const totalWidth = tags.length * tagWidth + Math.max(0, tags.length - 1) * tagGap;
-                    const startX = 6.8 + (5.8 - totalWidth) / 2;
+                if (titleText) {
+                    slide.addText(titleText, {
+                        x: 6.5, y: (item.type === "static_dua" ? 2.2 : 1.9), w: 5.5, h: 0.4,
+                        fontFace: "Arial", fontSize: 16, bold: true, color: theme.accent,
+                        margin: 0, align: "right", rtlMode: true,
+                    });
+                }
 
-                    tags.forEach((tag, idx) => {
-                        const visualIndex = tags.length - 1 - idx;
-                        const tagX = startX + visualIndex * (tagWidth + tagGap);
+                const bullets = item.body && item.body.length ? item.body : [];
+                
+                if (item.type === "static_opening" || item.type === "static_greeting") {
+                    const bulletY = 2.4;
+                    const cardHeight = 0.85;
+                    const defaultBullets = item.type === "static_greeting" ? ["نبدأ يومنا بطاقة إيجابية وحماس للتعلم.", "نتمنى لكم درسًا ممتعًا ومليئًا بالإنجاز."] : ["رب اجعل هذا البلد آمناً", "صباح الخير يا وطني"];
+                    const usedBullets = bullets.length ? bullets : defaultBullets;
+
+                    usedBullets.forEach((text, i) => {
+                        const cy = bulletY + i * (cardHeight + 0.2);
                         slide.addShape("roundRect", {
-                            x: tagX, y: 4.3, w: tagWidth, h: 0.45, rectRadius: 0.2,
+                            x: 6.5, y: cy, w: 5.5, h: cardHeight, rectRadius: 0.1,
                             fill: { color: theme.white, transparency: 5 },
                             line: { color: theme.soft, width: 1.2 },
                         });
-                        slide.addText(tag, {
-                            x: tagX + 0.05, y: 4.37, w: tagWidth - 0.1, h: 0.3,
-                            fontFace: "Tahoma", fontSize: 10.5, bold: true, color: theme.muted,
-                            margin: 0, align: "center", rtlMode: true, fit: "shrink",
-                        });
+                        
+                        if (item.type === "static_greeting") {
+                            // Numbered circle
+                            slide.addShape("ellipse", {
+                                x: 11.4, y: cy + 0.22, w: 0.4, h: 0.4,
+                                fill: { color: theme.accent }, line: { color: theme.accent },
+                            });
+                            slide.addText(String(i + 1), {
+                                x: 11.4, y: cy + 0.22, w: 0.4, h: 0.4,
+                                fontFace: "Arial", fontSize: 12, bold: true, color: theme.white,
+                                margin: 0, align: "center",
+                            });
+                            slide.addText(text, {
+                                x: 6.7, y: cy + 0.12, w: 4.5, h: 0.6,
+                                fontFace: "Arial", fontSize: 14, bold: true, color: theme.text,
+                                margin: 0, align: "right", rtlMode: true,
+                            });
+                        } else {
+                            // Dot
+                            slide.addShape("ellipse", {
+                                x: 6.7, y: cy + 0.35, w: 0.15, h: 0.15,
+                                fill: { color: theme.accent }, line: { color: theme.accent },
+                            });
+                            slide.addText(text, {
+                                x: 7.0, y: cy + 0.12, w: 4.8, h: 0.6,
+                                fontFace: "Arial", fontSize: 14, bold: true, color: theme.text,
+                                margin: 0, align: "right", rtlMode: true,
+                            });
+                        }
                     });
+
+                    if (item.type === "static_greeting" && context) {
+                        const tags = [context.subjectName, context.gradeName, context.unitName].filter(Boolean);
+                        if (tags.length > 0) {
+                            const tagWidth = 1.6;
+                            const tagGap = 0.2;
+                            const totalWidth = tags.length * tagWidth + Math.max(0, tags.length - 1) * tagGap;
+                            const startX = 6.5 + (5.5 - totalWidth) / 2;
+
+                            tags.forEach((tag, idx) => {
+                                const visualIndex = tags.length - 1 - idx;
+                                const tagX = startX + visualIndex * (tagWidth + tagGap);
+                                slide.addShape("roundRect", {
+                                    x: tagX, y: 6.1, w: tagWidth, h: 0.45, rectRadius: 0.2,
+                                    fill: { color: theme.white },
+                                    line: { color: theme.soft, width: 1.2 },
+                                });
+                                slide.addText(tag, {
+                                    x: tagX + 0.05, y: 6.17, w: tagWidth - 0.1, h: 0.3,
+                                    fontFace: "Tahoma", fontSize: 10.5, bold: true, color: theme.accentDark,
+                                    margin: 0, align: "center", rtlMode: true, fit: "shrink",
+                                });
+                            });
+                        }
+                    }
+                } else if (item.type === "static_dua") {
+                    const textContent = bullets.join('\\n').replace(/[-•]/g, '').trim();
+                    slide.addText(textContent || "اللهم إني أسألك علماً نافعاً، ورزقاً طيباً، وعملاً متقبلاً.", {
+                        x: 6.5, y: 2.8, w: 5.5, h: 2.0,
+                        fontFace: "Arial", fontSize: 20, bold: true, color: theme.text,
+                        margin: 0, align: "center", rtlMode: true,
+                    });
+                    
+                    // Dots below image
+                    for (let d = 0; d < 8; d++) {
+                        slide.addShape("ellipse", {
+                            x: 3.5 + d * 0.2, y: 6.0, w: 0.1, h: 0.1,
+                            fill: { color: theme.accent, transparency: d === 0 ? 0 : 70 },
+                            line: { color: theme.accent, transparency: d === 0 ? 0 : 70 }
+                        });
+                    }
                 }
             } else if (item.type === "quiz_prompt" || item.type === "summary") {
                 addBulletColumns(slide, item.body, theme, { x: 0.78, y: 1.55, w: 11.75, h: 4.95 });

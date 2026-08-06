@@ -46,13 +46,31 @@ class PptxGeneratorService {
       print('Could not load random cover image: $e');
     }
 
+    String openingImageBase64 = '';
+    try {
+      final ByteData data = await rootBundle.load(AssetsHelper.presentation1);
+      final Uint8List bytes = data.buffer.asUint8List();
+      openingImageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+    } catch (e) {
+      print('Could not load opening image: $e');
+    }
+
     String greetingImageBase64 = '';
     try {
-      final ByteData data = await rootBundle.load(AssetsHelper.scr16);
+      final ByteData data = await rootBundle.load(AssetsHelper.presentation2);
       final Uint8List bytes = data.buffer.asUint8List();
       greetingImageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
     } catch (e) {
       print('Could not load greeting image: $e');
+    }
+
+    String duaImageBase64 = '';
+    try {
+      final ByteData data = await rootBundle.load(AssetsHelper.presentation3);
+      final Uint8List bytes = data.buffer.asUint8List();
+      duaImageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+    } catch (e) {
+      print('Could not load dua image: $e');
     }
 
     // Build context
@@ -74,7 +92,9 @@ class PptxGeneratorService {
         'gradeName': gradeName,
         'unitName': unitName,
         'coverImageBase64': coverImageBase64,
+        'openingImageBase64': openingImageBase64,
         'greetingImageBase64': greetingImageBase64,
+        'duaImageBase64': duaImageBase64,
       }
     });
 

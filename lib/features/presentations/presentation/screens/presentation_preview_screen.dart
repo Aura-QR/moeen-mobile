@@ -333,6 +333,10 @@ class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
       return _buildCoverSlideCard(slide, slideNumber, theme);
     }
     
+    if (['static_opening', 'static_greeting', 'static_dua'].contains(slide.slideType)) {
+      return _buildSpecialSlideCard(slide, slideNumber, theme);
+    }
+    
     // Determine the type label
     String typeLabel = _getSlideLabel(slide.slideType);
 
@@ -428,10 +432,6 @@ class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
   }
 
   Widget _buildSlideContent(PresentationSlideModel slide, PresentationThemeData theme) {
-    if (slide.slideType == 'static_greeting') {
-      return GreetingWidget(text: slide.bodyText, theme: theme, cubit: widget.cubit);
-    }
-
     // Split bullet points by new line or bullet character
     final lines = slide.bodyText.split('\n').where((l) => l.trim().isNotEmpty).toList();
 
@@ -481,6 +481,327 @@ class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
         );
       }).toList(),
     );
+  }
+
+  Widget _buildSpecialSlideCard(PresentationSlideModel slide, int slideNumber, PresentationThemeData theme) {
+    String typeLabel = _getSlideLabel(slide.slideType);
+    String imagePath;
+    if (slide.slideType == 'static_opening') {
+      imagePath = AssetsHelper.presentation1;
+    } else if (slide.slideType == 'static_greeting') {
+      imagePath = AssetsHelper.presentation2;
+    } else {
+      imagePath = AssetsHelper.presentation3;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.backgroundColor,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Slide Number
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: theme.darkAccent,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '$slideNumber',
+                  style: TextStylesManager.bold14.copyWith(color: Colors.white),
+                ),
+              ),
+              const Spacer(),
+              // Subtitle & Title
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    typeLabel,
+                    style: TextStylesManager.bold12.copyWith(color: theme.primaryAccent),
+                  ),
+                  Text(
+                    slide.title,
+                    style: TextStylesManager.bold20.copyWith(color: theme.darkAccent),
+                  ),
+                ],
+              ),
+              horizontalSpace12,
+              // Icon
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.darkAccent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  _getIconData(slide.iconKeyword),
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+          
+          verticalSpace24,
+
+          // Body (Image + Overlapping Card)
+          SizedBox(
+            height: slide.slideType == 'static_dua' ? 240 : 250,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Stack(
+                  children: [
+                    // Image on the Left (end in RTL)
+                    PositionedDirectional(
+                      end: 0,
+                      top: 0,
+                      bottom: slide.slideType == 'static_greeting' ? 40 : (slide.slideType == 'static_dua' ? 24 : 0),
+                      width: constraints.maxWidth * 0.65,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(imagePath, fit: BoxFit.cover),
+                      ),
+                    ),
+                    
+                    // Dots for dua
+                    if (slide.slideType == 'static_dua')
+                      PositionedDirectional(
+                        end: 0,
+                        bottom: 0,
+                        height: 24,
+                        width: constraints.maxWidth * 0.65,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(12, (index) => Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: index == 0 ? theme.primaryAccent : theme.primaryAccent.withOpacity(0.3),
+                              shape: BoxShape.circle,
+                            ),
+                          )),
+                        ),
+                      ),
+
+                    // White Card on the Right (start in RTL)
+                    PositionedDirectional(
+                      start: 0,
+                      top: slide.slideType == 'static_dua' ? 40 : 24,
+                      bottom: slide.slideType == 'static_dua' ? 40 : (slide.slideType == 'static_greeting' ? 64 : 24),
+                      width: constraints.maxWidth * 0.55,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: _buildSpecialSlideWhiteCardContent(slide, theme),
+                      ),
+                    ),
+
+                    // Chips for Greeting
+                    if (slide.slideType == 'static_greeting')
+                      PositionedDirectional(
+                        start: 0,
+                        bottom: 0,
+                        width: constraints.maxWidth * 0.55,
+                        child: Directionality(
+                          textDirection: TextDirection.rtl,
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            alignment: WrapAlignment.start,
+                            children: [
+                              if (widget.cubit.selectedSubject?.name != null)
+                                _buildChip(widget.cubit.selectedSubject!.name, theme),
+                              if (widget.cubit.selectedGrade?.name != null)
+                                _buildChip(widget.cubit.selectedGrade!.name, theme),
+                              if (widget.cubit.selectedUnit?.title != null)
+                                _buildChip(widget.cubit.selectedUnit!.title, theme),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChip(String label, PresentationThemeData theme) {
+    if (label.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: theme.borderColor),
+      ),
+      child: Text(
+        label,
+        style: TextStylesManager.bold12.copyWith(color: theme.darkAccent),
+      ),
+    );
+  }
+
+  Widget _buildSpecialSlideWhiteCardContent(PresentationSlideModel slide, PresentationThemeData theme) {
+    final lines = slide.bodyText.split('\n').where((l) => l.trim().isNotEmpty).toList();
+
+    if (slide.slideType == 'static_opening') {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                'نبدأ باسم الله',
+                style: TextStylesManager.bold14.copyWith(color: theme.primaryAccent),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: lines.length,
+                itemBuilder: (context, index) {
+                  String lineText = lines[index].trim();
+                  if (lineText.startsWith('-') || lineText.startsWith('•')) {
+                    lineText = lineText.substring(1).trim();
+                  }
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: theme.borderColor),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            lineText,
+                            style: TextStylesManager.bold14.copyWith(color: theme.darkAccent),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: theme.primaryAccent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (slide.slideType == 'static_greeting') {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: lines.asMap().entries.map((entry) {
+            int index = entry.key;
+            String lineText = entry.value.trim();
+            if (lineText.startsWith('-') || lineText.startsWith('•')) {
+              lineText = lineText.substring(1).trim();
+            }
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: theme.borderColor),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: theme.primaryAccent,
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '${index + 1}',
+                      style: TextStylesManager.bold12.copyWith(color: Colors.white),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      lineText,
+                      style: TextStylesManager.bold14.copyWith(color: theme.darkAccent),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      );
+    } else if (slide.slideType == 'static_dua') {
+      return Padding(
+        padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'دعاء قبل التعلم',
+                  style: TextStylesManager.bold14.copyWith(color: theme.primaryAccent),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                slide.bodyText.replaceAll('- ', '').replaceAll('• ', ''),
+                style: TextStylesManager.bold16.copyWith(
+                  color: theme.darkAccent,
+                  height: 1.8,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   String _getSlideLabel(String? type) {
