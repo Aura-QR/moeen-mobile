@@ -47,32 +47,43 @@ class RegisterCubit extends Cubit<RegisterState> {
   }
 
   Future<void> register() async {
-    if (!(formKey.currentState?.validate() ?? false)) return;
-    if (!agreeToTerms) return;
+    if (!(formKey.currentState?.validate() ?? false)) {
+      emit(RegisterInitialState());
+      return;
+    }
+    if (!agreeToTerms) {
+      emit(RegisterErrorState(message: 'يجب الموافقة على الشروط والأحكام'));
+      return;
+    }
     emit(RegisterLoadingState());
 
-    final request = RegisterRequest(
-      name: fullNameController.text.trim(),
-      email: emailController.text.trim(),
-      phone: phoneController.text.trim(),
-      password: passwordController.text,
-      passwordConfirmation: confirmPasswordController.text,
-    );
+    try {
+      final request = RegisterRequest(
+        name: fullNameController.text.trim(),
+        email: emailController.text.trim(),
+        phone: phoneController.text.trim(),
+        password: passwordController.text,
+        passwordConfirmation: confirmPasswordController.text,
+      );
 
-    final result = await ApiService.registerUser(request);
+      final result = await ApiService.registerUser(request);
 
-    result.fold(
-      (error) {
-        emit(RegisterErrorState(message: error));
-        debugPrint('Register Error: $error');
-      },
-      (response) async {
-        await CacheHelper.saveData(key: 'auth_token', value: response.token);
-        token = response.token;
-        emit(RegisterSuccessState());
-        debugPrint('Register Success: $response');
-      },
-    );
+      result.fold(
+        (error) {
+          emit(RegisterErrorState(message: error));
+          debugPrint('Register Error: $error');
+        },
+        (response) async {
+          await CacheHelper.saveData(key: 'auth_token', value: response.token);
+          token = response.token;
+          emit(RegisterSuccessState());
+          debugPrint('Register Success: $response');
+        },
+      );
+    } catch (e, stack) {
+      debugPrint('Register Exception: $e\n$stack');
+      emit(RegisterErrorState(message: e.toString()));
+    }
   }
 
   @override
