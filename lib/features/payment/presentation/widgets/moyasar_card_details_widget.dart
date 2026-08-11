@@ -5,12 +5,14 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 
 class MoyasarCardDetailsWidget extends StatelessWidget {
+  final TextEditingController nameController;
   final TextEditingController numberController;
   final TextEditingController expiryController;
   final TextEditingController cvcController;
 
   const MoyasarCardDetailsWidget({
     super.key,
+    required this.nameController,
     required this.numberController,
     required this.expiryController,
     required this.cvcController,
@@ -22,9 +24,9 @@ class MoyasarCardDetailsWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          appTranslation().get('pay_card_info'),
+          'اسم حامل البطاقة',
           style: TextStylesManager.bold14.copyWith(
-            color: ColorsManager.mainText,
+            color: ColorsManager.primaryColor,
           ),
         ),
         verticalSpace8,
@@ -34,92 +36,161 @@ class MoyasarCardDetailsWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: ColorsManager.borderColor),
           ),
-          child: Column(
-            children: [
-              // Card Number
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: numberController,
-                        keyboardType: TextInputType.number,
-                        style: TextStylesManager.medium16,
-                        decoration: InputDecoration(
-                          hintText: '1234 5678 9101 1121',
-                          hintStyle: TextStylesManager.regular16.copyWith(
-                            color: ColorsManager.textSecondary.withValues(alpha: 0.5),
-                          ),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                    horizontalSpace8,
-                    // Payment Icons
-                    Row(
-                      children: [
-                        _buildBrandIcon('VISA', Colors.blue),
-                        horizontalSpace4,
-                        _buildBrandIcon('MC', Colors.red),
-                        horizontalSpace4,
-                        _buildBrandIcon('mada', Colors.green),
-                      ],
-                    ),
-                  ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: TextFormField(
+              controller: nameController,
+              keyboardType: TextInputType.name,
+              style: TextStylesManager.medium16,
+              decoration: InputDecoration(
+                hintText: 'الاسم كما هو مطبوع على البطاقة',
+                hintStyle: TextStylesManager.regular16.copyWith(
+                  color: ColorsManager.textSecondary.withValues(alpha: 0.5),
                 ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
               ),
-              Divider(height: 1, color: ColorsManager.borderColor),
-              // Expiry and CVC
-              IntrinsicHeight(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        child: TextFormField(
-                          controller: expiryController,
-                          keyboardType: TextInputType.datetime,
-                          style: TextStylesManager.medium16,
-                          decoration: InputDecoration(
-                            hintText: appTranslation().get('pay_expiry_date'),
-                            hintStyle: TextStylesManager.regular16.copyWith(
-                              color: ColorsManager.textSecondary.withValues(alpha: 0.5),
-                            ),
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                    VerticalDivider(width: 1, color: ColorsManager.borderColor),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        child: TextFormField(
-                          controller: cvcController,
-                          keyboardType: TextInputType.number,
-                          style: TextStylesManager.medium16,
-                          decoration: InputDecoration(
-                            hintText: appTranslation().get('pay_cvc'),
-                            hintStyle: TextStylesManager.regular16.copyWith(
-                              color: ColorsManager.textSecondary.withValues(alpha: 0.5),
-                            ),
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
+        ),
+        verticalSpace16,
+        Text(
+          'رقم البطاقة',
+          style: TextStylesManager.bold14.copyWith(
+            color: ColorsManager.primaryColor,
+          ),
+        ),
+        verticalSpace8,
+        Container(
+          decoration: BoxDecoration(
+            color: ColorsManager.surfacePrimary,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: ColorsManager.borderColor),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: TextFormField(
+                      controller: numberController,
+                      keyboardType: TextInputType.number,
+                      style: TextStylesManager.medium16,
+                      decoration: InputDecoration(
+                        hintText: '1234 5678 9101 1121',
+                        hintStyle: TextStylesManager.regular16.copyWith(
+                          color: ColorsManager.textSecondary.withValues(alpha: 0.5),
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                ),
+                horizontalSpace8,
+                // Payment Icons
+                Row(
+                  children: [
+                    _buildBrandIcon('VISA', Colors.blue),
+                    horizontalSpace4,
+                    _buildBrandIcon('MC', Colors.red),
+                    horizontalSpace4,
+                    _buildBrandIcon('mada', Colors.green),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        verticalSpace16,
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'تاريخ الانتهاء',
+                style: TextStylesManager.bold14.copyWith(
+                  color: ColorsManager.primaryColor,
+                ),
+              ),
+            ),
+            horizontalSpace16,
+            Expanded(
+              child: Text(
+                'رمز الأمان',
+                style: TextStylesManager.bold14.copyWith(
+                  color: ColorsManager.primaryColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+        verticalSpace8,
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: ColorsManager.surfacePrimary,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: ColorsManager.borderColor),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: TextFormField(
+                      controller: expiryController,
+                      keyboardType: TextInputType.datetime,
+                      style: TextStylesManager.medium16,
+                      decoration: InputDecoration(
+                        hintText: 'MM/YY',
+                        hintStyle: TextStylesManager.regular16.copyWith(
+                          color: ColorsManager.textSecondary.withValues(alpha: 0.5),
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            horizontalSpace16,
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: ColorsManager.surfacePrimary,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: ColorsManager.borderColor),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: TextFormField(
+                      controller: cvcController,
+                      keyboardType: TextInputType.number,
+                      style: TextStylesManager.medium16,
+                      decoration: InputDecoration(
+                        hintText: 'CVC',
+                        hintStyle: TextStylesManager.regular16.copyWith(
+                          color: ColorsManager.textSecondary.withValues(alpha: 0.5),
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -143,3 +214,4 @@ class MoyasarCardDetailsWidget extends StatelessWidget {
     );
   }
 }
+

@@ -11,6 +11,7 @@ import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/payment/presentation/cubit/payment_cubit.dart';
 import 'package:moean/features/payment/presentation/cubit/payment_state.dart';
 import 'package:moean/features/payment/presentation/widgets/plan_card_widget.dart';
+import 'package:moean/features/payment/presentation/widgets/promo_code_section_widget.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -68,7 +69,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     final cubit = PaymentCubit.get(context);
                     if (cubit.selectedMethodIndex == 0) {
                       context.push<Map<String, dynamic>>(
-                        Routes.moyasarPayment,
+                        Routes.myfatoorahPayment,
                         arguments: {
                           'orderId': state.order.id,
                           'amount': state.order.amount,
@@ -91,8 +92,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     s is PlansLoaded ||
                     s is PlansError ||
                     s is OrderCreating ||
-                    s is OrderCreated || 
-                    s is OrderError, // أضفنا الحالات النهائية لإيقاف الـ Loading
+                    s is OrderCreated ||
+                    s is OrderError ||
+                    s is PromoValidating ||
+                    s is PromoValidated ||
+                    s is PromoError ||
+                    s is PromoCleared,
                 builder: (context, state) {
                   final cubit = PaymentCubit.get(context);
                   return ConditionalBuilder(
@@ -165,6 +170,8 @@ class _CheckoutBody extends StatelessWidget {
                 ),
               ),
               verticalSpace16,
+              const PromoCodeSectionWidget(),
+              verticalSpace16,
               _SectionCard(
                 title: appTranslation().get('pay_method_label'),
                 child: Column(
@@ -172,7 +179,7 @@ class _CheckoutBody extends StatelessWidget {
                     _PaymentMethodTile(
                       icon: Icons.credit_card_outlined,
                       title: appTranslation().get('pay_method_online'),
-                      subtitle: 'Moyasar - ${appTranslation().get('pay_method_online_subtitle')}',
+                      subtitle: 'MyFatoorah - ${appTranslation().get('pay_method_online_subtitle')}',
                       isSelected: cubit.selectedMethodIndex == 0,
                       onTap: () => cubit.selectMethod(0),
                     ),

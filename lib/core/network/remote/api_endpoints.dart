@@ -39,6 +39,8 @@ const String paymentsSaveReferenceApi = '/payments/save-reference';
 const String paymentsManualApi = '/payments/manual';
 const String paymentsBankTransferInfoApi = '/payments/bank-transfer-info';
 const String paymentsHistoryApi = '/payments/history';
+const String paymentsMyfatoorahSessionApi = '/payments/myfatoorah/session';
+const String paymentsMyfatoorahExecuteApi = '/payments/myfatoorah/execute';
 
 // Exam Generation API
 const String examsGenerateApi = '/exams/generate';
@@ -59,3 +61,14 @@ String subjectLessonsApi(int id) => '/subjects/$id/lessons';
 String lessonQuestionsApi(int id) => '/lessons/$id/questions';
 String lessonPresentationApi(int id) => '/lessons/$id/presentation';
 String lessonPresentationGenerateApi(int id) => '/lessons/$id/presentation/generate';
+
+// Referral & Promo API
+const String referralsMeApi = '/referrals/me';
+const String promoValidateApi = '/promo-codes/validate';
+
+// Admin Promo & Referral API
+const String adminPromoCodesApi = '/admin/promo-codes';
+const String adminReferralStatsApi = '/admin/referrals/statistics';
+String adminPromoActivateApi(int id) => '/admin/promo-codes/$id/activate';
+String adminPromoDeactivateApi(int id) => '/admin/promo-codes/$id/deactivate';
+String adminPromoDeleteApi(int id) => '/admin/promo-codes/$id';

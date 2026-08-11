@@ -17,6 +17,8 @@ class PaymentCubit extends Cubit<PaymentState> {
   List<PaymentModel> paymentHistory = [];
   int selectedPlanIndex = 0;
   int selectedMethodIndex = 0;
+  String? appliedPromoCode;
+  Map<String, dynamic>? promoValidation;
 
   Future<void> loadPlans() async {
     emit(PlansLoading());
@@ -49,7 +51,10 @@ class PaymentCubit extends Cubit<PaymentState> {
     if (plans.isEmpty) return;
     emit(OrderCreating());
     final serviceId = plans[selectedPlanIndex].id;
-    final result = await ApiService.createOrder(serviceId);
+    final result = await ApiService.createOrder(
+      serviceId,
+      promoCode: appliedPromoCode,
+    );
     result.fold(
       (error) => emit(OrderError(error)),
       (data) {
@@ -58,6 +63,34 @@ class PaymentCubit extends Cubit<PaymentState> {
         emit(OrderCreated(currentOrder!));
       },
     );
+  }
+
+  Future<void> validatePromo(String code) async {
+    if (plans.isEmpty || code.trim().isEmpty) return;
+    final planSlug = plans[selectedPlanIndex].slug;
+    emit(PromoValidating());
+    final result = await ApiService.validatePromoCode(
+      code: code.trim(),
+      planSlug: planSlug,
+    );
+    result.fold(
+      (error) {
+        appliedPromoCode = null;
+        promoValidation = null;
+        emit(PromoError(error));
+      },
+      (data) {
+        appliedPromoCode = code.trim();
+        promoValidation = data;
+        emit(PromoValidated(data));
+      },
+    );
+  }
+
+  void clearPromo() {
+    appliedPromoCode = null;
+    promoValidation = null;
+    emit(PromoCleared());
   }
 
   Future<void> loadBankInfo() async {
@@ -79,6 +112,25 @@ class PaymentCubit extends Cubit<PaymentState> {
     result.fold(
       (error) => emit(MoyasarConfigError(error)),
       (data) => emit(MoyasarConfigLoaded(data)),
+    );
+  }
+
+  // MyFatoorah Flow
+  Future<void> initMyfatoorahPayment(int orderId) async {
+    emit(MyfatoorahSessionLoading());
+    final result = await ApiService.createMyfatoorahSession(orderId);
+    result.fold(
+      (error) => emit(MyfatoorahSessionError(error)),
+      (data) => emit(MyfatoorahSessionLoaded(data)),
+    );
+  }
+
+  Future<void> executeMyfatoorahPayment(int orderId, String sessionId) async {
+    emit(MyfatoorahExecuteLoading());
+    final result = await ApiService.executeMyfatoorahPayment(orderId: orderId, sessionId: sessionId);
+    result.fold(
+      (error) => emit(MyfatoorahExecuteError(error)),
+      (data) => emit(MyfatoorahExecuteLoaded(data)),
     );
   }
 

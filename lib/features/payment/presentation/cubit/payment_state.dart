@@ -82,3 +82,36 @@ class HistoryError extends PaymentState {
   final String error;
   HistoryError(this.error);
 }
+
+// MyFatoorah
+class MyfatoorahSessionLoading extends PaymentState {}
+class MyfatoorahSessionLoaded extends PaymentState {
+  final Map<String, dynamic> session;
+  MyfatoorahSessionLoaded(this.session);
+}
+class MyfatoorahSessionError extends PaymentState {
+  final String error;
+  MyfatoorahSessionError(this.error);
+}
+
+class MyfatoorahExecuteLoading extends PaymentState {}
+class MyfatoorahExecuteLoaded extends PaymentState {
+  final Map<String, dynamic> paymentData;
+  MyfatoorahExecuteLoaded(this.paymentData);
+}
+class MyfatoorahExecuteError extends PaymentState {
+  final String error;
+  MyfatoorahExecuteError(this.error);
+}
+
+// Promo Code Validation
+class PromoValidating extends PaymentState {}
+class PromoValidated extends PaymentState {
+  final Map<String, dynamic> data;
+  PromoValidated(this.data);
+}
+class PromoError extends PaymentState {
+  final String error;
+  PromoError(this.error);
+}
+class PromoCleared extends PaymentState {}

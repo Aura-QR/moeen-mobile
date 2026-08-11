@@ -453,10 +453,42 @@ class ApiService {
     );
   }
 
-  static Future<Either<String, Map<String, dynamic>>> createOrder(int serviceId) async {
+  static Future<Either<String, Map<String, dynamic>>> createOrder(
+    int serviceId, {
+    String? promoCode,
+  }) async {
+    final data = <String, dynamic>{'service_id': serviceId};
+    if (promoCode != null && promoCode.isNotEmpty) {
+      data['promo_code'] = promoCode;
+    }
     final response = await DioHelper.postData(
       url: ordersApi,
-      data: {'service_id': serviceId},
+      data: data,
+    );
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getReferralDashboard() async {
+    final response = await DioHelper.getData(url: referralsMeApi);
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> validatePromoCode({
+    required String code,
+    required String planSlug,
+  }) async {
+    final response = await DioHelper.postData(
+      url: promoValidateApi,
+      data: {
+        'code': code,
+        'plan_slug': planSlug,
+      },
     );
     return response.fold(
       (error) => Left(error),
@@ -466,6 +498,34 @@ class ApiService {
 
   static Future<Either<String, Map<String, dynamic>>> getOrderCheckout(int orderId) async {
     final response = await DioHelper.postData(url: '$ordersApi/$orderId/pay');
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> createMyfatoorahSession(int orderId) async {
+    final response = await DioHelper.postData(
+      url: paymentsMyfatoorahSessionApi,
+      data: {'order_id': orderId},
+    );
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> executeMyfatoorahPayment({
+    required int orderId,
+    required String sessionId,
+  }) async {
+    final response = await DioHelper.postData(
+      url: paymentsMyfatoorahExecuteApi,
+      data: {
+        'order_id': orderId,
+        'session_id': sessionId,
+      },
+    );
     return response.fold(
       (error) => Left(error),
       (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
@@ -771,6 +831,65 @@ class ApiService {
     return response.fold(
       (error) => Left(error),
       (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  // ===========================================================================
+  // Admin Promo Codes & Referral Statistics
+  // ===========================================================================
+
+  static Future<Either<String, Map<String, dynamic>>> getAdminReferralStats() async {
+    final response = await DioHelper.getData(url: adminReferralStatsApi);
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> getAdminPromoCodes({
+    int page = 1,
+  }) async {
+    final response = await DioHelper.getData(
+      url: adminPromoCodesApi,
+      query: {'page': page},
+    );
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> createAdminPromoCode(
+    Map<String, dynamic> data,
+  ) async {
+    final response = await DioHelper.postData(url: adminPromoCodesApi, data: data);
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, bool>> activateAdminPromoCode(int id) async {
+    final response = await DioHelper.postData(url: adminPromoActivateApi(id));
+    return response.fold(
+      (error) => Left(error),
+      (_) => const Right(true),
+    );
+  }
+
+  static Future<Either<String, bool>> deactivateAdminPromoCode(int id) async {
+    final response = await DioHelper.postData(url: adminPromoDeactivateApi(id));
+    return response.fold(
+      (error) => Left(error),
+      (_) => const Right(true),
+    );
+  }
+
+  static Future<Either<String, bool>> deleteAdminPromoCode(int id) async {
+    final response = await DioHelper.deleteData(url: adminPromoDeleteApi(id));
+    return response.fold(
+      (error) => Left(error),
+      (_) => const Right(true),
     );
   }
 }

@@ -28,7 +28,7 @@ import 'package:moean/features/reports/presentation/cubit/report_cubit.dart';
 import 'package:moean/features/payment/presentation/cubit/payment_cubit.dart';
 import 'package:moean/features/payment/presentation/screen/checkout_screen.dart';
 import 'package:moean/features/payment/presentation/screen/bank_transfer_screen.dart';
-import 'package:moean/features/payment/presentation/screen/moyasar_payment_screen.dart';
+import 'package:moean/features/payment/presentation/screen/myfatoorah_payment_screen.dart';
 import 'package:moean/features/payment/presentation/screen/payment_result_screen.dart';
 import 'package:moean/features/payment/presentation/screen/payment_history_screen.dart';
 
@@ -59,6 +59,10 @@ import 'package:moean/features/certificates/presentation/cubit/certificate_cubit
 import 'package:moean/features/presentations/presentation/screens/presentations_screen.dart';
 import 'package:moean/features/presentations/presentation/cubit/presentations_cubit.dart';
 import 'package:moean/features/presentations/data/repositories/presentations_repository.dart';
+import 'package:moean/features/referral/presentation/cubit/referral_cubit.dart';
+import 'package:moean/features/referral/presentation/screen/referral_screen.dart';
+import 'package:moean/features/admin/promo/presentation/cubit/admin_promo_cubit.dart';
+import 'package:moean/features/admin/promo/presentation/screen/admin_promo_screen.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -85,7 +89,7 @@ class Routes {
   static const String reports = '/reports';
   static const String checkout = '/checkout';
   static const String bankTransfer = '/bank-transfer';
-  static const String moyasarPayment = '/moyasar-payment';
+  static const String myfatoorahPayment = '/myfatoorah-payment';
   static const String paymentResult = '/payment-result';
   static const String paymentHistory = '/payment-history';
   
@@ -102,6 +106,8 @@ class Routes {
   static const String search = '/search';
   static const String certificates = '/certificates';
   static const String presentations = '/presentations';
+  static const String referral = '/referral';
+  static const String adminPromo = '/admin/promo';
 
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
@@ -127,7 +133,7 @@ class Routes {
     reports: (context) => BlocProvider(create: (_) => ReportCubit(), child: const ReportScreen()),
     checkout: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const CheckoutScreen()),
     bankTransfer: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const BankTransferScreen()),
-    moyasarPayment: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const MoyasarPaymentScreen()),
+    myfatoorahPayment: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const MyfatoorahPaymentScreen()),
     paymentResult: (context) => const PaymentResultScreen(),
     paymentHistory: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const PaymentHistoryScreen()),
     examGenerationInfo: (context) => BlocProvider.value(value: sl<ExamInfoCubit>(), child: const ExamInfoScreen()),
@@ -182,6 +188,14 @@ class Routes {
     presentations: (context) => BlocProvider(
       create: (_) => PresentationsCubit(PresentationsRepository()),
       child: const PresentationsScreen(),
+    ),
+    referral: (context) => BlocProvider(
+      create: (_) => ReferralCubit(),
+      child: const ReferralScreen(),
+    ),
+    adminPromo: (context) => BlocProvider(
+      create: (_) => AdminPromoCubit(),
+      child: const AdminPromoScreen(),
     ),
   };
 }
