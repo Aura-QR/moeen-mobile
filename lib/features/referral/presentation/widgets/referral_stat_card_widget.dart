@@ -25,55 +25,60 @@ class ReferralStatCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: ColorsManager.surfacePrimary,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: ColorsManager.borderColor),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: iconBgColor,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: iconColor, size: 24),
-          ),
-          horizontalSpace16,
-          // Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: iconBgColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              horizontalSpace8,
+              Expanded(
+                child: Text(
                   label,
-                  style: TextStylesManager.regular13.copyWith(
+                  style: TextStylesManager.regular12.copyWith(
                     color: ColorsManager.textSecondary,
+                    height: 1.2,
                   ),
+                  textAlign: TextAlign.end,
                 ),
-                verticalSpace4,
-                Text(
-                  value,
-                  style: TextStylesManager.bold20.copyWith(
-                    color: ColorsManager.textPrimary,
-                  ),
-                ),
-                if (hint != null) ...[
-                  verticalSpace2,
-                  Text(
-                    hint!,
-                    style: TextStylesManager.regular12.copyWith(
-                      color: ColorsManager.textSecondary,
-                    ),
-                  ),
-                ],
-              ],
+              ),
+            ],
+          ),
+          verticalSpace12,
+          Text(
+            value,
+            style: TextStylesManager.bold16.copyWith(
+              color: ColorsManager.textPrimary,
             ),
           ),
+          if (hint != null) ...[
+            verticalSpace4,
+            Text(
+              hint!,
+              style: TextStylesManager.regular12.copyWith(
+                color: ColorsManager.textSecondary,
+                fontSize: 10,
+              ),
+              textAlign: TextAlign.end,
+            ),
+          ],
         ],
       ),
     );

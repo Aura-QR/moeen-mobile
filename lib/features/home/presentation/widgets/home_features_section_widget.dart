@@ -252,7 +252,7 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                       horizontalSpace12,
                       HomeActionChipWidget(
                         icon: Icons.discount_outlined,
-                        title: "كودات الخصم",
+                        title: "أكواد الخصم الخصم",
                         onTap: () {
                           if (token != null && token!.isNotEmpty) {
                             context.push(Routes.adminPromo);

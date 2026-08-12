@@ -63,7 +63,7 @@ class ReferralHeroCardWidget extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -89,13 +89,13 @@ class ReferralHeroCardWidget extends StatelessWidget {
                 ],
               ),
             ),
-            verticalSpace16,
+            verticalSpace8,
             // Title
             Text(
               appTranslation().get('referral_screen_title'),
-              style: TextStylesManager.bold22.copyWith(
+              style: TextStylesManager.bold16.copyWith(
                 color: Colors.white,
-                height: 1.4,
+                height: 1.3,
               ),
               textAlign: TextAlign.end,
             ),
@@ -103,13 +103,13 @@ class ReferralHeroCardWidget extends StatelessWidget {
             // Subtitle
             Text(
               appTranslation().get('referral_screen_subtitle'),
-              style: TextStylesManager.regular13.copyWith(
+              style: TextStylesManager.regular12.copyWith(
                 color: Colors.white.withValues(alpha: 0.9),
-                height: 1.5,
+                height: 1.3,
               ),
               textAlign: TextAlign.end,
             ),
-            verticalSpace20,
+            verticalSpace10,
             // Link label
             Text(
               appTranslation().get('referral_link_label'),
@@ -134,7 +134,7 @@ class ReferralHeroCardWidget extends StatelessWidget {
                     onTap: () => _copyLink(context),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
+                          horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: const BorderRadius.only(
@@ -182,7 +182,7 @@ class ReferralHeroCardWidget extends StatelessWidget {
               child: GestureDetector(
                 onTap: _shareWhatsapp,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
                     color: const Color(0xFF25D366),
                     borderRadius: BorderRadius.circular(12),

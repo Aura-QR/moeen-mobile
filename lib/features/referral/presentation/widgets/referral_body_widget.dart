@@ -28,26 +28,36 @@ class ReferralBodyWidget extends StatelessWidget {
           // Hero card
           ReferralHeroCardWidget(referralLink: dashboard.referralLink),
           verticalSpace16,
-          // Qualified referrals
-          ReferralStatCardWidget(
-            label: appTranslation().get('referral_qualified'),
-            value: '${dashboard.qualifiedReferrals} / ${dashboard.maxReferrals}',
-            icon: Icons.people_alt_outlined,
-            iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
-            iconColor: ColorsManager.primaryColor,
+          // Stats Grid (Row 1)
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: ReferralStatCardWidget(
+                    label: appTranslation().get('referral_discounts'),
+                    value: '15% × ${dashboard.rewardsAvailableCount}',
+                    hint: appTranslation().get('referral_discounts_hint'),
+                    icon: Icons.redeem_outlined,
+                    iconBgColor: const Color(0xFFFFF3E0),
+                    iconColor: const Color(0xFFFF8C00),
+                  ),
+                ),
+                horizontalSpace12,
+                Expanded(
+                  child: ReferralStatCardWidget(
+                    label: appTranslation().get('referral_qualified'),
+                    value: '${dashboard.qualifiedReferrals} / ${dashboard.maxReferrals}',
+                    icon: Icons.people_alt_outlined,
+                    iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                    iconColor: ColorsManager.primaryColor,
+                  ),
+                ),
+              ],
+            ),
           ),
           verticalSpace12,
-          // Available discounts
-          ReferralStatCardWidget(
-            label: appTranslation().get('referral_discounts'),
-            value: '15% × ${dashboard.rewardsAvailableCount}',
-            hint: appTranslation().get('referral_discounts_hint'),
-            icon: Icons.redeem_outlined,
-            iconBgColor: const Color(0xFFFFF3E0),
-            iconColor: const Color(0xFFFF8C00),
-          ),
-          verticalSpace12,
-          // Remaining quota
+          // Stats Row 2 (Remaining quota)
           ReferralStatCardWidget(
             label: appTranslation().get('referral_remaining'),
             value:

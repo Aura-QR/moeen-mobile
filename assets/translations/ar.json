@@ -595,7 +595,7 @@
   "promo_invalid": "كود الخصم غير صالح أو منتهي الصلاحية",
   "promo_discount_label": "خصم مطبّق",
   "promo_remove": "إزالة",
-  "admin_promo_title": "إدارة كودات الخصم والإحالات",
+  "admin_promo_title": "إدارة أكواد الخصم الخصم والإحالات",
   "admin_promo_subtitle": "التحكم في الحملات الترويجية ومتابعة إحصائيات برنامج \"عزوة المدرسين\"",
   "admin_promo_create_btn": "إنشاء كود خصم جديد",
   "admin_promo_refresh": "تحديث",

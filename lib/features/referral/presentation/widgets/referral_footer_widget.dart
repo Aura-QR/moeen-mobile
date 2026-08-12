@@ -19,39 +19,29 @@ class ReferralFooterWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: ColorsManager.borderColor),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: PrimaryElevatedButton(
-              text: appTranslation().get('referral_footer_btn'),
-              onPressed: () => context.push(Routes.checkout),
+          Text(
+            appTranslation().get('referral_footer_title'),
+            style: TextStylesManager.bold14.copyWith(
+              color: ColorsManager.textPrimary,
             ),
+            textAlign: TextAlign.center,
           ),
-          horizontalSpace16,
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  appTranslation().get('referral_footer_title'),
-                  style: TextStylesManager.bold14.copyWith(
-                    color: ColorsManager.textPrimary,
-                  ),
-                  textAlign: TextAlign.end,
-                ),
-                verticalSpace4,
-                Text(
-                  appTranslation().get('referral_footer_subtitle'),
-                  style: TextStylesManager.regular12.copyWith(
-                    color: ColorsManager.textSecondary,
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.end,
-                ),
-              ],
+          verticalSpace4,
+          Text(
+            appTranslation().get('referral_footer_subtitle'),
+            style: TextStylesManager.regular12.copyWith(
+              color: ColorsManager.textSecondary,
+              height: 1.4,
             ),
+            textAlign: TextAlign.center,
+          ),
+          verticalSpace16,
+          PrimaryElevatedButton(
+            text: appTranslation().get('referral_footer_btn'),
+            onPressed: () => context.push(Routes.checkout),
           ),
         ],
       ),
