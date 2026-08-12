@@ -13,6 +13,7 @@ import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/core/widgets/session_monitor_wrapper.dart';
 import 'dart:developer' as developer;
+import 'package:moean/core/services/referral_service.dart';
 
 final RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -29,6 +30,12 @@ void main() async {
   );
 
   await initInjections();
+
+  // Initialize ReferralService safely in the background
+  // We do not await it tightly so it doesn't block startup
+  ReferralService.init().catchError((e) {
+    developer.log('ReferralService init error: $e');
+  });
 
   final bool isDark = CacheHelper.getData(key: 'isDark') ?? false;
   final bool isArabic = CacheHelper.getData(key: 'isArabicLang') ?? true;

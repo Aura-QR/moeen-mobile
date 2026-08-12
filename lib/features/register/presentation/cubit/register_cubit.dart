@@ -58,12 +58,15 @@ class RegisterCubit extends Cubit<RegisterState> {
     emit(RegisterLoadingState());
 
     try {
+      final referralCode = CacheHelper.getData(key: 'referral_code')?.toString();
+
       final request = RegisterRequest(
         name: fullNameController.text.trim(),
         email: emailController.text.trim(),
         phone: phoneController.text.trim(),
         password: passwordController.text,
         passwordConfirmation: confirmPasswordController.text,
+        referralCode: referralCode,
       );
 
       final result = await ApiService.registerUser(request);
@@ -75,6 +78,13 @@ class RegisterCubit extends Cubit<RegisterState> {
         },
         (response) async {
           await CacheHelper.saveData(key: 'auth_token', value: response.token);
+          
+          // Clear the referral code after successful registration
+          if (referralCode != null && referralCode.isNotEmpty) {
+            await CacheHelper.removeData(key: 'referral_code');
+            debugPrint('Cleared locally stored referral code after successful registration.');
+          }
+
           token = response.token;
           emit(RegisterSuccessState());
           debugPrint('Register Success: $response');
