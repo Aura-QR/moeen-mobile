@@ -63,7 +63,7 @@ class _PromoCodeSectionWidgetState extends State<PromoCodeSectionWidget> {
             border: Border.all(color: ColorsManager.borderColor),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 appTranslation().get('promo_section_title'),
@@ -229,7 +229,7 @@ class _PromoErrorBanner extends StatelessWidget {
               message,
               style: TextStylesManager.regular13
                   .copyWith(color: ColorsManager.errorColor),
-              textAlign: TextAlign.end,
+              textAlign: TextAlign.start,
             ),
           ),
         ],

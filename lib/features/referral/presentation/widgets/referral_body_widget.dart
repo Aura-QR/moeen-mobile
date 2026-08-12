@@ -20,10 +20,12 @@ class ReferralBodyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Hero card
           ReferralHeroCardWidget(referralLink: dashboard.referralLink),
@@ -78,12 +80,19 @@ class ReferralBodyWidget extends StatelessWidget {
               border: Border.all(color: ColorsManager.borderColor),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // Title
+                    Text(
+                      appTranslation().get('referral_history_title'),
+                      style: TextStylesManager.bold16.copyWith(
+                        color: ColorsManager.textPrimary,
+                      ),
+                    ),
                     // Refresh button
                     BlocBuilder<ReferralCubit, ReferralState>(
                       buildWhen: (_, s) => s is ReferralLoading || s is ReferralLoaded,
@@ -96,6 +105,13 @@ class ReferralBodyWidget extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              Text(
+                                appTranslation().get('referral_refresh'),
+                                style: TextStylesManager.medium14.copyWith(
+                                  color: ColorsManager.primaryColor,
+                                ),
+                              ),
+                              horizontalSpace4,
                               if (isRefreshing)
                                 SizedBox(
                                   width: 14,
@@ -109,24 +125,10 @@ class ReferralBodyWidget extends StatelessWidget {
                                 Icon(Icons.refresh_rounded,
                                     size: 18,
                                     color: ColorsManager.primaryColor),
-                              horizontalSpace4,
-                              Text(
-                                appTranslation().get('referral_refresh'),
-                                style: TextStylesManager.medium14.copyWith(
-                                  color: ColorsManager.primaryColor,
-                                ),
-                              ),
                             ],
                           ),
                         );
                       },
-                    ),
-                    // Title
-                    Text(
-                      appTranslation().get('referral_history_title'),
-                      style: TextStylesManager.bold16.copyWith(
-                        color: ColorsManager.textPrimary,
-                      ),
                     ),
                   ],
                 ),
@@ -152,6 +154,7 @@ class ReferralBodyWidget extends StatelessWidget {
           verticalSpace24,
         ],
       ),
+    ),
     );
   }
 }

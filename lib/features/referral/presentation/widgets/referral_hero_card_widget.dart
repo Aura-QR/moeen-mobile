@@ -65,7 +65,7 @@ class ReferralHeroCardWidget extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Badge
             Container(
@@ -129,35 +129,6 @@ class ReferralHeroCardWidget extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // Copy button
-                  GestureDetector(
-                    onTap: () => _copyLink(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(12),
-                          bottomRight: Radius.circular(12),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            appTranslation().get('referral_copy'),
-                            style: TextStylesManager.medium12.copyWith(
-                              color: ColorsManager.primaryColor,
-                            ),
-                          ),
-                          horizontalSpace4,
-                          Icon(Icons.copy_rounded,
-                              size: 16, color: ColorsManager.primaryColor),
-                        ],
-                      ),
-                    ),
-                  ),
                   // Link text
                   Expanded(
                     child: Padding(
@@ -169,6 +140,35 @@ class ReferralHeroCardWidget extends StatelessWidget {
                         ),
                         overflow: TextOverflow.ellipsis,
                         textDirection: TextDirection.ltr,
+                      ),
+                    ),
+                  ),
+                  // Copy button
+                  GestureDetector(
+                    onTap: () => _copyLink(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          bottomLeft: Radius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.copy_rounded,
+                              size: 16, color: ColorsManager.primaryColor),
+                          horizontalSpace4,
+                          Text(
+                            appTranslation().get('referral_copy'),
+                            style: TextStylesManager.medium12.copyWith(
+                              color: ColorsManager.primaryColor,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -190,15 +190,15 @@ class ReferralHeroCardWidget extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.share_rounded,
-                          color: Colors.white, size: 18),
-                      horizontalSpace8,
                       Text(
                         appTranslation().get('referral_share_whatsapp'),
                         style: TextStylesManager.medium14.copyWith(
                           color: Colors.white,
                         ),
                       ),
+                      horizontalSpace8,
+                      const Icon(Icons.share_rounded,
+                          color: Colors.white, size: 18),
                     ],
                   ),
                 ),

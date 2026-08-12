@@ -202,7 +202,7 @@ class _TicketChatHistoryState extends State<TicketChatHistory> {
                     return _buildClientMessage(body, rawDate);
                   } else {
                     final senderNameAr = reply['sender_name'] ?? 'مدير النظام';
-                    final senderNameEn = 'System Admin'; // Placeholder
+                    final senderNameEn = ''; // Removed placeholder
                     return _buildAdminMessage(senderNameAr, senderNameEn, body, rawDate);
                   }
                 },
@@ -305,7 +305,7 @@ class _TicketChatHistoryState extends State<TicketChatHistory> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(senderNameAr, style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
-                Text(senderNameEn, style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText)),
+                if (senderNameEn.isNotEmpty) Text(senderNameEn, style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText)),
               ],
             ),
             horizontalSpace12,
@@ -313,7 +313,7 @@ class _TicketChatHistoryState extends State<TicketChatHistory> {
               radius: 20,
               backgroundColor: Colors.blueGrey,
               child: Text(
-                senderNameEn.isNotEmpty ? senderNameEn[0].toUpperCase() : 'A',
+                senderNameAr.isNotEmpty ? senderNameAr[0].toUpperCase() : 'A',
                 style: TextStylesManager.bold16.copyWith(color: Colors.white),
               ),
             ),
@@ -338,11 +338,14 @@ class _TicketChatHistoryState extends State<TicketChatHistory> {
   }
 
   String _formatDateDetails(String? dateStr) {
-    if (dateStr == null) return 'July 9, 2026';
+    if (dateStr == null) return '9 يوليو 2026';
     final dt = DateTime.tryParse(dateStr);
-    if (dt == null) return 'July 9, 2026';
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
+    if (dt == null) return '9 يوليو 2026';
+    const months = [
+      '', 'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    ];
+    return '${dt.day} ${months[dt.month]} ${dt.year}';
   }
 
   String _formatDateShort(String? dateStr) {

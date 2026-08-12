@@ -14,7 +14,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.moean"
+    namespace = "com.haderedu.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.moean"
+        applicationId = "com.haderedu.app"
         minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

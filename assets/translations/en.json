@@ -635,5 +635,10 @@
   "admin_promo_success_activate": "Code activated successfully",
   "admin_promo_success_deactivate": "Code deactivated successfully",
   "admin_promo_success_delete": "Code deleted successfully",
-  "admin_promo_empty": "No promo codes yet"
+  "admin_promo_empty": "No promo codes yet",
+  "ticket_number": "Ticket Number",
+  "ticket_summary": "Ticket Summary",
+  "date": "Date",
+  "chat_date": "Chat Date",
+  "system_admin": "System Admin"
 }

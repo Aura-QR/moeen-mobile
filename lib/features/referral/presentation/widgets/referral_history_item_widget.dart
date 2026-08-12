@@ -48,51 +48,6 @@ class ReferralHistoryItemWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Status badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: _statusColor(item.status).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              _statusLabel(item.status),
-              style: TextStylesManager.medium12.copyWith(
-                color: _statusColor(item.status),
-              ),
-            ),
-          ),
-          const Spacer(),
-          // Name
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                item.referredName,
-                style: TextStylesManager.medium14.copyWith(
-                  color: ColorsManager.textPrimary,
-                ),
-              ),
-              verticalSpace2,
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.person_add_alt_1_outlined,
-                      size: 13, color: ColorsManager.textSecondary),
-                  horizontalSpace4,
-                  Text(
-                    item.registeredAt.length >= 10
-                        ? item.registeredAt.substring(0, 10)
-                        : item.registeredAt,
-                    style: TextStylesManager.regular12.copyWith(
-                      color: ColorsManager.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          horizontalSpace12,
           // Avatar
           Container(
             width: 40,
@@ -109,6 +64,51 @@ class ReferralHistoryItemWidget extends StatelessWidget {
                 style: TextStylesManager.bold16.copyWith(
                   color: ColorsManager.primaryColor,
                 ),
+              ),
+            ),
+          ),
+          horizontalSpace12,
+          // Name
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.referredName,
+                style: TextStylesManager.medium14.copyWith(
+                  color: ColorsManager.textPrimary,
+                ),
+              ),
+              verticalSpace2,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    item.registeredAt.length >= 10
+                        ? item.registeredAt.substring(0, 10)
+                        : item.registeredAt,
+                    style: TextStylesManager.regular12.copyWith(
+                      color: ColorsManager.textSecondary,
+                    ),
+                  ),
+                  horizontalSpace4,
+                  Icon(Icons.person_add_alt_1_outlined,
+                      size: 13, color: ColorsManager.textSecondary),
+                ],
+              ),
+            ],
+          ),
+          const Spacer(),
+          // Status badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: _statusColor(item.status).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              _statusLabel(item.status),
+              style: TextStylesManager.medium12.copyWith(
+                color: _statusColor(item.status),
               ),
             ),
           ),

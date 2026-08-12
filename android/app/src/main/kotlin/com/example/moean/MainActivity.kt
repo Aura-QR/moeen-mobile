@@ -1,4 +1,4 @@
-package com.example.moean
+package com.haderedu.app
 
 import io.flutter.embedding.android.FlutterActivity
 

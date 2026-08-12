@@ -151,7 +151,7 @@ class _CheckoutBody extends StatelessWidget {
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _SectionCard(
                 title: appTranslation().get('pay_plan_label'),
@@ -199,7 +199,7 @@ class _CheckoutBody extends StatelessWidget {
                 _SectionCard(
                   title: appTranslation().get('pay_order_summary'),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -226,7 +226,7 @@ class _CheckoutBody extends StatelessWidget {
                       ),
                       verticalSpace10,
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Icon(Icons.verified_outlined,
                               size: 15, color: ColorsManager.primaryColor),
@@ -236,7 +236,7 @@ class _CheckoutBody extends StatelessWidget {
                               appTranslation().get('pay_server_amount_note'),
                               style: TextStylesManager.regular12.copyWith(
                                   color: ColorsManager.secondaryText),
-                              textAlign: TextAlign.end,
+                              textAlign: TextAlign.start,
                             ),
                           ),
                         ],
@@ -286,7 +286,7 @@ class _SectionCard extends StatelessWidget {
         border: Border.all(color: ColorsManager.borderColor),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
@@ -366,7 +366,7 @@ class _PaymentMethodTile extends StatelessWidget {
             horizontalSpace12,
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
                       style: TextStylesManager.medium14

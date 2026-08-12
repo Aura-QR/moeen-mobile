@@ -635,5 +635,10 @@
   "admin_promo_success_activate": "تم تفعيل الكود بنجاح",
   "admin_promo_success_deactivate": "تم تعطيل الكود بنجاح",
   "admin_promo_success_delete": "تم حذف الكود بنجاح",
-  "admin_promo_empty": "لا توجد أكواد خصم بعد"
+  "admin_promo_empty": "لا توجد أكواد خصم بعد",
+  "ticket_number": "رقم الطلب",
+  "ticket_summary": "ملخص الطلب",
+  "date": "التاريخ",
+  "chat_date": "تاريخ المحادثة",
+  "system_admin": "مدير النظام"
 }

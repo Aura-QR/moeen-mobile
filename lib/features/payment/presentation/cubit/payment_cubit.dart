@@ -30,7 +30,7 @@ class PaymentCubit extends Cubit<PaymentState> {
             .map((e) =>
                 SubscriptionPlanModel.fromJson(e as Map<String, dynamic>))
             .where((p) => double.tryParse(p.price) != null &&
-                double.parse(p.price) > 0)
+                double.parse(p.price) > 0 && double.parse(p.price) != 1)
             .toList();
         emit(PlansLoaded(plans));
       },
