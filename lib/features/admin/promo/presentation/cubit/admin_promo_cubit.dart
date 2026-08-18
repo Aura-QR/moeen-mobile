@@ -14,22 +14,27 @@ class AdminPromoCubit extends Cubit<AdminPromoState> {
   List<AdminPromoCodeModel> promoCodes = [];
 
   Future<void> loadAll() async {
-    emit(AdminPromoLoading());
+    if (!isClosed) emit(AdminPromoLoading());
     final statsResult = await ApiService.getAdminReferralStats();
     final promoResult = await ApiService.getAdminPromoCodes();
+    if (isClosed) return;
 
     statsResult.fold(
-      (error) => emit(AdminPromoError(error)),
+      (error) {
+        if (!isClosed) emit(AdminPromoError(error));
+      },
       (statsData) {
         promoResult.fold(
-          (error) => emit(AdminPromoError(error)),
+          (error) {
+            if (!isClosed) emit(AdminPromoError(error));
+          },
           (promoData) {
             stats = AdminReferralStatsModel.fromJson(statsData);
             final list = promoData['data'] as List<dynamic>? ?? [];
             promoCodes = list
                 .map((e) => AdminPromoCodeModel.fromJson(e as Map<String, dynamic>))
                 .toList();
-            emit(AdminPromoLoaded(stats: stats!, promoCodes: promoCodes));
+            if (!isClosed) emit(AdminPromoLoaded(stats: stats!, promoCodes: promoCodes));
           },
         );
       },
@@ -37,42 +42,51 @@ class AdminPromoCubit extends Cubit<AdminPromoState> {
   }
 
   Future<void> createPromoCode(Map<String, dynamic> data) async {
-    emit(AdminPromoCreating());
+    if (!isClosed) emit(AdminPromoCreating());
     final result = await ApiService.createAdminPromoCode(data);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(AdminPromoActionError(error)),
+      (error) {
+        if (!isClosed) emit(AdminPromoActionError(error));
+      },
       (_) {
-        emit(AdminPromoActionSuccess(appTranslation().get('admin_promo_success_create')));
+        if (!isClosed) emit(AdminPromoActionSuccess(appTranslation().get('admin_promo_success_create')));
         loadAll();
       },
     );
   }
 
   Future<void> togglePromoCode(AdminPromoCodeModel promo) async {
-    emit(AdminPromoActionLoading());
+    if (!isClosed) emit(AdminPromoActionLoading());
     final result = promo.isActive
         ? await ApiService.deactivateAdminPromoCode(promo.id)
         : await ApiService.activateAdminPromoCode(promo.id);
+    if (isClosed) return;
 
     result.fold(
-      (error) => emit(AdminPromoActionError(error)),
+      (error) {
+        if (!isClosed) emit(AdminPromoActionError(error));
+      },
       (_) {
         final msg = promo.isActive
             ? appTranslation().get('admin_promo_success_deactivate')
             : appTranslation().get('admin_promo_success_activate');
-        emit(AdminPromoActionSuccess(msg));
+        if (!isClosed) emit(AdminPromoActionSuccess(msg));
         loadAll();
       },
     );
   }
 
   Future<void> deletePromoCode(int id) async {
-    emit(AdminPromoActionLoading());
+    if (!isClosed) emit(AdminPromoActionLoading());
     final result = await ApiService.deleteAdminPromoCode(id);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(AdminPromoActionError(error)),
+      (error) {
+        if (!isClosed) emit(AdminPromoActionError(error));
+      },
       (_) {
-        emit(AdminPromoActionSuccess(appTranslation().get('admin_promo_success_delete')));
+        if (!isClosed) emit(AdminPromoActionSuccess(appTranslation().get('admin_promo_success_delete')));
         loadAll();
       },
     );

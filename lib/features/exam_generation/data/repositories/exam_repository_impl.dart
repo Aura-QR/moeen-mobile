@@ -202,6 +202,12 @@ class ExamRepositoryImpl implements ExamRepository {
   }
 
   Failure _parseApiError(String errorString) {
+    if (errorString.startsWith('__402__:')) {
+      final parts = errorString.split(':');
+      final code = parts.length > 1 ? parts[1] : 'quota_exceeded';
+      final msg = parts.length > 2 ? parts.sublist(2).join(':') : 'ترقية الحساب المطلوبة';
+      return PaymentRequiredFailure(msg, code: code);
+    }
     if (errorString.toLowerCase().contains('unauthenticated') || errorString.contains('401')) {
       return const UnauthorizedFailure('Unauthenticated');
     }

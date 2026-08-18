@@ -453,6 +453,24 @@ class ApiService {
     );
   }
 
+  static Future<Either<String, Map<String, dynamic>>> upgradeSubscription({
+    required String planSlug,
+    String? promoCode,
+  }) async {
+    final data = <String, dynamic>{'plan_slug': planSlug};
+    if (promoCode != null && promoCode.isNotEmpty) {
+      data['promo_code'] = promoCode;
+    }
+    final response = await DioHelper.postData(
+      url: '$subscriptionsApi/upgrade', // POST /api/subscription/upgrade
+      data: data,
+    );
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
   static Future<Either<String, Map<String, dynamic>>> createOrder(
     int serviceId, {
     String? promoCode,

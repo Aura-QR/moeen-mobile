@@ -23,7 +23,7 @@ class SearchCubit extends Cubit<SearchState> {
   Future<void> search(String query) async {
     if (query.trim().isEmpty) return;
     _lastQuery = query.trim();
-    emit(const SearchLoading());
+    if (!isClosed) emit(const SearchLoading());
 
     final typeParam = _filterTypeMap[_activeFilter];
 
@@ -32,18 +32,23 @@ class SearchCubit extends Cubit<SearchState> {
       type: typeParam,
       limit: 20,
     );
+    if (isClosed) return;
 
     result.fold(
-      (error) => emit(SearchError(message: error)),
+      (error) {
+        if (!isClosed) emit(SearchError(message: error));
+      },
       (items) {
-        if (items.isEmpty) {
-          emit(SearchEmpty(query: _lastQuery));
-        } else {
-          emit(SearchLoaded(
-            results: items,
-            query: _lastQuery,
-            activeFilter: _activeFilter,
-          ));
+        if (!isClosed) {
+          if (items.isEmpty) {
+            emit(SearchEmpty(query: _lastQuery));
+          } else {
+            emit(SearchLoaded(
+              results: items,
+              query: _lastQuery,
+              activeFilter: _activeFilter,
+            ));
+          }
         }
       },
     );
@@ -56,13 +61,13 @@ class SearchCubit extends Cubit<SearchState> {
     if (_lastQuery.isNotEmpty) {
       await search(_lastQuery);
     } else {
-      emit(const SearchInitial());
+      if (!isClosed) emit(const SearchInitial());
     }
   }
 
   void reset() {
     _lastQuery = '';
     _activeFilter = 'all';
-    emit(const SearchInitial());
+    if (!isClosed) emit(const SearchInitial());
   }
 }

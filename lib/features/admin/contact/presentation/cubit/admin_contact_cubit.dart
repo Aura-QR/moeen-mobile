@@ -12,32 +12,38 @@ class AdminContactCubit extends Cubit<AdminContactState> {
   List<dynamic> tickets = [];
 
   Future<void> getStats() async {
-    emit(AdminContactStatsLoading());
+    if (!isClosed) emit(AdminContactStatsLoading());
 
     final result = await ApiService.getAdminContactStats();
+    if (isClosed) return;
     result.fold(
-      (error) => emit(AdminContactStatsError(error)),
+      (error) {
+        if (!isClosed) emit(AdminContactStatsError(error));
+      },
       (data) {
         stats = data;
-        emit(AdminContactStatsLoaded(data));
+        if (!isClosed) emit(AdminContactStatsLoaded(data));
       },
     );
   }
 
   Future<void> getTickets({String? status, String? type, String? search}) async {
-    emit(AdminContactTicketsLoading());
+    if (!isClosed) emit(AdminContactTicketsLoading());
 
     final result = await ApiService.getAdminContactTickets(
       status: status,
       type: type,
       search: search,
     );
+    if (isClosed) return;
     
     result.fold(
-      (error) => emit(AdminContactTicketsError(error)),
+      (error) {
+        if (!isClosed) emit(AdminContactTicketsError(error));
+      },
       (data) {
         tickets = data['data'] ?? [];
-        emit(AdminContactTicketsLoaded(tickets));
+        if (!isClosed) emit(AdminContactTicketsLoaded(tickets));
       },
     );
   }
@@ -45,61 +51,75 @@ class AdminContactCubit extends Cubit<AdminContactState> {
   Map<String, dynamic>? currentTicket;
 
   Future<void> getTicketDetails(int id) async {
-    emit(AdminContactTicketDetailsLoading());
+    if (!isClosed) emit(AdminContactTicketDetailsLoading());
 
     final result = await ApiService.getAdminContactTicketDetails(id: id);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(AdminContactTicketDetailsError(error)),
+      (error) {
+        if (!isClosed) emit(AdminContactTicketDetailsError(error));
+      },
       (data) {
         currentTicket = data;
-        emit(AdminContactTicketDetailsLoaded(data));
+        if (!isClosed) emit(AdminContactTicketDetailsLoaded(data));
       },
     );
   }
 
   Future<void> updateTicket({required int id, String? status, String? adminNotes}) async {
-    emit(AdminContactTicketUpdateLoading());
+    if (!isClosed) emit(AdminContactTicketUpdateLoading());
 
     final result = await ApiService.updateAdminContactTicket(
       id: id,
       status: status,
       adminNotes: adminNotes,
     );
+    if (isClosed) return;
 
     result.fold(
-      (error) => emit(AdminContactTicketUpdateError(error)),
+      (error) {
+        if (!isClosed) emit(AdminContactTicketUpdateError(error));
+      },
       (data) {
-        emit(AdminContactTicketUpdateSuccess(data['message'] ?? 'تم التحديث بنجاح'));
+        if (!isClosed) emit(AdminContactTicketUpdateSuccess(data['message'] ?? 'تم التحديث بنجاح'));
         getTicketDetails(id);
       },
     );
   }
 
   Future<void> replyToTicket({required int id, required String body}) async {
-    emit(AdminContactTicketReplyLoading());
+    if (!isClosed) emit(AdminContactTicketReplyLoading());
 
     final result = await ApiService.replyAdminContactTicket(
       id: id,
       body: body,
     );
+    if (isClosed) return;
 
     result.fold(
-      (error) => emit(AdminContactTicketReplyError(error)),
+      (error) {
+        if (!isClosed) emit(AdminContactTicketReplyError(error));
+      },
       (data) {
-        emit(AdminContactTicketReplySuccess(data['message'] ?? 'تم إرسال الرد بنجاح'));
+        if (!isClosed) emit(AdminContactTicketReplySuccess(data['message'] ?? 'تم إرسال الرد بنجاح'));
         getTicketDetails(id);
       },
     );
   }
 
   Future<void> deleteTicket(int id) async {
-    emit(AdminContactTicketDeleteLoading());
+    if (!isClosed) emit(AdminContactTicketDeleteLoading());
 
     final result = await ApiService.deleteAdminContactTicket(id: id);
+    if (isClosed) return;
     
     result.fold(
-      (error) => emit(AdminContactTicketDeleteError(error)),
-      (_) => emit(AdminContactTicketDeleteSuccess()),
+      (error) {
+        if (!isClosed) emit(AdminContactTicketDeleteError(error));
+      },
+      (_) {
+        if (!isClosed) emit(AdminContactTicketDeleteSuccess());
+      },
     );
   }
 }

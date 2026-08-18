@@ -31,9 +31,8 @@ class HomeScreen extends StatelessWidget {
             backgroundColor: ColorsManager.background,
             body: Directionality(
               textDirection: TextDirection.rtl,
-              child: Container(
-                child: Stack(
-                  children: [
+              child: Stack(
+                children: [
                     Positioned(
                       right: 20,
                       top: 200,
@@ -50,14 +49,13 @@ class HomeScreen extends StatelessWidget {
                       child: SingleChildScrollView(
                         physics: const BouncingScrollPhysics(),
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              verticalSpace8,
                               // ignore: prefer_const_constructors
                               HomeAppBarWidget(),
-                              verticalSpace40,
+                              verticalSpace24,
                               // ignore: prefer_const_constructors
                               HomeHeroBannerWidget(),
                               verticalSpace40,
@@ -80,9 +78,8 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
       ),
     );
   }

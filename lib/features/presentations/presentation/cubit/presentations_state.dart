@@ -15,3 +15,9 @@ class PresentationsError extends PresentationsState {
   final String message;
   PresentationsError(this.message);
 }
+
+class PresentationsPaymentRequired extends PresentationsState {
+  final String message;
+  final String code;
+  PresentationsPaymentRequired(this.message, this.code);
+}

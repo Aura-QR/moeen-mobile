@@ -6,6 +6,7 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
+import 'package:moean/core/utils/constants/primary/upgrade_prompt_bottom_sheet.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/exam_generation/presentation/cubit/manual_exam_cubit.dart';
 import 'package:moean/features/exam_generation/presentation/cubit/manual_exam_state.dart';
@@ -66,6 +67,12 @@ class ManualExamScreen extends StatelessWidget {
                   ),
                 );
                 context.pop(true); // Return true to indicate success
+              } else if (state is ManualExamPaymentRequired) {
+                UpgradePromptBottomSheet.show(
+                  context,
+                  message: state.message,
+                  isQuotaExceeded: state.code == 'quota_exceeded',
+                );
               } else if (state is ManualExamError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

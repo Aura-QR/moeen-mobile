@@ -12,13 +12,16 @@ class ReferralCubit extends Cubit<ReferralState> {
   ReferralDashboardModel? dashboard;
 
   Future<void> loadDashboard() async {
-    emit(ReferralLoading());
+    if (!isClosed) emit(ReferralLoading());
     final result = await ApiService.getReferralDashboard();
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ReferralError(error)),
+      (error) {
+        if (!isClosed) emit(ReferralError(error));
+      },
       (data) {
         dashboard = ReferralDashboardModel.fromJson(data);
-        emit(ReferralLoaded(dashboard!));
+        if (!isClosed) emit(ReferralLoaded(dashboard!));
       },
     );
   }

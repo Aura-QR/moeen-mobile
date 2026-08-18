@@ -3,6 +3,7 @@ import 'package:moean/features/exam_generation/domain/entities/exam_entities.dar
 import 'package:moean/features/exam_generation/domain/usecases/get_exam_usecase.dart';
 import 'package:moean/features/exam_generation/domain/usecases/update_question_points_usecase.dart';
 import 'package:moean/features/exam_generation/domain/repositories/exam_repository.dart';
+import 'package:moean/core/errors/failures.dart';
 
 abstract class ExamPreviewState {}
 
@@ -57,6 +58,13 @@ class ExamPreviewError extends ExamPreviewState {
   ExamPreviewError(this.message);
 }
 
+class ExamPreviewPaymentRequired extends ExamPreviewState {
+  final String message;
+  final String code;
+  final ExamPreviewLoaded loadedState; // So we can revert safely
+  ExamPreviewPaymentRequired(this.message, this.code, this.loadedState);
+}
+
 class ExamPreviewSaving extends ExamPreviewLoaded {
   ExamPreviewSaving(ExamPreviewLoaded state) : super(
     exam: state.exam,
@@ -78,37 +86,46 @@ class ExamPreviewCubit extends Cubit<ExamPreviewState> {
   }) : super(ExamPreviewInitial());
 
   Future<void> loadExam(int id) async {
-    emit(ExamPreviewLoading());
+    if (!isClosed) emit(ExamPreviewLoading());
 
     final result = await getExamUseCase.execute(id);
+    if (isClosed) return;
 
     result.fold(
-      (failure) => emit(ExamPreviewError(failure.message)),
-      (exam) => emit(ExamPreviewLoaded(exam: exam)),
+      (failure) {
+        if (!isClosed) emit(ExamPreviewError(failure.message));
+      },
+      (exam) {
+        if (!isClosed) emit(ExamPreviewLoaded(exam: exam));
+      },
     );
   }
 
   void toggleMode(bool isTeacher) {
     if (state is ExamPreviewLoaded) {
       final current = state as ExamPreviewLoaded;
-      emit(ExamPreviewLoaded(
-        exam: current.exam,
-        isTeacherMode: isTeacher,
-        showAnswers: current.showAnswers,
-        pendingPointsChanges: current.pendingPointsChanges,
-      ));
+      if (!isClosed) {
+        emit(ExamPreviewLoaded(
+          exam: current.exam,
+          isTeacherMode: isTeacher,
+          showAnswers: current.showAnswers,
+          pendingPointsChanges: current.pendingPointsChanges,
+        ));
+      }
     }
   }
 
   void toggleAnswers(bool show) {
     if (state is ExamPreviewLoaded) {
       final current = state as ExamPreviewLoaded;
-      emit(ExamPreviewLoaded(
-        exam: current.exam,
-        isTeacherMode: current.isTeacherMode,
-        showAnswers: show,
-        pendingPointsChanges: current.pendingPointsChanges,
-      ));
+      if (!isClosed) {
+        emit(ExamPreviewLoaded(
+          exam: current.exam,
+          isTeacherMode: current.isTeacherMode,
+          showAnswers: show,
+          pendingPointsChanges: current.pendingPointsChanges,
+        ));
+      }
     }
   }
 
@@ -118,32 +135,43 @@ class ExamPreviewCubit extends Cubit<ExamPreviewState> {
       final newPending = Map<int, double>.from(currentState.pendingPointsChanges);
       newPending[questionId] = points;
       
-      emit(currentState.copyWith(
-        pendingPointsChanges: newPending,
-      ));
+      if (!isClosed) {
+        emit(currentState.copyWith(
+          pendingPointsChanges: newPending,
+        ));
+      }
     }
   }
 
   Future<void> addManualQuestion(Map<String, dynamic> request) async {
     if (state is ExamPreviewLoaded) {
       final loadedState = state as ExamPreviewLoaded;
-      emit(ExamPreviewSaving(loadedState));
+      if (!isClosed) emit(ExamPreviewSaving(loadedState));
 
       final result = await examRepository.addManualQuestion(request);
+      if (isClosed) return;
 
       result.fold(
         (failure) {
-          emit(ExamPreviewError(failure.message));
-          // Restore previous state
-          emit(loadedState);
+          if (!isClosed) {
+            if (failure is PaymentRequiredFailure) {
+              emit(ExamPreviewPaymentRequired(failure.message, failure.code, loadedState));
+            } else {
+              emit(ExamPreviewError(failure.message));
+            }
+            // Restore previous state
+            emit(loadedState);
+          }
         },
         (updatedExam) {
-          emit(ExamPreviewLoaded(
-            exam: updatedExam,
-            isTeacherMode: loadedState.isTeacherMode,
-            showAnswers: loadedState.showAnswers,
-            pendingPointsChanges: const {},
-          ));
+          if (!isClosed) {
+            emit(ExamPreviewLoaded(
+              exam: updatedExam,
+              isTeacherMode: loadedState.isTeacherMode,
+              showAnswers: loadedState.showAnswers,
+              pendingPointsChanges: const {},
+            ));
+          }
         },
       );
     }
@@ -165,17 +193,22 @@ class ExamPreviewCubit extends Cubit<ExamPreviewState> {
       };
     }).toList();
 
-    emit(ExamPreviewSaving(current));
+    if (!isClosed) emit(ExamPreviewSaving(current));
 
     final result = await updateQuestionPointsUseCase.execute(examId, updates);
+    if (isClosed) return;
 
     result.fold(
       (failure) {
-        emit(ExamPreviewError(failure.message));
-        // Reload exam after failure to reset UI to actual backend state
-        loadExam(examId);
+        if (!isClosed) {
+          emit(ExamPreviewError(failure.message));
+          // Reload exam after failure to reset UI to actual backend state
+          loadExam(examId);
+        }
       },
-      (exam) => emit(ExamPreviewLoaded(exam: exam, pendingPointsChanges: const {})), // Clear pending on success
+      (exam) {
+        if (!isClosed) emit(ExamPreviewLoaded(exam: exam, pendingPointsChanges: const {})); // Clear pending on success
+      },
     );
   }
 }

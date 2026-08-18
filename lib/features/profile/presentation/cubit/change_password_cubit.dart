@@ -13,17 +13,22 @@ class ChangePasswordCubit extends Cubit<ChangePasswordState> {
     required String password,
     required String passwordConfirmation,
   }) async {
-    emit(ChangePasswordLoading());
+    if (!isClosed) emit(ChangePasswordLoading());
 
     final result = await ApiService.changePassword(
       currentPassword: currentPassword,
       password: password,
       passwordConfirmation: passwordConfirmation,
     );
+    if (isClosed) return;
 
     result.fold(
-      (error) => emit(ChangePasswordFailure(error)),
-      (success) => emit(ChangePasswordSuccess()),
+      (error) {
+        if (!isClosed) emit(ChangePasswordFailure(error));
+      },
+      (success) {
+        if (!isClosed) emit(ChangePasswordSuccess());
+      },
     );
   }
 }

@@ -14,6 +14,7 @@ import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
+import 'package:moean/core/theme/text_styles.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -57,6 +58,27 @@ class RegisterScreen extends StatelessWidget {
                             verticalSpace16,
                             // ignore: prefer_const_constructors
                             RegisterIllustrationWidget(),
+                            verticalSpace16,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.2)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.star_rounded, color: ColorsManager.primaryColor, size: 24),
+                                  horizontalSpace8,
+                                  Expanded(
+                                    child: Text(
+                                      'سجل الآن واحصل على تجربة مجانية كاملة لمدة 7 أيام بدون أي رسوم.',
+                                      style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                             verticalSpace24,
                             // ignore: prefer_const_constructors
                             RegisterFormWidget(),

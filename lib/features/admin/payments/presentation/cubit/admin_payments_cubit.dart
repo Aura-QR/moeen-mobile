@@ -34,17 +34,18 @@ class AdminPaymentsCubit extends Cubit<AdminPaymentsState> {
       if (search != null) currentSearch = search;
     }
 
-    emit(GetAdminPaymentsLoadingState());
+    if (!isClosed) emit(GetAdminPaymentsLoadingState());
 
     final result = await repository.getPayments(
       page: currentPage,
       filter: currentFilter,
       search: currentSearch,
     );
+    if (isClosed) return;
 
     result.fold(
       (failureMessage) {
-        emit(GetAdminPaymentsErrorState(failureMessage));
+        if (!isClosed) emit(GetAdminPaymentsErrorState(failureMessage));
       },
       (data) {
         final List<PaymentModel> newPayments = data['payments'];
@@ -60,19 +61,20 @@ class AdminPaymentsCubit extends Cubit<AdminPaymentsState> {
           paymentsList = newPayments;
         }
 
-        emit(GetAdminPaymentsSuccessState());
+        if (!isClosed) emit(GetAdminPaymentsSuccessState());
       },
     );
   }
 
   void approvePayment(int paymentId) async {
-    emit(AdminPaymentActionLoadingState());
+    if (!isClosed) emit(AdminPaymentActionLoadingState());
     
     final result = await repository.approvePayment(paymentId);
+    if (isClosed) return;
     
     result.fold(
       (failureMessage) {
-        emit(AdminPaymentActionErrorState(failureMessage));
+        if (!isClosed) emit(AdminPaymentActionErrorState(failureMessage));
       },
       (message) {
         // Find and update the payment status locally
@@ -97,19 +99,20 @@ class AdminPaymentsCubit extends Cubit<AdminPaymentsState> {
             user: p.user,
           );
         }
-        emit(AdminPaymentActionSuccessState(message));
+        if (!isClosed) emit(AdminPaymentActionSuccessState(message));
       },
     );
   }
 
   void rejectPayment(int paymentId) async {
-    emit(AdminPaymentActionLoadingState());
+    if (!isClosed) emit(AdminPaymentActionLoadingState());
     
     final result = await repository.rejectPayment(paymentId);
+    if (isClosed) return;
     
     result.fold(
       (failureMessage) {
-        emit(AdminPaymentActionErrorState(failureMessage));
+        if (!isClosed) emit(AdminPaymentActionErrorState(failureMessage));
       },
       (message) {
         // Find and update the payment status locally
@@ -134,7 +137,7 @@ class AdminPaymentsCubit extends Cubit<AdminPaymentsState> {
             user: p.user,
           );
         }
-        emit(AdminPaymentActionSuccessState(message));
+        if (!isClosed) emit(AdminPaymentActionSuccessState(message));
       },
     );
   }

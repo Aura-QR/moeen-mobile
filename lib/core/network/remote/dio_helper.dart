@@ -166,6 +166,14 @@ class DioHelper {
   static String parseError(DioException error) {
     final response = error.response;
     if (response == null) return 'No response from server';
+
+    if (response.statusCode == 402 && response.data is Map) {
+      final map = response.data as Map;
+      final code = map['code']?.toString() ?? 'quota_exceeded';
+      final message = map['message']?.toString() ?? 'ترقية الحساب المطلوبة';
+      return '__402__:$code:$message';
+    }
+
     if (response.data is Map) {
       final map = response.data as Map;
 

@@ -5,6 +5,8 @@ import 'package:moean/features/payment/data/models/order_model.dart';
 import 'package:moean/features/payment/data/models/payment_model.dart';
 import 'package:moean/features/payment/data/models/subscription_plan_model.dart';
 import 'package:moean/features/payment/presentation/cubit/payment_state.dart';
+import 'package:moean/core/di/injections.dart';
+import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
 
 class PaymentCubit extends Cubit<PaymentState> {
   PaymentCubit() : super(PaymentInitial());
@@ -21,10 +23,13 @@ class PaymentCubit extends Cubit<PaymentState> {
   Map<String, dynamic>? promoValidation;
 
   Future<void> loadPlans() async {
-    emit(PlansLoading());
+    if (!isClosed) emit(PlansLoading());
     final result = await ApiService.getSubscriptions();
+    if (isClosed) return;
     result.fold(
-      (error) => emit(PlansError(error)),
+      (error) {
+        if (!isClosed) emit(PlansError(error));
+      },
       (data) {
         plans = data
             .map((e) =>
@@ -32,35 +37,38 @@ class PaymentCubit extends Cubit<PaymentState> {
             .where((p) => double.tryParse(p.price) != null &&
                 double.parse(p.price) > 0 && double.parse(p.price) != 1)
             .toList();
-        emit(PlansLoaded(plans));
+        if (!isClosed) emit(PlansLoaded(plans));
       },
     );
   }
 
   void selectPlan(int index) {
     selectedPlanIndex = index;
-    emit(PlansLoaded(plans));
+    if (!isClosed) emit(PlansLoaded(plans));
   }
 
   void selectMethod(int index) {
     selectedMethodIndex = index;
-    emit(PlansLoaded(plans));
+    if (!isClosed) emit(PlansLoaded(plans));
   }
 
   Future<void> createOrder() async {
     if (plans.isEmpty) return;
-    emit(OrderCreating());
+    if (!isClosed) emit(OrderCreating());
     final serviceId = plans[selectedPlanIndex].id;
     final result = await ApiService.createOrder(
       serviceId,
       promoCode: appliedPromoCode,
     );
+    if (isClosed) return;
     result.fold(
-      (error) => emit(OrderError(error)),
+      (error) {
+        if (!isClosed) emit(OrderError(error));
+      },
       (data) {
         currentOrder = OrderModel.fromJson(
             data['order'] as Map<String, dynamic>);
-        emit(OrderCreated(currentOrder!));
+        if (!isClosed) emit(OrderCreated(currentOrder!));
       },
     );
   }
@@ -68,21 +76,22 @@ class PaymentCubit extends Cubit<PaymentState> {
   Future<void> validatePromo(String code) async {
     if (plans.isEmpty || code.trim().isEmpty) return;
     final planSlug = plans[selectedPlanIndex].slug;
-    emit(PromoValidating());
+    if (!isClosed) emit(PromoValidating());
     final result = await ApiService.validatePromoCode(
       code: code.trim(),
       planSlug: planSlug,
     );
+    if (isClosed) return;
     result.fold(
       (error) {
         appliedPromoCode = null;
         promoValidation = null;
-        emit(PromoError(error));
+        if (!isClosed) emit(PromoError(error));
       },
       (data) {
         appliedPromoCode = code.trim();
         promoValidation = data;
-        emit(PromoValidated(data));
+        if (!isClosed) emit(PromoValidated(data));
       },
     );
   }
@@ -90,52 +99,71 @@ class PaymentCubit extends Cubit<PaymentState> {
   void clearPromo() {
     appliedPromoCode = null;
     promoValidation = null;
-    emit(PromoCleared());
+    if (!isClosed) emit(PromoCleared());
   }
 
   Future<void> loadBankInfo() async {
-    emit(BankInfoLoading());
+    if (!isClosed) emit(BankInfoLoading());
     final result = await ApiService.getBankTransferInfo();
+    if (isClosed) return;
     result.fold(
-      (error) => emit(BankInfoError(error)),
+      (error) {
+        if (!isClosed) emit(BankInfoError(error));
+      },
       (data) {
         bankInfo = data;
-        emit(BankInfoLoaded(data));
+        if (!isClosed) emit(BankInfoLoaded(data));
       },
     );
   }
 
   // Moyasar Flow
   Future<void> getMoyasarConfig(int orderId) async {
-    emit(MoyasarConfigLoading());
+    if (!isClosed) emit(MoyasarConfigLoading());
     final result = await ApiService.getOrderCheckout(orderId);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(MoyasarConfigError(error)),
-      (data) => emit(MoyasarConfigLoaded(data)),
+      (error) {
+        if (!isClosed) emit(MoyasarConfigError(error));
+      },
+      (data) {
+        if (!isClosed) emit(MoyasarConfigLoaded(data));
+      },
     );
   }
 
   // MyFatoorah Flow
   Future<void> initMyfatoorahPayment(int orderId) async {
-    emit(MyfatoorahSessionLoading());
+    if (!isClosed) emit(MyfatoorahSessionLoading());
     final result = await ApiService.createMyfatoorahSession(orderId);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(MyfatoorahSessionError(error)),
-      (data) => emit(MyfatoorahSessionLoaded(data)),
+      (error) {
+        if (!isClosed) emit(MyfatoorahSessionError(error));
+      },
+      (data) {
+        if (!isClosed) emit(MyfatoorahSessionLoaded(data));
+      },
     );
   }
 
   Future<void> executeMyfatoorahPayment(int orderId, String sessionId) async {
-    emit(MyfatoorahExecuteLoading());
+    if (!isClosed) emit(MyfatoorahExecuteLoading());
     final result = await ApiService.executeMyfatoorahPayment(orderId: orderId, sessionId: sessionId);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(MyfatoorahExecuteError(error)),
-      (data) => emit(MyfatoorahExecuteLoaded(data)),
+      (error) {
+        if (!isClosed) emit(MyfatoorahExecuteError(error));
+      },
+      (data) {
+        sl<SubscriptionCubit>().fetchCurrentSubscription();
+        if (!isClosed) emit(MyfatoorahExecuteLoaded(data));
+      },
     );
   }
 
   Future<void> verifyPayment(String paymentId, {int? orderId}) async {
-    emit(PaymentVerifying());
+    if (!isClosed) emit(PaymentVerifying());
     
     // إذا كان لدينا orderId، نقوم بحفظ المرجع أولاً (حسب المستند)
     if (orderId != null) {
@@ -146,12 +174,19 @@ class PaymentCubit extends Cubit<PaymentState> {
     }
 
     final result = await ApiService.verifyPayment(paymentId);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(PaymentVerifyError(error)),
+      (error) {
+        if (!isClosed) emit(PaymentVerifyError(error));
+      },
       (data) {
         final payment = PaymentModel.fromJson(
             data['payment'] as Map<String, dynamic>);
-        emit(PaymentVerified(payment));
+        
+        // Refresh subscription state globally
+        sl<SubscriptionCubit>().fetchCurrentSubscription();
+        
+        if (!isClosed) emit(PaymentVerified(payment));
       },
     );
   }
@@ -161,34 +196,40 @@ class PaymentCubit extends Cubit<PaymentState> {
     required String filePath,
     required String fileName,
   }) async {
-    emit(ReceiptUploading());
+    if (!isClosed) emit(ReceiptUploading());
     final result = await ApiService.uploadManualReceipt(
       orderId: orderId,
       filePath: filePath,
       fileName: fileName,
     );
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ReceiptUploadError(error)),
+      (error) {
+        if (!isClosed) emit(ReceiptUploadError(error));
+      },
       (data) {
         final payment = PaymentModel.fromJson(
             data['payment'] as Map<String, dynamic>);
-        emit(ReceiptUploaded(payment));
+        if (!isClosed) emit(ReceiptUploaded(payment));
       },
     );
   }
 
   Future<void> loadHistory() async {
-    emit(HistoryLoading());
+    if (!isClosed) emit(HistoryLoading());
     final result = await ApiService.getPaymentHistory();
+    if (isClosed) return;
     result.fold(
-      (error) => emit(HistoryError(error)),
+      (error) {
+        if (!isClosed) emit(HistoryError(error));
+      },
       (data) {
         final list = (data['data'] as List<dynamic>? ?? [])
             .map((e) =>
                 PaymentModel.fromJson(e as Map<String, dynamic>))
             .toList();
         paymentHistory = list;
-        emit(HistoryLoaded(list));
+        if (!isClosed) emit(HistoryLoaded(list));
       },
     );
   }

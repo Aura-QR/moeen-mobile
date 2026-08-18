@@ -11,14 +11,17 @@ class ContactCubit extends Cubit<ContactState> {
   List<dynamic> myTickets = [];
 
   Future<void> getContactTypes() async {
-    emit(ContactTypesLoading());
+    if (!isClosed) emit(ContactTypesLoading());
 
     final result = await ApiService.getContactTypes();
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ContactTypesError(error)),
+      (error) {
+        if (!isClosed) emit(ContactTypesError(error));
+      },
       (data) {
         types = data['types'] ?? [];
-        emit(ContactTypesLoaded(types));
+        if (!isClosed) emit(ContactTypesLoaded(types));
       },
     );
   }
@@ -30,7 +33,7 @@ class ContactCubit extends Cubit<ContactState> {
     required String type,
     required String message,
   }) async {
-    emit(ContactSubmitLoading());
+    if (!isClosed) emit(ContactSubmitLoading());
 
     final result = await ApiService.submitContactRequest(
       name: name,
@@ -39,22 +42,30 @@ class ContactCubit extends Cubit<ContactState> {
       type: type,
       message: message,
     );
+    if (isClosed) return;
 
     result.fold(
-      (error) => emit(ContactSubmitError(error)),
-      (data) => emit(ContactSubmitSuccess(data['message'] ?? 'تم إرسال طلبك بنجاح.')),
+      (error) {
+        if (!isClosed) emit(ContactSubmitError(error));
+      },
+      (data) {
+        if (!isClosed) emit(ContactSubmitSuccess(data['message'] ?? 'تم إرسال طلبك بنجاح.'));
+      },
     );
   }
 
   Future<void> getMyTickets() async {
-    emit(ContactMyTicketsLoading());
+    if (!isClosed) emit(ContactMyTicketsLoading());
 
     final result = await ApiService.getMyContactTickets();
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ContactMyTicketsError(error)),
+      (error) {
+        if (!isClosed) emit(ContactMyTicketsError(error));
+      },
       (data) {
         myTickets = data['data'] ?? [];
-        emit(ContactMyTicketsLoaded(myTickets));
+        if (!isClosed) emit(ContactMyTicketsLoaded(myTickets));
       },
     );
   }
@@ -62,26 +73,32 @@ class ContactCubit extends Cubit<ContactState> {
   Map<String, dynamic>? currentTicket;
 
   Future<void> getTicketDetails(int id) async {
-    emit(ContactTicketDetailsLoading());
+    if (!isClosed) emit(ContactTicketDetailsLoading());
 
     final result = await ApiService.getMyContactTicketDetails(id: id);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ContactTicketDetailsError(error)),
+      (error) {
+        if (!isClosed) emit(ContactTicketDetailsError(error));
+      },
       (data) {
         currentTicket = data['ticket'] ?? data;
-        emit(ContactTicketDetailsLoaded());
+        if (!isClosed) emit(ContactTicketDetailsLoaded());
       },
     );
   }
 
   Future<void> replyToTicket({required int id, required String body}) async {
-    emit(ContactTicketReplyLoading());
+    if (!isClosed) emit(ContactTicketReplyLoading());
 
     final result = await ApiService.replyContactTicket(id: id, body: body);
+    if (isClosed) return;
     result.fold(
-      (error) => emit(ContactTicketReplyError(error)),
+      (error) {
+        if (!isClosed) emit(ContactTicketReplyError(error));
+      },
       (data) {
-        emit(ContactTicketReplySuccess(data['message'] ?? 'تم إرسال الرد بنجاح'));
+        if (!isClosed) emit(ContactTicketReplySuccess(data['message'] ?? 'تم إرسال الرد بنجاح'));
         // Refresh ticket details to get the new reply
         getTicketDetails(id);
       },

@@ -5,6 +5,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/features/layout/presentation/cubit/layout_cubit.dart';
 import 'package:moean/features/layout/presentation/cubit/layout_state.dart';
+import 'package:moean/features/payment/presentation/widgets/trial_banner_widget.dart';
 
 class MainLayoutScreen extends StatelessWidget {
   const MainLayoutScreen({super.key});
@@ -28,10 +29,19 @@ class MainLayoutScreen extends StatelessWidget {
               systemNavigationBarDividerColor: Colors.transparent,
             ),
             child: Scaffold(
-              backgroundColor: ColorsManager.background,
               // Allow the body to extend behind the bottom nav bar
               extendBody: true,
-              body: cubit.screens[cubit.currentIndex],
+              body: Column(
+                children: [
+                  const TrialBannerWidget(),
+                  Expanded(
+                    child: IndexedStack(
+                      index: cubit.currentIndex,
+                      children: cubit.screens,
+                    ),
+                  ),
+                ],
+              ),
               bottomNavigationBar: Padding(
                 // Push the nav bar above the system navigation area
                 padding: EdgeInsets.only(bottom: bottomPadding),

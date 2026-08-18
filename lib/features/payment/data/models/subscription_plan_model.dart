@@ -22,7 +22,7 @@ class SubscriptionPlanModel {
       id: json['id'] as int,
       name: json['name'] as String? ?? '',
       slug: json['slug'] as String? ?? '',
-      price: json['price'] as String? ?? '0',
+      price: json['price']?.toString() ?? '0',
       aiQuotaPerMonth: json['ai_quota_per_month'] as int? ?? 0,
       lessonLimitPerDay: json['lesson_limit_per_day'] as int? ?? 0,
       features: json['features'] as Map<String, dynamic>? ?? {},

@@ -49,12 +49,15 @@ class LessonSelectionCubit extends Cubit<LessonSelectionState> {
     }
 
     _currentSubjectId = subjectId;
-    emit(LessonSelectionLoading());
+    if (!isClosed) emit(LessonSelectionLoading());
 
     final result = await ApiService.getSubjectLessons(subjectId);
+    if (isClosed) return;
     
     result.fold(
-      (dynamic failure) => emit(LessonSelectionError(failure?.message ?? 'Unknown error')),
+      (dynamic failure) {
+        if (!isClosed) emit(LessonSelectionError(failure?.message ?? 'Unknown error'));
+      },
       (details) {
         _subjectDetails = details;
         

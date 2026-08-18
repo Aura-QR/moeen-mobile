@@ -23,7 +23,7 @@ class AdminExamsCubit extends Cubit<AdminExamsState> {
     int? lessonId,
   }) async {
     if (page == 1) {
-      emit(AdminExamsLoading());
+      if (!isClosed) emit(AdminExamsLoading());
       _questions.clear();
       currentPagination = null;
     }
@@ -34,10 +34,13 @@ class AdminExamsCubit extends Cubit<AdminExamsState> {
       difficulty: difficulty,
       lessonId: lessonId,
     );
+    if (isClosed) return;
 
     result.fold(
       (failure) {
-        if (page == 1) emit(AdminExamsError(failure.message));
+        if (page == 1) {
+          if (!isClosed) emit(AdminExamsError(failure.message));
+        }
       },
       (pagination) {
         currentPagination = pagination;
@@ -56,7 +59,7 @@ class AdminExamsCubit extends Cubit<AdminExamsState> {
           data: List.from(_questions),
         );
         currentPagination = updatedPagination;
-        emit(AdminExamsLoaded(updatedPagination));
+        if (!isClosed) emit(AdminExamsLoaded(updatedPagination));
       },
     );
   }
@@ -64,29 +67,32 @@ class AdminExamsCubit extends Cubit<AdminExamsState> {
   Future<void> reviewQuestion(int questionId, String decision, [String? rejectionReason]) async {
     final currentState = state;
     
-    emit(AdminExamReviewLoading(questionId));
+    if (!isClosed) emit(AdminExamReviewLoading(questionId));
 
     final result = await reviewQuestionUseCase(
       questionId: questionId,
       decision: decision,
       rejectionReason: rejectionReason,
     );
+    if (isClosed) return;
 
     result.fold(
       (failure) {
-        emit(AdminExamReviewError(failure.message));
-        if (currentState is AdminExamsLoaded) {
-          emit(currentState);
-        } else if (currentPagination != null) {
-          final updatedPagination = AdminQuestionPaginationEntity(
-            currentPage: currentPagination!.currentPage,
-            lastPage: currentPagination!.lastPage,
-            perPage: currentPagination!.perPage,
-            total: currentPagination!.total,
-            data: List.from(_questions),
-          );
-          currentPagination = updatedPagination;
-          emit(AdminExamsLoaded(updatedPagination));
+        if (!isClosed) {
+          emit(AdminExamReviewError(failure.message));
+          if (currentState is AdminExamsLoaded) {
+            emit(currentState);
+          } else if (currentPagination != null) {
+            final updatedPagination = AdminQuestionPaginationEntity(
+              currentPage: currentPagination!.currentPage,
+              lastPage: currentPagination!.lastPage,
+              perPage: currentPagination!.perPage,
+              total: currentPagination!.total,
+              data: List.from(_questions),
+            );
+            currentPagination = updatedPagination;
+            emit(AdminExamsLoaded(updatedPagination));
+          }
         }
       },
       (updatedQuestion) {
@@ -94,18 +100,20 @@ class AdminExamsCubit extends Cubit<AdminExamsState> {
         if (index != -1) {
           _questions[index] = updatedQuestion;
         }
-        emit(AdminExamReviewSuccess(updatedQuestion));
-        
-        if (currentPagination != null) {
-          final updatedPagination = AdminQuestionPaginationEntity(
-            currentPage: currentPagination!.currentPage,
-            lastPage: currentPagination!.lastPage,
-            perPage: currentPagination!.perPage,
-            total: currentPagination!.total,
-            data: List.from(_questions),
-          );
-          currentPagination = updatedPagination;
-          emit(AdminExamsLoaded(updatedPagination));
+        if (!isClosed) {
+          emit(AdminExamReviewSuccess(updatedQuestion));
+          
+          if (currentPagination != null) {
+            final updatedPagination = AdminQuestionPaginationEntity(
+              currentPage: currentPagination!.currentPage,
+              lastPage: currentPagination!.lastPage,
+              perPage: currentPagination!.perPage,
+              total: currentPagination!.total,
+              data: List.from(_questions),
+            );
+            currentPagination = updatedPagination;
+            emit(AdminExamsLoaded(updatedPagination));
+          }
         }
       },
     );

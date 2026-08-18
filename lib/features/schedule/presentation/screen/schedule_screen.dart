@@ -14,6 +14,8 @@ import 'package:moean/features/schedule/presentation/widgets/day_tabs_list.dart'
 import 'package:moean/features/schedule/presentation/widgets/schedule_app_bar.dart';
 import 'package:moean/features/schedule/presentation/widgets/status_strip.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
+import 'package:moean/features/payment/presentation/widgets/trial_banner_widget.dart';
+import 'package:moean/core/utils/constants/primary/upgrade_prompt_bottom_sheet.dart';
 
 class ScheduleScreen extends StatelessWidget {
   const ScheduleScreen({super.key});
@@ -24,12 +26,22 @@ class ScheduleScreen extends StatelessWidget {
       create: (context) => ScheduleCubit()..getSchedule(),
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, themeState) {
-          return Scaffold(
-            
+          return BlocListener<ScheduleCubit, ScheduleState>(
+            listener: (context, state) {
+              if (state is SchedulePaymentRequired) {
+                UpgradePromptBottomSheet.show(
+                  context,
+                  message: state.message,
+                  isQuotaExceeded: state.code == 'quota_exceeded',
+                );
+              }
+            },
+            child: Scaffold(
             backgroundColor: ColorsManager.scheduleBackground,
             body: SafeArea(
               child: Column(
                 children: [
+                  const TrialBannerWidget(),
                   const ScheduleAppBar(),
                   verticalSpace16,
                   const StatusStrip(),
@@ -115,6 +127,7 @@ class ScheduleScreen extends StatelessWidget {
                 ],
               ),
             ),
+          ),
           );
         },
       ),

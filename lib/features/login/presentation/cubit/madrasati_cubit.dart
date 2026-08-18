@@ -51,7 +51,7 @@ class MadrasatiCubit extends Cubit<MadrasatiState> {
     debugPrint('   refreshToken (from caller): ${refreshToken != null ? '✅ "${refreshToken.substring(0, refreshToken.length.clamp(0, 20))}…"' : '❌ null'}');
     debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-    emit(MadrasatiLoadingState());
+    if (!isClosed) emit(MadrasatiLoadingState());
     debugPrint('🔄 [MadrasatiCubit] State → MadrasatiLoadingState');
 
     try {
@@ -65,11 +65,13 @@ class MadrasatiCubit extends Cubit<MadrasatiState> {
         },
       );
 
+      if (isClosed) return;
+
       response.fold(
         (error) {
           debugPrint('💥 [MadrasatiCubit] API returned LEFT (error): $error');
           debugPrint('❌ [MadrasatiCubit] State → MadrasatiErrorState');
-          emit(MadrasatiErrorState(error));
+          if (!isClosed) emit(MadrasatiErrorState(error));
 
         },
 
@@ -163,10 +165,10 @@ class MadrasatiCubit extends Cubit<MadrasatiState> {
             debugPrint('   notifySessionActive() called ✅');
 
             debugPrint('✅ [MadrasatiCubit] State → MadrasatiSuccessState("$message")');
-            emit(MadrasatiSuccessState(message));
+            if (!isClosed) emit(MadrasatiSuccessState(message));
           } else {
             debugPrint('❌ [MadrasatiCubit] success=false → State → MadrasatiErrorState("$message")');
-            emit(MadrasatiErrorState(message));
+            if (!isClosed) emit(MadrasatiErrorState(message));
           }
         },
       );
@@ -174,7 +176,7 @@ class MadrasatiCubit extends Cubit<MadrasatiState> {
       debugPrint('💥 [MadrasatiCubit] Exception caught: $e');
       debugPrint('   StackTrace: $st');
       debugPrint('❌ [MadrasatiCubit] State → MadrasatiErrorState');
-      emit(MadrasatiErrorState(e.toString()));
+      if (!isClosed) emit(MadrasatiErrorState(e.toString()));
     }
 
     debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

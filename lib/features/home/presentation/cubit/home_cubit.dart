@@ -18,12 +18,12 @@ class HomeCubit extends Cubit<HomeState> {
   bool isLoadingRole = true;
 
   void onSearchChanged(String query) {
-    emit(HomeSearchChanged(query: query));
+    if (!isClosed) emit(HomeSearchChanged(query: query));
   }
 
   void onCategorySelected(int index) {
     selectedCategoryIndex = index;
-    emit(HomeCategoryChanged(selectedIndex: index));
+    if (!isClosed) emit(HomeCategoryChanged(selectedIndex: index));
   }
 
   Future<void> checkRole() async {
@@ -33,15 +33,16 @@ class HomeCubit extends Cubit<HomeState> {
       if (cachedIsAdmin != null && cachedIsAdmin is bool && cachedToken == token) {
         isAdmin = cachedIsAdmin;
         isLoadingRole = false;
-        emit(HomeRoleChecked(isAdmin: isAdmin));
+        if (!isClosed) emit(HomeRoleChecked(isAdmin: isAdmin));
         return;
       }
 
       final result = await ApiService.getProfile();
+      if (isClosed) return;
       result.fold(
         (error) {
           isLoadingRole = false;
-          emit(HomeRoleChecked(isAdmin: isAdmin)); // emit with current/default
+          if (!isClosed) emit(HomeRoleChecked(isAdmin: isAdmin)); // emit with current/default
         },
         (profile) {
           final admin = profile.role == 'admin' || profile.user.email == 'admin@moeen.sa';
@@ -49,12 +50,12 @@ class HomeCubit extends Cubit<HomeState> {
           CacheHelper.saveData(key: 'admin_token', value: token);
           isAdmin = admin;
           isLoadingRole = false;
-          emit(HomeRoleChecked(isAdmin: isAdmin));
+          if (!isClosed) emit(HomeRoleChecked(isAdmin: isAdmin));
         },
       );
     } else {
       isLoadingRole = false;
-      emit(HomeRoleChecked(isAdmin: false));
+      if (!isClosed) emit(HomeRoleChecked(isAdmin: false));
     }
   }
 

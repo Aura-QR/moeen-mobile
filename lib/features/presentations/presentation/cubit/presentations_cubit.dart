@@ -65,31 +65,33 @@ class PresentationsCubit extends Cubit<PresentationsState> {
   Future<void> _loadSubjects() async {
     isDataLoading = true;
     dataErrorMessage = null;
-    emit(PresentationsInitial());
+    if (!isClosed) emit(PresentationsInitial());
     
     final result = await ApiService.getSubjects();
+    if (isClosed) return;
     result.fold(
       (failure) => dataErrorMessage = failure.message,
       (data) => stages = data,
     );
     
     isDataLoading = false;
-    emit(PresentationsInitial());
+    if (!isClosed) emit(PresentationsInitial());
   }
 
   Future<void> _loadSubjectLessons(int subjectId) async {
     isDataLoading = true;
     dataErrorMessage = null;
-    emit(PresentationsInitial());
+    if (!isClosed) emit(PresentationsInitial());
     
     final result = await ApiService.getSubjectLessons(subjectId);
+    if (isClosed) return;
     result.fold(
       (failure) => dataErrorMessage = failure.message,
       (data) => subjectDetails = data,
     );
     
     isDataLoading = false;
-    emit(PresentationsInitial());
+    if (!isClosed) emit(PresentationsInitial());
   }
 
   void updateSelection({
@@ -141,13 +143,13 @@ class PresentationsCubit extends Cubit<PresentationsState> {
     if (template != null) selectedTemplate = template;
     if (slidesCount != null) selectedSlidesCount = slidesCount;
     
-    emit(PresentationsInitial());
+    if (!isClosed) emit(PresentationsInitial());
   }
 
   Future<void> createPresentation() async {
     if (!canCreate) return;
 
-    emit(PresentationsLoading());
+    if (!isClosed) emit(PresentationsLoading());
     
     int lessonId = selectedLesson!.id;
 
@@ -177,25 +179,36 @@ class PresentationsCubit extends Cubit<PresentationsState> {
       payload: payload,
     );
 
+    if (isClosed) return;
+
     result.fold(
       (error) {
-        if (error.contains('Webhook returned HTTP 200') || error.contains('not valid JSON')) {
-          // The n8n webhook might have started generation in the background but failed to return a JSON response.
-          // Treat this as 'pending' and start polling.
-          _pollPresentation(lessonId, selectedTemplate);
-        } else {
-          emit(PresentationsError(error));
+        if (!isClosed) {
+          if (error.startsWith('__402__:')) {
+            final parts = error.split(':');
+            final code = parts.length > 1 ? parts[1] : 'quota_exceeded';
+            final msg = parts.length > 2 ? parts.sublist(2).join(':') : 'ترقية الحساب المطلوبة';
+            emit(PresentationsPaymentRequired(msg, code));
+          } else if (error.contains('Webhook returned HTTP 200') || error.contains('not valid JSON')) {
+            // The n8n webhook might have started generation in the background but failed to return a JSON response.
+            // Treat this as 'pending' and start polling.
+            _pollPresentation(lessonId, selectedTemplate);
+          } else {
+            emit(PresentationsError(error));
+          }
         }
       },
       (presentation) {
-        if (presentation.status == 'ready') {
-          generatedPresentation = presentation;
-          emit(PresentationsSuccess(presentation));
-        } else if (presentation.status == 'failed') {
-          emit(PresentationsError(presentation.generationError ?? 'فشل في إنشاء العرض'));
-        } else {
-          // Poll
-          _pollPresentation(lessonId, selectedTemplate);
+        if (!isClosed) {
+          if (presentation.status == 'ready') {
+            generatedPresentation = presentation;
+            emit(PresentationsSuccess(presentation));
+          } else if (presentation.status == 'failed') {
+            emit(PresentationsError(presentation.generationError ?? 'فشل في إنشاء العرض'));
+          } else {
+            // Poll
+            _pollPresentation(lessonId, selectedTemplate);
+          }
         }
       },
     );
@@ -246,20 +259,21 @@ class PresentationsCubit extends Cubit<PresentationsState> {
         lessonId: lessonId,
         templateId: templateId,
       );
+      if (isClosed) return;
 
       bool stopPolling = false;
       result.fold(
         (error) {
-          emit(PresentationsError(error));
+          if (!isClosed) emit(PresentationsError(error));
           stopPolling = true;
         },
         (presentation) {
           if (presentation.status == 'ready') {
             generatedPresentation = presentation;
-            emit(PresentationsSuccess(presentation));
+            if (!isClosed) emit(PresentationsSuccess(presentation));
             stopPolling = true;
           } else if (presentation.status == 'failed') {
-            emit(PresentationsError(presentation.generationError ?? 'فشل في إنشاء العرض'));
+            if (!isClosed) emit(PresentationsError(presentation.generationError ?? 'فشل في إنشاء العرض'));
             stopPolling = true;
           }
         },
@@ -284,6 +298,6 @@ class PresentationsCubit extends Cubit<PresentationsState> {
     selectedTemplate = 'emerald-green';
     selectedSlidesCount = '8';
     generatedPresentation = null;
-    emit(PresentationsInitial());
+    if (!isClosed) emit(PresentationsInitial());
   }
 }

@@ -12,6 +12,7 @@ import 'package:moean/features/exam_generation/domain/repositories/exam_reposito
 import 'package:moean/features/exam_generation/data/repositories/exam_repository_impl.dart' as moean_exam;
 import 'package:moean/features/exam_generation/domain/usecases/generate_exam_usecase.dart' as moean_exam;
 import 'package:moean/features/exam_generation/domain/usecases/get_exam_usecase.dart' as moean_exam;
+import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
 import 'package:moean/features/exam_generation/domain/usecases/update_question_points_usecase.dart' as moean_exam;
 import 'package:moean/features/exam_generation/domain/usecases/add_manual_question_usecase.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/exam_info_cubit.dart' as moean_exam;
@@ -32,6 +33,8 @@ import 'package:moean/features/admin/exams/domain/repositories/admin_exam_reposi
 import 'package:moean/features/admin/exams/domain/usecases/get_pending_questions_usecase.dart';
 import 'package:moean/features/admin/exams/domain/usecases/review_question_usecase.dart';
 import 'package:moean/features/admin/exams/presentation/cubit/admin_exams_cubit.dart';
+
+import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -130,4 +133,10 @@ Future<void> initInjections() async {
         getPendingQuestionsUseCase: sl(),
         reviewQuestionUseCase: sl(),
       ));
+
+  // ─── Subscription ──────────────────────────────────────────────
+  sl.registerLazySingleton(() => SubscriptionCubit());
+
+  // ─── Profile ──────────────────────────────────────────────────
+  sl.registerLazySingleton(() => ProfileCubit());
 }

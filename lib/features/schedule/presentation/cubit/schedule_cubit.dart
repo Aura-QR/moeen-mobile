@@ -31,7 +31,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     final weekDate = _currentWeekDate();
     
     // Emit loading state initially
-    emit(ScheduleLoading());
+    if (!isClosed) emit(ScheduleLoading());
     
     // 1. Fetch from /api/schedule
     final result = await ApiService.getSchedule(weekDate: weekDate);
@@ -41,7 +41,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     result.fold(
       (error) {
         debugPrint('❌ Schedule Error Response: $error');
-        emit(ScheduleError(error));
+        if (!isClosed) emit(ScheduleError(error));
       },
       (data) {
         _handleData(data, weekDate);
@@ -80,7 +80,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   }
 
   Future<void> refreshSchedule() async {
-    emit(ScheduleLoading());
+    if (!isClosed) emit(ScheduleLoading());
     final weekDate = _currentWeekDate();
     
     // When user explicitly clicks refresh, we trigger the sync process
@@ -91,7 +91,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     syncResult.fold(
       (error) {
         debugPrint('❌ Refresh Sync Error: $error');
-        emit(ScheduleError(error));
+        if (!isClosed) emit(ScheduleError(error));
       },
       (syncData) async {
         // Then get from /api/schedule
@@ -102,7 +102,7 @@ class ScheduleCubit extends Cubit<ScheduleState> {
         freshResult.fold(
           (error) {
             debugPrint('❌ Fresh Schedule Error: $error');
-            emit(ScheduleError(error));
+            if (!isClosed) emit(ScheduleError(error));
           },
           (data) {
             _handleData(data, weekDate);
@@ -139,9 +139,17 @@ class ScheduleCubit extends Cubit<ScheduleState> {
       encryptedToken: classModel.encryptedToken,
     );
 
+    if (isClosed) return;
+
     result.fold(
       (error) {
         debugPrint('❌ Lesson Preparation Error: $error');
+        if (!isClosed && error.startsWith('__402__:')) {
+          final parts = error.split(':');
+          final code = parts.length > 1 ? parts[1] : 'quota_exceeded';
+          final msg = parts.length > 2 ? parts.sublist(2).join(':') : 'ترقية الحساب المطلوبة';
+          emit(SchedulePaymentRequired(msg, code));
+        }
         // emit(SchedulePrepareError(error)); // Handle error state if UI needs to react
       },
       (data) {
@@ -161,8 +169,16 @@ class ScheduleCubit extends Cubit<ScheduleState> {
   void _startPolling(int preparationId) {
     _pollingTimer?.cancel();
     _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      if (isClosed) {
+        timer.cancel();
+        return;
+      }
       debugPrint('⏳ Polling preparation status for ID: $preparationId');
       final result = await ApiService.checkPreparationStatus(preparationId: preparationId);
+      if (isClosed) {
+        timer.cancel();
+        return;
+      }
       
       result.fold(
         (error) {
@@ -194,13 +210,15 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     if (state is! ScheduleLoaded) return;
     final current = state as ScheduleLoaded;
     final selected = current.days[index];
-    emit(ScheduleLoaded(
-      days: current.days,
-      classes: _classesForDay(current.allClasses, selected.dayOfWeek),
-      allClasses: current.allClasses,
-      selectedDayIndex: index,
-      availableLessons: current.availableLessons,
-    ));
+    if (!isClosed) {
+      emit(ScheduleLoaded(
+        days: current.days,
+        classes: _classesForDay(current.allClasses, selected.dayOfWeek),
+        allClasses: current.allClasses,
+        selectedDayIndex: index,
+        availableLessons: current.availableLessons,
+      ));
+    }
   }
 
   Future<void> fetchAvailableLessonsIfNeeded() async {
@@ -214,13 +232,15 @@ class ScheduleCubit extends Cubit<ScheduleState> {
     result.fold(
       (error) => debugPrint('❌ Available Lessons Error: $error'),
       (data) {
-        emit(ScheduleLoaded(
-          days: current.days,
-          classes: current.classes,
-          allClasses: current.allClasses,
-          selectedDayIndex: current.selectedDayIndex,
-          availableLessons: data,
-        ));
+        if (!isClosed) {
+          emit(ScheduleLoaded(
+            days: current.days,
+            classes: current.classes,
+            allClasses: current.allClasses,
+            selectedDayIndex: current.selectedDayIndex,
+            availableLessons: data,
+          ));
+        }
       },
     );
   }

@@ -49,7 +49,7 @@ class BankQuestionsCubit extends Cubit<BankQuestionsState> {
     if (_currentLessonId != -1) {
       _currentPage = 1;
       _allQuestions = [];
-      emit(BankQuestionsLoading());
+      if (!isClosed) emit(BankQuestionsLoading());
       loadQuestionsForLesson(_currentLessonId, refresh: true);
     }
   }
@@ -60,7 +60,7 @@ class BankQuestionsCubit extends Cubit<BankQuestionsState> {
       _currentPage = 1;
       _allQuestions = [];
       // Do not clear _allSelectedQuestionIds to keep selection across lessons
-      emit(BankQuestionsLoading());
+      if (!isClosed) emit(BankQuestionsLoading());
     } else if (_currentPage >= _lastPage || _isLoadingMore) {
       return;
     } else {
@@ -75,10 +75,12 @@ class BankQuestionsCubit extends Cubit<BankQuestionsState> {
       page: _currentPage,
     );
 
+    if (isClosed) return;
+
     result.fold(
       (error) {
         if (_currentPage == 1) {
-          emit(BankQuestionsError(error.toString()));
+          if (!isClosed) emit(BankQuestionsError(error.toString()));
         } else {
           _currentPage--;
           _isLoadingMore = false;
@@ -138,6 +140,7 @@ class BankQuestionsCubit extends Cubit<BankQuestionsState> {
   }
 
   void _emitState() {
+    if (isClosed) return;
     final selectedForCurrent = _allSelectedQuestionIds[_currentLessonId] ?? [];
     emit(BankQuestionsUpdated(
       questions: List.from(_allQuestions),

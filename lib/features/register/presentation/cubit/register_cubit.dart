@@ -5,6 +5,8 @@ import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/core/models/register_request.dart';
 import 'package:moean/core/network/local/cache_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/di/injections.dart';
+import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
 
 enum AccountType { teacher, supervisor }
 
@@ -48,14 +50,14 @@ class RegisterCubit extends Cubit<RegisterState> {
 
   Future<void> register() async {
     if (!(formKey.currentState?.validate() ?? false)) {
-      emit(RegisterInitialState());
+      if (!isClosed) emit(RegisterInitialState());
       return;
     }
     if (!agreeToTerms) {
-      emit(RegisterErrorState(message: 'يجب الموافقة على الشروط والأحكام'));
+      if (!isClosed) emit(RegisterErrorState(message: 'يجب الموافقة على الشروط والأحكام'));
       return;
     }
-    emit(RegisterLoadingState());
+    if (!isClosed) emit(RegisterLoadingState());
 
     try {
       final referralCode = CacheHelper.getData(key: 'referral_code')?.toString();
@@ -70,10 +72,11 @@ class RegisterCubit extends Cubit<RegisterState> {
       );
 
       final result = await ApiService.registerUser(request);
+      if (isClosed) return;
 
       result.fold(
         (error) {
-          emit(RegisterErrorState(message: error));
+          if (!isClosed) emit(RegisterErrorState(message: error));
           debugPrint('Register Error: $error');
         },
         (response) async {
@@ -86,13 +89,14 @@ class RegisterCubit extends Cubit<RegisterState> {
           }
 
           token = response.token;
-          emit(RegisterSuccessState());
+          sl<SubscriptionCubit>().fetchCurrentSubscription();
+          if (!isClosed) emit(RegisterSuccessState());
           debugPrint('Register Success: $response');
         },
       );
     } catch (e, stack) {
       debugPrint('Register Exception: $e\n$stack');
-      emit(RegisterErrorState(message: e.toString()));
+      if (!isClosed) emit(RegisterErrorState(message: e.toString()));
     }
   }
 

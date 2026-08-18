@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moean/core/errors/failures.dart';
 import 'package:moean/features/exam_generation/domain/entities/exam_entities.dart';
 import 'package:moean/features/exam_generation/domain/usecases/generate_exam_usecase.dart';
 
@@ -18,6 +19,12 @@ class GenerateExamError extends GenerateExamState {
   GenerateExamError(this.message);
 }
 
+class GenerateExamPaymentRequired extends GenerateExamState {
+  final String message;
+  final String code;
+  GenerateExamPaymentRequired(this.message, this.code);
+}
+
 class GenerateExamCubit extends Cubit<GenerateExamState> {
   final GenerateExamUseCase generateExamUseCase;
 
@@ -31,7 +38,7 @@ class GenerateExamCubit extends Cubit<GenerateExamState> {
     required Map<int, RequestedCountsEntity> counts,
     Map<int, List<int>>? selectedQuestionIds,
   }) async {
-    emit(GenerateExamLoading());
+    if (!isClosed) emit(GenerateExamLoading());
 
     // Map the selected lessons with their respective requested counts to match the API contract
     final List<Map<String, dynamic>> requestedLessons = [];
@@ -63,9 +70,21 @@ class GenerateExamCubit extends Cubit<GenerateExamState> {
       lessons: requestedLessons,
     );
 
+    if (isClosed) return;
+
     result.fold(
-      (failure) => emit(GenerateExamError(failure.message)),
-      (exam) => emit(GenerateExamSuccess(exam)),
+      (failure) {
+        if (!isClosed) {
+          if (failure is PaymentRequiredFailure) {
+            emit(GenerateExamPaymentRequired(failure.message, failure.code));
+          } else {
+            emit(GenerateExamError(failure.message));
+          }
+        }
+      },
+      (exam) {
+        if (!isClosed) emit(GenerateExamSuccess(exam));
+      },
     );
   }
 }

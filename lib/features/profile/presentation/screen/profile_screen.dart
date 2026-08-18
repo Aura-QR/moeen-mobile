@@ -10,59 +10,102 @@ import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
 import 'package:moean/features/profile/presentation/widgets/profile_info_card.dart';
+import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
+import 'package:moean/features/payment/presentation/cubit/subscription_state.dart';
+import 'package:moean/core/di/injections.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    sl<ProfileCubit>().fetchProfile();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ProfileCubit()..fetchProfile(),
-      child: BlocConsumer<ProfileCubit, ProfileState>(
-        listener: (context, state) {
-          if (state is ProfileLogoutSuccessState) {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.login,
-              (route) => false,
-            );
-          }
-        },
-        builder: (context, state) {
-          final cubit = ProfileCubit.get(context);
-          return BlocBuilder<ThemeCubit, ThemeState>(
-            builder: (context, themeState) {
-              return Scaffold(
-                backgroundColor: ColorsManager.background,
-                appBar: AppBar(
-                  backgroundColor: ColorsManager.surfacePrimary,
-                  elevation: 0,
-                  centerTitle: true,
-                  title: Text(
-                    appTranslation().get('profile'),
-                    style: TextStylesManager.bold18.copyWith(
-                      color: ColorsManager.textPrimary,
+    return BlocConsumer<ProfileCubit, ProfileState>(
+      bloc: sl<ProfileCubit>(),
+      listener: (context, state) {
+        if (state is ProfileLogoutSuccessState) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            Routes.login,
+            (route) => false,
+          );
+        }
+      },
+      builder: (context, state) {
+        final cubit = sl<ProfileCubit>();
+        return BlocBuilder<ThemeCubit, ThemeState>(
+          builder: (context, themeState) {
+            return Scaffold(
+              backgroundColor: ColorsManager.background,
+              appBar: AppBar(
+                backgroundColor: ColorsManager.surfacePrimary,
+                elevation: 0,
+                centerTitle: true,
+                title: Text(
+                  appTranslation().get('profile'),
+                  style: TextStylesManager.bold18.copyWith(
+                    color: ColorsManager.textPrimary,
+                  ),
+                ),
+              ),
+              body: ConditionalBuilder(
+                loadingState: state is ProfileLoadingState && cubit.profileModel == null,
+                errorState: state is ProfileErrorState && cubit.profileModel == null,
+                errorBuilder: (context) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          (state as ProfileErrorState).message,
+                          textAlign: TextAlign.center,
+                          style: TextStylesManager.regular16.copyWith(color: ColorsManager.errorColor),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            cubit.fetchProfile(forceRefresh: true);
+                            sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ColorsManager.primaryColor,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: Text(appTranslation().get('retry')),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                body: ConditionalBuilder(
-                  loadingState: state is ProfileLoadingState,
-                  errorState: state is ProfileErrorState,
-                  errorBuilder: (context) => Center(
-                    child: Text(
-                      (state as ProfileErrorState).message,
-                      style: TextStylesManager.regular16.copyWith(color: ColorsManager.errorColor),
-                    ),
-                  ),
-                  successBuilder: (context) {
-                    final profile = cubit.profileModel;
-                    if (profile == null) return const SizedBox.shrink();
+                successBuilder: (context) {
+                  final profile = cubit.profileModel;
+                  if (profile == null) return const SizedBox.shrink();
 
-                    // Bottom padding = bottom nav bar height (60) + system nav inset
-                    final double bottomInset =
-                        MediaQuery.of(context).padding.bottom + 60 + 24;
+                  // Bottom padding = bottom nav bar height (60) + system nav inset
+                  final double bottomInset =
+                      MediaQuery.of(context).padding.bottom + 60 + 24;
 
-                    return SingleChildScrollView(
+                  return RefreshIndicator(
+                    color: ColorsManager.primaryColor,
+                    onRefresh: () async {
+                      await Future.wait([
+                        sl<ProfileCubit>().fetchProfile(forceRefresh: true),
+                        sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true),
+                      ]);
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.fromLTRB(24, 24, 24, bottomInset),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -111,13 +154,31 @@ class ProfileScreen extends StatelessWidget {
                               value: profile.subscriptionName!,
                               iconColor: ColorsManager.secondaryColor,
                             ),
-                          if (profile.aiQuotaRemaining != null)
-                            ProfileInfoCard(
-                              icon: Icons.auto_awesome_outlined,
-                              title: appTranslation().get('ai_quota'),
-                              value: profile.aiQuotaRemaining.toString(),
-                              iconColor: ColorsManager.themePink,
-                            ),
+                          BlocBuilder<SubscriptionCubit, SubscriptionState>(
+                            bloc: sl<SubscriptionCubit>(),
+                            builder: (context, subState) {
+                              if (subState is SubscriptionLoaded) {
+                                final usage = subState.current.usage;
+                                return Column(
+                                  children: [
+                                    ProfileInfoCard(
+                                      icon: Icons.auto_awesome_outlined,
+                                      title: 'رصيد الذكاء الاصطناعي',
+                                      value: usage.aiRemaining.toString(),
+                                      iconColor: ColorsManager.themePink,
+                                    ),
+                                    ProfileInfoCard(
+                                      icon: Icons.chrome_reader_mode_outlined,
+                                      title: 'الدروس المتبقية لليوم',
+                                      value: usage.lessonsRemainingToday.toString(),
+                                      iconColor: ColorsManager.primaryColor,
+                                    ),
+                                  ],
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
                           ProfileInfoCard(
                             icon: profile.madrasatiConnected ? Icons.link : Icons.link_off,
                             title: appTranslation().get('madrasati_status'),
@@ -128,14 +189,14 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                    );
-                  },
-                ),
-              );
-            },
-          );
-        },
-      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

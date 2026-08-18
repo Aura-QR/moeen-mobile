@@ -8,6 +8,7 @@ import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
+import 'package:moean/core/di/injections.dart';
 import 'package:moean/features/profile/presentation/widgets/logout_dialog.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -15,20 +16,19 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ProfileCubit(),
-      child: BlocConsumer<ProfileCubit, ProfileState>(
-        listener: (context, state) {
-          if (state is ProfileLogoutSuccessState) {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              Routes.login,
-              (route) => false,
-            );
-          }
-        },
-        builder: (context, state) {
-          final profileCubit = ProfileCubit.get(context);
+    return BlocConsumer<ProfileCubit, ProfileState>(
+      bloc: sl<ProfileCubit>(),
+      listener: (context, state) {
+        if (state is ProfileLogoutSuccessState) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            Routes.login,
+            (route) => false,
+          );
+        }
+      },
+      builder: (context, state) {
+        final profileCubit = sl<ProfileCubit>();
           return BlocBuilder<ThemeCubit, ThemeState>(
             builder: (context, themeState) {
               final themeCubit = ThemeCubit.get(context);
@@ -175,7 +175,6 @@ class SettingsScreen extends StatelessWidget {
             },
           );
         },
-      ),
-    );
+      );
   }
 }

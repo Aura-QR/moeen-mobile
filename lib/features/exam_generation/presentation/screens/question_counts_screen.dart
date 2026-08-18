@@ -11,6 +11,7 @@ import 'package:moean/features/exam_generation/presentation/cubit/exam_info_cubi
 import 'package:moean/features/exam_generation/presentation/cubit/generate_exam_cubit.dart';
 import 'package:moean/features/exam_generation/presentation/cubit/lesson_selection_cubit.dart';
 import 'package:moean/features/exam_generation/presentation/cubit/question_count_cubit.dart';
+import 'package:moean/core/utils/constants/primary/upgrade_prompt_bottom_sheet.dart';
 
 class QuestionCountsScreen extends StatefulWidget {
   const QuestionCountsScreen({super.key});
@@ -64,6 +65,12 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
               content: Text(state.message, style: TextStylesManager.bold14),
               backgroundColor: ColorsManager.errorColor,
             ),
+          );
+        } else if (state is GenerateExamPaymentRequired) {
+          UpgradePromptBottomSheet.show(
+            context,
+            message: state.message,
+            isQuotaExceeded: state.code == 'quota_exceeded',
           );
         } else if (state is GenerateExamSuccess) {
           // Success, navigate to preview screen passing the exam
@@ -336,7 +343,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                           ),
                           verticalSpace8,
                           Text(
-                            'قد يستغرق هذا الإجراء حتى 90 ثانية',
+                             'قد يستغرق هذا الإجراء دقيقة', 
                             style: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
                           ),
                         ],

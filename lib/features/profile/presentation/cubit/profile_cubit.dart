@@ -7,6 +7,7 @@ import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
 import 'package:moean/core/models/profile_model.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/services/madrasati_session_service.dart';
+import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
   ProfileCubit() : super(ProfileInitialState());
@@ -14,30 +15,51 @@ class ProfileCubit extends Cubit<ProfileState> {
   static ProfileCubit get(BuildContext context) => BlocProvider.of(context);
 
   ProfileModel? profileModel;
+  bool _isLoading = false;
 
-  Future<void> fetchProfile() async {
-    emit(ProfileLoadingState());
+  Future<void> fetchProfile({bool forceRefresh = false}) async {
+    if (token == null || token!.isEmpty) return;
+    if (_isLoading) return;
+
+    if (!forceRefresh && profileModel != null) {
+      if (!isClosed) emit(ProfileLoadedState(profile: profileModel!));
+      return;
+    }
+
+    _isLoading = true;
+    if (profileModel == null && !isClosed) {
+      emit(ProfileLoadingState());
+    }
+
     final result = await ApiService.getProfile();
+    _isLoading = false;
+    if (isClosed) return;
+
     result.fold(
-      (error) => emit(ProfileErrorState(message: error)),
+      (error) {
+        if (!isClosed) emit(ProfileErrorState(message: error));
+      },
       (profile) {
         profileModel = profile;
-        emit(ProfileLoadedState(profile: profile));
+        sl<SubscriptionCubit>().fetchCurrentSubscription();
+        if (!isClosed) emit(ProfileLoadedState(profile: profile));
       },
     );
   }
 
   Future<void> logout() async {
-    emit(ProfileLogoutLoadingState());
+    if (!isClosed) emit(ProfileLogoutLoadingState());
 
     try {
       // 1. مسح التوكن فوراً من الذاكرة والـ Storage
       final secureStorage = sl<SecureStorageHelper>();
       await secureStorage.deleteToken();
       token = null;
+      clearData();
+      sl<SubscriptionCubit>().clearData();
 
       // 2. إرسال حالة النجاح فوراً لكي تلتقطها الشاشة قبل أي Rebuild
-      emit(ProfileLogoutSuccessState());
+      if (!isClosed) emit(ProfileLogoutSuccessState());
 
       // 3. تصفير جلسة مدرستي وطلب السيرفر في الخلفية
       sl<MadrasatiSessionService>().reset();
@@ -47,11 +69,14 @@ class ProfileCubit extends Cubit<ProfileState> {
       debugPrint('Logout error: $e');
       // في حال حدوث خطأ، نضمن أيضاً إرسال النجاح لتسجيل الخروج محلياً
       token = null;
-      emit(ProfileLogoutSuccessState());
+      clearData();
+      sl<SubscriptionCubit>().clearData();
+      if (!isClosed) emit(ProfileLogoutSuccessState());
     }
   }
 
   void clearData() {
     profileModel = null;
+    if (!isClosed) emit(ProfileInitialState());
   }
 }

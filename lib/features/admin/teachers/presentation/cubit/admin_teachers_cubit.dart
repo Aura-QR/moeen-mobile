@@ -23,11 +23,12 @@ class AdminTeachersCubit extends Cubit<AdminTeachersState> {
 
   void getSubscriptions() async {
     final result = await AdminTeachersRepository.getSubscriptions();
+    if (isClosed) return;
     result.fold(
       (error) {}, // Handle error if needed
       (data) {
         subscriptionsList = data;
-        emit(AdminTeacherFilterChangedState()); // Trigger a rebuild to update dialogs
+        if (!isClosed) emit(AdminTeacherFilterChangedState()); // Trigger a rebuild to update dialogs
       },
     );
   }
@@ -40,7 +41,7 @@ class AdminTeachersCubit extends Cubit<AdminTeachersState> {
     } else {
       currentPage = 1;
       teachersList.clear();
-      emit(GetTeachersLoadingState());
+      if (!isClosed) emit(GetTeachersLoadingState());
     }
 
     final result = await AdminTeachersRepository.getTeachers(
@@ -49,10 +50,11 @@ class AdminTeachersCubit extends Cubit<AdminTeachersState> {
       search: searchQuery,
       status: statusFilter,
     );
+    if (isClosed) return;
 
     result.fold(
       (error) {
-        emit(GetTeachersErrorState(error));
+        if (!isClosed) emit(GetTeachersErrorState(error));
       },
       (data) {
         paginationModel = data;
@@ -62,7 +64,7 @@ class AdminTeachersCubit extends Cubit<AdminTeachersState> {
           teachersList = List.from(data.data);
         }
         isLastPage = data.currentPage >= data.lastPage;
-        emit(GetTeachersSuccessState(data));
+        if (!isClosed) emit(GetTeachersSuccessState(data));
       },
     );
   }
@@ -72,13 +74,13 @@ class AdminTeachersCubit extends Cubit<AdminTeachersState> {
     if (searchQuery!.isEmpty) {
       searchQuery = null;
     }
-    emit(AdminTeacherFilterChangedState());
+    if (!isClosed) emit(AdminTeacherFilterChangedState());
     getTeachers();
   }
 
   void onStatusFilterChanged(String? value) {
     statusFilter = value;
-    emit(AdminTeacherFilterChangedState());
+    if (!isClosed) emit(AdminTeacherFilterChangedState());
     getTeachers();
   }
 
@@ -89,7 +91,7 @@ class AdminTeachersCubit extends Cubit<AdminTeachersState> {
     required String password,
     required int subscriptionId,
   }) async {
-    emit(AdminTeacherActionLoadingState());
+    if (!isClosed) emit(AdminTeacherActionLoadingState());
     final result = await AdminTeachersRepository.createTeacher(
       name: name,
       email: email,
@@ -97,13 +99,14 @@ class AdminTeachersCubit extends Cubit<AdminTeachersState> {
       password: password,
       subscriptionId: subscriptionId,
     );
+    if (isClosed) return;
 
     result.fold(
       (error) {
-        emit(AdminTeacherActionErrorState(error));
+        if (!isClosed) emit(AdminTeacherActionErrorState(error));
       },
       (teacher) {
-        emit(AdminTeacherActionSuccessState('تم إضافة المعلم بنجاح'));
+        if (!isClosed) emit(AdminTeacherActionSuccessState('تم إضافة المعلم بنجاح'));
         getTeachers();
       },
     );
@@ -119,7 +122,7 @@ class AdminTeachersCubit extends Cubit<AdminTeachersState> {
     String? subscriptionEndsAt,
     String? password,
   }) async {
-    emit(AdminTeacherActionLoadingState());
+    if (!isClosed) emit(AdminTeacherActionLoadingState());
     final result = await AdminTeachersRepository.updateTeacher(
       id: id,
       name: name,
@@ -130,13 +133,14 @@ class AdminTeachersCubit extends Cubit<AdminTeachersState> {
       subscriptionEndsAt: subscriptionEndsAt,
       password: password,
     );
+    if (isClosed) return;
 
     result.fold(
       (error) {
-        emit(AdminTeacherActionErrorState(error));
+        if (!isClosed) emit(AdminTeacherActionErrorState(error));
       },
       (teacher) {
-        emit(AdminTeacherActionSuccessState('تم تحديث بيانات المعلم بنجاح'));
+        if (!isClosed) emit(AdminTeacherActionSuccessState('تم تحديث بيانات المعلم بنجاح'));
         getTeachers();
       },
     );
@@ -147,63 +151,67 @@ class AdminTeachersCubit extends Cubit<AdminTeachersState> {
     int? subscriptionId,
     int? months,
   }) async {
-    emit(AdminTeacherActionLoadingState());
+    if (!isClosed) emit(AdminTeacherActionLoadingState());
     final result = await AdminTeachersRepository.renewSubscription(
       id: id,
       subscriptionId: subscriptionId,
       months: months,
     );
+    if (isClosed) return;
 
     result.fold(
       (error) {
-        emit(AdminTeacherActionErrorState(error));
+        if (!isClosed) emit(AdminTeacherActionErrorState(error));
       },
       (teacher) {
-        emit(AdminTeacherActionSuccessState('تم تجديد الاشتراك بنجاح'));
+        if (!isClosed) emit(AdminTeacherActionSuccessState('تم تجديد الاشتراك بنجاح'));
         getTeachers();
       },
     );
   }
 
   Future<void> removeSubscription({required int id}) async {
-    emit(AdminTeacherActionLoadingState());
+    if (!isClosed) emit(AdminTeacherActionLoadingState());
     final result = await AdminTeachersRepository.removeSubscription(id: id);
+    if (isClosed) return;
 
     result.fold(
       (error) {
-        emit(AdminTeacherActionErrorState(error));
+        if (!isClosed) emit(AdminTeacherActionErrorState(error));
       },
       (teacher) {
-        emit(AdminTeacherActionSuccessState('تم إلغاء الاشتراك بنجاح'));
+        if (!isClosed) emit(AdminTeacherActionSuccessState('تم إلغاء الاشتراك بنجاح'));
         getTeachers();
       },
     );
   }
 
   Future<void> resetPassword({required int id}) async {
-    emit(AdminTeacherActionLoadingState());
+    if (!isClosed) emit(AdminTeacherActionLoadingState());
     final result = await AdminTeachersRepository.resetPassword(id: id);
+    if (isClosed) return;
 
     result.fold(
       (error) {
-        emit(AdminTeacherActionErrorState(error));
+        if (!isClosed) emit(AdminTeacherActionErrorState(error));
       },
       (password) {
-        emit(AdminTeacherPasswordResetSuccessState('تم إعادة تعيين كلمة المرور بنجاح', password, id));
+        if (!isClosed) emit(AdminTeacherPasswordResetSuccessState('تم إعادة تعيين كلمة المرور بنجاح', password, id));
       },
     );
   }
 
   Future<void> deleteTeacher({required int id}) async {
-    emit(AdminTeacherActionLoadingState());
+    if (!isClosed) emit(AdminTeacherActionLoadingState());
     final result = await AdminTeachersRepository.deleteTeacher(id: id);
+    if (isClosed) return;
 
     result.fold(
       (error) {
-        emit(AdminTeacherActionErrorState(error));
+        if (!isClosed) emit(AdminTeacherActionErrorState(error));
       },
       (success) {
-        emit(AdminTeacherActionSuccessState('تم حذف المعلم بنجاح'));
+        if (!isClosed) emit(AdminTeacherActionSuccessState('تم حذف المعلم بنجاح'));
         getTeachers();
       },
     );

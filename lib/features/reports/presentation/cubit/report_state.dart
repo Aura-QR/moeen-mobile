@@ -32,3 +32,13 @@ class ReportError extends ReportState {
   @override
   List<Object?> get props => [message];
 }
+
+class ReportPaymentRequired extends ReportState {
+  final String message;
+  final String code;
+
+  const ReportPaymentRequired({required this.message, required this.code});
+
+  @override
+  List<Object?> get props => [message, code];
+}

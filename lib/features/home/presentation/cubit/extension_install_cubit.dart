@@ -53,7 +53,7 @@ class ExtensionInstallCubit extends Cubit<ExtensionInstallState>
 
   Future<void> _checkQuettaStatus() async {
     if (Platform.isIOS) {
-      emit(const ExtensionInstallIosNotSupported(isQuettaInstalled: false));
+      if (!isClosed) emit(const ExtensionInstallIosNotSupported(isQuettaInstalled: false));
       return;
     }
 
@@ -64,9 +64,9 @@ class ExtensionInstallCubit extends Cubit<ExtensionInstallState>
         package: _quettaPackageName,
       );
       final bool isInstalled = await checkIntent.canResolveActivity() ?? false;
-      emit(ExtensionInstallReady(isQuettaInstalled: isInstalled));
+      if (!isClosed) emit(ExtensionInstallReady(isQuettaInstalled: isInstalled));
     } catch (_) {
-      emit(const ExtensionInstallReady(isQuettaInstalled: false));
+      if (!isClosed) emit(const ExtensionInstallReady(isQuettaInstalled: false));
     }
   }
 
@@ -93,17 +93,21 @@ class ExtensionInstallCubit extends Cubit<ExtensionInstallState>
         if (await canLaunchUrl(webUri)) {
           await launchUrl(webUri, mode: LaunchMode.externalApplication);
         } else {
-          emit(ExtensionInstallError(
-            message: 'Could not open Play Store',
-            isQuettaInstalled: state.isQuettaInstalled,
-          ));
+          if (!isClosed) {
+            emit(ExtensionInstallError(
+              message: 'Could not open Play Store',
+              isQuettaInstalled: state.isQuettaInstalled,
+            ));
+          }
         }
       }
     } catch (_) {
-      emit(ExtensionInstallError(
-        message: 'Could not open Play Store',
-        isQuettaInstalled: state.isQuettaInstalled,
-      ));
+      if (!isClosed) {
+        emit(ExtensionInstallError(
+          message: 'Could not open Play Store',
+          isQuettaInstalled: state.isQuettaInstalled,
+        ));
+      }
     }
   }
 
@@ -123,10 +127,12 @@ class ExtensionInstallCubit extends Cubit<ExtensionInstallState>
       );
       await intent.launch();
     } catch (_) {
-      emit(ExtensionInstallError(
-        message: 'Could not launch Quetta',
-        isQuettaInstalled: state.isQuettaInstalled,
-      ));
+      if (!isClosed) {
+        emit(ExtensionInstallError(
+          message: 'Could not launch Quetta',
+          isQuettaInstalled: state.isQuettaInstalled,
+        ));
+      }
     }
   }
 
@@ -141,10 +147,12 @@ class ExtensionInstallCubit extends Cubit<ExtensionInstallState>
       );
       await intent.launch();
     } catch (_) {
-      emit(ExtensionInstallError(
-        message: 'Could not launch Quetta',
-        isQuettaInstalled: state.isQuettaInstalled,
-      ));
+      if (!isClosed) {
+        emit(ExtensionInstallError(
+          message: 'Could not launch Quetta',
+          isQuettaInstalled: state.isQuettaInstalled,
+        ));
+      }
     }
   }
 

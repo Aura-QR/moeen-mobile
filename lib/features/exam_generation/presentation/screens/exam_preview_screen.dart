@@ -14,6 +14,7 @@ import 'package:moean/features/reports/presentation/screen/pdf_preview_screen.da
 import 'package:moean/features/exam_generation/data/services/exam_pdf_service.dart';
 import 'package:moean/core/network/local/cache_helper.dart';
 import 'package:moean/features/exam_generation/presentation/widgets/add_manual_question_dialog.dart';
+import 'package:moean/core/utils/constants/primary/upgrade_prompt_bottom_sheet.dart';
 
 class ExamPreviewScreen extends StatefulWidget {
   final ExamEntity initialExam;
@@ -34,9 +35,23 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ColorsManager.background,
-      appBar: AppBar(
+    return BlocListener<ExamPreviewCubit, ExamPreviewState>(
+      listener: (context, state) {
+        if (state is ExamPreviewPaymentRequired) {
+          UpgradePromptBottomSheet.show(
+            context,
+            message: state.message,
+            isQuotaExceeded: state.code == 'quota_exceeded',
+          );
+        } else if (state is ExamPreviewError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message), backgroundColor: ColorsManager.errorColor),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: ColorsManager.background,
+        appBar: AppBar(
         backgroundColor: ColorsManager.background,
         elevation: 0,
         centerTitle: true,
@@ -205,6 +220,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
           }
           return const SizedBox.shrink();
         },
+      ),
       ),
     );
   }

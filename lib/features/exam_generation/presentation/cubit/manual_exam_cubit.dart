@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/features/exam_generation/domain/usecases/add_manual_question_usecase.dart';
 import 'manual_exam_state.dart';
+import 'package:moean/core/errors/failures.dart';
 
 class ManualExamCubit extends Cubit<ManualExamState> {
   final AddManualQuestionUseCase addManualQuestionUseCase;
@@ -72,7 +73,7 @@ class ManualExamCubit extends Cubit<ManualExamState> {
       return;
     }
 
-    emit(ManualExamLoading());
+    if (!isClosed) emit(ManualExamLoading());
 
     final request = <String, dynamic>{
       'exam_id': examId,
@@ -87,11 +88,11 @@ class ManualExamCubit extends Cubit<ManualExamState> {
     if (selectedQuestionType == 'mcq') {
       final validOptions = optionsControllers.map((c) => c.text.trim()).where((o) => o.isNotEmpty).toList();
       if (validOptions.length < 2) {
-        emit(ManualExamError('MCQ requires at least 2 options'));
+        if (!isClosed) emit(ManualExamError('MCQ requires at least 2 options'));
         return;
       }
       if (!validOptions.contains(correctAnswer)) {
-         emit(ManualExamError('Correct answer must match one of the options'));
+         if (!isClosed) emit(ManualExamError('Correct answer must match one of the options'));
          return;
       }
       request['options'] = validOptions;
@@ -100,7 +101,7 @@ class ManualExamCubit extends Cubit<ManualExamState> {
       final validColA = columnAControllers.map((c) => c.text.trim()).where((o) => o.isNotEmpty).toList();
       final validColB = columnBControllers.map((c) => c.text.trim()).where((o) => o.isNotEmpty).toList();
       if (validColA.isEmpty || validColB.isEmpty) {
-        emit(ManualExamError('Matching columns cannot be empty'));
+        if (!isClosed) emit(ManualExamError('Matching columns cannot be empty'));
         return;
       }
       request['options'] = {
@@ -114,10 +115,21 @@ class ManualExamCubit extends Cubit<ManualExamState> {
     }
 
     final result = await addManualQuestionUseCase(request);
+    if (isClosed) return;
 
     result.fold(
-      (failure) => emit(ManualExamError(failure.message)),
-      (exam) => emit(ManualExamSuccess('Question added successfully')),
+      (failure) {
+        if (!isClosed) {
+          if (failure is PaymentRequiredFailure) {
+            emit(ManualExamPaymentRequired(failure.message, failure.code));
+          } else {
+            emit(ManualExamError(failure.message));
+          }
+        }
+      },
+      (exam) {
+        if (!isClosed) emit(ManualExamSuccess('Question added successfully'));
+      },
     );
   }
 

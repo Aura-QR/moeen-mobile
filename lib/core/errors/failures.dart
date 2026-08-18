@@ -32,6 +32,11 @@ class AiGenerationFailure extends Failure {
   const AiGenerationFailure(super.message);
 }
 
+class PaymentRequiredFailure extends Failure {
+  final String code;
+  const PaymentRequiredFailure(super.message, {this.code = 'quota_exceeded'});
+}
+
 class ServerFailure extends Failure {
   const ServerFailure(super.message);
 }

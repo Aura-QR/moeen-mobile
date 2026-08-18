@@ -14,7 +14,7 @@ class ReportCubit extends Cubit<ReportState> {
     required dynamic subject,
     required List<String> selectedLessons,
   }) async {
-    emit(const ReportLoading());
+    if (!isClosed) emit(const ReportLoading());
 
     final result = await ApiService.generateEducationalReport(
       reportType: reportType,
@@ -22,12 +22,28 @@ class ReportCubit extends Cubit<ReportState> {
       subject: subject,
       selectedLessons: selectedLessons,
     );
+    if (isClosed) return;
 
     result.fold(
-      (error) => emit(ReportError(message: error)),
-      (data) => emit(ReportSuccess(data: data)),
+      (error) {
+        if (!isClosed) {
+          if (error.startsWith('__402__:')) {
+            final parts = error.split(':');
+            final code = parts.length > 1 ? parts[1] : 'quota_exceeded';
+            final msg = parts.length > 2 ? parts.sublist(2).join(':') : 'ترقية الحساب المطلوبة';
+            emit(ReportPaymentRequired(message: msg, code: code));
+          } else {
+            emit(ReportError(message: error));
+          }
+        }
+      },
+      (data) {
+        if (!isClosed) emit(ReportSuccess(data: data));
+      },
     );
   }
 
-  void reset() => emit(const ReportInitial());
+  void reset() {
+    if (!isClosed) emit(const ReportInitial());
+  }
 }

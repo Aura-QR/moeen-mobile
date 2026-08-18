@@ -27,3 +27,10 @@ class ScheduleError extends ScheduleState {
 
   ScheduleError(this.message);
 }
+
+class SchedulePaymentRequired extends ScheduleState {
+  final String message;
+  final String code;
+
+  SchedulePaymentRequired(this.message, this.code);
+}

@@ -14,6 +14,8 @@ import 'package:moean/features/reports/presentation/screen/pdf_preview_screen.da
 import 'package:moean/features/reports/presentation/screen/saved_reports_screen.dart';
 import 'package:moean/features/reports/presentation/widgets/report_form_widget.dart';
 import 'package:moean/features/reports/presentation/widgets/report_result_section_widget.dart';
+import 'package:moean/features/payment/presentation/widgets/trial_banner_widget.dart';
+import 'package:moean/core/utils/constants/primary/upgrade_prompt_bottom_sheet.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -93,6 +95,12 @@ class _ReportScreenState extends State<ReportScreen> {
               behavior: SnackBarBehavior.floating,
             ),
           );
+        } else if (state is ReportPaymentRequired) {
+          UpgradePromptBottomSheet.show(
+            context,
+            message: state.message,
+            isQuotaExceeded: state.code == 'quota_exceeded',
+          );
         }
       },
       builder: (context, state) {
@@ -141,11 +149,15 @@ class _ReportScreenState extends State<ReportScreen> {
               ],
             ),
             body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: Column(
-                  children: [
-                    // Banner link to Saved Reports above the form/results
+              child: Column(
+                children: [
+                  const TrialBannerWidget(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      child: Column(
+                        children: [
+                          // Banner link to Saved Reports above the form/results
                     InkWell(
                       onTap: () {
                         Navigator.of(context).push(
@@ -255,8 +267,11 @@ class _ReportScreenState extends State<ReportScreen> {
                               );
                             },
                           ),
-                  ],
-                ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

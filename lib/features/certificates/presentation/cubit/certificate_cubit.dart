@@ -31,35 +31,38 @@ class CertificateCubit extends Cubit<CertificateState> {
   DateTime selectedDate = DateTime.now();
 
   Future<void> loadTeacherProfile() async {
-    emit(CertificateLoading());
+    if (!isClosed) emit(CertificateLoading());
     final result = await ApiService.getProfile();
+    if (isClosed) return;
     result.fold(
-      (_) => emit(const CertificateLoaded()),
+      (_) {
+        if (!isClosed) emit(const CertificateLoaded());
+      },
       (profile) {
         teacherNameController.text = profile.user.name;
-        emit(const CertificateLoaded());
+        if (!isClosed) emit(const CertificateLoaded());
       },
     );
   }
 
   void selectTemplate(int index) {
     selectedTemplate = index;
-    emit(CertificateTemplateSelected(index));
+    if (!isClosed) emit(CertificateTemplateSelected(index));
   }
 
   void selectGender(String gender) {
     selectedGender = gender;
-    emit(CertificateGenderChanged(gender));
+    if (!isClosed) emit(CertificateGenderChanged(gender));
   }
 
   void selectDate(DateTime date) {
     selectedDate = date;
-    emit(CertificateDateChanged(date));
+    if (!isClosed) emit(CertificateDateChanged(date));
   }
 
   void selectReadyText(String text) {
     certTextController.text = text;
-    emit(CertificateReadyTextSelected(text));
+    if (!isClosed) emit(CertificateReadyTextSelected(text));
   }
 
   List<String> get studentNames => studentNamesController.text
@@ -70,19 +73,19 @@ class CertificateCubit extends Cubit<CertificateState> {
 
   Future<void> generatePdf(BuildContext context) async {
     if (studentNames.isEmpty) {
-      emit(const CertificateError('no_students'));
+      if (!isClosed) emit(const CertificateError('no_students'));
       return;
     }
-    emit(CertificateGenerating());
+    if (!isClosed) emit(CertificateGenerating());
     try {
       await Printing.layoutPdf(
         onLayout: (_) => _buildPdfBytes(context),
         name: 'certificates',
         format: PdfPageFormat.a4,
       );
-      emit(const CertificateLoaded());
+      if (!isClosed) emit(const CertificateLoaded());
     } catch (e) {
-      emit(CertificateError(e.toString()));
+      if (!isClosed) emit(CertificateError(e.toString()));
     }
   }
 
@@ -169,7 +172,9 @@ class CertificateCubit extends Cubit<CertificateState> {
     certTextController.removeListener(_onPreviewChange);
   }
 
-  void _onPreviewChange() => emit(const CertificatePreviewUpdated());
+  void _onPreviewChange() {
+    if (!isClosed) emit(const CertificatePreviewUpdated());
+  }
 
   // ── Preview data ───────────────────────────────────────────────────────
 

@@ -49,20 +49,56 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
 
   Widget _buildBody(BuildContext context, ExamInfoState state, ExamInfoCubit cubit) {
     if (state is ExamInfoLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return SafeArea(
+        child: Stack(
+          children: [
+            Align(
+              alignment: AlignmentDirectional.topStart,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                  icon: Icon(Icons.arrow_back_ios, color: ColorsManager.mainText),
+                  onPressed: () => context.pop(),
+                ),
+              ),
+            ),
+            const Center(child: CircularProgressIndicator()),
+          ],
+        ),
+      );
     }
     
     if (state is ExamInfoError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      return SafeArea(
+        child: Stack(
           children: [
-            Text(state.message, style: TextStylesManager.bold14.copyWith(color: ColorsManager.errorColor)),
-            verticalSpace16,
-            PrimaryElevatedButton(
-              text: 'إعادة المحاولة',
-              onPressed: () => cubit.retry(),
-            )
+            Align(
+              alignment: AlignmentDirectional.topStart,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                  icon: Icon(Icons.arrow_back_ios, color: ColorsManager.mainText),
+                  onPressed: () => context.pop(),
+                ),
+              ),
+            ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(state.message, style: TextStylesManager.bold14.copyWith(color: ColorsManager.errorColor)),
+                  verticalSpace16,
+                  PrimaryElevatedButton(
+                    text: 'إعادة المحاولة',
+                    onPressed: () => cubit.retry(),
+                  )
+                ],
+              ),
+            ),
           ],
         ),
       );
@@ -72,35 +108,53 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
       children: [
         Expanded(
           child: SafeArea(
+            bottom: false,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Header UI
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                  Stack(
+                    alignment: Alignment.center,
                     children: [
-                      Text('الخطوة الأولى', style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
-                      verticalSpace4,
-                      Text('اختيار بيانات الاختبار', style: TextStylesManager.bold24.copyWith(color: ColorsManager.mainText)),
-                       verticalSpace8,
-                      
-                      Container(
-                         padding: const EdgeInsets.all(12),
-                         decoration: BoxDecoration(
-                           shape: BoxShape.circle,
-                           border: Border.all(color: ColorsManager.primaryColor, width: 2),
-                         ),
-                         child:  Icon(Icons.tune, color: ColorsManager.primaryColor),
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                          icon: Icon(Icons.arrow_back_ios, color: ColorsManager.mainText),
+                          onPressed: () => context.pop(),
+                        ),
                       ),
-                     verticalSpace8,
                       Text(
-                        'اختار المرحلة والصف والمادة\nثم اختار الفصل والدروس من الشاشة التالية.',
-                        textAlign: TextAlign.center,
-                        style: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
+                        'الخطوة الأولى',
+                        style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor),
                       ),
                     ],
+                  ),
+                  verticalSpace8,
+                  Text(
+                    'اختيار بيانات الاختبار',
+                    textAlign: TextAlign.center,
+                    style: TextStylesManager.bold24.copyWith(color: ColorsManager.mainText),
+                  ),
+                  verticalSpace8,
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: ColorsManager.primaryColor, width: 2),
+                      ),
+                      child: Icon(Icons.tune, color: ColorsManager.primaryColor),
+                    ),
+                  ),
+                  verticalSpace8,
+                  Text(
+                    'اختار المرحلة والصف والمادة\nثم اختار الفصل والدروس من الشاشة التالية.',
+                    textAlign: TextAlign.center,
+                    style: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
                   ),
                   verticalSpace24,
           
@@ -251,14 +305,6 @@ class _ExamInfoScreenState extends State<ExamInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ColorsManager.background,
-      appBar: AppBar(
-        backgroundColor: ColorsManager.background,
-        elevation: 0,
-        leading: IconButton(
-          icon:  Icon(Icons.arrow_back_ios, color: ColorsManager.mainText),
-          onPressed: () => context.pop(),
-        ),
-      ),
       body: BlocConsumer<ExamInfoCubit, ExamInfoState>(
         listener: (context, state) {
           if (state is ExamInfoUpdated) {

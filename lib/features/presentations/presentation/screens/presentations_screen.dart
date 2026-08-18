@@ -10,6 +10,7 @@ import 'package:moean/features/presentations/presentation/cubit/presentations_cu
 import 'package:moean/features/presentations/presentation/cubit/presentations_state.dart';
 import 'package:moean/features/reports/presentation/widgets/selection_bottom_sheet.dart';
 
+import 'package:moean/core/utils/constants/primary/upgrade_prompt_bottom_sheet.dart';
 import 'presentation_preview_screen.dart';
 
 class PresentationsScreen extends StatefulWidget {
@@ -42,6 +43,11 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
       appBar: AppBar(
         backgroundColor: ColorsManager.background,
         elevation: 0,
+        centerTitle: true,
+        title: Text(
+          appTranslation().get('presentations_title'),
+          style: TextStylesManager.bold18.copyWith(color: ColorsManager.mainText),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: ColorsManager.mainText),
           onPressed: () => Navigator.of(context).pop(),
@@ -59,6 +65,12 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
                   cubit: cubit,
                 ),
               ),
+            );
+          } else if (state is PresentationsPaymentRequired) {
+            UpgradePromptBottomSheet.show(
+              context,
+              message: state.message,
+              isQuotaExceeded: state.code == 'quota_exceeded',
             );
           } else if (state is PresentationsError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -109,26 +121,6 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: ColorsManager.surfacePrimary,
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.co_present_rounded, color: ColorsManager.primaryColor, size: 20),
-              horizontalSpace8,
-              Text(
-                appTranslation().get('presentations_title'),
-                style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor),
-              ),
-            ],
-          ),
-        ),
-        verticalSpace16,
         Text(
           appTranslation().get('presentations_subtitle'),
           style: TextStylesManager.bold26.copyWith(color: ColorsManager.primaryColor),

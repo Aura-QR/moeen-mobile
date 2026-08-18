@@ -22,7 +22,7 @@ class MyExamsCubit extends Cubit<MyExamsState> {
     }
 
     if (_currentPage == 1) {
-      emit(MyExamsLoading());
+      if (!isClosed) emit(MyExamsLoading());
     }
 
     String? statusQuery;
@@ -39,16 +39,20 @@ class MyExamsCubit extends Cubit<MyExamsState> {
       search: _searchQuery.isNotEmpty ? _searchQuery : null,
     );
 
+    if (isClosed) return;
+
     result.fold(
       (failure) {
-        emit(MyExamsError(failure.message));
+        if (!isClosed) emit(MyExamsError(failure.message));
       },
       (examsPagination) {
-        emit(MyExamsLoaded(
-          exams: examsPagination,
-          selectedTab: _currentTab,
-          searchQuery: _searchQuery,
-        ));
+        if (!isClosed) {
+          emit(MyExamsLoaded(
+            exams: examsPagination,
+            selectedTab: _currentTab,
+            searchQuery: _searchQuery,
+          ));
+        }
       },
     );
   }
@@ -66,6 +70,7 @@ class MyExamsCubit extends Cubit<MyExamsState> {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
     
     _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (isClosed) return;
       _searchQuery = query;
       _currentPage = 1;
       fetchExams();
@@ -76,19 +81,25 @@ class MyExamsCubit extends Cubit<MyExamsState> {
     final currentState = state;
     if (currentState is! MyExamsLoaded) return;
     
-    emit(MyExamsActionLoading(action: 'publish', examId: examId));
+    if (!isClosed) emit(MyExamsActionLoading(action: 'publish', examId: examId));
     
     final result = await _examRepository.publishExam(examId);
+
+    if (isClosed) return;
     
     result.fold(
       (failure) {
-        emit(MyExamsActionError(failure.message));
-        // Re-emit loaded state so UI recovers
-        emit(currentState);
+        if (!isClosed) {
+          emit(MyExamsActionError(failure.message));
+          // Re-emit loaded state so UI recovers
+          emit(currentState);
+        }
       },
       (exam) {
-        emit(MyExamsActionSuccess('تم نشر الاختبار بنجاح'));
-        fetchExams(isRefresh: true);
+        if (!isClosed) {
+          emit(MyExamsActionSuccess('تم نشر الاختبار بنجاح'));
+          fetchExams(isRefresh: true);
+        }
       },
     );
   }
@@ -97,19 +108,25 @@ class MyExamsCubit extends Cubit<MyExamsState> {
     final currentState = state;
     if (currentState is! MyExamsLoaded) return;
     
-    emit(MyExamsActionLoading(action: 'delete', examId: examId));
+    if (!isClosed) emit(MyExamsActionLoading(action: 'delete', examId: examId));
     
     final result = await _examRepository.deleteExam(examId);
+
+    if (isClosed) return;
     
     result.fold(
       (failure) {
-        emit(MyExamsActionError(failure.message));
-        // Re-emit loaded state so UI recovers
-        emit(currentState);
+        if (!isClosed) {
+          emit(MyExamsActionError(failure.message));
+          // Re-emit loaded state so UI recovers
+          emit(currentState);
+        }
       },
       (_) {
-        emit(MyExamsActionSuccess('تم حذف الاختبار بنجاح'));
-        fetchExams(isRefresh: true);
+        if (!isClosed) {
+          emit(MyExamsActionSuccess('تم حذف الاختبار بنجاح'));
+          fetchExams(isRefresh: true);
+        }
       },
     );
   }

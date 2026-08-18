@@ -90,7 +90,7 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
   }
 
   Future<void> _loadSubjects() async {
-    emit(ExamInfoLoading());
+    if (!isClosed) emit(ExamInfoLoading());
     final endpoint = '/subjects';
     
     // --- Console Print ---
@@ -102,8 +102,11 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
     // ---------------------
 
     final result = await ApiService.getSubjects();
+    if (isClosed) return;
     result.fold(
-      (dynamic failure) => emit(ExamInfoError(failure?.message ?? 'Unknown error')),
+      (dynamic failure) {
+        if (!isClosed) emit(ExamInfoError(failure?.message ?? 'Unknown error'));
+      },
       (data) {
         stages = data;
         _emitUpdated();
@@ -185,7 +188,7 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
     _emitUpdated();
 
     final result = await ApiService.getSubjectLessons(subjectId);
-
+    if (isClosed) return;
     
     isUnitsLoading = false;
     result.fold(
@@ -217,21 +220,23 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
   }
 
   void _emitUpdated() {
-    emit(ExamInfoUpdated(
-      selectedStage: selectedStage,
-      selectedSemester: selectedSemester,
-      selectedTrack: selectedTrack,
-      selectedGrade: selectedGrade,
-      selectedSubject: selectedSubject,
-      unitName: unitName,
-      examTitle: examTitle,
-      stages: stages,
-      difficulty: difficulty,
-      generationSource: generationSource,
-      selectedBankQuestionIds: Map.from(selectedBankQuestionIds),
-      availableUnits: availableUnits,
-      isUnitsLoading: isUnitsLoading,
-    ));
+    if (!isClosed) {
+      emit(ExamInfoUpdated(
+        selectedStage: selectedStage,
+        selectedSemester: selectedSemester,
+        selectedTrack: selectedTrack,
+        selectedGrade: selectedGrade,
+        selectedSubject: selectedSubject,
+        unitName: unitName,
+        examTitle: examTitle,
+        stages: stages,
+        difficulty: difficulty,
+        generationSource: generationSource,
+        selectedBankQuestionIds: Map.from(selectedBankQuestionIds),
+        availableUnits: availableUnits,
+        isUnitsLoading: isUnitsLoading,
+      ));
+    }
   }
 
   bool get isValid => 

@@ -18,7 +18,7 @@ class SavedReportsCubit extends Cubit<SavedReportsState> {
       _currentFilter = filter;
     }
 
-    emit(const SavedReportsLoading());
+    if (!isClosed) emit(const SavedReportsLoading());
 
     final String? apiType = (_currentFilter == 'الكل') ? null : _currentFilter;
 
@@ -26,22 +26,27 @@ class SavedReportsCubit extends Cubit<SavedReportsState> {
       reportType: apiType,
       perPage: 30,
     );
+    if (isClosed) return;
 
     result.fold(
-      (error) => emit(SavedReportsError(message: error)),
+      (error) {
+        if (!isClosed) emit(SavedReportsError(message: error));
+      },
       (response) {
         try {
           final List<dynamic> listData = response['data'] is List ? response['data'] : [];
           final reports = listData.map((e) => SavedReportModel.fromJson(e as Map<String, dynamic>)).toList();
           final meta = SavedReportsMeta.fromJson((response['meta'] as Map<String, dynamic>?) ?? {});
           
-          emit(SavedReportsSuccess(
-            reports: reports,
-            meta: meta,
-            selectedFilter: _currentFilter,
-          ));
+          if (!isClosed) {
+            emit(SavedReportsSuccess(
+              reports: reports,
+              meta: meta,
+              selectedFilter: _currentFilter,
+            ));
+          }
         } catch (e) {
-          emit(SavedReportsError(message: e.toString()));
+          if (!isClosed) emit(SavedReportsError(message: e.toString()));
         }
       },
     );

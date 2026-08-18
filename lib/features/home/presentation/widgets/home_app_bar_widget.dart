@@ -10,9 +10,9 @@ import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/home/presentation/cubit/home_cubit.dart';
 import 'package:moean/features/profile/presentation/widgets/logout_dialog.dart';
+import 'package:moean/core/di/injections.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
-import 'package:moean/main.dart'; 
 
 class HomeAppBarWidget extends StatelessWidget {
   const HomeAppBarWidget({super.key});
@@ -139,43 +139,37 @@ class _ContactIconButtonState extends State<_ContactIconButton>
 class _AdminLogoutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ProfileCubit(),
-      child: BlocListener<ProfileCubit, ProfileState>(
-        listener: (context, state) {
-          if (state is ProfileLogoutSuccessState) {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              Routes.login,
-              (route) => false,
-            );
-          }
-        },
-        child: Builder(
-          builder: (context) {
-            return PrimaryElevatedButton(
-              icon: const Icon(
-                Icons.logout,
-                size: 18,
-                color: ColorsManager.white,
-              ),
-              text: appTranslation().get('logout'),
-              textStyle: TextStylesManager.bold13.copyWith(
-                color: ColorsManager.white,
-              ),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (dialogContext) => LogoutDialog(
-                    onConfirm: () => context.read<ProfileCubit>().logout(),
-                  ),
-                );
-              },
-              width: 140,
-              height: 42,
-              radius: 24,
-            );
-          }
+    return BlocListener<ProfileCubit, ProfileState>(
+      bloc: sl<ProfileCubit>(),
+      listener: (context, state) {
+        if (state is ProfileLogoutSuccessState) {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            Routes.login,
+            (route) => false,
+          );
+        }
+      },
+      child: PrimaryElevatedButton(
+        icon: const Icon(
+          Icons.logout,
+          size: 18,
+          color: ColorsManager.white,
         ),
+        text: appTranslation().get('logout'),
+        textStyle: TextStylesManager.bold13.copyWith(
+          color: ColorsManager.white,
+        ),
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (dialogContext) => LogoutDialog(
+              onConfirm: () => sl<ProfileCubit>().logout(),
+            ),
+          );
+        },
+        width: 140,
+        height: 42,
+        radius: 24,
       ),
     );
   }
