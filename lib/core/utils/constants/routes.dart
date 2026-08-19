@@ -11,6 +11,7 @@ import 'package:moean/features/schedule/presentation/screen/schedule_screen.dart
 import 'package:moean/features/profile/presentation/screen/profile_screen.dart';
 import 'package:moean/features/profile/presentation/screen/settings_screen.dart';
 import 'package:moean/features/profile/presentation/screen/change_password_screen.dart';
+import 'package:moean/features/verify_email/presentation/screen/verify_email_screen.dart';
 
 import 'package:moean/features/admin/teachers/presentation/screen/admin_teachers_screen.dart';
 import 'package:moean/features/admin/contact/presentation/screen/admin_contact_screen.dart';
@@ -70,6 +71,7 @@ class Routes {
   static const String home = '/';
   static const String login = '/login';
   static const String register = '/register';
+  static const String verifyEmail = '/verify-email';
   static const String loginMicrosoft = '/login/microsoft';
   static const String schedule = '/schedule';
   static const String profile = '/profile';
@@ -113,6 +115,10 @@ class Routes {
     home: (context) => const MainLayoutScreen(),
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
+    verifyEmail: (context) {
+      final email = ModalRoute.of(context)?.settings.arguments as String? ?? '';
+      return VerifyEmailScreen(email: email);
+    },
     loginMicrosoft: (context) => const MicrosoftLoginScreen(),
     schedule: (context) => const ScheduleScreen(),
     profile: (context) => const ProfileScreen(),

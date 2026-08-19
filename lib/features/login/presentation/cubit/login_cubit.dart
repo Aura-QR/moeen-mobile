@@ -11,6 +11,7 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:moean/core/models/profile_model.dart';
 
 LoginCubit get loginCubit => LoginCubit.get(navigatorKey.currentContext!);
 
@@ -72,7 +73,17 @@ class LoginCubit extends Cubit<LoginState> {
           sl<MadrasatiSessionService>().notifySessionActive();
         }
 
-        // Refresh subscription & profile state
+        if (response.teacher != null) {
+          sl<ProfileCubit>().profileModel = ProfileModel(
+            user: response.user,
+            madrasatiConnected: response.madrasatiConnected,
+            teacher: response.teacher,
+            subscriptionName: response.teacher?.subscription?.name,
+            aiQuotaRemaining: response.teacher?.aiQuotaRemaining,
+          );
+        }
+
+        // Refresh subscription & profile state in background
         sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
         sl<ProfileCubit>().fetchProfile(forceRefresh: true);
 

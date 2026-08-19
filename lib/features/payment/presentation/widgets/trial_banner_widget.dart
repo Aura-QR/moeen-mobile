@@ -18,7 +18,17 @@ class TrialBannerWidget extends StatefulWidget {
       }
       return true;
     } else if (state is SubscriptionError) {
-      if (state.error.contains('__402__') || state.error.contains('انتهت')) {
+      if (state.error.contains('__402__') ||
+          state.error.contains('trial_expired') ||
+          state.error.contains('انتهت')) {
+        return true;
+      }
+    } else {
+      final current = sl<SubscriptionCubit>().currentSubscription;
+      if (current != null) {
+        if (current.isSubscribed && !current.isSubscriptionExpired) {
+          return false;
+        }
         return true;
       }
     }
@@ -34,7 +44,7 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
   void initState() {
     super.initState();
     final cubit = sl<SubscriptionCubit>();
-    if (cubit.state is SubscriptionInitial) {
+    if (cubit.currentSubscription == null && cubit.lastError == null && cubit.state is SubscriptionInitial) {
       cubit.fetchCurrentSubscription();
     }
   }
@@ -48,7 +58,7 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
           final current = state.current;
           
           if (current.isSubscribed && !current.isSubscriptionExpired) {
-            // Subscribed and Active
+            // Subscribed and Active -> Hidden
             return const SizedBox.shrink();
           }
 
@@ -65,9 +75,9 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
           }
 
           if (current.isInTrial) {
-            final days = current.dynamicTrialDaysRemaining;
+            final days = current.dynamicDaysRemaining;
             if (days <= 0) {
-              // Trial expired today or before
+              // Trial expired
               return _buildBanner(
                 context,
                 icon: Icons.alarm,
@@ -80,24 +90,24 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
               return _buildBanner(
                 context,
                 icon: Icons.warning_amber_rounded,
-                text: '⚠️ اليوم هو آخر يوم في تجربتك المجانية!',
+                text: '⚠️ آخر يوم في تجربتك المجانية!',
                 buttonText: 'اشترك الآن',
-                color: ColorsManager.statusWarning,
+                color: ColorsManager.errorColor,
                 isExpired: false,
               );
             } else {
               return _buildBanner(
                 context,
                 icon: Icons.celebration,
-                text: '🎉 أنت في التجربة المجانية — متبقي $days أيام',
+                text: '🎉 متبقي $days أيام على التجربة المجانية',
                 buttonText: 'اشترك الآن',
-                color: ColorsManager.primaryColor,
+                color: ColorsManager.errorColor,
                 isExpired: false,
               );
             }
           }
 
-          // If not in trial and not subscribed -> Expired
+          // Not in trial and not subscribed -> Trial Expired
           return _buildBanner(
             context,
             icon: Icons.alarm,
@@ -107,8 +117,9 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
             isExpired: true,
           );
         } else if (state is SubscriptionError) {
-          // If the backend returns 402 or explicit error for expired users instead of 200
-          if (state.error.contains('__402__') || state.error.contains('انتهت')) {
+          if (state.error.contains('__402__') ||
+              state.error.contains('trial_expired') ||
+              state.error.contains('انتهت')) {
             return _buildBanner(
               context,
               icon: Icons.alarm,
@@ -133,38 +144,41 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       color: color,
       child: SafeArea(
         bottom: false,
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                text,
-                style: TextStylesManager.bold13.copyWith(color: Colors.white),
-              ),
-            ),
-            const SizedBox(width: 8),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, Routes.checkout);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: color,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                minimumSize: const Size(0, 32),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  text,
+                  style: TextStylesManager.bold13.copyWith(color: Colors.white),
                 ),
               ),
-              child: Text(
-                buttonText,
-                style: TextStylesManager.bold12,
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, Routes.checkout);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: color,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  minimumSize: const Size(0, 32),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  buttonText,
+                  style: TextStylesManager.bold12,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+
         ),
       ),
     );

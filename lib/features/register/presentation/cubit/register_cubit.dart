@@ -4,6 +4,7 @@ import 'package:moean/features/register/presentation/cubit/register_state.dart';
 import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/core/models/register_request.dart';
 import 'package:moean/core/network/local/cache_helper.dart';
+import 'package:moean/core/network/local/secure_storage_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
@@ -81,6 +82,7 @@ class RegisterCubit extends Cubit<RegisterState> {
         },
         (response) async {
           await CacheHelper.saveData(key: 'auth_token', value: response.token);
+          await sl<SecureStorageHelper>().saveToken(response.token);
           
           // Clear the referral code after successful registration
           if (referralCode != null && referralCode.isNotEmpty) {
@@ -90,7 +92,7 @@ class RegisterCubit extends Cubit<RegisterState> {
 
           token = response.token;
           sl<SubscriptionCubit>().fetchCurrentSubscription();
-          if (!isClosed) emit(RegisterSuccessState());
+          if (!isClosed) emit(RegisterSuccessState(email: response.user.email));
           debugPrint('Register Success: $response');
         },
       );

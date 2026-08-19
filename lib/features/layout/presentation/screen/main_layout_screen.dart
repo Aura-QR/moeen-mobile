@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/features/layout/presentation/cubit/layout_cubit.dart';
 import 'package:moean/features/layout/presentation/cubit/layout_state.dart';
+import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
+import 'package:moean/features/payment/presentation/cubit/subscription_state.dart';
 import 'package:moean/features/payment/presentation/widgets/trial_banner_widget.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
+import 'package:moean/features/verify_email/presentation/widgets/email_verification_banner.dart';
 
 class MainLayoutScreen extends StatelessWidget {
   const MainLayoutScreen({super.key});
@@ -31,16 +37,40 @@ class MainLayoutScreen extends StatelessWidget {
             child: Scaffold(
               // Allow the body to extend behind the bottom nav bar
               extendBody: true,
-              body: Column(
-                children: [
-                  const TrialBannerWidget(),
-                  Expanded(
-                    child: IndexedStack(
-                      index: cubit.currentIndex,
-                      children: cubit.screens,
-                    ),
-                  ),
-                ],
+              body: BlocBuilder<SubscriptionCubit, SubscriptionState>(
+                bloc: sl<SubscriptionCubit>(),
+                builder: (context, subState) {
+                  final bool showBanner =
+                      TrialBannerWidget.isBannerVisible(subState);
+                  return Column(
+                    children: [
+                      BlocBuilder<ProfileCubit, ProfileState>(
+                        bloc: sl<ProfileCubit>(),
+                        builder: (context, profState) {
+                          final user = sl<ProfileCubit>().profileModel?.user;
+                          if (user == null || user.isEmailVerified) {
+                            return const SizedBox.shrink();
+                          }
+                          return EmailVerificationBanner(
+                            isEmailVerified: user.isEmailVerified,
+                            email: user.email,
+                          );
+                        },
+                      ),
+                      const TrialBannerWidget(),
+                      Expanded(
+                        child: MediaQuery.removePadding(
+                          context: context,
+                          removeTop: showBanner,
+                          child: IndexedStack(
+                            index: cubit.currentIndex,
+                            children: cubit.screens,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               bottomNavigationBar: Padding(
                 // Push the nav bar above the system navigation area

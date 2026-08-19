@@ -33,36 +33,37 @@ class LoginRememberForgotWidget extends StatelessWidget {
             ),
           ),
         ),
-        BlocBuilder<LoginCubit, LoginState>(
-          buildWhen: (prev, curr) => curr is LoginRememberMeChangedState,
-          builder: (context, state) {
-            return Row(
-              children: [
-                Text(
-                  appTranslation().get('remember_me'),
-                  style: TextStylesManager.regular14.copyWith(
-                    color: ColorsManager.textPrimaryLight,
-                  ),
-                ),
-                Transform.scale(
-                  scale: 0.9,
-                  child: Checkbox(
-                    value: cubit.rememberMe,
-                    onChanged: (_) => cubit.toggleRememberMe(),
-                    activeColor: ColorsManager.primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    side: BorderSide(
-                      color: ColorsManager.borderColor,
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+        // BlocBuilder<LoginCubit, LoginState>(
+        //   buildWhen: (prev, curr) => curr is LoginRememberMeChangedState,
+        //   builder: (context, state) {
+        //     return Row(
+        //       children: [
+        //         Text(
+        //           appTranslation().get('remember_me'),
+        //           style: TextStylesManager.regular14.copyWith(
+        //             color: ColorsManager.textPrimaryLight,
+        //           ),
+        //         ),
+        //         Transform.scale(
+        //           scale: 0.9,
+        //           child: Checkbox(
+        //             value: cubit.rememberMe,
+        //             onChanged: (_) => cubit.toggleRememberMe(),
+        //             activeColor: ColorsManager.primaryColor,
+        //             shape: RoundedRectangleBorder(
+        //               borderRadius: BorderRadius.circular(4),
+        //             ),
+        //             side: BorderSide(
+        //               color: ColorsManager.borderColor,
+        //               width: 1.5,
+        //             ),
+        //           ),
+        //         ),
+        //       ],
+        //     );
+        //   },
+        // ),
+     
       ],
     );
   }

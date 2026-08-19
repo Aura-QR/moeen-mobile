@@ -10,6 +10,7 @@ import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
 import 'package:moean/features/profile/presentation/widgets/profile_info_card.dart';
+import 'package:moean/features/profile/presentation/widgets/subscription_info_card.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_state.dart';
 import 'package:moean/core/di/injections.dart';
@@ -25,7 +26,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    sl<ProfileCubit>().fetchProfile();
+    final cubit = sl<ProfileCubit>();
+    if (cubit.profileModel == null && cubit.state is! ProfileLoadingState) {
+      cubit.fetchProfile();
+    }
   }
 
   @override
@@ -147,7 +151,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               title: appTranslation().get('phone_number'),
                               value: profile.phone!,
                             ),
-                          if (profile.subscriptionName != null)
+                          if (profile.teacher != null)
+                            SubscriptionInfoCard(
+                              teacher: profile.teacher!,
+                              onUpgradeTap: () => Navigator.pushNamed(context, Routes.checkout),
+                            )
+                          else if (profile.subscriptionName != null)
                             ProfileInfoCard(
                               icon: Icons.star_border,
                               title: appTranslation().get('subscription'),

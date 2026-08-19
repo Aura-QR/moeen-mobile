@@ -13,6 +13,8 @@ import 'package:moean/features/profile/presentation/widgets/logout_dialog.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
+import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
+import 'package:moean/features/payment/presentation/widgets/subscription_status_dialog.dart';
 
 class HomeAppBarWidget extends StatelessWidget {
   const HomeAppBarWidget({super.key});
@@ -49,8 +51,7 @@ class HomeAppBarWidget extends StatelessWidget {
                       _AdminLogoutButton(),
                     ],
                     if (!isAdmin) ...[
-                      horizontalSpace8,
-                      // Subscription button — non-admin only
+                      // Subscription button — non-admin only (hidden when subscribed)
                       _SubscriptionButton(),
                     ],
                   ],
@@ -175,23 +176,108 @@ class _AdminLogoutButton extends StatelessWidget {
   }
 }
 
-class _SubscriptionButton extends StatelessWidget {
+class _SubscriptionButton extends StatefulWidget {
+  @override
+  State<_SubscriptionButton> createState() => _SubscriptionButtonState();
+}
+
+class _SubscriptionButtonState extends State<_SubscriptionButton> {
+  @override
+  void initState() {
+    super.initState();
+    final cubit = sl<SubscriptionCubit>();
+    if (cubit.currentSubscription == null && cubit.lastError == null) {
+      cubit.fetchCurrentSubscription();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return PrimaryElevatedButton(
-      icon: const Icon(
-        Icons.workspace_premium_outlined,
-        size: 18,
-        color: ColorsManager.white,
-      ),
-      text: appTranslation().get('pay_subscription_btn'),
-      textStyle: TextStylesManager.bold13.copyWith(
-        color: ColorsManager.white,
-      ),
-      onPressed: () => context.push(Routes.checkout),
-      width: 140,
-      height: 42,
-      radius: 24,
+    return BlocBuilder<SubscriptionCubit, dynamic>(
+      bloc: sl<SubscriptionCubit>(),
+      builder: (context, state) {
+        final current = sl<SubscriptionCubit>().currentSubscription;
+        final teacher = sl<ProfileCubit>().profileModel?.teacher;
+
+        final bool isSubscribed = current?.isSubscribed ?? teacher?.isSubscribed ?? false;
+        final bool isInTrial = current?.isInTrial ?? teacher?.isInTrial ?? false;
+        final DateTime? trialEndsAt = current?.trialEndsAt ?? teacher?.trialEndsAt;
+        final DateTime? subscriptionEndsAt = current?.subscriptionEndsAt ?? teacher?.subscriptionEndsAt;
+        final DateTime? effectiveEndsAt = isSubscribed
+            ? subscriptionEndsAt
+            : (isInTrial ? trialEndsAt : (subscriptionEndsAt ?? trialEndsAt));
+
+        int daysRemaining = 0;
+        if (effectiveEndsAt != null) {
+          final now = DateTime.now();
+          if (effectiveEndsAt.isAfter(now)) {
+            daysRemaining = (effectiveEndsAt.difference(now).inHours / 24).ceil();
+          }
+        } else {
+          daysRemaining = current?.trialDaysRemaining ?? teacher?.trialDaysRemaining ?? 0;
+        }
+
+        final bool isExpired;
+        if (isSubscribed) {
+          isExpired = subscriptionEndsAt != null && subscriptionEndsAt.isBefore(DateTime.now());
+        } else if (isInTrial) {
+          isExpired = (trialEndsAt != null && trialEndsAt.isBefore(DateTime.now())) || daysRemaining <= 0;
+        } else {
+          isExpired = true;
+        }
+
+        Color buttonColor;
+        String buttonText;
+        IconData buttonIcon;
+
+        if (isSubscribed && !isExpired) {
+          // Subscribed & Active
+          buttonColor = const Color(0xFF0E7A5E);
+          buttonText = 'اشتراك نشط';
+          buttonIcon = Icons.verified_user_outlined;
+        } else if (isExpired) {
+          // Expired
+          buttonColor = const Color(0xFFDC2626);
+          buttonText = 'انتهى الاشتراك';
+          buttonIcon = Icons.lock_clock_outlined;
+        } else if (isInTrial) {
+          // Trial Active
+          if (daysRemaining <= 3) {
+            buttonColor = const Color(0xFFF97316); // Warning Orange
+            buttonText = daysRemaining <= 1 ? 'آخر يوم تجربة' : 'متبقي $daysRemaining أيام';
+            buttonIcon = Icons.hourglass_top_rounded;
+          } else {
+            buttonColor = const Color(0xFFD97706); // Amber Gold
+            buttonText = 'تجربة مجانية';
+            buttonIcon = Icons.auto_awesome;
+          }
+        } else {
+          // Default fallback
+          buttonColor = const Color(0xFF0E7A5E);
+          buttonText = 'الاشتراك';
+          buttonIcon = Icons.workspace_premium_outlined;
+        }
+
+        return Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: PrimaryElevatedButton(
+            icon: Icon(
+              buttonIcon,
+              size: 18,
+              color: ColorsManager.white,
+            ),
+            text: buttonText,
+            backgroundColor: buttonColor,
+            textStyle: TextStylesManager.bold13.copyWith(
+              color: ColorsManager.white,
+            ),
+            onPressed: () => SubscriptionStatusDialog.show(context),
+            width: 140,
+            height: 42,
+            radius: 24,
+          ),
+        );
+      },
     );
   }
 }

@@ -41,7 +41,6 @@ class ProfileCubit extends Cubit<ProfileState> {
       },
       (profile) {
         profileModel = profile;
-        sl<SubscriptionCubit>().fetchCurrentSubscription();
         if (!isClosed) emit(ProfileLoadedState(profile: profile));
       },
     );

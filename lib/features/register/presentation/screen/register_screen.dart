@@ -119,7 +119,10 @@ class RegisterScreen extends StatelessWidget {
       );
     }
     if (state is RegisterSuccessState) {
-      context.pushNamedAndRemoveUntil(Routes.home, (route) => false);
+      context.pushReplacement(
+        Routes.verifyEmail,
+        arguments: state.email,
+      );
     }
   }
 }

@@ -33,18 +33,57 @@ class SubscriptionCurrentModel {
     );
   }
 
-  int get dynamicTrialDaysRemaining {
-    if (!isInTrial || trialEndsAt == null) return 0;
+  /// تاريخ انتهاء الصلاحية الفعلي (سواء للاشتراك المدفوع أو التجربة)
+  DateTime? get effectiveEndsAt => isSubscribed ? subscriptionEndsAt : trialEndsAt;
+
+  int get dynamicTrialDaysRemaining => dynamicDaysRemaining;
+
+  /// حساب الأيام المتبقية ديناميكياً
+  int get dynamicDaysRemaining {
+    final endsAt = effectiveEndsAt;
+    if (endsAt == null) return 0;
     final now = DateTime.now();
-    if (trialEndsAt!.isBefore(now)) return 0;
-    return (trialEndsAt!.difference(now).inHours / 24).ceil();
+    if (endsAt.isBefore(now)) return 0;
+    return (endsAt.difference(now).inHours / 24).ceil();
   }
+
+  bool get isLastTrialDay => isInTrial && dynamicTrialDaysRemaining <= 1;
 
   bool get isSubscriptionExpired {
     if (isSubscribed && subscriptionEndsAt != null) {
       return subscriptionEndsAt!.isBefore(DateTime.now());
     }
     return false;
+  }
+
+  /// هل انتهت الصلاحية تماماً؟
+  bool get isExpired {
+    if (isSubscribed) {
+      return subscriptionEndsAt != null && subscriptionEndsAt!.isBefore(DateTime.now());
+    }
+    return !isInTrial || dynamicTrialDaysRemaining <= 0;
+  }
+
+  /// عنوان الخطة الحالي
+  String get planTitle {
+    if (isSubscribed) return plan?.name ?? 'اشتراك مدفوع';
+    if (isInTrial) return 'تجربة مجانية (7 أيام)';
+    return 'انتهت التجربة';
+  }
+
+  /// نص موعد الانتهاء
+  String get expirationSubtitle {
+    final endsAt = effectiveEndsAt;
+    if (endsAt == null) return 'بدون تاريخ انتهاء';
+    final formattedDate = "${endsAt.year}/${endsAt.month.toString().padLeft(2, '0')}/${endsAt.day.toString().padLeft(2, '0')}";
+    
+    if (isSubscribed) {
+      return 'ينتهي في $formattedDate (متبقي $dynamicDaysRemaining يوم)';
+    }
+    if (isInTrial) {
+      return 'تنتهي في $formattedDate (متبقي $dynamicDaysRemaining ${dynamicDaysRemaining == 1 ? "يوم" : "أيام"})';
+    }
+    return 'انتهت الصلاحية في $formattedDate';
   }
 }
 

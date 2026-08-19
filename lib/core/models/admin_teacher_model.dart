@@ -53,28 +53,105 @@ class AdminTeacherSubscriptionModel {
 class AdminTeacherModel {
   final int id;
   final bool active;
+  final bool isInTrial;
+  final bool isSubscribed;
   final String? subscriptionEndsAt;
+  final String? trialEndsAt;
+  final int trialDaysRemaining;
   final AdminTeacherUserModel user;
   final AdminTeacherSubscriptionModel? subscription;
 
   const AdminTeacherModel({
     required this.id,
     required this.active,
+    this.isInTrial = false,
+    this.isSubscribed = false,
     this.subscriptionEndsAt,
+    this.trialEndsAt,
+    this.trialDaysRemaining = 0,
     required this.user,
     this.subscription,
   });
 
   factory AdminTeacherModel.fromJson(Map<String, dynamic> json) {
     return AdminTeacherModel(
-      id: json['id'] as int,
-      active: json['active'] == true || json['active'] == 1,
+      id: json['id'] as int? ?? 0,
+      active: json['active'] == true || json['active'] == 1 || json['is_active'] == true || json['is_active'] == 1,
+      isInTrial: json['is_in_trial'] as bool? ?? false,
+      isSubscribed: json['is_subscribed'] as bool? ?? false,
       subscriptionEndsAt: json['subscription_ends_at'] as String?,
-      user: AdminTeacherUserModel.fromJson(json['user']),
+      trialEndsAt: json['trial_ends_at'] as String?,
+      trialDaysRemaining: json['trial_days_remaining'] as int? ?? 0,
+      user: json['user'] != null
+          ? AdminTeacherUserModel.fromJson(json['user'] as Map<String, dynamic>)
+          : const AdminTeacherUserModel(id: 0, name: '', email: '', role: 'teacher', active: true),
       subscription: json['subscription'] != null
-          ? AdminTeacherSubscriptionModel.fromJson(json['subscription'])
+          ? AdminTeacherSubscriptionModel.fromJson(json['subscription'] as Map<String, dynamic>)
           : null,
     );
+  }
+
+  DateTime? get parsedSubscriptionEndsAt =>
+      subscriptionEndsAt != null ? DateTime.tryParse(subscriptionEndsAt!) : null;
+
+  DateTime? get parsedTrialEndsAt =>
+      trialEndsAt != null ? DateTime.tryParse(trialEndsAt!) : null;
+
+  DateTime? get effectiveEndsAt {
+    if (isSubscribed) return parsedSubscriptionEndsAt;
+    if (isInTrial) return parsedTrialEndsAt;
+    return parsedSubscriptionEndsAt ?? parsedTrialEndsAt;
+  }
+
+  int get dynamicDaysRemaining {
+    final endsAt = effectiveEndsAt;
+    if (endsAt == null) return trialDaysRemaining > 0 ? trialDaysRemaining : 0;
+    final now = DateTime.now();
+    if (endsAt.isBefore(now)) return 0;
+    return (endsAt.difference(now).inHours / 24).ceil();
+  }
+
+  bool get isExpired {
+    if (isSubscribed) {
+      final ends = parsedSubscriptionEndsAt;
+      return ends != null && ends.isBefore(DateTime.now());
+    }
+    if (isInTrial) {
+      final ends = parsedTrialEndsAt;
+      if (ends != null && ends.isBefore(DateTime.now())) return true;
+      return dynamicDaysRemaining <= 0;
+    }
+    if (parsedTrialEndsAt != null && parsedTrialEndsAt!.isBefore(DateTime.now())) {
+      return true;
+    }
+    if (parsedSubscriptionEndsAt != null && parsedSubscriptionEndsAt!.isBefore(DateTime.now())) {
+      return true;
+    }
+    return false;
+  }
+
+  bool get isTrialExpired => !isSubscribed && (isExpired || (!isInTrial && parsedTrialEndsAt != null));
+
+  bool get isFreePlan =>
+      subscription == null ||
+      subscription?.slug == 'free' ||
+      subscription?.name == 'مجاني' ||
+      subscription?.name == 'الخطة المجانية';
+
+  String get planTitle {
+    if (isSubscribed && subscription != null && !isFreePlan) {
+      return subscription!.name;
+    }
+    if (isInTrial && !isExpired) {
+      return 'تجربة مجانية';
+    }
+    if (isTrialExpired) {
+      return 'انتهت التجربة';
+    }
+    if (subscription != null && !isFreePlan) {
+      return subscription!.name;
+    }
+    return 'مجاني';
   }
 }
 

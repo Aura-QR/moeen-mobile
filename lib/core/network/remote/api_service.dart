@@ -8,7 +8,6 @@ import 'package:moean/core/models/login_request.dart';
 import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
 import 'package:moean/core/errors/failures.dart';
 import 'package:moean/core/utils/constants/constants.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:moean/core/models/register_request.dart';
 import 'package:moean/core/models/register_response.dart';
 import 'package:moean/core/models/login_response.dart';
@@ -54,6 +53,45 @@ class ApiService {
   static Future<Either<String, UserModel>> getMe() async {
     final response = await DioHelper.getData(
       url: meApi,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) {
+        final data = _decodeData(res.data);
+        return Right(UserModel.fromJson(data['user'] ?? data));
+      },
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> resendEmailVerification({
+    String? email,
+  }) async {
+    final response = await DioHelper.postData(
+      url: resendEmailVerificationApi,
+      data: email != null && email.isNotEmpty ? {'email': email} : {},
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, UserModel>> verifyEmailToken({
+    required String id,
+    required String hash,
+    required String expires,
+    required String signature,
+  }) async {
+    final response = await DioHelper.postData(
+      url: verifyEmailApi,
+      data: {
+        'id': id,
+        'hash': hash,
+        'expires': expires,
+        'signature': signature,
+      },
     );
 
     return response.fold(

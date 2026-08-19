@@ -11,21 +11,24 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   static SubscriptionCubit get(BuildContext context) => BlocProvider.of(context);
 
   SubscriptionCurrentModel? currentSubscription;
+  String? lastError;
   bool _isLoading = false;
 
   Future<void> fetchCurrentSubscription({bool forceRefresh = false}) async {
     if (token == null || token!.isEmpty) return;
     if (_isLoading) return;
 
-    if (!forceRefresh && currentSubscription != null) {
-      if (state is! SubscriptionLoaded) {
+    if (!forceRefresh && (currentSubscription != null || lastError != null)) {
+      if (currentSubscription != null && state is! SubscriptionLoaded) {
         if (!isClosed) emit(SubscriptionLoaded(currentSubscription!));
+      } else if (lastError != null && state is! SubscriptionError) {
+        if (!isClosed) emit(SubscriptionError(lastError!));
       }
       return;
     }
 
     _isLoading = true;
-    if (currentSubscription == null && !isClosed) {
+    if (currentSubscription == null && lastError == null && !isClosed) {
       emit(SubscriptionLoading());
     }
 
@@ -35,9 +38,11 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
     result.fold(
       (error) {
+        lastError = error;
         if (!isClosed) emit(SubscriptionError(error));
       },
       (data) {
+        lastError = null;
         final current = SubscriptionCurrentModel.fromJson(data);
         currentSubscription = current;
         if (!isClosed) emit(SubscriptionLoaded(current));
@@ -47,6 +52,8 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
   void clearData() {
     currentSubscription = null;
+    lastError = null;
+    _isLoading = false;
     if (!isClosed) emit(SubscriptionInitial());
   }
 
