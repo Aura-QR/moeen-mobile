@@ -71,4 +71,24 @@ class ColorsManager {
       isDark ? const Color(0xFF0C4A6E) : const Color(0xFFF0F9FF);
   static Color get prescriptionListGrey =>
       isDark ? surfaceDark : const Color(0xFFF8FAFC);
+
+  // Email Verification Colors
+  static Color get verifyBadgeBg =>
+      isDark ? const Color(0xFF0D2E26) : const Color(0xFFE8F8F3);
+  static Color get verifySuccessDark =>
+      isDark ? textPrimaryDark : const Color(0xFF0A5C49);
+  static Color get verifyStepBorder =>
+      isDark ? const Color(0xFF163E34) : const Color(0xFFE3EFEA);
+  static Color get verifyStepText =>
+      isDark ? mutedDark : const Color(0xFF556E66);
+  static Color get verifyEmailContainerBg =>
+      isDark ? const Color(0xFF0D2E26) : const Color(0xFFEAF7F2);
+  static Color get verifyEmailContainerBorder =>
+      isDark ? const Color(0xFF163E34) : const Color(0xFFD5EAE2);
+  static Color get verifyMailIconBg =>
+      isDark ? const Color(0xFF382D13) : const Color(0xFFFFF8E7);
+  static const Color verifyMailIcon = Color(0xFFC98D14);
+  static Color get verifyMailBadgeBg =>
+      isDark ? const Color(0xFF382D13) : const Color(0xFFFEF3D6);
+  static const Color verifyMailBadgeText = Color(0xFFB47D16);
 }

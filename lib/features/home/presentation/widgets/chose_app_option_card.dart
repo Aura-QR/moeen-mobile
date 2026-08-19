@@ -68,15 +68,15 @@ class ChoseAppOptionCard extends StatelessWidget {
           splashColor: ColorsManager.primaryColor.withValues(alpha: 0.08),
           highlightColor: ColorsManager.primaryColor.withValues(alpha: 0.04),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Icon container
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 240),
-                  width: 52,
-                  height: 52,
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
                     color: iconBg,
                     borderRadius: BorderRadius.circular(14),
@@ -87,13 +87,16 @@ class ChoseAppOptionCard extends StatelessWidget {
                     size: 26,
                   ),
                 ),
-                horizontalSpace16,
+                horizontalSpace12,
                 // Text content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 4,
                         children: [
                           Text(
                             title,
@@ -103,7 +106,6 @@ class ChoseAppOptionCard extends StatelessWidget {
                                   : ColorsManager.mainText,
                             ),
                           ),
-                          horizontalSpace8,
                           _BadgeChip(
                             label: badge,
                             active: badgeActive,
@@ -121,7 +123,7 @@ class ChoseAppOptionCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                horizontalSpace12,
+                horizontalSpace10,
                 // Radio indicator
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),

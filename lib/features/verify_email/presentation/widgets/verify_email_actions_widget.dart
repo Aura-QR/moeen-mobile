@@ -4,7 +4,6 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
-import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/verify_email/presentation/cubit/verify_email_cubit.dart';
 import 'package:moean/features/verify_email/presentation/cubit/verify_email_state.dart';
@@ -91,6 +90,7 @@ class VerifyEmailActionsWidget extends StatelessWidget {
               text: appTranslation().get('continue_to_platform'),
               height: 52,
               radius: 24,
+              isLoading: cubit.isChecking,
               backgroundColor: ColorsManager.primaryColor,
               icon: const Icon(
                 Icons.arrow_back,
@@ -98,7 +98,7 @@ class VerifyEmailActionsWidget extends StatelessWidget {
                 size: 20,
               ),
               onPressed: () {
-                Navigator.pushReplacementNamed(context, Routes.home);
+                cubit.checkVerificationStatus();
               },
             ),
           ],

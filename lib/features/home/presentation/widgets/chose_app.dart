@@ -120,8 +120,7 @@ class _ChoseAppState extends State<ChoseApp>
             ),
           ],
         ),
-        body: Container(
-          child: Stack(
+        body: Stack(
             children: [
               // ── Decorative: dot grid (top-right) ─────────────────────
               Positioned(
@@ -258,27 +257,13 @@ class _ChoseAppState extends State<ChoseApp>
                           ),
                         ),
                       ),
-
                       // verticalSpace16,
-
-                      // // Coming-soon hint (no animation, appears after button)
-                      // FadeTransition(
-                      //   opacity: _fades[3],
-                      //   child: Text(
-                      //     appTranslation().get('chose_app_app_badge'),
-                      //     textAlign: TextAlign.center,
-                      //     style: TextStylesManager.regular12.copyWith(
-                      //       color: ColorsManager.secondaryText,
-                      //     ),
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),
               ),
             ],
           ),
-        ),
       ),
     );
   }

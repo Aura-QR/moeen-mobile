@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
-import 'package:moean/features/login/presentation/cubit/login_cubit.dart';
-import 'package:moean/features/login/presentation/cubit/login_state.dart';
+import 'package:moean/core/utils/constants/routes.dart';
+import 'package:moean/core/utils/extensions/context_extension.dart';
 
 class LoginRememberForgotWidget extends StatelessWidget {
   const LoginRememberForgotWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final cubit = LoginCubit.get(context);
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         TextButton(
           onPressed: () {
+            context.push(Routes.forgotPassword);
           },
           style: TextButton.styleFrom(
             padding: EdgeInsets.zero,

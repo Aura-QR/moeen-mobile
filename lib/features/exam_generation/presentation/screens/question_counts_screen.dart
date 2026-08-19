@@ -107,19 +107,22 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                 BlocBuilder<QuestionCountCubit, QuestionCountState>(
                   builder: (context, state) {
                     if (state is! QuestionCountUpdated) {
-                      return  Center(child: CircularProgressIndicator(color: ColorsManager.primaryColor));
+                      return Center(child: CircularProgressIndicator(color: ColorsManager.primaryColor));
                     }
 
                     final selectedLessons = context.read<LessonSelectionCubit>().selectedLessons;
 
                     return Column(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                        Expanded(
+                          child: ListView(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             children: [
-                              Text('الخطوة 2 من 3: تحديد الأسئلة', style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor)),
+                              verticalSpace16,
+                              Text(
+                                'الخطوة 2 من 3: تحديد الأسئلة',
+                                style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor),
+                              ),
                               verticalSpace16,
                               Container(
                                 padding: const EdgeInsets.all(4),
@@ -164,8 +167,11 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                   ],
                                 ),
                               ),
-                              verticalSpace24,
-                              Text('الدروس المختارة', style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
+                              verticalSpace20,
+                              Text(
+                                'الدروس المختارة',
+                                style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
+                              ),
                               verticalSpace12,
                               Wrap(
                                 spacing: 8,
@@ -174,7 +180,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                   final index = entry.key;
                                   final lesson = entry.value;
                                   return Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                     decoration: BoxDecoration(
                                       color: ColorsManager.surfacePrimary,
                                       borderRadius: BorderRadius.circular(20),
@@ -184,17 +190,23 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Container(
-                                          width: 24,
-                                          height: 24,
+                                          width: 22,
+                                          height: 22,
                                           decoration: BoxDecoration(
-                                            color: ColorsManager.primaryColor.withOpacity(0.1),
+                                            color: ColorsManager.primaryColor.withValues(alpha: 0.1),
                                             shape: BoxShape.circle,
                                           ),
                                           alignment: Alignment.center,
-                                          child: Text('${index + 1}', style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor)),
+                                          child: Text(
+                                            '${index + 1}',
+                                            style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
+                                          ),
                                         ),
-                                        horizontalSpace8,
-                                        Flexible(
+                                        horizontalSpace6,
+                                        ConstrainedBox(
+                                          constraints: BoxConstraints(
+                                            maxWidth: MediaQuery.of(context).size.width * 0.6,
+                                          ),
                                           child: Text(
                                             lesson.title,
                                             style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
@@ -224,9 +236,11 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    'إجمالي الدروس: ${state.totalLessons}',
-                                    style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
+                                  Expanded(
+                                    child: Text(
+                                      'إجمالي الدروس: ${state.totalLessons}',
+                                      style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
+                                    ),
                                   ),
                                   Text(
                                     'إجمالي الأسئلة: ${state.totalQuestions}',
@@ -234,87 +248,87 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                                   ),
                                 ],
                               ),
+                              verticalSpace16,
+                              ...selectedLessons.map((lesson) {
+                                final lessonId = lesson.id;
+                                final counts = state.counts[lessonId];
+                                if (counts == null) return const SizedBox.shrink();
+
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  elevation: 0,
+                                  color: ColorsManager.surfacePrimary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    side: BorderSide(color: ColorsManager.borderLightGray),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(14),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    lesson.title,
+                                                    style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
+                                                    maxLines: 2,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  if (context.read<ExamInfoCubit>().selectedBankQuestionIds[lessonId] != null &&
+                                                      context.read<ExamInfoCubit>().selectedBankQuestionIds[lessonId]!.isNotEmpty) ...[
+                                                    verticalSpace4,
+                                                    Text(
+                                                      '${context.read<ExamInfoCubit>().selectedBankQuestionIds[lessonId]!.length} سؤال محدد من البنك',
+                                                      style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
+                                                    ),
+                                                  ]
+                                                ],
+                                              ),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.delete_outline, color: ColorsManager.errorColor),
+                                              onPressed: () {
+                                                context.read<LessonSelectionCubit>().removeLesson(lessonId);
+                                                context.read<QuestionCountCubit>().initForLessons(
+                                                  context.read<LessonSelectionCubit>().selectedLessons,
+                                                );
+                                              },
+                                            )
+                                          ],
+                                        ),
+                                        const Divider(),
+                                        verticalSpace8,
+                                        Text(
+                                          'أنواع الأسئلة والدرجات',
+                                          style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
+                                        ),
+                                        verticalSpace12,
+                                        _buildCounterRow(context, lessonId, 'اختيار من متعدد', 'mcq', counts.mcq),
+                                        _buildCounterRow(context, lessonId, 'صح أو خطأ', 'true_false', counts.trueFalse),
+                                        _buildCounterRow(context, lessonId, 'أكمل الفراغ', 'fill_blank', counts.fillBlank),
+                                        _buildCounterRow(context, lessonId, 'سؤال مقالي', 'essay', counts.essay),
+                                        _buildCounterRow(context, lessonId, 'مطابقة', 'matching', counts.matching),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }),
+                              verticalSpace8,
                             ],
                           ),
                         ),
-                        Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            itemCount: selectedLessons.length,
-                            itemBuilder: (context, index) {
-                              final lesson = selectedLessons[index];
-                              final lessonId = lesson.id;
-                              final counts = state.counts[lessonId];
-                              if (counts == null) return const SizedBox.shrink();
-
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 16),
-                                elevation: 0,
-                                color: ColorsManager.surfacePrimary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  side: BorderSide(color: ColorsManager.borderLightGray),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  lesson.title,
-                                                  style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
-                                                  maxLines: 2,
-                                                ),
-                                                if (context.read<ExamInfoCubit>().selectedBankQuestionIds[lessonId] != null && context.read<ExamInfoCubit>().selectedBankQuestionIds[lessonId]!.isNotEmpty) ...[
-                                                  verticalSpace4,
-                                                  Text(
-                                                    '${context.read<ExamInfoCubit>().selectedBankQuestionIds[lessonId]!.length} سؤال محدد من البنك',
-                                                    style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
-                                                  ),
-                                                ]
-                                              ],
-                                            ),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete_outline, color: ColorsManager.errorColor),
-                                            onPressed: () {
-                                              context.read<LessonSelectionCubit>().removeLesson(lessonId);
-                                              context.read<QuestionCountCubit>().initForLessons(
-                                                context.read<LessonSelectionCubit>().selectedLessons
-                                              );
-                                            },
-                                          )
-                                        ],
-                                      ),
-                                      const Divider(),
-                                      verticalSpace8,
-                                      Text('أنواع الأسئلة والدرجات', style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
-                                      verticalSpace16,
-                                      _buildCounterRow(context, lessonId, 'اختيار من متعدد', 'mcq', counts.mcq),
-                                      _buildCounterRow(context, lessonId, 'صح أو خطأ', 'true_false', counts.trueFalse),
-                                      _buildCounterRow(context, lessonId, 'أكمل الفراغ', 'fill_blank', counts.fillBlank),
-                                      _buildCounterRow(context, lessonId, 'سؤال مقالي', 'essay', counts.essay),
-                                      _buildCounterRow(context, lessonId, 'مطابقة', 'matching', counts.matching),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
                         Container(
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: ColorsManager.surfacePrimary,
                             boxShadow: [
-                              BoxShadow(color: Colors.black.withValues(alpha:0.05), blurRadius: 10, offset: const Offset(0, -5)),
+                              BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5)),
                             ],
                           ),
                           child: PrimaryElevatedButton(
@@ -330,12 +344,12 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                 // Full screen loading
                 if (isGenerating)
                   Container(
-                    color: ColorsManager.background.withOpacity(0.9),
+                    color: ColorsManager.background.withValues(alpha: 0.9),
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                           CircularProgressIndicator(color: ColorsManager.primaryColor),
+                          CircularProgressIndicator(color: ColorsManager.primaryColor),
                           verticalSpace24,
                           Text(
                             'جاري الانشاء الاختبار  ...',
@@ -343,7 +357,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                           ),
                           verticalSpace8,
                           Text(
-                             'قد يستغرق هذا الإجراء دقيقة', 
+                            'قد يستغرق هذا الإجراء دقيقة',
                             style: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
                           ),
                         ],
@@ -359,11 +373,11 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
   }
 
   Widget _buildCounterRow(BuildContext context, int lessonId, String label, String type, int value) {
-    int defaultGrade = 1;
+    const int defaultGrade = 1;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: ColorsManager.surfacePrimary,
         borderRadius: BorderRadius.circular(16),
@@ -372,15 +386,28 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
-              verticalSpace4,
-              Text('عدد الأسئلة', style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                verticalSpace4,
+                Text(
+                  'عدد الأسئلة',
+                  style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText),
+                ),
+              ],
+            ),
           ),
+          horizontalSpace8,
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               _CounterButton(
                 icon: Icons.add,
@@ -388,32 +415,32 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                 enabled: true,
                 isAdd: true,
               ),
-              horizontalSpace8,
+              horizontalSpace6,
               SizedBox(
-                width: 24,
+                width: 22,
                 child: Text(
                   value.toString(),
                   textAlign: TextAlign.center,
-                  style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor),
+                  style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor),
                 ),
               ),
-              horizontalSpace8,
+              horizontalSpace6,
               _CounterButton(
                 icon: Icons.remove,
                 onTap: () => context.read<QuestionCountCubit>().updateCount(lessonId, type, -1),
                 enabled: value > 0,
                 isAdd: false,
               ),
-              horizontalSpace12,
+              horizontalSpace8,
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
                   color: ColorsManager.primaryColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '$defaultGrade درجة',
-                  style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor),
+                  style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
                 ),
               ),
             ],
@@ -442,12 +469,12 @@ class _CounterButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: isAdd 
               ? ColorsManager.primaryColor 
-              : ColorsManager.primaryColor.withOpacity(0.1),
+              : ColorsManager.primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
           icon,
-          size: 20,
+          size: 18,
           color: isAdd 
               ? Colors.white 
               : (enabled ? ColorsManager.primaryColor : Colors.grey),

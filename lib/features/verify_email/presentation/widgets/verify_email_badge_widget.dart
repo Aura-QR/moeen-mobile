@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
@@ -16,10 +17,10 @@ class VerifyEmailBadgeWidget extends StatelessWidget {
           height: 100,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: const Color(0xFFFFF8E7),
+            color: ColorsManager.verifyMailIconBg,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFF5B25A).withValues(alpha: 0.2),
+                color: ColorsManager.brandGold.withValues(alpha: 0.2),
                 blurRadius: 32,
                 spreadRadius: 8,
               ),
@@ -29,7 +30,7 @@ class VerifyEmailBadgeWidget extends StatelessWidget {
             child: Icon(
               Icons.mark_email_read_outlined,
               size: 48,
-              color: Color(0xFFC98D14),
+              color: ColorsManager.verifyMailIcon,
             ),
           ),
         ),
@@ -37,7 +38,7 @@ class VerifyEmailBadgeWidget extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFFEF3D6),
+            color: ColorsManager.verifyMailBadgeBg,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
@@ -46,13 +47,13 @@ class VerifyEmailBadgeWidget extends StatelessWidget {
               const Icon(
                 Icons.mail_outline_rounded,
                 size: 16,
-                color: Color(0xFFB47D16),
+                color: ColorsManager.verifyMailBadgeText,
               ),
               horizontalSpace6,
               Text(
                 appTranslation().get('verify_email_badge'),
                 style: TextStylesManager.bold12.copyWith(
-                  color: const Color(0xFFB47D16),
+                  color: ColorsManager.verifyMailBadgeText,
                 ),
               ),
             ],

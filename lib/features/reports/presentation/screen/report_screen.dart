@@ -177,42 +177,40 @@ class _ReportScreenState extends State<ReportScreen> {
                           ),
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: ColorsManager.primaryColor.withValues(alpha: 0.12),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    Icons.inventory_2_outlined,
-                                    color: ColorsManager.primaryColor,
-                                    size: 18,
-                                  ),
-                                ),
-                                horizontalSpace10,
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      appTranslation().get('saved_reports_subtitle'),
-                                      style: TextStylesManager.bold14.copyWith(
-                                        color: ColorsManager.primaryColor,
-                                      ),
-                                    ),
-                                    Text(
-                                      appTranslation().get('saved_reports_desc'),
-                                      style: TextStylesManager.regular12.copyWith(
-                                        color: ColorsManager.secondaryText,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: ColorsManager.primaryColor.withValues(alpha: 0.12),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.inventory_2_outlined,
+                                color: ColorsManager.primaryColor,
+                                size: 18,
+                              ),
                             ),
+                            horizontalSpace10,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    appTranslation().get('saved_reports_subtitle'),
+                                    style: TextStylesManager.bold14.copyWith(
+                                      color: ColorsManager.primaryColor,
+                                    ),
+                                  ),
+                                  Text(
+                                    appTranslation().get('saved_reports_desc'),
+                                    style: TextStylesManager.regular12.copyWith(
+                                      color: ColorsManager.secondaryText,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            horizontalSpace8,
                             Icon(
                               Icons.arrow_back_ios_new,
                               size: 16,

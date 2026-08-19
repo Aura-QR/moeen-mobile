@@ -16,7 +16,7 @@ class VerifyEmailStepsWidget extends StatelessWidget {
         color: ColorsManager.surfacePrimary,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFFE3EFEA),
+          color: ColorsManager.verifyStepBorder,
         ),
       ),
       child: Column(
@@ -25,14 +25,14 @@ class VerifyEmailStepsWidget extends StatelessWidget {
           Text(
             appTranslation().get('verify_email_steps_title'),
             style: TextStylesManager.bold14.copyWith(
-              color: const Color(0xFF0A5C49),
+              color: ColorsManager.verifySuccessDark,
             ),
           ),
           verticalSpace10,
           Text(
             appTranslation().get('verify_email_step_1'),
             style: TextStylesManager.regular13.copyWith(
-              color: const Color(0xFF556E66),
+              color: ColorsManager.verifyStepText,
               height: 1.5,
             ),
           ),
@@ -40,7 +40,7 @@ class VerifyEmailStepsWidget extends StatelessWidget {
           Text(
             appTranslation().get('verify_email_step_2'),
             style: TextStylesManager.regular13.copyWith(
-              color: const Color(0xFF556E66),
+              color: ColorsManager.verifyStepText,
               height: 1.5,
             ),
           ),
@@ -48,7 +48,7 @@ class VerifyEmailStepsWidget extends StatelessWidget {
           Text(
             appTranslation().get('verify_email_step_3'),
             style: TextStylesManager.regular13.copyWith(
-              color: const Color(0xFF556E66),
+              color: ColorsManager.verifyStepText,
               height: 1.5,
             ),
           ),
@@ -56,7 +56,7 @@ class VerifyEmailStepsWidget extends StatelessWidget {
           Text(
             appTranslation().get('verify_email_step_4'),
             style: TextStylesManager.regular13.copyWith(
-              color: const Color(0xFF556E66),
+              color: ColorsManager.verifyStepText,
               height: 1.5,
             ),
           ),

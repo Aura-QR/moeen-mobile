@@ -2,18 +2,42 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/network/remote/api_service.dart';
+import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/features/verify_email/presentation/cubit/verify_email_state.dart';
 
-class VerifyEmailCubit extends Cubit<VerifyEmailState> {
+class VerifyEmailCubit extends Cubit<VerifyEmailState> with WidgetsBindingObserver {
   final String email;
 
-  VerifyEmailCubit({required this.email}) : super(VerifyEmailInitialState());
+  VerifyEmailCubit({required this.email}) : super(VerifyEmailInitialState()) {
+    WidgetsBinding.instance.addObserver(this);
+    _startPolling();
+  }
 
   static VerifyEmailCubit get(BuildContext context) => BlocProvider.of(context);
 
   int cooldownSeconds = 0;
   Timer? _cooldownTimer;
+  Timer? _pollingTimer;
   bool isResending = false;
+  bool isChecking = false;
+
+  void _startPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (state is VerifyEmailSuccessState) {
+        timer.cancel();
+      } else {
+        checkVerificationStatus(isSilent: true);
+      }
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && this.state is! VerifyEmailSuccessState) {
+      checkVerificationStatus(isSilent: true);
+    }
+  }
 
   void startCooldown([int seconds = 60]) {
     cooldownSeconds = seconds;
@@ -49,11 +73,12 @@ class VerifyEmailCubit extends Cubit<VerifyEmailState> {
         (data) {
           isResending = false;
           if (data['already_verified'] == true) {
+            _pollingTimer?.cancel();
             if (!isClosed) emit(VerifyEmailSuccessState());
             return;
           }
           startCooldown(60);
-          final message = data['message'] as String? ?? 'تم إرسال رابط تأكيد جديد إلى بريدك';
+          final message = data['message'] as String? ?? appTranslation().get('resend_verification_sent');
           if (!isClosed) emit(VerifyEmailResendSuccessState(message: message));
         },
       );
@@ -63,27 +88,35 @@ class VerifyEmailCubit extends Cubit<VerifyEmailState> {
     }
   }
 
-  Future<void> checkVerificationStatus() async {
-    if (!isClosed) emit(VerifyEmailLoadingState());
+  Future<void> checkVerificationStatus({bool isSilent = false}) async {
+    if (isChecking || state is VerifyEmailSuccessState) return;
+    isChecking = true;
+
+    if (!isSilent && !isClosed) emit(VerifyEmailLoadingState());
 
     try {
       final result = await ApiService.getMe();
+      isChecking = false;
       if (isClosed) return;
 
       result.fold(
         (error) {
-          if (!isClosed) emit(VerifyEmailErrorState(message: error));
+          if (!isSilent && !isClosed) emit(VerifyEmailErrorState(message: error));
         },
         (user) {
           if (user.isEmailVerified) {
+            _pollingTimer?.cancel();
             if (!isClosed) emit(VerifyEmailSuccessState());
           } else {
-            if (!isClosed) emit(VerifyEmailInitialState());
+            if (!isSilent && !isClosed) {
+              emit(VerifyEmailErrorState(message: appTranslation().get('email_unverified_banner')));
+            }
           }
         },
       );
     } catch (e) {
-      if (!isClosed) emit(VerifyEmailErrorState(message: e.toString()));
+      isChecking = false;
+      if (!isSilent && !isClosed) emit(VerifyEmailErrorState(message: e.toString()));
     }
   }
 
@@ -109,6 +142,7 @@ class VerifyEmailCubit extends Cubit<VerifyEmailState> {
           if (!isClosed) emit(VerifyEmailErrorState(message: error));
         },
         (user) {
+          _pollingTimer?.cancel();
           if (!isClosed) emit(VerifyEmailSuccessState());
         },
       );
@@ -119,7 +153,9 @@ class VerifyEmailCubit extends Cubit<VerifyEmailState> {
 
   @override
   Future<void> close() {
+    WidgetsBinding.instance.removeObserver(this);
     _cooldownTimer?.cancel();
+    _pollingTimer?.cancel();
     return super.close();
   }
 }

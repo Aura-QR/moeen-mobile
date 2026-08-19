@@ -21,7 +21,7 @@ class VerifyEmailHeaderWidget extends StatelessWidget {
         Text(
           appTranslation().get('verify_email_title'),
           style: TextStylesManager.bold26.copyWith(
-            color: const Color(0xFF0A5C49),
+            color: ColorsManager.verifySuccessDark,
           ),
           textAlign: TextAlign.center,
         ),
@@ -38,16 +38,16 @@ class VerifyEmailHeaderWidget extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
-            color: const Color(0xFFEAF7F2),
+            color: ColorsManager.verifyEmailContainerBg,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: const Color(0xFFD5EAE2),
+              color: ColorsManager.verifyEmailContainerBorder,
             ),
           ),
           child: Text(
             email,
             style: TextStylesManager.bold16.copyWith(
-              color: const Color(0xFF0E7A5E),
+              color: ColorsManager.primaryColor,
             ),
             textAlign: TextAlign.center,
           ),

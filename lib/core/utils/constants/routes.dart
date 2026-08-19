@@ -12,6 +12,8 @@ import 'package:moean/features/profile/presentation/screen/profile_screen.dart';
 import 'package:moean/features/profile/presentation/screen/settings_screen.dart';
 import 'package:moean/features/profile/presentation/screen/change_password_screen.dart';
 import 'package:moean/features/verify_email/presentation/screen/verify_email_screen.dart';
+import 'package:moean/features/forgot_password/presentation/screen/forgot_password_screen.dart';
+import 'package:moean/features/forgot_password/presentation/screen/reset_password_screen.dart';
 
 import 'package:moean/features/admin/teachers/presentation/screen/admin_teachers_screen.dart';
 import 'package:moean/features/admin/contact/presentation/screen/admin_contact_screen.dart';
@@ -64,6 +66,8 @@ import 'package:moean/features/referral/presentation/cubit/referral_cubit.dart';
 import 'package:moean/features/referral/presentation/screen/referral_screen.dart';
 import 'package:moean/features/admin/promo/presentation/cubit/admin_promo_cubit.dart';
 import 'package:moean/features/admin/promo/presentation/screen/admin_promo_screen.dart';
+import 'package:moean/features/privacy_policy/presentation/cubit/privacy_policy_cubit.dart';
+import 'package:moean/features/privacy_policy/presentation/screen/privacy_policy_screen.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -71,6 +75,9 @@ class Routes {
   static const String home = '/';
   static const String login = '/login';
   static const String register = '/register';
+  static const String forgotPassword = '/forgot-password';
+  static const String resetPassword = '/reset-password';
+  static const String privacyPolicy = '/privacy-policy';
   static const String verifyEmail = '/verify-email';
   static const String loginMicrosoft = '/login/microsoft';
   static const String schedule = '/schedule';
@@ -115,6 +122,17 @@ class Routes {
     home: (context) => const MainLayoutScreen(),
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
+    forgotPassword: (context) => const ForgotPasswordScreen(),
+    resetPassword: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      String token = '';
+      String email = '';
+      if (args is Map<String, dynamic>) {
+        token = args['token'] as String? ?? '';
+        email = args['email'] as String? ?? '';
+      }
+      return ResetPasswordScreen(token: token, email: email);
+    },
     verifyEmail: (context) {
       final email = ModalRoute.of(context)?.settings.arguments as String? ?? '';
       return VerifyEmailScreen(email: email);
@@ -202,6 +220,10 @@ class Routes {
     adminPromo: (context) => BlocProvider(
       create: (_) => AdminPromoCubit(),
       child: const AdminPromoScreen(),
+    ),
+    privacyPolicy: (context) => BlocProvider(
+      create: (_) => PrivacyPolicyCubit(),
+      child: const PrivacyPolicyScreen(),
     ),
   };
 }

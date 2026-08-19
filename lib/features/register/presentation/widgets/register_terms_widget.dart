@@ -1,8 +1,11 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/utils/constants/routes.dart';
+import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/register/presentation/cubit/register_cubit.dart';
 import 'package:moean/features/register/presentation/cubit/register_state.dart';
 
@@ -20,15 +23,45 @@ class RegisterTermsWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Expanded(
-              child: GestureDetector(
-                onTap: cubit.toggleTerms,
-                child: Text(
-                  appTranslation().get('terms_agree'),
-                  style: TextStylesManager.regular14.copyWith(
-                    color: ColorsManager.primaryColor,
-                  ),
-                  textAlign: TextAlign.right,
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: appTranslation().get('terms_agree_prefix'),
+                      style: TextStylesManager.regular14.copyWith(
+                        color: ColorsManager.mainText,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = cubit.toggleTerms,
+                    ),
+                    TextSpan(
+                      text: appTranslation().get('terms_and_conditions'),
+                      style: TextStylesManager.regular14.copyWith(
+                        color: ColorsManager.mainText,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = cubit.toggleTerms,
+                    ),
+                    TextSpan(
+                      text: appTranslation().get('terms_and'),
+                      style: TextStylesManager.regular14.copyWith(
+                        color: ColorsManager.mainText,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = cubit.toggleTerms,
+                    ),
+                    TextSpan(
+                      text: appTranslation().get('privacy_policy'),
+                      style: TextStylesManager.bold14.copyWith(
+                        color: ColorsManager.primaryColor,
+                        decoration: TextDecoration.underline,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () => context.push(Routes.privacyPolicy),
+                    ),
+                  ],
                 ),
+                textAlign: TextAlign.right,
               ),
             ),
             Transform.scale(

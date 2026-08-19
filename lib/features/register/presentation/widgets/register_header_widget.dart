@@ -21,7 +21,7 @@ class RegisterHeaderWidget extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Image.asset(
-                      AssetsHelper.logo,
+                      AssetsHelper.icon,
                       width: 60,
                       height: 60,
                       fit: BoxFit.cover,

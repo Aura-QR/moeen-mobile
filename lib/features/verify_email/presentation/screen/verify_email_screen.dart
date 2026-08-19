@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
@@ -30,15 +31,25 @@ class VerifyEmailScreen extends StatelessWidget {
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            leading: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
+            leading: BlocBuilder<VerifyEmailCubit, VerifyEmailState>(
+              buildWhen: (previous, current) =>
+                  current is VerifyEmailSuccessState ||
+                  previous is VerifyEmailSuccessState,
+              builder: (context, state) {
+                if (state is VerifyEmailSuccessState) {
+                  return const SizedBox.shrink();
+                }
+                return IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                    color: ColorsManager.primaryColor,
+                  ),
+                );
               },
-              icon: Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 16,
-                color: ColorsManager.primaryColor,
-              ),
             ),
           ),
           body: SafeArea(

@@ -50,6 +50,42 @@ class ApiService {
     );
   }
 
+  static Future<Either<String, Map<String, dynamic>>> forgotPassword(String email) async {
+    final response = await DioHelper.postData(
+      url: forgotPasswordApi,
+      data: {
+        'email': email.trim(),
+      },
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
+  static Future<Either<String, Map<String, dynamic>>> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    final response = await DioHelper.postData(
+      url: resetPasswordApi,
+      data: {
+        'email': email.trim(),
+        'token': token.trim(),
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      },
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
   static Future<Either<String, UserModel>> getMe() async {
     final response = await DioHelper.getData(
       url: meApi,
