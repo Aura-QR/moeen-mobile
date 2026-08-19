@@ -30,36 +30,34 @@ class AdminStatsCardsWidget extends StatelessWidget {
               crossAxisCount: isMobile ? 2 : 4,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: isMobile ? 2 : 2.5,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: isMobile ? 1.8 : 2.5,
               children: [
                 _buildStatCard(
                   title: appTranslation().get('admin_total_teachers'),
                   count: total,
                   icon: Icons.people_outline,
-                  
                   color: Colors.red,
                   bgColor: Colors.red.withValues(alpha: 0.1),
                 ),
                 _buildStatCard(
                   title: appTranslation().get('admin_active_teachers'),
-                  count: activeCount, // Showing current page stats for demo
+                  count: activeCount,
                   icon: Icons.person_outline,
-                  
                   color: Colors.purple,
                   bgColor: Colors.purple.withValues(alpha: 0.1),
                 ),
                 _buildStatCard(
                   title: appTranslation().get('admin_suspended_accounts'),
-                  count: suspendedCount, // Showing current page stats for demo
+                  count: suspendedCount,
                   icon: Icons.person_off_outlined,
                   color: ColorsManager.primaryColor,
                   bgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
                 ),
                 _buildStatCard(
                   title: appTranslation().get('admin_subscribed_plans'),
-                  count: subscribedCount, // Showing current page stats for demo
+                  count: subscribedCount,
                   icon: Icons.bolt_outlined,
                   color: Colors.green,
                   bgColor: Colors.green.withValues(alpha: 0.1),
@@ -80,7 +78,7 @@ class AdminStatsCardsWidget extends StatelessWidget {
     required Color bgColor,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
@@ -101,14 +99,15 @@ class AdminStatsCardsWidget extends StatelessWidget {
                 verticalSpace4,
                 Text(
                   title,
-                  style: TextStylesManager.medium12.copyWith(color: color),
-                  maxLines: 1,
+                  style: TextStylesManager.medium12.copyWith(color: color, height: 1.2),
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          Icon(icon, color: color, size: 28),
+          horizontalSpace4,
+          Icon(icon, color: color, size: 26),
         ],
       ),
     );

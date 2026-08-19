@@ -90,26 +90,26 @@ class LoginScreen extends StatelessWidget {
         ),
       );
     }
-    //عملنا كومينت هنا هنعيد تشغيل الكونديشن دا اما نرجع نربط الحساب ب منصه مدرستى
-  //   if (state is LoginSuccessState) {
-  //     if (state.userEmail == 'admin@moeen.sa') {
-  //       context.pushNamedAndRemoveUntil(Routes.adminTeachers, (route) => false);
-  //     } else if (state.madrasatiConnected) {
-  //       context.pushNamedAndRemoveUntil(Routes.home, (route) => false);
-  //     } else {
-  //       context.pushNamedAndRemoveUntil(
-  //           Routes.loginMicrosoft, (route) => false);
-  //     }
-  //   }
 
-  if (state is LoginSuccessState) {
+    if (state is LoginAccountSuspendedState) {
+      context.push(
+        Routes.accountSuspended,
+        arguments: {
+          'email': state.email,
+          'password': state.password,
+          'message': state.message,
+          'name': state.userName,
+        },
+      );
+    }
+
+    if (state is LoginSuccessState) {
       if (state.userEmail == 'admin@moeen.sa' || state.userEmail == 'admin@moeen.com') {
         context.pushNamedAndRemoveUntil(Routes.adminTeachers, (route) => false);
-      } else  {
+      } else {
         context.pushNamedAndRemoveUntil(Routes.home, (route) => false);
-      } 
+      }
     }
-  
-   }
+  }
 
 }

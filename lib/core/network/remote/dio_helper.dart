@@ -20,7 +20,7 @@ class DioHelper {
       final Response response = await getDio().get(
         url,
         queryParameters: {
-          if (search != null) 'q': search,
+          'q': ?search,
           ...?query,
         },
         options: Options(
@@ -195,6 +195,12 @@ class DioHelper {
         } catch (_) {}
       }
       // ─────────────────────────────────────────────────────────
+
+      if (errorCode == 'account_suspended' ||
+          (response.statusCode == 403 && (errorCode == 'account_suspended' || fullMapStr.contains('تعليق') || fullMapStr.contains('موقوف')))) {
+        final message = map['message']?.toString() ?? 'account_suspended';
+        return '__403__:account_suspended:$message';
+      }
 
       final errors = map['errors'];
       if (errors is Map && errors.isNotEmpty) {

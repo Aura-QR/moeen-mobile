@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/admin/promo/data/models/admin_promo_models.dart';
 import 'package:moean/features/admin/promo/presentation/cubit/admin_promo_cubit.dart';
-import 'package:moean/features/admin/promo/presentation/cubit/admin_promo_state.dart';
 import 'package:moean/features/admin/promo/presentation/widgets/admin_promo_stat_card_widget.dart';
 import 'package:moean/features/admin/promo/presentation/widgets/admin_promo_table_row_widget.dart';
-import 'package:moean/features/admin/promo/presentation/widgets/admin_promo_create_dialog.dart';
 
 class AdminPromoBodyWidget extends StatelessWidget {
   final AdminReferralStatsModel stats;
@@ -135,7 +132,7 @@ class AdminPromoBodyWidget extends StatelessWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: promoCodes.length,
-                    separatorBuilder: (_, __) => verticalSpace10,
+                    separatorBuilder: (_, _) => verticalSpace10,
                     itemBuilder: (_, i) => AdminPromoTableRowWidget(
                       promo: promoCodes[i],
                       onDelete: () =>

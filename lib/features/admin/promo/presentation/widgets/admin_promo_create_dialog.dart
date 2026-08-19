@@ -76,7 +76,7 @@ class _AdminPromoCreateDialogState extends State<AdminPromoCreateDialog> {
         ],
         DropdownButtonFormField<String>(
           isExpanded: true,
-          value: value,
+          initialValue: value,
           icon: const Icon(Icons.keyboard_arrow_down_rounded),
           decoration: InputDecoration(
             filled: true,

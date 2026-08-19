@@ -46,6 +46,8 @@ class TextStylesManager {
 
   static TextStyle get medium12 => _tajawal(12.0, FontWeight.w500);
 
+  static TextStyle get medium13 => _tajawal(13.0, FontWeight.w500);
+
   static TextStyle get medium14 => _tajawal(14.0, FontWeight.w500);
 
   static TextStyle get medium16 => _tajawal(16.0, FontWeight.w500);

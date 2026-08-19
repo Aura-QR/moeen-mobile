@@ -27,89 +27,80 @@ class AdminPromoTableRowWidget extends StatelessWidget {
     }
   }
 
-  String _typeLabel(String type) {
-    return type == 'percentage'
-        ? appTranslation().get('admin_promo_type_percentage')
-        : appTranslation().get('admin_promo_type_fixed');
-  }
-
   String _valueDisplay(AdminPromoCodeModel p) {
+    final valueStr = p.discountValue.truncateToDouble() == p.discountValue
+        ? p.discountValue.toInt().toString()
+        : p.discountValue.toStringAsFixed(2);
     return p.discountType == 'percentage'
-        ? '${p.discountValue.toStringAsFixed(2)}%'
-        : '${p.discountValue.toStringAsFixed(2)} ر.س';
+        ? '$valueStr%'
+        : '$valueStr ر.س';
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: ColorsManager.surfacePrimary,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: ColorsManager.borderColor),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Code + Status badge
+          // Row 1: Code + Name on start, Status badge + Actions on end
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Status badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: promo.isActive
-                      ? const Color(0xFF22C55E).withValues(alpha: 0.12)
-                      : ColorsManager.errorColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  promo.isActive
-                      ? appTranslation().get('admin_promo_status_active')
-                      : appTranslation().get('admin_promo_status_inactive'),
-                  style: TextStylesManager.bold12.copyWith(
-                    color: promo.isActive
-                        ? const Color(0xFF16A34A)
-                        : ColorsManager.errorColor,
-                  ),
-                ),
-              ),
               // Code + Name
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    promo.code,
-                    style: TextStylesManager.bold14.copyWith(
-                      color: ColorsManager.primaryColor,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      promo.code,
+                      style: TextStylesManager.bold14.copyWith(
+                        color: ColorsManager.primaryColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  Text(
-                    promo.name,
-                    style: TextStylesManager.regular12.copyWith(
-                      color: ColorsManager.textSecondary,
+                    verticalSpace4,
+                    Text(
+                      promo.name,
+                      style: TextStylesManager.regular12.copyWith(
+                        color: ColorsManager.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ],
-          ),
-          verticalSpace10,
-          // Row 2: Type + Value + Target + Usage
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Actions
+              horizontalSpace8,
+              // Status Badge + Actions
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Delete
-                  IconButton(
-                    onPressed: onDelete,
-                    icon: Icon(Icons.delete_outline_rounded,
-                        color: ColorsManager.errorColor, size: 20),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                  // Status badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: promo.isActive
+                          ? const Color(0xFF22C55E).withValues(alpha: 0.12)
+                          : ColorsManager.errorColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      promo.isActive
+                          ? appTranslation().get('admin_promo_status_active')
+                          : appTranslation().get('admin_promo_status_inactive'),
+                      style: TextStylesManager.bold12.copyWith(
+                        color: promo.isActive
+                            ? const Color(0xFF16A34A)
+                            : ColorsManager.errorColor,
+                      ),
+                    ),
                   ),
                   horizontalSpace8,
                   // Toggle activate/deactivate
@@ -123,32 +114,44 @@ class AdminPromoTableRowWidget extends StatelessWidget {
                       color: promo.isActive
                           ? ColorsManager.primaryColor
                           : ColorsManager.textSecondary,
-                      size: 24,
+                      size: 28,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  horizontalSpace8,
+                  // Delete
+                  IconButton(
+                    onPressed: onDelete,
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: ColorsManager.errorColor,
+                      size: 20,
                     ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
                 ],
               ),
-              // Stats
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _InfoChip(
-                    label: '${promo.redemptionsCount}/${promo.maxRedemptions ?? '∞'}',
-                    icon: Icons.people_outline,
-                  ),
-                  horizontalSpace8,
-                  _InfoChip(
-                    label: _targetLabel(promo.userTarget),
-                    icon: Icons.flag_outlined,
-                  ),
-                  horizontalSpace8,
-                  _InfoChip(
-                    label: _valueDisplay(promo),
-                    icon: Icons.discount_outlined,
-                  ),
-                ],
+            ],
+          ),
+          const Divider(height: 16, thickness: 0.6),
+          // Row 2: Info chips (Wrap avoids overflow)
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              _InfoChip(
+                label: _valueDisplay(promo),
+                icon: Icons.discount_outlined,
+              ),
+              _InfoChip(
+                label: _targetLabel(promo.userTarget),
+                icon: Icons.flag_outlined,
+              ),
+              _InfoChip(
+                label: '${promo.redemptionsCount}/${promo.maxRedemptions ?? '∞'}',
+                icon: Icons.people_outline,
               ),
             ],
           ),
@@ -166,17 +169,25 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-          style: TextStylesManager.medium12
-              .copyWith(color: ColorsManager.textPrimary),
-        ),
-        const SizedBox(width: 3),
-        Icon(icon, size: 13, color: ColorsManager.textSecondary),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: ColorsManager.background,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: ColorsManager.borderColor.withValues(alpha: 0.6)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: ColorsManager.textSecondary),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStylesManager.medium12
+                .copyWith(color: ColorsManager.textPrimary),
+          ),
+        ],
+      ),
     );
   }
 }

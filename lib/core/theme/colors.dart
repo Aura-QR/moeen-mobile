@@ -91,4 +91,25 @@ class ColorsManager {
   static Color get verifyMailBadgeBg =>
       isDark ? const Color(0xFF382D13) : const Color(0xFFFEF3D6);
   static const Color verifyMailBadgeText = Color(0xFFB47D16);
+
+  // Account Suspended Colors
+  static Color get suspendedBadgeBg =>
+      isDark ? const Color(0xFF3B1212) : const Color(0xFFFEE2E2);
+  static Color get suspendedBadgeBorder =>
+      isDark ? const Color(0xFF5C1D1D) : const Color(0xFFFECACA);
+  static Color get suspendedBadgeText =>
+      isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626);
+  static Color get suspendedIconBg =>
+      isDark ? const Color(0xFF451515) : const Color(0xFFFFECEC);
+  static Color get suspendedCardBorder =>
+      isDark ? const Color(0xFF4B1A1A) : const Color(0xFFFFD6D6);
+  static Color get whatsappIconBg =>
+      isDark ? const Color(0xFF0F3822) : const Color(0xFFDCFCE7);
+  static const Color whatsappIconColor = Color(0xFF16A34A);
+  static Color get emailIconBg =>
+      isDark ? const Color(0xFF0B3047) : const Color(0xFFE0F2FE);
+  static const Color emailIconColor = Color(0xFF0284C7);
+  static Color get workingHoursIconBg =>
+      isDark ? const Color(0xFF38230D) : const Color(0xFFFEF3C7);
+  static const Color workingHoursIconColor = Color(0xFFD97706);
 }

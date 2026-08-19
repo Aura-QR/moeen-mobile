@@ -95,7 +95,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
               ),
             ],
           ),
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: BlocBuilder<SubscriptionCubit, SubscriptionState>(
             bloc: sl<SubscriptionCubit>(),
             builder: (context, subState) {
@@ -217,7 +217,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                     children: [
                       // Status Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: badgeBg,
                           borderRadius: BorderRadius.circular(20),
@@ -229,46 +229,56 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                           ),
                         ),
                       ),
+                      const SizedBox(width: 8),
 
                       // Plan Name & Icon Row
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                'خطة الاشتراك الحالية',
-                                style: TextStylesManager.medium12.copyWith(
-                                  color: ColorsManager.isDark
-                                      ? ColorsManager.mutedDark
-                                      : const Color(0xFF6B7280),
-                                ),
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'خطة الاشتراك الحالية',
+                                    style: TextStylesManager.medium12.copyWith(
+                                      color: ColorsManager.isDark
+                                          ? ColorsManager.mutedDark
+                                          : const Color(0xFF6B7280),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    planTitle,
+                                    style: TextStylesManager.bold16.copyWith(
+                                      color: const Color(0xFF0E7A5E),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                planTitle,
-                                style: TextStylesManager.bold18.copyWith(
-                                  color: const Color(0xFF0E7A5E),
-                                ),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: headerIconBg,
+                                shape: BoxShape.circle,
                               ),
-                            ],
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: headerIconBg,
-                              shape: BoxShape.circle,
+                              child: Icon(
+                                headerIcon,
+                                color: headerIconColor,
+                                size: 22,
+                              ),
                             ),
-                            child: Icon(
-                              headerIcon,
-                              color: headerIconColor,
-                              size: 22,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -285,7 +295,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
 
                   // Expiration Date Card
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
                       color: ColorsManager.isDark
                           ? ColorsManager.surfaceDark.withValues(alpha: 0.5)
@@ -295,27 +305,34 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.calendar_today_outlined,
-                              size: 18,
-                              color: Color(0xFF0E7A5E),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              dateLabel,
-                              style: TextStylesManager.medium14.copyWith(
-                                color: ColorsManager.isDark
-                                    ? ColorsManager.mutedDark
-                                    : const Color(0xFF4B5563),
+                        Expanded(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.calendar_today_outlined,
+                                size: 16,
+                                color: Color(0xFF0E7A5E),
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  dateLabel,
+                                  style: TextStylesManager.medium13.copyWith(
+                                    color: ColorsManager.isDark
+                                        ? ColorsManager.mutedDark
+                                        : const Color(0xFF4B5563),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 6),
                         Text(
                           _formatArabicDate(effectiveEndsAt),
-                          style: TextStylesManager.bold14.copyWith(
+                          style: TextStylesManager.bold13.copyWith(
                             color: const Color(0xFF0E7A5E),
                           ),
                         ),
@@ -327,7 +344,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
 
                   // Remaining Duration Card
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
                       color: ColorsManager.isDark
                           ? ColorsManager.surfaceDark.withValues(alpha: 0.5)
@@ -337,17 +354,20 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'المدة المتبقية:',
-                          style: TextStylesManager.medium14.copyWith(
-                            color: ColorsManager.isDark
-                                ? ColorsManager.mutedDark
-                                : const Color(0xFF4B5563),
+                        Expanded(
+                          child: Text(
+                            'المدة المتبقية:',
+                            style: TextStylesManager.medium13.copyWith(
+                              color: ColorsManager.isDark
+                                  ? ColorsManager.mutedDark
+                                  : const Color(0xFF4B5563),
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 6),
                         Text(
                           remainingValue,
-                          style: TextStylesManager.bold14.copyWith(
+                          style: TextStylesManager.bold13.copyWith(
                             color: const Color(0xFF0E7A5E),
                           ),
                         ),
@@ -359,7 +379,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                   if (showUsage) ...[
                     const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
                         color: ColorsManager.isDark
                             ? ColorsManager.surfaceDark
@@ -377,17 +397,20 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'تحضيرات اليوم المتبقية:',
-                                style: TextStylesManager.bold14.copyWith(
-                                  color: ColorsManager.isDark
-                                      ? ColorsManager.textPrimaryDark
-                                      : const Color(0xFF475569),
+                              Expanded(
+                                child: Text(
+                                  'تحضيرات اليوم المتبقية:',
+                                  style: TextStylesManager.bold13.copyWith(
+                                    color: ColorsManager.isDark
+                                        ? ColorsManager.textPrimaryDark
+                                        : const Color(0xFF475569),
+                                  ),
                                 ),
                               ),
+                              const SizedBox(width: 6),
                               Text(
                                 '$lessonsRemaining',
-                                style: TextStylesManager.bold14.copyWith(
+                                style: TextStylesManager.bold13.copyWith(
                                   color: const Color(0xFF0E7A5E),
                                 ),
                               ),
@@ -397,17 +420,20 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'رصيد الذكاء الاصطناعي المتبقي:',
-                                style: TextStylesManager.bold14.copyWith(
-                                  color: ColorsManager.isDark
-                                      ? ColorsManager.textPrimaryDark
-                                      : const Color(0xFF475569),
+                              Expanded(
+                                child: Text(
+                                  'رصيد الذكاء الاصطناعي المتبقي:',
+                                  style: TextStylesManager.bold13.copyWith(
+                                    color: ColorsManager.isDark
+                                        ? ColorsManager.textPrimaryDark
+                                        : const Color(0xFF475569),
+                                  ),
                                 ),
                               ),
+                              const SizedBox(width: 6),
                               Text(
                                 '$aiRemaining',
-                                style: TextStylesManager.bold14.copyWith(
+                                style: TextStylesManager.bold13.copyWith(
                                   color: const Color(0xFF0E7A5E),
                                 ),
                               ),
@@ -422,7 +448,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
 
                   // Upgrade / Subscribe Action Button
                   SizedBox(
-                    height: 50,
+                    height: 48,
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -440,10 +466,14 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            buttonText,
-                            style: TextStylesManager.bold16.copyWith(
-                              color: Colors.white,
+                          Flexible(
+                            child: Text(
+                              buttonText,
+                              style: TextStylesManager.bold16.copyWith(
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 8),

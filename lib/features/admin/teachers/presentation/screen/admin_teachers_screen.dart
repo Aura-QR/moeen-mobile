@@ -125,15 +125,18 @@ class AdminTeachersScreen extends StatelessWidget {
             backgroundColor: ColorsManager.background,
             appBar: AppBar(
               backgroundColor: ColorsManager.primaryColor,
-                automaticallyImplyLeading: false,
-
+              automaticallyImplyLeading: false,
               title: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.shield_outlined, color: Colors.white),
                   horizontalSpace8,
-                  Text(
-                    appTranslation().get('admin_teachers_title'),
-                    style: TextStylesManager.bold18.copyWith(color: Colors.white),
+                  Flexible(
+                    child: Text(
+                      appTranslation().get('admin_teachers_title'),
+                      style: TextStylesManager.bold18.copyWith(color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -142,27 +145,30 @@ class AdminTeachersScreen extends StatelessWidget {
                   icon: const Icon(Icons.refresh, color: Colors.white),
                   onPressed: () => cubit.getTeachers(),
                 ),
-              //  PrimaryElevatedButton(
-              //     text: appTranslation().get('return_home'),
-              //     onPressed: () {
-              //         context.push(Routes.home);
-              //     },
-              //   ),
-              //   horizontalSpace8,
-
-               Padding(
-                  padding:  EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 12.0),
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:   Colors.white,
+                      backgroundColor: Colors.white,
                       foregroundColor: ColorsManager.primaryColor,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     onPressed: () {
-                       context.push(Routes.home);
+                      context.push(Routes.home);
                     },
-                    icon: const Icon(Icons.home),
-                    label: Text(appTranslation().get('home'),
-                    style: TextStylesManager.medium16
+                    icon: const Icon(Icons.home, size: 18),
+                    label: Text(
+                      appTranslation().get('home'),
+                      style: TextStylesManager.medium14.copyWith(
+                        color: ColorsManager.primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

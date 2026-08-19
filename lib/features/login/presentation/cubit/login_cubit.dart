@@ -51,9 +51,32 @@ class LoginCubit extends Cubit<LoginState> {
 
     result.fold(
       (error) {
-        if (!isClosed) emit(LoginErrorState(message: error));
+        if (!isClosed) {
+          if (error.contains('account_suspended') ||
+              error.contains('__403__') ||
+              error.contains('تعليق') ||
+              error.contains('موقوف')) {
+            emit(LoginAccountSuspendedState(
+              email: emailController.text.trim(),
+              password: passwordController.text,
+              message: error.replaceFirst('__403__:account_suspended:', ''),
+            ));
+          } else {
+            emit(LoginErrorState(message: error));
+          }
+        }
       },
       (response) async {
+        if (!response.user.isActive) {
+          if (!isClosed) {
+            emit(LoginAccountSuspendedState(
+              email: response.user.email,
+              userName: response.user.name,
+            ));
+          }
+          return;
+        }
+
         // Save token securely (replaces CacheHelper for sensitive data)
         await sl<SecureStorageHelper>().saveToken(response.token);
         token = response.token;

@@ -45,9 +45,19 @@ class _AdminPromoScreenState extends State<AdminPromoScreen> {
           backgroundColor: ColorsManager.primaryColor,
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: Text(
-            appTranslation().get('admin_promo_title'),
-            style: TextStylesManager.bold18.copyWith(color: Colors.white),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.discount_outlined, color: Colors.white, size: 22),
+              horizontalSpace8,
+              Flexible(
+                child: Text(
+                  appTranslation().get('admin_promo_title'),
+                  style: TextStylesManager.bold18.copyWith(color: Colors.white),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
           actions: [
             // Refresh
@@ -57,19 +67,28 @@ class _AdminPromoScreenState extends State<AdminPromoScreen> {
             ),
             // Back home
             Padding(
-              padding: const EdgeInsets.only(left: 12, right: 4),
-              child: TextButton.icon(
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.white.withValues(alpha: 0.15),
-                  foregroundColor: Colors.white,
+              padding: const EdgeInsetsDirectional.only(end: 12.0),
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: ColorsManager.primaryColor,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 onPressed: () => context.pop(),
-                icon: const Icon(Icons.arrow_back_ios_rounded, size: 14),
-                label: Text(appTranslation().get('return_home'),
-                    style: TextStylesManager.medium12
-                        .copyWith(color: Colors.white)),
+                icon: const Icon(Icons.home_rounded, size: 18),
+                label: Text(
+                  appTranslation().get('home'),
+                  style: TextStylesManager.medium14.copyWith(
+                    color: ColorsManager.primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],

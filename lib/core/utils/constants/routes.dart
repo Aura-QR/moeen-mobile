@@ -14,6 +14,7 @@ import 'package:moean/features/profile/presentation/screen/change_password_scree
 import 'package:moean/features/verify_email/presentation/screen/verify_email_screen.dart';
 import 'package:moean/features/forgot_password/presentation/screen/forgot_password_screen.dart';
 import 'package:moean/features/forgot_password/presentation/screen/reset_password_screen.dart';
+import 'package:moean/features/account_suspended/presentation/screen/account_suspended_screen.dart';
 
 import 'package:moean/features/admin/teachers/presentation/screen/admin_teachers_screen.dart';
 import 'package:moean/features/admin/contact/presentation/screen/admin_contact_screen.dart';
@@ -77,6 +78,7 @@ class Routes {
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
+  static const String accountSuspended = '/account-suspended';
   static const String privacyPolicy = '/privacy-policy';
   static const String verifyEmail = '/verify-email';
   static const String loginMicrosoft = '/login/microsoft';
@@ -132,6 +134,25 @@ class Routes {
         email = args['email'] as String? ?? '';
       }
       return ResetPasswordScreen(token: token, email: email);
+    },
+    accountSuspended: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      String? email;
+      String? password;
+      String? name;
+      String? phone;
+      if (args is Map<String, dynamic>) {
+        email = args['email'] as String?;
+        password = args['password'] as String?;
+        name = args['name'] as String?;
+        phone = args['phone'] as String?;
+      }
+      return AccountSuspendedScreen(
+        email: email,
+        password: password,
+        name: name,
+        phone: phone,
+      );
     },
     verifyEmail: (context) {
       final email = ModalRoute.of(context)?.settings.arguments as String? ?? '';

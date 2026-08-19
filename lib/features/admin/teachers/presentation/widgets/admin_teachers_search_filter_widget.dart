@@ -21,20 +21,20 @@ class AdminTeachersSearchFilterWidget extends StatelessWidget {
         return Row(
           children: [
             Expanded(
-              flex: 3,
+              flex: 5,
               child: PrimaryTextField(
                 controller: cubit.searchController,
                 onChanged: cubit.onSearchChanged,
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                hint: appTranslation().get('admin_search_hint')
+                hint: appTranslation().get('admin_search_hint'),
               ),
             ),
-            horizontalSpace16,
+            horizontalSpace8,
             Expanded(
-              flex: 1,
+              flex: 2,
               child: Container(
                 height: 48,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
                   color: ColorsManager.surfacePrimary,
                   borderRadius: BorderRadius.circular(24),
@@ -49,9 +49,11 @@ class AdminTeachersSearchFilterWidget extends StatelessWidget {
                       style: TextStylesManager.regular14.copyWith(
                         color: ColorsManager.textSecondary.withValues(alpha: 0.85),
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     isExpanded: true,
-                    icon: Icon(Icons.arrow_drop_down, color: ColorsManager.textPrimary),
+                    icon: Icon(Icons.arrow_drop_down, color: ColorsManager.textPrimary, size: 20),
                     style: TextStylesManager.regular14.copyWith(
                       color: ColorsManager.textPrimary,
                     ),
@@ -63,6 +65,8 @@ class AdminTeachersSearchFilterWidget extends StatelessWidget {
                           style: TextStylesManager.regular14.copyWith(
                             color: ColorsManager.textPrimary,
                           ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                       DropdownMenuItem(
@@ -72,6 +76,8 @@ class AdminTeachersSearchFilterWidget extends StatelessWidget {
                           style: TextStylesManager.regular14.copyWith(
                             color: ColorsManager.textPrimary,
                           ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                       DropdownMenuItem(
@@ -81,6 +87,8 @@ class AdminTeachersSearchFilterWidget extends StatelessWidget {
                           style: TextStylesManager.regular14.copyWith(
                             color: ColorsManager.textPrimary,
                           ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       ),
                     ],
