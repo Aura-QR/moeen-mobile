@@ -5,6 +5,7 @@ import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/core/utils/formatters/saudi_phone_input_formatter.dart';
 import 'package:moean/features/register/presentation/cubit/register_cubit.dart';
 import 'package:moean/features/register/presentation/cubit/register_state.dart';
 
@@ -159,51 +160,52 @@ class _PhoneFieldWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: PrimaryTextField(
-            controller: cubit.phoneController,
-            hint: appTranslation().get('phone_hint'),
-            keyboardType: TextInputType.phone,
-            textInputAction: TextInputAction.next,
-            prefixIcon: const Icon(Icons.phone_outlined),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return appTranslation().get('phone_required');
-              }
-              return null;
-            },
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: ColorsManager.surfacePrimary,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: ColorsManager.borderColor),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '+966',
-                style: TextStylesManager.medium14.copyWith(
-                  color: ColorsManager.mainText,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: ColorsManager.textBody,
-                size: 18,
-              ),
-            ],
-          ),
-        ),
+    return PrimaryTextField(
+      controller: cubit.phoneController,
+      hint: appTranslation().get('phone_hint'),
+      keyboardType: TextInputType.phone,
+      textInputAction: TextInputAction.next,
+      inputFormatters: [
+        SaudiPhoneInputFormatter(),
       ],
+      prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+      prefixIcon: Padding(
+        padding: const EdgeInsetsDirectional.only(start: 14, end: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '🇸🇦',
+              style: TextStyle(fontSize: 18),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '+966',
+              textDirection: TextDirection.ltr,
+              style: TextStylesManager.bold14.copyWith(
+                color: ColorsManager.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              height: 20,
+              width: 1.5,
+              color: ColorsManager.borderColor,
+            ),
+          ],
+        ),
+      ),
+      validator: (value) {
+        final text = value?.trim() ?? '';
+        if (text.isEmpty) {
+          return appTranslation().get('phone_required');
+        }
+        final saudiPhoneRegex = RegExp(r'^(05\d{8}|5\d{8})$');
+        if (!saudiPhoneRegex.hasMatch(text)) {
+          return appTranslation().get('phone_invalid');
+        }
+        return null;
+      },
     );
   }
 }

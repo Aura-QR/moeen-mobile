@@ -101,7 +101,8 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
                 icon: Icons.celebration,
                 text: '🎉 متبقي $days أيام على التجربة المجانية',
                 buttonText: 'اشترك الآن',
-                color: ColorsManager.errorColor,
+                color:const Color(0xFFD97706),
+                // ColorsManager.primaryColor,
                 isExpired: false,
               );
             }

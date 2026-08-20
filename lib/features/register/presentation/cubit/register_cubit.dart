@@ -6,6 +6,7 @@ import 'package:moean/core/models/register_request.dart';
 import 'package:moean/core/network/local/cache_helper.dart';
 import 'package:moean/core/network/local/secure_storage_helper.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/utils/formatters/saudi_phone_input_formatter.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
 
@@ -66,7 +67,7 @@ class RegisterCubit extends Cubit<RegisterState> {
       final request = RegisterRequest(
         name: fullNameController.text.trim(),
         email: emailController.text.trim(),
-        phone: phoneController.text.trim(),
+        phone: SaudiPhoneInputFormatter.normalizePhoneNumber(phoneController.text.trim()),
         password: passwordController.text,
         passwordConfirmation: confirmPasswordController.text,
         referralCode: referralCode,

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,12 @@ class PrimaryTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final ValueChanged<String>? onFieldSubmitted;
   final int maxLines;
+  final List<TextInputFormatter>? inputFormatters;
+  final TextDirection? textDirection;
+  final TextAlign textAlign;
+  final BoxConstraints? prefixIconConstraints;
+  final BoxConstraints? suffixIconConstraints;
+  final int? maxLength;
 
   const PrimaryTextField({
     super.key,
@@ -47,6 +54,12 @@ class PrimaryTextField extends StatefulWidget {
     this.focusNode,
     this.onFieldSubmitted,
     this.maxLines = 1,
+    this.inputFormatters,
+    this.textDirection,
+    this.textAlign = TextAlign.start,
+    this.prefixIconConstraints,
+    this.suffixIconConstraints,
+    this.maxLength,
   });
 
   @override
@@ -107,6 +120,10 @@ Widget build(BuildContext context) {
         validator: widget.validator,
         keyboardType: widget.keyboardType,
         textInputAction: widget.textInputAction,
+        inputFormatters: widget.inputFormatters,
+        textDirection: widget.textDirection,
+        textAlign: widget.textAlign,
+        maxLength: widget.maxLength,
         maxLines: widget.maxLines,
         style: TextStylesManager.regular14.copyWith(
           color: widget.textColor ?? ColorsManager.textPrimary,
@@ -120,7 +137,7 @@ Widget build(BuildContext context) {
           // تفعيل الخلفية هنا بدلاً من الـ Container
           filled: true,
           fillColor: widget.fillColor ?? ColorsManager.surfacePrimary,
-          
+          counterText: widget.maxLength != null ? '' : null,
           labelText: widget.label,
           labelStyle: TextStylesManager.regular14.copyWith(
             color: widget.textColor ?? ColorsManager.textSecondary,
@@ -134,8 +151,10 @@ Widget build(BuildContext context) {
             vertical: 16,
           ),
           prefixIcon: widget.prefixIcon,
+          prefixIconConstraints: widget.prefixIconConstraints,
           prefixIconColor: widget.textColor ?? ColorsManager.textSecondary,
           suffixIcon: widget.suffixIcon,
+          suffixIconConstraints: widget.suffixIconConstraints,
           suffixIconColor: widget.textColor ?? ColorsManager.textSecondary,
           
           // هنا نقوم بتعريف الحدود لكل الحالات وسيقوم فلاتر بمعالجة حجم الخطأ تلقائياً
