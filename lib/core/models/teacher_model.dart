@@ -81,6 +81,8 @@ class TeacherModel {
   /// نص موعد الانتهاء
   String get expirationSubtitle {
     final endsAt = effectiveEndsAt;
+    // ignore: avoid_print
+    print('[TeacherModel] expirationSubtitle → isSubscribed=$isSubscribed, isInTrial=$isInTrial, subscriptionEndsAt=$subscriptionEndsAt, trialEndsAt=$trialEndsAt, effectiveEndsAt=$endsAt');
     if (endsAt == null) return 'بدون تاريخ انتهاء';
     final formattedDate = "${endsAt.year}/${endsAt.month.toString().padLeft(2, '0')}/${endsAt.day.toString().padLeft(2, '0')}";
     

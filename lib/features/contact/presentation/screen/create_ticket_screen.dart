@@ -62,19 +62,37 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
           textDirection: TextDirection.rtl,
           child: Scaffold(
             backgroundColor: ColorsManager.background,
-            appBar: AppBar(
-              backgroundColor: ColorsManager.background,
-              elevation: 0,
-              centerTitle: true,
-              title: Text(
+            appBar:
+            //  AppBar(
+            //   backgroundColor: ColorsManager.background,
+            //   elevation: 0,
+            //   centerTitle: true,
+            //   title: Text(
+            //     appTranslation().get('new_request'),
+            //     style: TextStylesManager.bold18.copyWith(color: ColorsManager.mainText),
+            //   ),
+            //   leading: IconButton(
+            //     icon: Icon(Icons.arrow_forward, color: ColorsManager.mainText),
+            //     onPressed: () => context.pop(),
+            //   ),
+            // ),
+            AppBar(
+          backgroundColor: ColorsManager.background,
+          elevation: 0,
+          centerTitle: true,
+         title: Text(
                 appTranslation().get('new_request'),
                 style: TextStylesManager.bold18.copyWith(color: ColorsManager.mainText),
               ),
-              leading: IconButton(
-                icon: Icon(Icons.arrow_forward, color: ColorsManager.mainText),
-                onPressed: () => context.pop(),
-              ),
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icon(
+              Icons.arrow_back_ios_rounded,
+              color: ColorsManager.mainText,
+              size: 20,
             ),
+          ),
+        ),
             body: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Form(

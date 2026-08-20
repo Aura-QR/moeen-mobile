@@ -104,12 +104,12 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
             if (state is MyExamsLoaded) {
               final loadedState = state;
 
-              const double colTitle = 280;
-              const double colStatus = 120;
-              const double colQuestions = 120;
-              const double colGrade = 120;
-              const double colDate = 120;
-              const double colActions = 220;
+              const double colTitle = 260;
+              const double colStatus = 110;
+              const double colQuestions = 110;
+              const double colGrade = 110;
+              const double colDate = 130;
+              const double colActions = 280;
               const double totalWidth = colTitle + colStatus + colQuestions + colGrade + colDate + colActions;
 
               return Padding(
@@ -148,7 +148,7 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
                                         controller: _verticalController,
                                         physics: const AlwaysScrollableScrollPhysics(),
                                         itemCount: loadedState.exams.data.length,
-                                        separatorBuilder: (_, __) => Divider(color: ColorsManager.borderLightGray, height: 1),
+                                        separatorBuilder: (_, _) => Divider(color: ColorsManager.borderLightGray, height: 1),
                                         itemBuilder: (context, index) {
                                           final exam = loadedState.exams.data[index];
                                           return ExamListItemWidget(
@@ -161,6 +161,7 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
                                             colActions: colActions,
                                             onPublish: () => context.read<MyExamsCubit>().publishExam(exam.id),
                                             onDelete: () => _confirmDelete(context, exam.id),
+                                            onView: () => _navigateToExamPreview(context, exam.id),
                                             onTap: () => _navigateToExamPreview(context, exam.id),
                                           );
                                         },
@@ -268,7 +269,11 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(failure.message), backgroundColor: Colors.red));
         },
         (exam) {
-          context.push(Routes.examGenerationPreview, arguments: exam);
+          Navigator.pushNamed(context, Routes.examGenerationPreview, arguments: exam).then((_) {
+            if (context.mounted) {
+              context.read<MyExamsCubit>().fetchExams(isRefresh: true);
+            }
+          });
         },
       );
     }

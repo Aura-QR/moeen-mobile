@@ -59,7 +59,8 @@ class HomeScreen extends StatelessWidget {
                               // ignore: prefer_const_constructors
                               HomeHeroBannerWidget(),
                               verticalSpace40,
-                              const HomeFeaturesSectionWidget(),
+                              // ignore: prefer_const_constructors
+                              HomeFeaturesSectionWidget(),
                               verticalSpace40,
                               // ignore: prefer_const_constructors
                               HomeTipOfDayWidget(),

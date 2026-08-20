@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/features/privacy_policy/presentation/cubit/privacy_policy_state.dart';
@@ -72,8 +73,12 @@ class PrivacyPolicyCubit extends Cubit<PrivacyPolicyState> {
     if (!isClosed) emit(const PrivacyPolicyPdfGenerating());
     try {
       final doc = pw.Document();
-      final font = await PdfGoogleFonts.tajawalRegular();
-      final boldFont = await PdfGoogleFonts.tajawalBold();
+      final fontData =
+          await rootBundle.load('assets/fonts/Tajawal-Regular.ttf');
+      final boldFontData =
+          await rootBundle.load('assets/fonts/Tajawal-Bold.ttf');
+      final font = pw.Font.ttf(fontData);
+      final boldFont = pw.Font.ttf(boldFontData);
 
       final title = appTranslation().get('privacy_hero_title');
       final desc = appTranslation().get('privacy_hero_desc');
@@ -122,10 +127,14 @@ class PrivacyPolicyCubit extends Cubit<PrivacyPolicyState> {
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
           textDirection: pw.TextDirection.rtl,
+          theme: pw.ThemeData.withFont(
+            base: font,
+            bold: boldFont,
+          ),
           margin: const pw.EdgeInsets.all(32),
           build: (context) => [
-            pw.Header(
-              level: 0,
+            pw.Container(
+              margin: const pw.EdgeInsets.only(bottom: 16),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
@@ -155,6 +164,7 @@ class PrivacyPolicyCubit extends Cubit<PrivacyPolicyState> {
                       color: PdfColors.grey600,
                     ),
                   ),
+                  pw.SizedBox(height: 8),
                   pw.Divider(thickness: 1, color: PdfColors.grey300),
                 ],
               ),
@@ -195,7 +205,8 @@ class PrivacyPolicyCubit extends Cubit<PrivacyPolicyState> {
 
       await Printing.layoutPdf(
         onLayout: (format) async => doc.save(),
-        name: 'privacy_policy.pdf',
+        name: 'privacy_policy',
+        format: PdfPageFormat.a4,
       );
 
       if (!isClosed) emit(const PrivacyPolicyPdfGenerated());

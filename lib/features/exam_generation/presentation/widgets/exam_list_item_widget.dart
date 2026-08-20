@@ -15,7 +15,8 @@ class ExamListItemWidget extends StatelessWidget {
   final double colActions;
   final VoidCallback onPublish;
   final VoidCallback onDelete;
-  final VoidCallback onTap;
+  final VoidCallback onView;
+  final VoidCallback? onTap;
 
   const ExamListItemWidget({
     super.key,
@@ -28,13 +29,14 @@ class ExamListItemWidget extends StatelessWidget {
     required this.colActions,
     required this.onPublish,
     required this.onDelete,
-    required this.onTap,
+    required this.onView,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: onTap ?? onView,
       child: Container(
         height: 60,
         padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -102,22 +104,37 @@ class ExamListItemWidget extends StatelessWidget {
             SizedBox(
               width: colActions,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (exam.status == 'draft')
+                    _buildActionButton(
+                      title: appTranslation().get('view'),
+                      icon: Icons.visibility_outlined,
+                      textColor: ColorsManager.primaryColor,
+                      iconColor: ColorsManager.primaryColor,
+                      backgroundColor: ColorsManager.primaryColor.withValues(alpha: 0.06),
+                      border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.35)),
+                      onTap: onView,
+                    ),
+                    if (exam.status == 'draft') ...[
+                      horizontalSpace6,
                       _buildActionButton(
-                        title: appTranslation().get('published'),
+                        title: appTranslation().get('publish'),
                         icon: Icons.check_circle_outline,
-                        color: ColorsManager.primaryColor,
+                        textColor: Colors.white,
+                        iconColor: Colors.white,
+                        backgroundColor: ColorsManager.primaryColor,
                         onTap: onPublish,
                       ),
-                    if (exam.status == 'draft') horizontalSpace8,
+                    ],
+                    horizontalSpace6,
                     _buildActionButton(
                       title: appTranslation().get('delete'),
                       icon: Icons.delete_outline,
-                      color: Colors.red,
+                      textColor: Colors.red,
+                      iconColor: Colors.red,
+                      backgroundColor: Colors.red.withValues(alpha: 0.08),
                       onTap: onDelete,
                     ),
                   ],
@@ -152,23 +169,27 @@ class ExamListItemWidget extends StatelessWidget {
   Widget _buildActionButton({
     required String title,
     required IconData icon,
-    required Color color,
+    required Color textColor,
+    required Color iconColor,
+    required Color backgroundColor,
+    Border? border,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(20),
+          border: border,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(title, style: TextStylesManager.bold12.copyWith(color: color)),
+            Text(title, style: TextStylesManager.bold12.copyWith(color: textColor)),
             horizontalSpace4,
-            Icon(icon, size: 16, color: color),
+            Icon(icon, size: 16, color: iconColor),
           ],
         ),
       ),

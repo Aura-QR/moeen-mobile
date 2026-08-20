@@ -162,6 +162,28 @@ class PaymentCubit extends Cubit<PaymentState> {
     );
   }
 
+  Future<void> verifyMyfatoorahPayment(String paymentKey) async {
+    if (!isClosed) emit(PaymentVerifying());
+    final result = await ApiService.verifyMyfatoorahPayment(
+      key: paymentKey,
+    );
+    if (isClosed) return;
+    result.fold(
+      (error) {
+        if (!isClosed) emit(PaymentVerifyError(error));
+      },
+      (data) {
+        final payment = PaymentModel.fromJson(
+            data['payment'] as Map<String, dynamic>);
+        
+        // Refresh subscription state globally
+        sl<SubscriptionCubit>().fetchCurrentSubscription();
+        
+        if (!isClosed) emit(PaymentVerified(payment));
+      },
+    );
+  }
+
   Future<void> verifyPayment(String paymentId, {int? orderId}) async {
     if (!isClosed) emit(PaymentVerifying());
     

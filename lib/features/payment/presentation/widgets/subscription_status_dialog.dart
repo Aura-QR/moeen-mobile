@@ -12,11 +12,9 @@ class SubscriptionStatusDialog extends StatefulWidget {
   const SubscriptionStatusDialog({super.key});
 
   static Future<void> show(BuildContext context) {
-    // Refresh subscription data in background if needed
+    // Always force-refresh subscription data when dialog opens
     final subCubit = sl<SubscriptionCubit>();
-    if (subCubit.currentSubscription == null) {
-      subCubit.fetchCurrentSubscription();
-    }
+    subCubit.fetchCurrentSubscription(forceRefresh: true);
 
     return showDialog(
       context: context,
@@ -33,10 +31,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
   @override
   void initState() {
     super.initState();
-    final subCubit = sl<SubscriptionCubit>();
-    if (subCubit.currentSubscription == null && subCubit.state is SubscriptionInitial) {
-      subCubit.fetchCurrentSubscription();
-    }
+    // forceRefresh already called in show(), no double call needed
   }
 
   static String _formatArabicDate(DateTime? date) {
@@ -101,6 +96,23 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
             builder: (context, subState) {
               final current = sl<SubscriptionCubit>().currentSubscription;
               final teacher = sl<ProfileCubit>().profileModel?.teacher;
+
+              // ── DEBUG ──────────────────────────────────────────────
+              debugPrint('═══════ SubscriptionStatusDialog DATA ═══════');
+              debugPrint('subState        : $subState');
+              debugPrint('current         : $current');
+              debugPrint('isSubscribed    : ${current?.isSubscribed}');
+              debugPrint('isInTrial       : ${current?.isInTrial}');
+              debugPrint('isExpired       : ${current?.isSubscriptionExpired}');
+              debugPrint('trialEndsAt     : ${current?.trialEndsAt}');
+              debugPrint('subscriptionEnd : ${current?.subscriptionEndsAt}');
+              debugPrint('planName        : ${current?.plan?.name}');
+              debugPrint('trialDaysLeft   : ${current?.trialDaysRemaining}');
+              debugPrint('dynamicDaysLeft : ${current?.dynamicDaysRemaining}');
+              debugPrint('teacher subs    : ${teacher?.isSubscribed}');
+              debugPrint('teacher trial   : ${teacher?.isInTrial}');
+              debugPrint('═════════════════════════════════════════════');
+              // ───────────────────────────────────────────────────────
 
               // Determine plan attributes
               final bool isSubscribed = current?.isSubscribed ?? teacher?.isSubscribed ?? false;

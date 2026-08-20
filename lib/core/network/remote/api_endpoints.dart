@@ -45,6 +45,7 @@ const String paymentsBankTransferInfoApi = '/payments/bank-transfer-info';
 const String paymentsHistoryApi = '/payments/history';
 const String paymentsMyfatoorahSessionApi = '/payments/myfatoorah/session';
 const String paymentsMyfatoorahExecuteApi = '/payments/myfatoorah/execute';
+const String paymentsMyfatoorahVerifyApi = '/payments/myfatoorah/verify';
 
 // Exam Generation API
 const String examsGenerateApi = '/exams/generate';

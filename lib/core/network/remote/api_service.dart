@@ -624,6 +624,19 @@ class ApiService {
     );
   }
 
+  static Future<Either<String, Map<String, dynamic>>> verifyMyfatoorahPayment({
+    required String key,
+  }) async {
+    final response = await DioHelper.getData(
+      url: paymentsMyfatoorahVerifyApi,
+      query: {'key': key},
+    );
+    return response.fold(
+      (error) => Left(error),
+      (res) => Right(_decodeData(res.data) as Map<String, dynamic>),
+    );
+  }
+
   static Future<Either<String, Map<String, dynamic>>> savePaymentReference({
     required int orderId,
     required String moyasarPaymentId,

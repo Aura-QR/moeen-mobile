@@ -47,14 +47,19 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
     mfCardView = MFCardPaymentView(cardViewStyle: cardViewStyle);
   }
   
+  bool _isInitialized = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    _amount = args?['amount'] as String? ?? '0';
-    _orderId = args?['orderId'] as int? ?? 0;
-    
-    PaymentCubit.get(context).initMyfatoorahPayment(_orderId);
+    if (!_isInitialized) {
+      _isInitialized = true;
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      _amount = args?['amount'] as String? ?? '0';
+      _orderId = args?['orderId'] as int? ?? 0;
+      
+      PaymentCubit.get(context).initMyfatoorahPayment(_orderId);
+    }
   }
 
   void _setupMyfatoorahSDK(String sessionId, String portalHost) {
@@ -74,8 +79,9 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
   void _executePayment() {
     if (_sessionId != null) {
        setState(() { _isProcessing = true; });
+       final invoiceAmount = double.tryParse(_amount) ?? 0.0;
        final executeRequest = MFExecutePaymentRequest(
-          invoiceValue: double.tryParse(_amount) ?? 0.0,
+          invoiceValue: invoiceAmount,
           sessionId: _sessionId,
        );
        
@@ -85,7 +91,10 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
           if (!mounted) return;
           setState(() { _isProcessing = false; });
           if (response.invoiceStatus == "Paid") {
-             PaymentCubit.get(context).verifyPayment(response.invoiceId?.toString() ?? "", orderId: _orderId);
+             final paymentKey = (response.invoiceTransactions != null && response.invoiceTransactions!.isNotEmpty)
+                 ? (response.invoiceTransactions!.first.paymentId ?? response.invoiceId?.toString() ?? "")
+                 : (response.invoiceId?.toString() ?? "");
+             PaymentCubit.get(context).verifyMyfatoorahPayment(paymentKey);
           } else {
              ScaffoldMessenger.of(context).showSnackBar(
                const SnackBar(content: Text("فشلت عملية الدفع")),
@@ -118,10 +127,22 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.error), backgroundColor: ColorsManager.errorColor),
           );
+        } else if (state is PaymentVerifyError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.error), backgroundColor: ColorsManager.errorColor),
+          );
         } else if (state is MyfatoorahSessionLoaded) {
           final session = state.session['session'];
           if (session != null) {
              setState(() {
+                if (session['amount'] != null) {
+                  _amount = session['amount'].toString();
+                }
+                if (session['order_id'] != null) {
+                  _orderId = session['order_id'] is int 
+                      ? session['order_id'] as int 
+                      : (int.tryParse(session['order_id'].toString()) ?? _orderId);
+                }
                 _setupMyfatoorahSDK(session['session_id'], session['portal_host']);
              });
           }

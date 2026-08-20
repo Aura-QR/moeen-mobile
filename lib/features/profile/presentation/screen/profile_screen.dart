@@ -27,9 +27,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     final cubit = sl<ProfileCubit>();
-    if (cubit.profileModel == null && cubit.state is! ProfileLoadingState) {
-      cubit.fetchProfile();
-    }
+    // Force refresh profile so subscription_ends_at is always up to date
+    cubit.fetchProfile(forceRefresh: true);
+    sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
   }
 
   @override

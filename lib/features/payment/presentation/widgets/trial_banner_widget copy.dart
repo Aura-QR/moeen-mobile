@@ -43,8 +43,10 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
   @override
   void initState() {
     super.initState();
-    // Always force-refresh to pick up payment status changes immediately
-    sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
+    final cubit = sl<SubscriptionCubit>();
+    if (cubit.currentSubscription == null && cubit.lastError == null && cubit.state is SubscriptionInitial) {
+      cubit.fetchCurrentSubscription();
+    }
   }
 
   @override

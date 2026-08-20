@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
+import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/features/home/presentation/cubit/home_cubit.dart';
 import 'package:moean/core/theme/colors.dart';
@@ -44,11 +46,13 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    return BlocBuilder<ThemeCubit, ThemeState>(
+      builder: (context, themeState) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
           // Start Prep Button with Pulse Effect
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -371,6 +375,8 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
           ),
         ],
       ),
+    );
+      },
     );
   }
 }

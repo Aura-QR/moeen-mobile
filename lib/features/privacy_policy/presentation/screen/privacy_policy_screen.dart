@@ -42,15 +42,14 @@ class PrivacyPolicyScreen extends StatelessWidget {
             ),
           ),
           leading: IconButton(
-            icon: Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: ColorsManager.primaryColor,
-              size: 18,
+           icon: Icon(
+              Icons.arrow_back_ios_rounded,
+              color: ColorsManager.mainText,
+              size: 20,
             ),
             onPressed: () => context.pop(),
           ),
-        ),
-        body: SafeArea(
+        ), body: SafeArea(
           child: BlocListener<PrivacyPolicyCubit, PrivacyPolicyState>(
             listener: (context, state) {
               if (state is PrivacyPolicyPdfError) {

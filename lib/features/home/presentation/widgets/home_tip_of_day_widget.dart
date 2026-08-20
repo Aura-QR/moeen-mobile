@@ -58,7 +58,7 @@ class HomeTipOfDayWidget extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: ColorsManager.surfacePrimary,
               shape: BoxShape.circle,
             ),
             child:  Image.asset(AssetsHelper.tips, width: 24, height: 24),

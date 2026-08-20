@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/privacy_policy/presentation/cubit/privacy_policy_cubit.dart';
+import 'package:moean/features/privacy_policy/presentation/cubit/privacy_policy_state.dart';
 
 class PrivacyHeaderCardWidget extends StatelessWidget {
   const PrivacyHeaderCardWidget({super.key});
@@ -108,28 +110,42 @@ class PrivacyHeaderCardWidget extends StatelessWidget {
                 ),
               ),
               horizontalSpace12,
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: cubit.printPdf,
-                  icon: Icon(
-                    Icons.print_outlined,
-                    size: 18,
-                    color: ColorsManager.primaryColor,
-                  ),
-                  label: Text(
-                    appTranslation().get('privacy_print_pdf'),
-                    style: TextStylesManager.bold13.copyWith(
-                      color: ColorsManager.primaryColor,
+              BlocBuilder<PrivacyPolicyCubit, PrivacyPolicyState>(
+                builder: (context, state) {
+                  final isGenerating = state is PrivacyPolicyPdfGenerating;
+                  return Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: isGenerating ? null : cubit.printPdf,
+                      icon: isGenerating
+                          ? SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: ColorsManager.primaryColor,
+                              ),
+                            )
+                          : Icon(
+                              Icons.print_outlined,
+                              size: 18,
+                              color: ColorsManager.primaryColor,
+                            ),
+                      label: Text(
+                        appTranslation().get('privacy_print_pdf'),
+                        style: TextStylesManager.bold13.copyWith(
+                          color: ColorsManager.primaryColor,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: ColorsManager.borderColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
                     ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: ColorsManager.borderColor),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
+                  );
+                },
               ),
             ],
           ),

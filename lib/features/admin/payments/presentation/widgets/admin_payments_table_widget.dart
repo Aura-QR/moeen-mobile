@@ -38,8 +38,10 @@ class AdminPaymentsTableWidget extends StatelessWidget {
       return appTranslation().get('payment_method_manual');
     } else if (method == 'moyasar') {
       return 'Moyasar';
+    } else if (method == 'myfatoorah') {
+      return 'MyFatoorah';
     }
-    return method;
+    return method.isEmpty ? '-' : method;
   }
 
   @override
@@ -105,7 +107,9 @@ class AdminPaymentsTableWidget extends StatelessWidget {
                       children: [
                         if (payment.paymentMethod == 'manual_bank_transfer' || payment.paymentMethod == 'manual')
                           const Icon(Icons.account_balance, size: 14, color: Colors.green),
-                        if (payment.paymentMethod == 'manual_bank_transfer' || payment.paymentMethod == 'manual')
+                        if (payment.paymentMethod == 'myfatoorah' || payment.paymentMethod == 'moyasar')
+                          const Icon(Icons.credit_card, size: 14, color: Colors.green),
+                        if (payment.paymentMethod.isNotEmpty)
                           const SizedBox(width: 4),
                         Text(
                           _getMethodText(payment.paymentMethod),

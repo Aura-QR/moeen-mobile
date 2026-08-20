@@ -6,12 +6,32 @@ import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/privacy_policy/presentation/widgets/privacy_section_header_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PrivacySectionUpdatesContactWidget extends StatelessWidget {
   const PrivacySectionUpdatesContactWidget({super.key});
 
+  Future<void> _launchEmail(String email) async {
+    final Uri uri = Uri(
+      scheme: 'mailto',
+      path: email,
+    );
+    try {
+      final launched =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        await launchUrl(uri);
+      }
+    } catch (_) {
+      try {
+        await launchUrl(uri);
+      } catch (_) {}
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final email = appTranslation().get('privacy_sec9_email');
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -109,20 +129,38 @@ class PrivacySectionUpdatesContactWidget extends StatelessWidget {
                         elevation: 0,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: ColorsManager.surfacePrimary,
+                    Material(
+                      color: ColorsManager.surfacePrimary,
+                      borderRadius: BorderRadius.circular(20),
+                      child: InkWell(
+                        onTap: () => _launchEmail(email),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: ColorsManager.borderColor),
-                      ),
-                      child: Text(
-                        appTranslation().get('privacy_sec9_email'),
-                        style: TextStylesManager.bold13.copyWith(
-                          color: ColorsManager.primaryColor,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: ColorsManager.borderColor),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.email_outlined,
+                                size: 16,
+                                color: ColorsManager.primaryColor,
+                              ),
+                              horizontalSpace8,
+                              Text(
+                                email,
+                                style: TextStylesManager.bold13.copyWith(
+                                  color: ColorsManager.primaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
