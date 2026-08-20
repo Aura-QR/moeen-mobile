@@ -416,29 +416,30 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'رصيد الذكاء الاصطناعي المتبقي:',
-                                  style: TextStylesManager.bold13.copyWith(
-                                    color: ColorsManager.isDark
-                                        ? ColorsManager.textPrimaryDark
-                                        : const Color(0xFF475569),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                '$aiRemaining',
-                                style: TextStylesManager.bold13.copyWith(
-                                  color: const Color(0xFF0E7A5E),
-                                ),
-                              ),
-                            ],
-                          ),
+                          // const SizedBox(height: 10),
+                          // Row(
+                          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //   children: [
+                          //     Expanded(
+                          //       child: Text(
+                          //         'رصيد الذكاء الاصطناعي المتبقي:',
+                          //         style: TextStylesManager.bold13.copyWith(
+                          //           color: ColorsManager.isDark
+                          //               ? ColorsManager.textPrimaryDark
+                          //               : const Color(0xFF475569),
+                          //         ),
+                          //       ),
+                          //     ),
+                          //     const SizedBox(width: 6),
+                          //     Text(
+                          //       '$aiRemaining',
+                          //       style: TextStylesManager.bold13.copyWith(
+                          //         color: const Color(0xFF0E7A5E),
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
+                        
                         ],
                       ),
                     ),

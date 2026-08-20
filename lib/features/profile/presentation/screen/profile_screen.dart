@@ -170,12 +170,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 final usage = subState.current.usage;
                                 return Column(
                                   children: [
-                                    ProfileInfoCard(
-                                      icon: Icons.auto_awesome_outlined,
-                                      title: 'رصيد الذكاء الاصطناعي',
-                                      value: usage.aiRemaining.toString(),
-                                      iconColor: ColorsManager.themePink,
-                                    ),
+                                    // ProfileInfoCard(
+                                    //   icon: Icons.auto_awesome_outlined,
+                                    //   title: 'رصيد الذكاء الاصطناعي',
+                                    //   value: usage.aiRemaining.toString(),
+                                    //   iconColor: ColorsManager.themePink,
+                                    // ),
                                     ProfileInfoCard(
                                       icon: Icons.chrome_reader_mode_outlined,
                                       title: 'الدروس المتبقية لليوم',

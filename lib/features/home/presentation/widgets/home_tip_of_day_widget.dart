@@ -41,15 +41,14 @@ class HomeTipOfDayWidget extends StatelessWidget {
                 ),
                 verticalSpace6,
                 Text(
-                    maxLines: 1,
-  overflow: TextOverflow.ellipsis,
-
                   appTranslation().get('tip_of_day_content'),
                   textAlign: TextAlign.right,
                   style: TextStylesManager.regular12.copyWith(
                     color: ColorsManager.textPrimary,
-
+                    height: 1.4,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

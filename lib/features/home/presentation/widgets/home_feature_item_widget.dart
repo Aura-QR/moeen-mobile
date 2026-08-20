@@ -29,63 +29,72 @@ class HomeFeatureItemWidget extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12), 
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
         decoration: BoxDecoration(
           color: isHighlighted
-              ? ColorsManager.goldMedium.withValues(alpha: 0.02)
-              : ColorsManager.surfacePrimary, 
+              ? ColorsManager.goldMedium.withValues(alpha: 0.04)
+              : ColorsManager.surfacePrimary,
           border: Border.all(
             color: isHighlighted
-                ? ColorsManager.goldMedium.withValues(alpha: 0.6) 
-                : ColorsManager.primaryColor.withValues(alpha: 0.2), 
+                ? ColorsManager.goldMedium.withValues(alpha: 0.7)
+                : ColorsManager.primaryColor.withValues(alpha: 0.2),
+            width: isHighlighted ? 1.5 : 1,
           ),
           borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: isHighlighted
+                  ? ColorsManager.goldMedium.withValues(alpha: 0.08)
+                  : ColorsManager.primaryColor.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isHighlighted 
-                    ? ColorsManager.goldMedium.withValues(alpha: 0.1) 
+                color: isHighlighted
+                    ? ColorsManager.goldMedium.withValues(alpha: 0.12)
                     : iconBgColor,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                icon, 
-                color: isHighlighted ? ColorsManager.goldMedium : iconColor, 
-                size: 20, 
+                icon,
+                color: isHighlighted ? ColorsManager.goldMedium : iconColor,
+                size: 22,
               ),
             ),
-            horizontalSpace6,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title,
-                    style: TextStylesManager.bold16.copyWith(
-                      color: isHighlighted
-                          ? ColorsManager.goldMedium
-                          : ColorsManager.mainText,
-                      fontSize: 12, 
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  verticalSpace4,
-                  Text(
-                    subtitle,
-                    style: TextStylesManager.regular14.copyWith(
-                      color: ColorsManager.secondaryText,
-                      fontSize: 9,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+            verticalSpace10,
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStylesManager.bold14.copyWith(
+                color: isHighlighted
+                    ? ColorsManager.goldMedium
+                    : ColorsManager.mainText,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                height: 1.3,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            verticalSpace6,
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: TextStylesManager.regular12.copyWith(
+                color: ColorsManager.secondaryText,
+                fontSize: 10,
+                height: 1.3,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

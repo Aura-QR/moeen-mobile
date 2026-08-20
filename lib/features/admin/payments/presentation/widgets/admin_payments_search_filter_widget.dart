@@ -83,7 +83,7 @@ class _AdminPaymentsSearchFilterWidgetState extends State<AdminPaymentsSearchFil
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text(appTranslation().get('search')),
+                child: Text('بحث'),
               ),
             ],
           ),
