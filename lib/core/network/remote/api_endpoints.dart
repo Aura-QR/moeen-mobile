@@ -77,3 +77,14 @@ const String adminReferralStatsApi = '/admin/referrals/statistics';
 String adminPromoActivateApi(int id) => '/admin/promo-codes/$id/activate';
 String adminPromoDeactivateApi(int id) => '/admin/promo-codes/$id/deactivate';
 String adminPromoDeleteApi(int id) => '/admin/promo-codes/$id';
+
+// Curriculum Distribution & Books API
+const String curriculumPlansApi = '/curriculum/plans';
+String curriculumPlanDetailApi(int id) => '/curriculum/plans/$id';
+String curriculumPlanCurrentWeekApi(int id) => '/curriculum/plans/$id/weeks/current';
+const String curriculumBooksApi = '/curriculum/books';
+String curriculumBookDownloadApi(int id) => '/curriculum/books/$id/download';
+const String curriculumProgressApi = '/curriculum/progress';
+String curriculumPlanWeekPrepareApi(int planId, int weekId) =>
+    '/curriculum/plans/$planId/weeks/$weekId/prepare';
+

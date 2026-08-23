@@ -69,6 +69,10 @@ import 'package:moean/features/admin/promo/presentation/cubit/admin_promo_cubit.
 import 'package:moean/features/admin/promo/presentation/screen/admin_promo_screen.dart';
 import 'package:moean/features/privacy_policy/presentation/cubit/privacy_policy_cubit.dart';
 import 'package:moean/features/privacy_policy/presentation/screen/privacy_policy_screen.dart';
+import 'package:moean/features/curriculum/presentation/cubit/curriculum_distribution_cubit.dart';
+import 'package:moean/features/curriculum/presentation/cubit/curriculum_books_cubit.dart';
+import 'package:moean/features/curriculum/presentation/screens/curriculum_distribution_screen.dart';
+import 'package:moean/features/curriculum/presentation/screens/curriculum_books_screen.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -119,6 +123,10 @@ class Routes {
   static const String presentations = '/presentations';
   static const String referral = '/referral';
   static const String adminPromo = '/admin/promo';
+  static const String curriculumDistribution = '/curriculum/distribution';
+  static const String curriculumBooks = '/curriculum/books';
+
+
 
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
@@ -245,6 +253,20 @@ class Routes {
     privacyPolicy: (context) => BlocProvider(
       create: (_) => PrivacyPolicyCubit(),
       child: const PrivacyPolicyScreen(),
+    ),
+    curriculumDistribution: (context) => MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => CurriculumDistributionCubit()),
+        BlocProvider(create: (_) => CurriculumBooksCubit()),
+      ],
+      child: const CurriculumDistributionScreen(),
+    ),
+    curriculumBooks: (context) => MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => CurriculumDistributionCubit()),
+        BlocProvider(create: (_) => CurriculumBooksCubit()),
+      ],
+      child: const CurriculumBooksScreen(),
     ),
   };
 }

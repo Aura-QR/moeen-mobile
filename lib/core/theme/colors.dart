@@ -42,7 +42,7 @@ class ColorsManager {
 
   static Color get mainText => isDark ? textPrimaryDark : const Color(0xFF111827);
   static Color get secondaryText => isDark ? mutedDark : const Color(0xFF6B7280);
-  static Color get borderLightGray => isDark ? white.withValues(alpha: 0.1) : const Color(0xFFE5E7EB);
+  static Color get borderLightGray => isDark ? white.withOpacity(0.1) : const Color(0xFFE5E7EB);
  
   static Color get background => isDark ? backgroundDark : backgroundColorLight;
   static Color get textPrimary => isDark ? textPrimaryDark : textPrimaryLight;
@@ -51,7 +51,7 @@ class ColorsManager {
   static Color get primaryAction => primaryColor;
 
   static const Color borderLight = themeDivider;
-  static Color get borderColor => isDark ? white.withValues(alpha: 0.24) : borderLight;
+  static Color get borderColor => isDark ? white.withOpacity(0.24) : borderLight;
 
   // 135deg Gold Gradient Colors
   static const Color goldLight = Color(0xFFF5D76E);

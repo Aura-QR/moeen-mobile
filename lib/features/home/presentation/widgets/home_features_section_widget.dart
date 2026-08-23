@@ -307,6 +307,30 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                           }
                         },
                       ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.calendar_month_outlined,
+                        title: 'توزيع المناهج',
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.curriculumDistribution);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.menu_book_rounded,
+                        title: 'الكتب الدراسية',
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.curriculumBooks);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
                     ],
                   ],
                 ),
@@ -372,6 +396,64 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                 ],
               ),
             ),
+          ),
+          
+          // Teacher-only: Curriculum Distribution & Books
+          BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
+              final isAdmin = context.read<HomeCubit>().isAdmin;
+              if (isAdmin) return const SizedBox.shrink();
+              return Column(
+                children: [
+                  verticalSpace10,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.calendar_month_outlined,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: 'توزيع المناهج',
+                              subtitle: 'توزيع المنهج على أسابيع الفصل الدراسي',
+                              isHighlighted: false,
+                              onTap: () {
+                                if (token != null && token!.isNotEmpty) {
+                                  context.push(Routes.curriculumDistribution);
+                                } else {
+                                  context.push(Routes.login);
+                                }
+                              },
+                            ),
+                          ),
+                          horizontalSpace8,
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.menu_book_rounded,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: 'الكتب الدراسية',
+                              subtitle: 'كتب المناهج الدراسية قابلة للتحميل',
+                              isHighlighted: false,
+                              onTap: () {
+                                if (token != null && token!.isNotEmpty) {
+                                  context.push(Routes.curriculumBooks);
+                                } else {
+                                  context.push(Routes.login);
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
