@@ -78,7 +78,7 @@ class WeeksGrid extends StatelessWidget {
     String manager,
   ) {
     final List<Widget> pages = [];
-    const int itemsPerPage = 6;
+    const int itemsPerPage = 9;
     final int totalPages = (detail.weeks.length / itemsPerPage).ceil().clamp(1, 999);
 
     for (int i = 0; i < detail.weeks.length; i += itemsPerPage) {

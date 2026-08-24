@@ -222,7 +222,7 @@ class _BankQuestionsScreenState extends State<BankQuestionsScreen> {
                           color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderLightGray,
                         ),
                       ),
-                      onSelected: (_) => context.read<BankQuestionsCubit>().setFilter(filter['value'] as String?),
+                      onSelected: (_) => context.read<BankQuestionsCubit>().setFilter(filter['value']),
                     );
                   },
                 ),
@@ -358,7 +358,6 @@ class _BankQuestionsScreenState extends State<BankQuestionsScreen> {
           ),
           
           Container(
-            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: ColorsManager.surfacePrimary,
               boxShadow: [
@@ -366,6 +365,10 @@ class _BankQuestionsScreenState extends State<BankQuestionsScreen> {
               ],
             ),
             child: SafeArea(
+              top: false,
+              left: false,
+              right: false,
+              minimum: const EdgeInsets.all(20),
               child: BlocBuilder<BankQuestionsCubit, BankQuestionsState>(
                 builder: (context, state) {
                   int selectedCount = 0;

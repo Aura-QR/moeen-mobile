@@ -324,16 +324,28 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: ColorsManager.surfacePrimary,
                             boxShadow: [
                               BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5)),
                             ],
                           ),
-                          child: PrimaryElevatedButton(
-                            text: appTranslation().get('create_exam'),
-                            onPressed: isGenerating ? null : _handleGenerate,
+                          child: SafeArea(
+                            top: false,
+                            left: false,
+                            right: false,
+                            minimum: const EdgeInsets.all(20),
+                            child: generateState is GenerateExamSuccess
+                                ? PrimaryElevatedButton(
+                                    text: 'المشاركة ومعاينة الاختبار',
+                                    onPressed: () {
+                                      context.push(Routes.examGenerationPreview, arguments: generateState.exam);
+                                    },
+                                  )
+                                : PrimaryElevatedButton(
+                                    text: appTranslation().get('create_exam'),
+                                    onPressed: isGenerating ? null : _handleGenerate,
+                                  ),
                           ),
                         ),
                       ],

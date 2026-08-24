@@ -29,11 +29,41 @@ class CurriculumPdfPage extends StatelessWidget {
     required this.totalPages,
   });
 
+  Widget _buildRow(List<CurriculumWeekModel> rowWeeks) {
+    return Expanded(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: rowWeeks.isNotEmpty
+                ? WeekCard(week: rowWeeks[0], isForPdf: true)
+                : const SizedBox.shrink(),
+          ),
+          horizontalSpace12,
+          Expanded(
+            child: rowWeeks.length > 1
+                ? WeekCard(week: rowWeeks[1], isForPdf: true)
+                : const SizedBox.shrink(),
+          ),
+          horizontalSpace12,
+          Expanded(
+            child: rowWeeks.length > 2
+                ? WeekCard(week: rowWeeks[2], isForPdf: true)
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final row1Weeks = weeks.sublist(0, weeks.length >= 3 ? 3 : weeks.length);
     final row2Weeks = weeks.length > 3
         ? weeks.sublist(3, weeks.length >= 6 ? 6 : weeks.length)
+        : <CurriculumWeekModel>[];
+    final row3Weeks = weeks.length > 6
+        ? weeks.sublist(6, weeks.length >= 9 ? 9 : weeks.length)
         : <CurriculumWeekModel>[];
 
     return Container(
@@ -52,59 +82,15 @@ class CurriculumPdfPage extends StatelessWidget {
             gradeName: gradeName,
             semester: semester,
           ),
-          verticalSpace16,
+          verticalSpace12,
           Expanded(
             child: Column(
               children: [
-                Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: row1Weeks.isNotEmpty
-                            ? WeekCard(week: row1Weeks[0], isForPdf: true)
-                            : const SizedBox.shrink(),
-                      ),
-                      horizontalSpace12,
-                      Expanded(
-                        child: row1Weeks.length > 1
-                            ? WeekCard(week: row1Weeks[1], isForPdf: true)
-                            : const SizedBox.shrink(),
-                      ),
-                      horizontalSpace12,
-                      Expanded(
-                        child: row1Weeks.length > 2
-                            ? WeekCard(week: row1Weeks[2], isForPdf: true)
-                            : const SizedBox.shrink(),
-                      ),
-                    ],
-                  ),
-                ),
-                verticalSpace12,
-                Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: row2Weeks.isNotEmpty
-                            ? WeekCard(week: row2Weeks[0], isForPdf: true)
-                            : const SizedBox.shrink(),
-                      ),
-                      horizontalSpace12,
-                      Expanded(
-                        child: row2Weeks.length > 1
-                            ? WeekCard(week: row2Weeks[1], isForPdf: true)
-                            : const SizedBox.shrink(),
-                      ),
-                      horizontalSpace12,
-                      Expanded(
-                        child: row2Weeks.length > 2
-                            ? WeekCard(week: row2Weeks[2], isForPdf: true)
-                            : const SizedBox.shrink(),
-                      ),
-                    ],
-                  ),
-                ),
+                _buildRow(row1Weeks),
+                verticalSpace10,
+                _buildRow(row2Weeks),
+                verticalSpace10,
+                _buildRow(row3Weeks),
               ],
             ),
           ),

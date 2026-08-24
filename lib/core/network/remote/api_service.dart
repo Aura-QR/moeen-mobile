@@ -741,9 +741,13 @@ class ApiService {
   // Exam Generation
   // ===========================================================================
 
-  static Future<Either<String, Map<String, dynamic>>> generateExam(Map<String, dynamic> request) async {
+  static Future<Either<String, Map<String, dynamic>>> generateExam(
+    Map<String, dynamic> request, {
+    int retryCount = 1,
+  }) async {
     try {
       final options = Options(
+        connectTimeout: const Duration(seconds: 60),
         receiveTimeout: const Duration(seconds: 120),
         sendTimeout: const Duration(seconds: 120),
         headers: {
@@ -761,9 +765,20 @@ class ApiService {
       
       return Right(_decodeData(response.data) as Map<String, dynamic>);
     } on DioException catch (error) {
+      final statusCode = error.response?.statusCode;
+      final isTimeoutOrGatewayError = statusCode == 502 || 
+          statusCode == 504 || 
+          statusCode == 503 ||
+          error.type == DioExceptionType.connectionTimeout || 
+          error.type == DioExceptionType.receiveTimeout;
+
+      if (retryCount > 0 && isTimeoutOrGatewayError) {
+        await Future.delayed(const Duration(seconds: 2));
+        return generateExam(request, retryCount: retryCount - 1);
+      }
+
       // Return the error so our new repository logic can parse it
       return Left(DioHelper.parseError(error));
-      // Actually we will handle DioException in repository, but since api_service returns String, we'll let api_service return error string.
     } catch (e) {
       return Left(e.toString());
     }

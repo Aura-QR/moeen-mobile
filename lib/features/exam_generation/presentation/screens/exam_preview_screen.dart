@@ -12,6 +12,7 @@ import 'package:moean/features/exam_generation/data/models/exam_models.dart';
 import 'package:moean/features/exam_generation/presentation/cubit/exam_preview_cubit.dart';
 import 'package:moean/features/reports/presentation/screen/pdf_preview_screen.dart';
 import 'package:moean/features/exam_generation/data/services/exam_pdf_service.dart';
+import 'package:moean/features/exam_generation/data/services/exam_word_service.dart';
 import 'package:moean/core/network/local/cache_helper.dart';
 import 'package:moean/features/exam_generation/presentation/widgets/add_manual_question_dialog.dart';
 import 'package:moean/core/utils/constants/primary/upgrade_prompt_bottom_sheet.dart';
@@ -33,6 +34,192 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
     context.read<ExamPreviewCubit>().loadExam(widget.initialExam.id);
   }
 
+  void _showExportDialog(BuildContext context, ExamEntity exam, bool showAnswers) {
+    final teacherName = CacheHelper.getData(key: 'teacher_name') as String? ?? '';
+    final schoolName = CacheHelper.getData(key: 'school_name') as String? ?? '';
+    final educationOffice = CacheHelper.getData(key: 'education_office') as String? ?? '';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          decoration: BoxDecoration(
+            color: ColorsManager.surfacePrimary,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: ColorsManager.borderLightGray,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              verticalSpace16,
+              Text(
+                'طباعة ومشاركة الاختبار',
+                textAlign: TextAlign.center,
+                style: TextStylesManager.bold18.copyWith(color: ColorsManager.mainText),
+              ),
+              verticalSpace8,
+              Text(
+                'اختر الصيغة التي ترغب في طباعتها أو مشاركتها',
+                textAlign: TextAlign.center,
+                style: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
+              ),
+              verticalSpace24,
+
+              // Option 1: PDF
+              InkWell(
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PdfPreviewScreen(
+                        title: 'معاينة الاختبار (PDF)',
+                        buildPdf: () => ExamPdfService.generatePdf(
+                          exam: exam,
+                          showAnswers: showAnswers,
+                          teacherName: teacherName,
+                          schoolName: schoolName,
+                          educationOffice: educationOffice,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: ColorsManager.primaryColor.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.picture_as_pdf, color: Colors.red, size: 28),
+                      ),
+                      horizontalSpace16,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'مستند PDF (طباعة ومعاينة)',
+                              style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
+                            ),
+                            verticalSpace4,
+                            Text(
+                              'معاينة جاهزة للطباعة المباشرة والتصدير',
+                              style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
+              verticalSpace16,
+
+              // Option 2: Word (DOCX)
+              InkWell(
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('جاري إنشاء وتجهيز ملف الوورد...'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                  try {
+                    await ExamWordService.shareWordExam(
+                      exam: exam,
+                      showAnswers: showAnswers,
+                      teacherName: teacherName,
+                      schoolName: schoolName,
+                      educationOffice: educationOffice,
+                    );
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('حدث خطأ أثناء تصدير ملف الوورد: $e'),
+                          backgroundColor: ColorsManager.errorColor,
+                        ),
+                      );
+                    }
+                  }
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: ColorsManager.primaryColor.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.description, color: Colors.blue, size: 28),
+                      ),
+                      horizontalSpace16,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'مستند Word (.docx)',
+                              style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
+                            ),
+                            verticalSpace4,
+                            Text(
+                              'ملف وورد قابل للتعديل والمشاركة',
+                              style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
+              verticalSpace16,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<ExamPreviewCubit, ExamPreviewState>(
@@ -52,175 +239,197 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
       child: Scaffold(
         backgroundColor: ColorsManager.background,
         appBar: AppBar(
-        backgroundColor: ColorsManager.background,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          appTranslation().get('exam_preview_title'),
-          style: TextStylesManager.bold18.copyWith(color: ColorsManager.mainText),
-        ),
-        leading: IconButton(
-          icon:  Icon(Icons.arrow_back_ios, color: ColorsManager.mainText),
-          onPressed: () => context.pop(),
-        ),
-        actions: [
-          BlocBuilder<ExamPreviewCubit, ExamPreviewState>(
-            builder: (context, state) {
-              if (state is ExamPreviewLoaded) {
-                return IconButton(
-                  icon:  Icon(Icons.picture_as_pdf, color: ColorsManager.primaryColor),
-                  onPressed: () {
-                    final teacherName = CacheHelper.getData(key: 'teacher_name') as String? ?? '';
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PdfPreviewScreen(
-                          title: 'معاينة الاختبار (PDF)',
-                          buildPdf: () => ExamPdfService.generatePdf(
-                            exam: state.exam,
-                            showAnswers: state.showAnswers,
-                            teacherName: teacherName,
-                            schoolName: '',
-                            educationOffice: '',
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }
-              return const SizedBox.shrink();
-            },
+          backgroundColor: ColorsManager.background,
+          elevation: 0,
+          centerTitle: true,
+          title: Text(
+            appTranslation().get('exam_preview_title'),
+            style: TextStylesManager.bold18.copyWith(color: ColorsManager.mainText),
           ),
-        ],
-      ),
-      body: BlocBuilder<ExamPreviewCubit, ExamPreviewState>(
-        builder: (context, state) {
-          if (state is ExamPreviewLoading || state is ExamPreviewInitial) {
-            return  Center(child: CircularProgressIndicator(color: ColorsManager.primaryColor));
-          }
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios, color: ColorsManager.mainText),
+            onPressed: () => context.pop(),
+          ),
+          actions: [
+            BlocBuilder<ExamPreviewCubit, ExamPreviewState>(
+              builder: (context, state) {
+                if (state is ExamPreviewLoaded) {
+                  return IconButton(
+                    icon: Icon(Icons.share_outlined, color: ColorsManager.primaryColor),
+                    tooltip: 'طباعة ومشاركة',
+                    onPressed: () => _showExportDialog(context, state.exam, state.showAnswers),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+          ],
+        ),
+        body: BlocBuilder<ExamPreviewCubit, ExamPreviewState>(
+          builder: (context, state) {
+            if (state is ExamPreviewLoading || state is ExamPreviewInitial) {
+              return Center(child: CircularProgressIndicator(color: ColorsManager.primaryColor));
+            }
 
-          if (state is ExamPreviewError) {
-            return Center(
-              child: Text(state.message, style: TextStylesManager.bold16.copyWith(color: ColorsManager.errorColor)),
-            );
-          }
+            if (state is ExamPreviewError) {
+              return Center(
+                child: Text(state.message, style: TextStylesManager.bold16.copyWith(color: ColorsManager.errorColor)),
+              );
+            }
 
-          final loadedState = state as ExamPreviewLoaded;
-          final exam = loadedState.exam;
-          
-          // Sort by question_order
-          final questions = List<QuestionEntity>.from(exam.questions)
-            ..sort((a, b) => a.questionOrder.compareTo(b.questionOrder));
+            final loadedState = state as ExamPreviewLoaded;
+            final exam = loadedState.exam;
+            
+            // Sort by question_order
+            final questions = List<QuestionEntity>.from(exam.questions)
+              ..sort((a, b) => a.questionOrder.compareTo(b.questionOrder));
 
-          return Column(
-            children: [
-              // Settings Header
-              Container(
-                padding: const EdgeInsets.all(16),
-                color: ColorsManager.surfacePrimary,
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('وضع المعلم', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
-                        Switch(
-                          value: loadedState.isTeacherMode,
-                          activeColor: ColorsManager.primaryColor,
-                          onChanged: (val) => context.read<ExamPreviewCubit>().toggleMode(val),
-                        ),
-                      ],
-                    ),
-                    if (loadedState.isTeacherMode)
+            return Column(
+              children: [
+                // Settings Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  color: ColorsManager.surfacePrimary,
+                  child: Column(
+                    children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('إظهار الإجابات', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
+                          Text('وضع المعلم', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
                           Switch(
-                            value: loadedState.showAnswers,
+                            value: loadedState.isTeacherMode,
                             activeColor: ColorsManager.primaryColor,
-                            onChanged: (val) => context.read<ExamPreviewCubit>().toggleAnswers(val),
+                            onChanged: (val) => context.read<ExamPreviewCubit>().toggleMode(val),
                           ),
                         ],
                       ),
-                  ],
+                      if (loadedState.isTeacherMode)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('إظهار الإجابات', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
+                            Switch(
+                              value: loadedState.showAnswers,
+                              activeColor: ColorsManager.primaryColor,
+                              onChanged: (val) => context.read<ExamPreviewCubit>().toggleAnswers(val),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
+                
+                // Total points live calculator
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  color: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('إجمالي الدرجات:', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
+                      Text(
+                        loadedState.provisionalTotalPoints.toStringAsFixed(2),
+                        style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(20),
+                    itemCount: questions.length,
+                    itemBuilder: (context, index) {
+                      final q = questions[index];
+                      return _buildQuestionCard(context, q, loadedState);
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+        bottomNavigationBar: BlocBuilder<ExamPreviewCubit, ExamPreviewState>(
+          builder: (context, state) {
+            if (state is! ExamPreviewLoaded) return const SizedBox.shrink();
+            final exam = state.exam;
+
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: ColorsManager.surfacePrimary,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
               ),
-              
-              // Total points live calculator
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                color: ColorsManager.primaryColor.withValues(alpha: 0.1),
+              child: SafeArea(
+                top: false,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('إجمالي الدرجات:', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
-                    Text(
-                      loadedState.provisionalTotalPoints.toStringAsFixed(2),
-                      style: TextStylesManager.bold16.copyWith(color: ColorsManager.primaryColor),
+                    if (exam.status == 'draft' && state.pendingPointsChanges.isNotEmpty) ...[
+                      Expanded(
+                        child: state is ExamPreviewSaving
+                            ? const Center(child: CircularProgressIndicator())
+                            : PrimaryElevatedButton(
+                                text: 'حفظ الدرجات',
+                                onPressed: () => context.read<ExamPreviewCubit>().savePoints(),
+                              ),
+                      ),
+                      horizontalSpace12,
+                    ],
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorsManager.primaryColor,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.share, color: Colors.white, size: 20),
+                        label: Text(
+                          'طباعة ومشاركة الاختبار',
+                          style: TextStylesManager.bold14.copyWith(color: Colors.white),
+                        ),
+                        onPressed: () => _showExportDialog(context, exam, state.showAnswers),
+                      ),
                     ),
                   ],
                 ),
               ),
-              
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: questions.length,
-                  itemBuilder: (context, index) {
-                    final q = questions[index];
-                    return _buildQuestionCard(context, q, loadedState);
-                  },
-                ),
-              ),
-              
-              // Save points button
-              if (exam.status == 'draft' && loadedState.pendingPointsChanges.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: ColorsManager.surfacePrimary,
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
-                    ],
-                  ),
-                  child: state is ExamPreviewSaving 
-                    ? const Center(child: CircularProgressIndicator()) 
-                    : PrimaryElevatedButton(
-                    text: 'حفظ الدرجات',
-                    onPressed: () => context.read<ExamPreviewCubit>().savePoints(),
-                  ),
-                ),
-            ],
-          );
-        },
-      ),
-      floatingActionButton: BlocBuilder<ExamPreviewCubit, ExamPreviewState>(
-        builder: (context, state) {
-          if (state is ExamPreviewLoaded && state.exam.status == 'draft') {
-            return FloatingActionButton.extended(
-              onPressed: () {
-                final uniqueLessonIds = state.exam.questions.map((q) => q.lessonId).toSet().toList();
-                showDialog(
-                  context: context,
-                  builder: (_) => AddManualQuestionDialog(
-                    examId: state.exam.id,
-                    availableLessonIds: uniqueLessonIds,
-                    onSubmit: (request) {
-                      context.read<ExamPreviewCubit>().addManualQuestion(request);
-                    },
-                  ),
-                );
-              },
-              backgroundColor: ColorsManager.primaryColor,
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: Text('إضافة سؤال', style: TextStylesManager.bold14.copyWith(color: Colors.white)),
             );
-          }
-          return const SizedBox.shrink();
-        },
-      ),
+          },
+        ),
+        floatingActionButton: BlocBuilder<ExamPreviewCubit, ExamPreviewState>(
+          builder: (context, state) {
+            if (state is ExamPreviewLoaded && state.exam.status == 'draft') {
+              return FloatingActionButton.extended(
+                onPressed: () {
+                  final uniqueLessonIds = state.exam.questions.map((q) => q.lessonId).toSet().toList();
+                  showDialog(
+                    context: context,
+                    builder: (_) => AddManualQuestionDialog(
+                      examId: state.exam.id,
+                      availableLessonIds: uniqueLessonIds,
+                      onSubmit: (request) {
+                        context.read<ExamPreviewCubit>().addManualQuestion(request);
+                      },
+                    ),
+                  );
+                },
+                backgroundColor: ColorsManager.primaryColor,
+                icon: const Icon(Icons.add, color: Colors.white),
+                label: Text('إضافة سؤال', style: TextStylesManager.bold14.copyWith(color: Colors.white)),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
