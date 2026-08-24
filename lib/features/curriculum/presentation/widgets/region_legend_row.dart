@@ -65,7 +65,7 @@ class RegionChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           color: selected
-              ? ColorsManager.primaryColor.withOpacity(0.12)
+              ? ColorsManager.primaryColor.withValues(alpha: 0.12)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(

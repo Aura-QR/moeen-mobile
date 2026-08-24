@@ -23,10 +23,17 @@ class CurriculumPlanModel {
   factory CurriculumPlanModel.fromJson(Map<String, dynamic> json) {
     return CurriculumPlanModel(
       id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
-      subjectName: json['subject_name'] as String? ?? '',
-      gradeName: json['grade_name'] as String? ?? '',
+      subjectName: json['subject_name'] as String? ??
+          (json['subject'] is Map ? json['subject']['name'] as String? : null) ??
+          (json['subject'] is String ? json['subject'] as String : null) ??
+          json['name'] as String? ??
+          '',
+      gradeName: json['grade_name'] as String? ??
+          (json['grade'] is Map ? json['grade']['name'] as String? : null) ??
+          (json['grade'] is String ? json['grade'] as String : null) ??
+          '',
       semester: int.tryParse(json['semester']?.toString() ?? '') ?? 1,
-      academicYear: json['academic_year'] as String? ?? '',
+      academicYear: json['academic_year']?.toString() ?? '',
     );
   }
 }

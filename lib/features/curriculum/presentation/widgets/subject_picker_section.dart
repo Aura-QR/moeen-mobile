@@ -44,7 +44,7 @@ class SubjectPickerSection extends StatelessWidget {
         color: ColorsManager.surfacePrimary,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -169,7 +169,7 @@ class SubjectPickerSection extends StatelessWidget {
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: items.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
+                separatorBuilder: (_, _) => const Divider(height: 1),
                 itemBuilder: (_, i) => ListTile(
                   title: Text(getName(items[i]),
                       style: TextStylesManager.regular14),
@@ -212,7 +212,7 @@ class PickerDropdown extends StatelessWidget {
           color: ColorsManager.background,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: ColorsManager.primaryColor.withOpacity(0.2),
+            color: ColorsManager.primaryColor.withValues(alpha: 0.2),
           ),
         ),
         child: Row(

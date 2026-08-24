@@ -12,7 +12,6 @@ import 'package:moean/features/curriculum/presentation/widgets/region_legend_row
 import 'package:moean/features/curriculum/presentation/widgets/weeks_grid.dart';
 import 'package:moean/features/curriculum/presentation/widgets/inline_books_section.dart';
 import 'package:moean/features/curriculum/presentation/widgets/curriculum_error_view.dart';
-import 'package:moean/core/utils/pdf_export_helper.dart';
 
 class CurriculumDistributionScreen extends StatefulWidget {
   const CurriculumDistributionScreen({super.key});
@@ -133,112 +132,123 @@ class _CurriculumDistributionScreenState
             color: ColorsManager.mainText,
           ),
         ),
-        body: Column(
-          children: [
-            // ── Subject Picker ─────────────────────────────────────────────
-            SubjectPickerSection(
-              stages: _stages,
-              grades: _grades,
-              subjects: _subjects,
-              selectedStage: _selectedStage,
-              selectedGrade: _selectedGrade,
-              selectedSubject: _selectedSubject,
-              selectedSemester: _selectedSemester,
-              loading: _loadingStages,
-              error: _pickerError,
-              onStageSelected: _onStageSelected,
-              onGradeSelected: _onGradeSelected,
-              onSubjectSelected: _onSubjectSelected,
-              onSemesterChanged: _onSemesterChanged,
-            ),
-            // ── Books Section ──────────────────────────────────────────────
-            if (_selectedSubject != null)
-              const InlineBooksSection(),
-            // ── Region & Legend ────────────────────────────────────────────
-            RegionLegendRow(
-              selectedRegion: _selectedRegion,
-              onRegionChanged: _onRegionChanged,
-            ),
-            // ── Main content ───────────────────────────────────────────────
-            Expanded(
-              child: BlocConsumer<CurriculumDistributionCubit,
-                  CurriculumDistributionState>(
-                listener: (context, state) {
-                  if (state is CurriculumDistributionPrepareSuccess) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('✅ تم تحضير الأسبوع بنجاح'),
-                        backgroundColor: Colors.green,
+        body: BlocConsumer<CurriculumDistributionCubit,
+            CurriculumDistributionState>(
+          listener: (context, state) {
+            if (state is CurriculumDistributionPrepareSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✅ تم تحضير الأسبوع بنجاح'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+            if (state is CurriculumDistributionError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            CurriculumPlanDetailModel? detail;
+            CurriculumProgressModel? progress;
+            bool isPreparing = false;
+
+            if (state is CurriculumDistributionDetailLoaded) {
+              detail = state.detail;
+              progress = state.progress;
+            } else if (state is CurriculumDistributionPreparing) {
+              detail = state.detail;
+              progress = state.progress;
+              isPreparing = true;
+            } else if (state is CurriculumDistributionPrepareSuccess) {
+              detail = state.detail;
+              progress = state.progress;
+            }
+
+            return Stack(
+              children: [
+                CustomScrollView(
+                  slivers: [
+                    // ── Subject Picker ─────────────────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: SubjectPickerSection(
+                        stages: _stages,
+                        grades: _grades,
+                        subjects: _subjects,
+                        selectedStage: _selectedStage,
+                        selectedGrade: _selectedGrade,
+                        selectedSubject: _selectedSubject,
+                        selectedSemester: _selectedSemester,
+                        loading: _loadingStages,
+                        error: _pickerError,
+                        onStageSelected: _onStageSelected,
+                        onGradeSelected: _onGradeSelected,
+                        onSubjectSelected: _onSubjectSelected,
+                        onSemesterChanged: _onSemesterChanged,
                       ),
-                    );
-                  }
-                  if (state is CurriculumDistributionError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message),
-                        backgroundColor: Colors.red,
+                    ),
+                    // ── Books Section ──────────────────────────────────────────────
+                    if (_selectedSubject != null)
+                      const SliverToBoxAdapter(
+                        child: InlineBooksSection(),
                       ),
-                    );
-                  }
-                },
-                builder: (context, state) {
-                  if (_selectedSubject == null) {
-                    return EmptyPickerView();
-                  }
-
-                  if (state is CurriculumDistributionLoading ||
-                      state is CurriculumDistributionInitial ||
-                      state is CurriculumDistributionPlansLoaded) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  CurriculumPlanDetailModel? detail;
-                  CurriculumProgressModel? progress;
-                  bool isPreparing = false;
-
-                  if (state is CurriculumDistributionDetailLoaded) {
-                    detail = state.detail;
-                    progress = state.progress;
-                  } else if (state is CurriculumDistributionPreparing) {
-                    detail = state.detail;
-                    progress = state.progress;
-                    isPreparing = true;
-                  } else if (state is CurriculumDistributionPrepareSuccess) {
-                    detail = state.detail;
-                    progress = state.progress;
-                  } else if (state is CurriculumDistributionError) {
-                    return CurriculumErrorView(
-                      message: state.message,
-                      onRetry: () =>
-                          CurriculumDistributionCubit.get(context).loadPlans(
-                                subjectId: _selectedSubject!.id,
-                                semester: _selectedSemester,
-                              ),
-                    );
-                  }
-
-                  if (detail == null) return const SizedBox.shrink();
-
-                  return Stack(
-                    children: [
-                      WeeksGrid(
+                    // ── Region & Legend ────────────────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: RegionLegendRow(
+                        selectedRegion: _selectedRegion,
+                        onRegionChanged: _onRegionChanged,
+                      ),
+                    ),
+                    // ── Main content ───────────────────────────────────────────────
+                    if (_selectedSubject == null)
+                      const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: EmptyPickerView(),
+                      )
+                    else if (state is CurriculumDistributionLoading ||
+                        state is CurriculumDistributionInitial ||
+                        state is CurriculumDistributionPlansLoaded)
+                      const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (state is CurriculumDistributionError)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: CurriculumErrorView(
+                          message: state.message,
+                          onRetry: () =>
+                              CurriculumDistributionCubit.get(context).loadPlans(
+                                    subjectId: _selectedSubject!.id,
+                                    semester: _selectedSemester,
+                                  ),
+                        ),
+                      )
+                    else if (detail != null)
+                      ...WeeksGrid.buildSlivers(
+                        context: context,
                         detail: detail,
                         progress: progress,
-                        onPrepareTap: (weekId) => CurriculumDistributionCubit.get(context).prepareWeek(weekId),
+                        onPrepareTap: (weekId) =>
+                            CurriculumDistributionCubit.get(context)
+                                .prepareWeek(weekId),
                       ),
-                      if (isPreparing)
-                        const Positioned.fill(
-                          child: ColoredBox(
-                            color: Color(0x44000000),
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+                  ],
+                ),
+                if (isPreparing)
+                  const Positioned.fill(
+                    child: ColoredBox(
+                      color: Color(0x44000000),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );

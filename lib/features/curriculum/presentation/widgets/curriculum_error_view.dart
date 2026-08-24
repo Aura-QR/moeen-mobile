@@ -37,24 +37,29 @@ class CurriculumErrorView extends StatelessWidget {
 }
 
 class EmptyPickerView extends StatelessWidget {
-  const EmptyPickerView({super.key});
+  final String? message;
+  const EmptyPickerView({super.key, this.message});
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.calendar_month_outlined,
-              size: 64,
-              color: ColorsManager.primaryColor.withOpacity(0.4)),
-          verticalSpace16,
-          Text(
-            'اختر المرحلة والصف والمادة لعرض التوزيع',
-            style: TextStylesManager.regular14
-                .copyWith(color: ColorsManager.secondaryText),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.calendar_month_outlined,
+                size: 64,
+                color: ColorsManager.primaryColor.withValues(alpha: 0.4)),
+            verticalSpace16,
+            Text(
+              message ?? 'اختر المرحلة والصف والمادة لعرض التوزيع',
+              textAlign: TextAlign.center,
+              style: TextStylesManager.regular14
+                  .copyWith(color: ColorsManager.secondaryText),
+            ),
+          ],
+        ),
       ),
     );
   }

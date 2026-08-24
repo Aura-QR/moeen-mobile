@@ -54,7 +54,7 @@ class InlineBooksSection extends StatelessWidget {
                   border: Border.all(color: ColorsManager.borderLightGray),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -66,7 +66,7 @@ class InlineBooksSection extends StatelessWidget {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.08),
+                        color: Colors.red.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.picture_as_pdf_outlined, color: Colors.red, size: 24),

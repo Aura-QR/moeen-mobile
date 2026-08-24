@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
-import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/curriculum/data/models/curriculum_distribution_models.dart';
 import 'package:moean/features/curriculum/presentation/cubit/curriculum_books_cubit.dart';
 import 'package:moean/core/network/remote/api_service.dart';
@@ -130,257 +128,115 @@ class _CurriculumBooksScreenState extends State<CurriculumBooksScreen> {
             color: ColorsManager.mainText,
           ),
         ),
-        body: Column(
-          children: [
-            SubjectPickerSection(
-              stages: _stages,
-              grades: _grades,
-              subjects: _subjects,
-              selectedStage: _selectedStage,
-              selectedGrade: _selectedGrade,
-              selectedSubject: _selectedSubject,
-              selectedSemester: _selectedSemester,
-              loading: _loadingStages,
-              error: _pickerError,
-              onStageSelected: _onStageSelected,
-              onGradeSelected: _onGradeSelected,
-              onSubjectSelected: _onSubjectSelected,
-              onSemesterChanged: _onSemesterChanged,
-            ),
-            if (_selectedSubject != null) const InlineBooksSection(),
-            RegionLegendRow(
-              selectedRegion: _selectedRegion,
-              onRegionChanged: _onRegionChanged,
-            ),
-            Expanded(
-              child: BlocConsumer<CurriculumDistributionCubit, CurriculumDistributionState>(
-                listener: (context, state) {
-                  if (state is CurriculumDistributionPrepareSuccess) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('✅ تم تحضير الأسبوع بنجاح'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  }
-                  if (state is CurriculumDistributionError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
-                builder: (context, state) {
-                  if (_selectedSubject == null) {
-                    return Center(
-                      child: Text(
-                        'الرجاء اختيار المادة لعرض الكتب والتوزيع',
-                        style: TextStylesManager.medium14.copyWith(color: ColorsManager.secondaryText),
-                      ),
-                    );
-                  }
+        body: BlocConsumer<CurriculumDistributionCubit,
+            CurriculumDistributionState>(
+          listener: (context, state) {
+            if (state is CurriculumDistributionPrepareSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✅ تم تحضير الأسبوع بنجاح'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+            if (state is CurriculumDistributionError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            CurriculumPlanDetailModel? detail;
+            bool isPreparing = false;
 
-                  if (state is CurriculumDistributionLoading ||
-                      state is CurriculumDistributionInitial ||
-                      state is CurriculumDistributionPlansLoaded) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+            if (state is CurriculumDistributionDetailLoaded) {
+              detail = state.detail;
+            } else if (state is CurriculumDistributionPreparing) {
+              detail = state.detail;
+              isPreparing = true;
+            } else if (state is CurriculumDistributionPrepareSuccess) {
+              detail = state.detail;
+            }
 
-                  CurriculumPlanDetailModel? detail;
-                  CurriculumProgressModel? progress;
-                  bool isPreparing = false;
-
-                  if (state is CurriculumDistributionDetailLoaded) {
-                    detail = state.detail;
-                    progress = state.progress;
-                  } else if (state is CurriculumDistributionPreparing) {
-                    detail = state.detail;
-                    progress = state.progress;
-                    isPreparing = true;
-                  } else if (state is CurriculumDistributionPrepareSuccess) {
-                    detail = state.detail;
-                    progress = state.progress;
-                  } else if (state is CurriculumDistributionError) {
-                    return CurriculumErrorView(
-                      message: state.message,
-                      onRetry: () => CurriculumDistributionCubit.get(context).loadPlans(
-                        subjectId: _selectedSubject!.id,
-                        semester: _selectedSemester,
+            return Stack(
+              children: [
+                CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: SubjectPickerSection(
+                        stages: _stages,
+                        grades: _grades,
+                        subjects: _subjects,
+                        selectedStage: _selectedStage,
+                        selectedGrade: _selectedGrade,
+                        selectedSubject: _selectedSubject,
+                        selectedSemester: _selectedSemester,
+                        loading: _loadingStages,
+                        error: _pickerError,
+                        onStageSelected: _onStageSelected,
+                        onGradeSelected: _onGradeSelected,
+                        onSubjectSelected: _onSubjectSelected,
+                        onSemesterChanged: _onSemesterChanged,
                       ),
-                    );
-                  }
-
-                  if (detail == null) return const SizedBox.shrink();
-
-                  return Stack(
-                    children: [
-                      WeeksGrid(
-                        detail: detail,
-                        progress: progress,
-                        onPrepareTap: (weekId) {}, // Disabled as per user request
+                    ),
+                    if (_selectedSubject != null)
+                      const SliverToBoxAdapter(
+                        child: InlineBooksSection(),
                       ),
-                      if (isPreparing)
-                        const Positioned.fill(
-                          child: ColoredBox(
-                            color: Color(0x44000000),
-                            child: Center(child: CircularProgressIndicator()),
+                    SliverToBoxAdapter(
+                      child: RegionLegendRow(
+                        selectedRegion: _selectedRegion,
+                        onRegionChanged: _onRegionChanged,
+                      ),
+                    ),
+                    if (_selectedSubject == null)
+                      const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: EmptyPickerView(
+                          message: 'الرجاء اختيار المادة لعرض الكتب والتوزيع',
+                        ),
+                      )
+                    else if (state is CurriculumDistributionLoading ||
+                        state is CurriculumDistributionInitial ||
+                        state is CurriculumDistributionPlansLoaded)
+                      const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (state is CurriculumDistributionError)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: CurriculumErrorView(
+                          message: state.message,
+                          onRetry: () =>
+                              CurriculumDistributionCubit.get(context).loadPlans(
+                            subjectId: _selectedSubject!.id,
+                            semester: _selectedSemester,
                           ),
                         ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Book card
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _BookCard extends StatelessWidget {
-  final CurriculumBookModel book;
-  final bool isDownloading;
-  final VoidCallback onDownload;
-
-  const _BookCard({
-    required this.book,
-    required this.isDownloading,
-    required this.onDownload,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: ColorsManager.surfacePrimary,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: ColorsManager.primaryColor.withOpacity(0.15)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // PDF icon
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.picture_as_pdf_outlined,
-                color: Colors.red, size: 28),
-          ),
-          horizontalSpace12,
-          // Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  book.title,
-                  style: TextStylesManager.bold14
-                      .copyWith(color: ColorsManager.mainText),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                verticalSpace4,
-                Text(
-                  book.subjectName,
-                  style: TextStylesManager.regular12
-                      .copyWith(color: ColorsManager.secondaryText),
-                ),
-                if (book.sizeMb != null) ...[
-                  verticalSpace2,
-                  Text(
-                    '${book.sizeMb} ميجا',
-                    style: TextStylesManager.regular12.copyWith(
-                        color: ColorsManager.secondaryText, fontSize: 10),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          horizontalSpace12,
-          // Download button — fetches signed URL then launches it
-          GestureDetector(
-            onTap: isDownloading ? null : onDownload,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: ColorsManager.primaryColor,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: isDownloading
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+                      )
+                    else if (detail != null)
+                      ...WeeksGrid.buildSlivers(
+                        context: context,
+                        detail: detail,
+                        progress: null,
+                        onPrepareTap: (weekId) {}, // Disabled as per request
                       ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.download_rounded,
-                            color: Colors.white, size: 16),
-                        const SizedBox(width: 4),
-                        Text('تحميل',
-                            style: TextStylesManager.bold12
-                                .copyWith(color: Colors.white)),
-                      ],
+                  ],
+                ),
+                if (isPreparing)
+                  const Positioned.fill(
+                    child: ColoredBox(
+                      color: Color(0x44000000),
+                      child: Center(child: CircularProgressIndicator()),
                     ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FullError extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-  const _FullError({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 52, color: Colors.red),
-            verticalSpace12,
-            Text(message,
-                textAlign: TextAlign.center,
-                style: TextStylesManager.regular14
-                    .copyWith(color: ColorsManager.secondaryText)),
-            verticalSpace16,
-            ElevatedButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('إعادة المحاولة'),
-            ),
-          ],
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );

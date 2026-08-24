@@ -4,7 +4,6 @@ import 'package:screenshot/screenshot.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/theme/colors.dart';
 
 class PdfExportHelper {
@@ -23,17 +22,18 @@ class PdfExportHelper {
       final screenshotController = ScreenshotController();
       final pdf = pw.Document();
 
+      const double pageWidth = 840.0;
+      const double pageHeight = 1188.0;
+
       for (var pageWidget in pages) {
         final fullWidget = Directionality(
           textDirection: TextDirection.rtl,
-          child: Theme(
-            data: Theme.of(context),
-            child: Material(
-              color: ColorsManager.background,
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: pageWidget,
-              ),
+          child: Material(
+            color: Colors.white,
+            child: SizedBox(
+              width: pageWidth,
+              height: pageHeight,
+              child: pageWidget,
             ),
           ),
         );
@@ -41,17 +41,20 @@ class PdfExportHelper {
         final Uint8List imageBytes = await screenshotController.captureFromWidget(
           fullWidget,
           context: context,
-          delay: const Duration(milliseconds: 100),
+          delay: const Duration(milliseconds: 150),
           pixelRatio: 2.0,
+          targetSize: const Size(pageWidth, pageHeight),
         );
 
         final image = pw.MemoryImage(imageBytes);
         pdf.addPage(
           pw.Page(
             pageFormat: PdfPageFormat.a4,
+            margin: pw.EdgeInsets.zero,
             build: (pw.Context context) {
-              return pw.Center(
-                child: pw.Image(image, fit: pw.BoxFit.contain),
+              return pw.FullPage(
+                ignoreMargins: true,
+                child: pw.Image(image, fit: pw.BoxFit.fill),
               );
             },
           ),
@@ -68,7 +71,10 @@ class PdfExportHelper {
       if (context.mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('حدث خطأ أثناء التصدير: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('حدث خطأ أثناء التصدير: $e'),
+            backgroundColor: ColorsManager.errorColor,
+          ),
         );
       }
     }

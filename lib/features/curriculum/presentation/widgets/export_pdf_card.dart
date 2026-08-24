@@ -6,7 +6,7 @@ import 'package:moean/core/utils/constants/spacing.dart';
 
 class ExportPdfCard extends StatefulWidget {
   final Future<void> Function(String school, String teacher, String manager)? onExport;
-  
+
   const ExportPdfCard({super.key, this.onExport});
 
   @override
@@ -38,7 +38,7 @@ class _ExportPdfCardState extends State<ExportPdfCard> {
         border: Border.all(color: ColorsManager.borderLightGray),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -52,65 +52,186 @@ class _ExportPdfCardState extends State<ExportPdfCard> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: ColorsManager.primaryColor.withOpacity(0.1),
+                  color: ColorsManager.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.print_outlined, color: ColorsManager.primaryColor, size: 22),
+                child: Icon(
+                  Icons.print_outlined,
+                  color: ColorsManager.primaryColor,
+                  size: 22,
+                ),
               ),
               horizontalSpace12,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('تنزيل التوزيع', style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText)),
+                    Text(
+                      'تنزيل التوزيع',
+                      style: TextStylesManager.bold14.copyWith(
+                        color: ColorsManager.mainText,
+                      ),
+                    ),
                     verticalSpace2,
-                    Text('أضف بيانات مدرستك ثم اطبع الورقة أو احفظها PDF',
-                        style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText, fontSize: 10)),
+                    Text(
+                      'أضف بيانات مدرستك ثم اطبع الخطة أو احفظها بتنسيق PDF',
+                      style: TextStylesManager.regular12.copyWith(
+                        color: ColorsManager.secondaryText,
+                        fontSize: 10,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
           verticalSpace16,
-          Text('اسم المدرسة', style: TextStylesManager.bold12.copyWith(color: ColorsManager.mainText)),
-          verticalSpace8,
-          PrimaryTextField(controller: _schoolController, hint: 'مثال: ابتدائية الأندلس'),
-          verticalSpace12,
-          Text('المعلم /ة', style: TextStylesManager.bold12.copyWith(color: ColorsManager.mainText)),
-          verticalSpace8,
-          PrimaryTextField(controller: _teacherController, hint: 'اسم المعلم'),
-          verticalSpace12,
-          Text('المدير /ة', style: TextStylesManager.bold12.copyWith(color: ColorsManager.mainText)),
-          verticalSpace8,
-          PrimaryTextField(controller: _managerController, hint: 'اسم المدير'),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth > 500;
+              if (isWide) {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'اسم المدرسة',
+                            style: TextStylesManager.bold12.copyWith(
+                              color: ColorsManager.mainText,
+                            ),
+                          ),
+                          verticalSpace6,
+                          PrimaryTextField(
+                            controller: _schoolController,
+                            hint: 'مثال: ابتدائية الأندلس',
+                          ),
+                        ],
+                      ),
+                    ),
+                    horizontalSpace12,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'المعلم /ة',
+                            style: TextStylesManager.bold12.copyWith(
+                              color: ColorsManager.mainText,
+                            ),
+                          ),
+                          verticalSpace6,
+                          PrimaryTextField(
+                            controller: _teacherController,
+                            hint: 'اسم المعلم',
+                          ),
+                        ],
+                      ),
+                    ),
+                    horizontalSpace12,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'المدير /ة',
+                            style: TextStylesManager.bold12.copyWith(
+                              color: ColorsManager.mainText,
+                            ),
+                          ),
+                          verticalSpace6,
+                          PrimaryTextField(
+                            controller: _managerController,
+                            hint: 'اسم المدير',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'اسم المدرسة',
+                    style: TextStylesManager.bold12.copyWith(
+                      color: ColorsManager.mainText,
+                    ),
+                  ),
+                  verticalSpace6,
+                  PrimaryTextField(
+                    controller: _schoolController,
+                    hint: 'مثال: ابتدائية الأندلس',
+                  ),
+                  verticalSpace12,
+                  Text(
+                    'المعلم /ة',
+                    style: TextStylesManager.bold12.copyWith(
+                      color: ColorsManager.mainText,
+                    ),
+                  ),
+                  verticalSpace6,
+                  PrimaryTextField(
+                    controller: _teacherController,
+                    hint: 'اسم المعلم',
+                  ),
+                  verticalSpace12,
+                  Text(
+                    'المدير /ة',
+                    style: TextStylesManager.bold12.copyWith(
+                      color: ColorsManager.mainText,
+                    ),
+                  ),
+                  verticalSpace6,
+                  PrimaryTextField(
+                    controller: _managerController,
+                    hint: 'اسم المدير',
+                  ),
+                ],
+              );
+            },
+          ),
           verticalSpace16,
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: _isExporting ? null : () async {
-                if (widget.onExport != null) {
-                  setState(() => _isExporting = true);
-                  await widget.onExport!(
-                    _schoolController.text,
-                    _teacherController.text,
-                    _managerController.text,
-                  );
-                  setState(() => _isExporting = false);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('سيتم توفير هذه الميزة قريباً')),
-                  );
-                }
-              },
-              icon: _isExporting 
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+              onPressed: _isExporting
+                  ? null
+                  : () async {
+                      if (widget.onExport != null) {
+                        setState(() => _isExporting = true);
+                        await widget.onExport!(
+                          _schoolController.text.trim(),
+                          _teacherController.text.trim(),
+                          _managerController.text.trim(),
+                        );
+                        if (mounted) setState(() => _isExporting = false);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('سيتم توفير هذه الميزة قريباً')),
+                        );
+                      }
+                    },
+              icon: _isExporting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
                   : const Icon(Icons.print, size: 18),
               label: Text(_isExporting ? 'جاري التصدير...' : 'تنزيل PDF / طباعة'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF13192B), // very dark color from screenshot
+                backgroundColor: const Color(0xFF13192B),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ),
@@ -118,8 +239,4 @@ class _ExportPdfCardState extends State<ExportPdfCard> {
       ),
     );
   }
-
-  // Allowed since it returns Widget but is a simple layout helper that calls a global Primary component
-  // Wait, the rule says: "Private methods that return Widget are strictly forbidden inside page or widget files"
-  // Let me inline it instead to be safe!
 }
