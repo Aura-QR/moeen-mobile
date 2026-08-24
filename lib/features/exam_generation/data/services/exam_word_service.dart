@@ -9,12 +9,15 @@ import 'package:moean/features/exam_generation/domain/entities/exam_entities.dar
 import 'package:moean/features/exam_generation/data/models/exam_models.dart';
 
 class ExamWordService {
+  /// Detects if text is primarily English (LTR).
   static bool isEnglishText(String text) {
-    if (text.trim().isEmpty) return false;
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return false;
+
     int englishCount = 0;
     int arabicCount = 0;
 
-    for (final rune in text.runes) {
+    for (final rune in trimmed.runes) {
       if ((rune >= 0x0041 && rune <= 0x005A) || (rune >= 0x0061 && rune <= 0x007A)) {
         englishCount++;
       } else if (rune >= 0x0600 && rune <= 0x06FF) {
@@ -22,8 +25,22 @@ class ExamWordService {
       }
     }
 
+    if (arabicCount == 0 && englishCount > 0) return true;
+    if (englishCount == 0 && arabicCount > 0) return false;
+
+    // Mixed text: check first alphabetic character (skipping numbers/symbols)
+    for (final rune in trimmed.runes) {
+      if ((rune >= 0x0041 && rune <= 0x005A) || (rune >= 0x0061 && rune <= 0x007A)) {
+        return englishCount > arabicCount;
+      } else if (rune >= 0x0600 && rune <= 0x06FF) {
+        return false; // Starts with Arabic character -> RTL paragraph
+      }
+    }
+
     return englishCount > arabicCount;
   }
+
+  static bool isRtlText(String text) => !isEnglishText(text);
 
   static String _escapeXml(String? text) {
     if (text == null) return '';
@@ -33,6 +50,83 @@ class ExamWordService {
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&apos;');
+  }
+
+  /// Generates paragraph properties XML (<w:pPr>) dynamically based on text language
+  static String _pPrXml(
+    String text, {
+    String? align, // 'left', 'right', 'center'
+    bool? isEnglish,
+    String extra = '',
+  }) {
+    final english = isEnglish ?? isEnglishText(text);
+    final jcVal = align ?? (english ? 'left' : 'right');
+    final bidiXml = english ? '' : '<w:bidi w:val="1"/>';
+
+    return '''<w:pPr>
+      $bidiXml
+      <w:jc w:val="$jcVal"/>
+      $extra
+    </w:pPr>''';
+  }
+
+  /// Generates run properties XML (<w:rPr>) dynamically based on text language
+  static String _rPrXml(
+    String text, {
+    bool bold = false,
+    String? color,
+    int size = 24,
+    bool? isEnglish,
+    String extra = '',
+  }) {
+    final english = isEnglish ?? isEnglishText(text);
+    final font = english ? 'Arial' : 'Tajawal';
+    final boldXml = bold ? '<w:b/><w:bCs/>' : '';
+    final colorXml = color != null ? '<w:color w:val="$color"/>' : '';
+
+    if (english) {
+      return '''<w:rPr>
+        <w:rFonts w:ascii="$font" w:hAnsi="$font" w:cs="$font"/>
+        $boldXml
+        $colorXml
+        <w:sz w:val="$size"/><w:szCs w:val="$size"/>
+        <w:lang w:val="en-US"/>
+        $extra
+      </w:rPr>''';
+    } else {
+      return '''<w:rPr>
+        <w:rFonts w:ascii="$font" w:hAnsi="$font" w:cs="$font"/>
+        $boldXml
+        $colorXml
+        <w:sz w:val="$size"/><w:szCs w:val="$size"/>
+        <w:rtl w:val="1"/>
+        <w:lang w:val="ar-SA" w:bidi="ar-SA"/>
+        $extra
+      </w:rPr>''';
+    }
+  }
+
+  /// Builds a complete <w:r> element for text
+  static String _buildRun(
+    String text, {
+    bool bold = false,
+    String? color,
+    int size = 24,
+    bool preserveSpace = false,
+    bool? isEnglish,
+    String extraPr = '',
+  }) {
+    final safeText = _escapeXml(text);
+    final spaceAttr = preserveSpace ? ' xml:space="preserve"' : '';
+    final rPr = _rPrXml(
+      text,
+      bold: bold,
+      color: color,
+      size: size,
+      isEnglish: isEnglish,
+      extra: extraPr,
+    );
+    return '<w:r>$rPr<w:t$spaceAttr>$safeText</w:t></w:r>';
   }
 
   /// Generates Uint8List bytes of a valid Microsoft Word (.docx) file matching ExamPdfService exactly
@@ -120,7 +214,6 @@ class ExamWordService {
     // 4. word/settings.xml
     const settingsXml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-  <w:bidi w:val="1"/>
   <w:defaultTabStop w:val="720"/>
   <w:characterSpacingControl w:val="doNotCompress"/>
   <w:compat>
@@ -157,17 +250,14 @@ class ExamWordService {
   <w:docDefaults>
     <w:rPrDefault>
       <w:rPr>
-        <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal" w:eastAsia="Tajawal"/>
+        <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Tajawal"/>
         <w:sz w:val="24"/>
         <w:szCs w:val="24"/>
-        <w:rtl w:val="1"/>
-        <w:lang w:val="ar-SA" w:bidi="ar-SA" w:eastAsia="ar-SA"/>
+        <w:lang w:val="en-US" w:bidi="ar-SA"/>
       </w:rPr>
     </w:rPrDefault>
     <w:pPrDefault>
       <w:pPr>
-        <w:bidi w:val="1"/>
-        <w:jc w:val="right"/>
         <w:spacing w:after="100" w:line="240" w:lineRule="auto"/>
       </w:pPr>
     </w:pPrDefault>
@@ -176,15 +266,13 @@ class ExamWordService {
     <w:name w:val="Normal"/>
     <w:qFormat/>
     <w:pPr>
-      <w:bidi w:val="1"/>
-      <w:jc w:val="right"/>
+      <w:spacing w:after="100" w:line="240" w:lineRule="auto"/>
     </w:pPr>
     <w:rPr>
-      <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
+      <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Tajawal"/>
       <w:sz w:val="24"/>
       <w:szCs w:val="24"/>
-      <w:rtl w:val="1"/>
-      <w:lang w:val="ar-SA" w:bidi="ar-SA"/>
+      <w:lang w:val="en-US" w:bidi="ar-SA"/>
     </w:rPr>
   </w:style>
 </w:styles>''';
@@ -218,11 +306,19 @@ class ExamWordService {
   <w:body>
 ''');
 
-    final safeOffice = _escapeXml(educationOffice.isNotEmpty ? educationOffice : 'الإدارة العامة للتعليم');
-    final safeSchool = _escapeXml(schoolName.isNotEmpty ? schoolName : 'مواهب المملكة');
-    final safeTeacher = _escapeXml(teacherName);
-    final safeDate = _escapeXml(date);
-    final safeExamTitle = _escapeXml(exam.title);
+    final officeText = educationOffice.isNotEmpty ? educationOffice : 'الإدارة العامة للتعليم';
+    final isOfficeEng = isEnglishText(officeText);
+
+    final schoolText = schoolName.isNotEmpty ? schoolName : 'مواهب المملكة';
+    final isSchoolEng = isEnglishText(schoolText);
+
+    final isTeacherEng = teacherName.isNotEmpty && isEnglishText(teacherName);
+    final teacherLabel = isTeacherEng ? 'Teacher: ' : 'المعلم: ';
+    final teacherFullText = '$teacherLabel$teacherName';
+
+    final isDateEng = isEnglishText(date);
+    final dateLabel = isDateEng ? 'Date: ' : 'التاريخ: ';
+    final dateFullText = '$dateLabel$date';
 
     // Header Table matching PDF Header exactly (width: 10466 dxa)
     sb.write('''
@@ -254,20 +350,20 @@ class ExamWordService {
             <w:vAlign w:val="center"/>
           </w:tcPr>
           <w:p>
-            <w:pPr><w:bidi w:val="1"/><w:jc w:val="right"/><w:spacing w:after="40"/></w:pPr>
-            <w:r><w:rPr><w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/><w:b/><w:color w:val="FFFFFF"/><w:sz w:val="32"/><w:szCs w:val="32"/><w:rtl w:val="1"/><w:lang w:val="ar-SA" w:bidi="ar-SA"/></w:rPr><w:t>\u200F$safeOffice</w:t></w:r>
+            ${_pPrXml(officeText, isEnglish: isOfficeEng, extra: '<w:spacing w:after="40"/>')}
+            ${_buildRun(officeText, bold: true, color: 'FFFFFF', size: 32, isEnglish: isOfficeEng)}
           </w:p>
           <w:p>
-            <w:pPr><w:bidi w:val="1"/><w:jc w:val="right"/><w:spacing w:after="160"/></w:pPr>
-            <w:r><w:rPr><w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/><w:b/><w:color w:val="80DEEA"/><w:sz w:val="20"/><w:szCs w:val="20"/><w:rtl w:val="1"/><w:lang w:val="ar-SA" w:bidi="ar-SA"/></w:rPr><w:t>\u200F$safeSchool</w:t></w:r>
+            ${_pPrXml(schoolText, isEnglish: isSchoolEng, extra: '<w:spacing w:after="160"/>')}
+            ${_buildRun(schoolText, bold: true, color: '80DEEA', size: 20, isEnglish: isSchoolEng)}
           </w:p>
           <w:p>
-            <w:pPr><w:bidi w:val="1"/><w:jc w:val="right"/><w:spacing w:after="40"/></w:pPr>
-            <w:r><w:rPr><w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/><w:color w:val="FFFFFF"/><w:sz w:val="20"/><w:szCs w:val="20"/><w:rtl w:val="1"/><w:lang w:val="ar-SA" w:bidi="ar-SA"/></w:rPr><w:t>\u200Fالمعلم: $safeTeacher</w:t></w:r>
+            ${_pPrXml(teacherFullText, isEnglish: isTeacherEng, extra: '<w:spacing w:after="40"/>')}
+            ${_buildRun(teacherFullText, color: 'FFFFFF', size: 20, isEnglish: isTeacherEng)}
           </w:p>
           <w:p>
-            <w:pPr><w:bidi w:val="1"/><w:jc w:val="right"/><w:spacing w:after="0"/></w:pPr>
-            <w:r><w:rPr><w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/><w:color w:val="FFFFFF"/><w:sz w:val="20"/><w:szCs w:val="20"/><w:rtl w:val="1"/><w:lang w:val="ar-SA" w:bidi="ar-SA"/></w:rPr><w:t>\u200Fالتاريخ: $safeDate</w:t></w:r>
+            ${_pPrXml(dateFullText, isEnglish: isDateEng, extra: '<w:spacing w:after="0"/>')}
+            ${_buildRun(dateFullText, color: 'FFFFFF', size: 20, isEnglish: isDateEng)}
           </w:p>
         </w:tc>
         <w:tc>
@@ -340,12 +436,12 @@ class ExamWordService {
     } else {
       sb.write('''
           <w:p>
-            <w:pPr><w:bidi w:val="1"/><w:jc w:val="left"/><w:spacing w:after="40"/></w:pPr>
-            <w:r><w:rPr><w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/><w:b/><w:color w:val="FFFFFF"/><w:sz w:val="22"/><w:szCs w:val="24"/><w:rtl w:val="1"/><w:lang w:val="ar-SA" w:bidi="ar-SA"/></w:rPr><w:t>\u200Fالمملكة العربية السعودية</w:t></w:r>
+            ${_pPrXml('المملكة العربية السعودية', align: 'left', isEnglish: false, extra: '<w:spacing w:after="40"/>')}
+            ${_buildRun('المملكة العربية السعودية', bold: true, color: 'FFFFFF', size: 22, isEnglish: false)}
           </w:p>
           <w:p>
-            <w:pPr><w:bidi w:val="1"/><w:jc w:val="left"/><w:spacing w:after="40"/></w:pPr>
-            <w:r><w:rPr><w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/><w:b/><w:color w:val="FFFFFF"/><w:sz w:val="22"/><w:szCs w:val="24"/><w:rtl w:val="1"/><w:lang w:val="ar-SA" w:bidi="ar-SA"/></w:rPr><w:t>\u200Fوزارة التعليم</w:t></w:r>
+            ${_pPrXml('وزارة التعليم', align: 'left', isEnglish: false, extra: '<w:spacing w:after="40"/>')}
+            ${_buildRun('وزارة التعليم', bold: true, color: 'FFFFFF', size: 22, isEnglish: false)}
           </w:p>
 ''');
     }
@@ -357,85 +453,37 @@ class ExamWordService {
 ''');
 
     // Exam Title
-    final isExamTitleEnglish = isEnglishText(exam.title);
+    final isTitleEng = isEnglishText(exam.title);
     sb.write('''
     <w:p>
-      <w:pPr>
-        <w:bidi w:val="${isExamTitleEnglish ? "0" : "1"}"/>
-        <w:jc w:val="center"/>
-        <w:spacing w:before="360" w:after="360"/>
-      </w:pPr>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
-          <w:b/>
-          <w:color w:val="073F49"/>
-          <w:sz w:val="32"/>
-          <w:szCs w:val="32"/>
-          <w:rtl w:val="${isExamTitleEnglish ? "0" : "1"}"/>
-          <w:lang w:val="${isExamTitleEnglish ? "en-US" : "ar-SA"}" w:bidi="${isExamTitleEnglish ? "en-US" : "ar-SA"}"/>
-        </w:rPr>
-        <w:t>${isExamTitleEnglish ? "" : "\u200F"}$safeExamTitle</w:t>
-      </w:r>
+      ${_pPrXml(exam.title, align: 'center', isEnglish: isTitleEng, extra: '<w:spacing w:before="360" w:after="360"/>')}
+      ${_buildRun(exam.title, bold: true, color: '073F49', size: 32, isEnglish: isTitleEng)}
     </w:p>
 ''');
 
     // Questions List
     for (int i = 0; i < questions.length; i++) {
       final q = questions[i];
-      final isQEnglish = isEnglishText(q.questionText);
-      final safeQText = _escapeXml(q.questionText);
-      final pointsText = isQEnglish
+      final isQEng = isEnglishText(q.questionText);
+      final pointsText = isQEng
           ? '[${q.points} point${q.points > 1 ? "s" : ""}]'
           : '[${q.points} درجة]';
 
-      // Question Title Row: Standard paragraph aligned to the starting side with points appended
+      final tabVal = isQEng ? 'right' : 'left';
+      final tabsXml = '<w:tabs><w:tab w:val="$tabVal" w:pos="10466"/></w:tabs>';
+
+      // Question Title Row
       sb.write('''
     <w:p>
-      <w:pPr>
-        <w:bidi w:val="${isQEnglish ? "0" : "1"}"/>
-        <w:jc w:val="${isQEnglish ? "left" : "right"}"/>
-        <w:tabs>
-          <w:tab w:val="${isQEnglish ? "right" : "left"}" w:pos="10466"/>
-        </w:tabs>
-        <w:spacing w:before="240" w:after="100"/>
-      </w:pPr>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
-          <w:b/>
-          <w:color w:val="1E293B"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-          <w:rtl w:val="${isQEnglish ? "0" : "1"}"/>
-          <w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/>
-        </w:rPr>
-        <w:t xml:space="preserve">${isQEnglish ? "" : "\u200F"}${q.questionOrder}. </w:t>
-      </w:r>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
-          <w:b/>
-          <w:color w:val="1E293B"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-          <w:rtl w:val="${isQEnglish ? "0" : "1"}"/>
-          <w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/>
-        </w:rPr>
-        <w:t>$safeQText</w:t>
-      </w:r>
+      ${_pPrXml(
+        q.questionText,
+        isEnglish: isQEng,
+        extra: '$tabsXml<w:spacing w:before="240" w:after="100"/>',
+      )}
+      ${_buildRun('${q.questionOrder}. ', bold: true, color: '1E293B', size: 24, preserveSpace: true, isEnglish: isQEng)}
+      ${_buildRun(q.questionText, bold: true, color: '1E293B', size: 24, isEnglish: isQEng)}
       <w:r><w:tab/></w:r>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
-          <w:color w:val="64748B"/>
-          <w:sz w:val="20"/>
-          <w:szCs w:val="20"/>
-          <w:rtl w:val="${isQEnglish ? "0" : "1"}"/>
-          <w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/>
-        </w:rPr>
-        <w:t>${isQEnglish ? "" : "\u200F"}$pointsText</w:t>
-      </w:r>
+      ${_buildRun(pointsText, color: '64748B', size: 20, isEnglish: isQEng)}
     </w:p>
 ''');
 
@@ -443,44 +491,23 @@ class ExamWordService {
         final options = List<String>.from(q.options ?? []);
         for (final opt in options) {
           final isCorrect = opt == q.correctAnswer;
-          final safeOpt = _escapeXml(opt);
+          final isOptEng = isEnglishText(opt);
           final mark = (showAnswers && isCorrect) ? '●' : '○';
           final markColor = (showAnswers && isCorrect) ? '15803D' : '94A3B8';
           final textColor = (showAnswers && isCorrect) ? '15803D' : '1E293B';
           final isBold = showAnswers && isCorrect;
 
+          final indXml = isOptEng ? '<w:ind w:left="280"/>' : '<w:ind w:right="280"/>';
+
           sb.write('''
     <w:p>
-      <w:pPr>
-        <w:bidi w:val="${isQEnglish ? "0" : "1"}"/>
-        <w:jc w:val="${isQEnglish ? "left" : "right"}"/>
-        ${isQEnglish ? '<w:ind w:left="280"/>' : '<w:ind w:right="280"/>'}
-        <w:spacing w:after="80"/>
-      </w:pPr>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
-          ${isBold ? '<w:b/>' : ''}
-          <w:color w:val="$markColor"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-          <w:rtl w:val="${isQEnglish ? "0" : "1"}"/>
-          <w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/>
-        </w:rPr>
-        <w:t xml:space="preserve">${isQEnglish ? "" : "\u200F"}$mark   </w:t>
-      </w:r>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
-          ${isBold ? '<w:b/>' : ''}
-          <w:color w:val="$textColor"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-          <w:rtl w:val="${isQEnglish ? "0" : "1"}"/>
-          <w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/>
-        </w:rPr>
-        <w:t>$safeOpt</w:t>
-      </w:r>
+      ${_pPrXml(
+        opt,
+        isEnglish: isOptEng,
+        extra: '$indXml<w:spacing w:after="80"/>',
+      )}
+      ${_buildRun('$mark   ', bold: isBold, color: markColor, size: 24, preserveSpace: true, isEnglish: isOptEng)}
+      ${_buildRun(opt, bold: isBold, color: textColor, size: 24, isEnglish: isOptEng)}
     </w:p>
 ''');
         }
@@ -488,8 +515,8 @@ class ExamWordService {
         final isTrueCorrect = showAnswers && (q.correctAnswer == 'صح' || q.correctAnswer.toLowerCase() == 'true');
         final isFalseCorrect = showAnswers && (q.correctAnswer == 'خطأ' || q.correctAnswer.toLowerCase() == 'false');
 
-        final trueLabel = isQEnglish ? 'True' : 'صح';
-        final falseLabel = isQEnglish ? 'False' : 'خطأ';
+        final trueLabel = isQEng ? 'True' : 'صح';
+        final falseLabel = isQEng ? 'False' : 'خطأ';
 
         final trueMark = isTrueCorrect ? '●' : '○';
         final falseMark = isFalseCorrect ? '●' : '○';
@@ -498,58 +525,19 @@ class ExamWordService {
         final trueMarkColor = isTrueCorrect ? '15803D' : '94A3B8';
         final falseMarkColor = isFalseCorrect ? '15803D' : '94A3B8';
 
+        final indXml = isQEng ? '<w:ind w:left="280"/>' : '<w:ind w:right="280"/>';
+
         sb.write('''
     <w:p>
-      <w:pPr>
-        <w:bidi w:val="${isQEnglish ? "0" : "1"}"/>
-        <w:jc w:val="${isQEnglish ? "left" : "right"}"/>
-        ${isQEnglish ? '<w:ind w:left="280"/>' : '<w:ind w:right="280"/>'}
-        <w:spacing w:before="60" w:after="80"/>
-      </w:pPr>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
-          ${isTrueCorrect ? '<w:b/>' : ''}
-          <w:color w:val="$trueMarkColor"/>
-          <w:sz w:val="24"/><w:szCs w:val="24"/>
-          <w:rtl w:val="${isQEnglish ? "0" : "1"}"/>
-          <w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/>
-        </w:rPr>
-        <w:t xml:space="preserve">${isQEnglish ? "" : "\u200F"}$trueMark   </w:t>
-      </w:r>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
-          ${isTrueCorrect ? '<w:b/>' : ''}
-          <w:color w:val="$trueColor"/>
-          <w:sz w:val="24"/><w:szCs w:val="24"/>
-          <w:rtl w:val="${isQEnglish ? "0" : "1"}"/>
-          <w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/>
-        </w:rPr>
-        <w:t xml:space="preserve">$trueLabel               </w:t>
-      </w:r>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
-          ${isFalseCorrect ? '<w:b/>' : ''}
-          <w:color w:val="$falseMarkColor"/>
-          <w:sz w:val="24"/><w:szCs w:val="24"/>
-          <w:rtl w:val="${isQEnglish ? "0" : "1"}"/>
-          <w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/>
-        </w:rPr>
-        <w:t xml:space="preserve">$falseMark   </w:t>
-      </w:r>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
-          ${isFalseCorrect ? '<w:b/>' : ''}
-          <w:color w:val="$falseColor"/>
-          <w:sz w:val="24"/><w:szCs w:val="24"/>
-          <w:rtl w:val="${isQEnglish ? "0" : "1"}"/>
-          <w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/>
-        </w:rPr>
-        <w:t>$falseLabel</w:t>
-      </w:r>
+      ${_pPrXml(
+        q.questionText,
+        isEnglish: isQEng,
+        extra: '$indXml<w:spacing w:before="60" w:after="80"/>',
+      )}
+      ${_buildRun('$trueMark   ', bold: isTrueCorrect, color: trueMarkColor, size: 24, preserveSpace: true, isEnglish: isQEng)}
+      ${_buildRun('$trueLabel               ', bold: isTrueCorrect, color: trueColor, size: 24, preserveSpace: true, isEnglish: isQEng)}
+      ${_buildRun('$falseMark   ', bold: isFalseCorrect, color: falseMarkColor, size: 24, preserveSpace: true, isEnglish: isQEng)}
+      ${_buildRun(falseLabel, bold: isFalseCorrect, color: falseColor, size: 24, isEnglish: isQEng)}
     </w:p>
 ''');
       } else if (q.type == 'matching') {
@@ -563,12 +551,14 @@ class ExamWordService {
           colB = List<String>.from(q.options['column_b'] ?? []);
         }
 
+        final bidiTableXml = isQEng ? '' : '<w:bidiVisual w:val="1"/>';
+
         sb.write('''
     <w:tbl>
       <w:tblPr>
         <w:tblW w:w="10466" w:type="dxa"/>
         <w:jc w:val="center"/>
-        ${isQEnglish ? '' : '<w:bidiVisual w:val="1"/>'}
+        $bidiTableXml
         <w:tblBorders>
           <w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/>
           <w:insideH w:val="none"/><w:insideV w:val="none"/>
@@ -582,23 +572,26 @@ class ExamWordService {
 ''');
         final maxLen = colA.length > colB.length ? colA.length : colB.length;
         for (int row = 0; row < maxLen; row++) {
-          final itemA = row < colA.length ? _escapeXml(colA[row]) : '';
-          final itemB = row < colB.length ? _escapeXml(colB[row]) : '';
+          final itemA = row < colA.length ? colA[row] : '';
+          final itemB = row < colB.length ? colB[row] : '';
+
+          final isItemAEng = itemA.isNotEmpty ? isEnglishText(itemA) : isQEng;
+          final isItemBEng = itemB.isNotEmpty ? isEnglishText(itemB) : isQEng;
 
           sb.write('''
       <w:tr>
         <w:tc>
           <w:tcPr><w:tcW w:w="5233" w:type="dxa"/></w:tcPr>
           <w:p>
-            <w:pPr><w:bidi w:val="${isQEnglish ? "0" : "1"}"/><w:jc w:val="${isQEnglish ? "left" : "right"}"/><w:spacing w:after="80"/></w:pPr>
-            <w:r><w:rPr><w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:rtl w:val="${isQEnglish ? "0" : "1"}"/><w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/></w:rPr><w:t>${isQEnglish ? "" : "\u200F"}•  $itemA</w:t></w:r>
+            ${_pPrXml(itemA, isEnglish: isItemAEng, extra: '<w:spacing w:after="80"/>')}
+            ${_buildRun('•  $itemA', size: 24, isEnglish: isItemAEng)}
           </w:p>
         </w:tc>
         <w:tc>
           <w:tcPr><w:tcW w:w="5233" w:type="dxa"/></w:tcPr>
           <w:p>
-            <w:pPr><w:bidi w:val="${isQEnglish ? "0" : "1"}"/><w:jc w:val="${isQEnglish ? "left" : "right"}"/><w:spacing w:after="80"/></w:pPr>
-            <w:r><w:rPr><w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:rtl w:val="${isQEnglish ? "0" : "1"}"/><w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/></w:rPr><w:t>${isQEnglish ? "" : "\u200F"}•  $itemB</w:t></w:r>
+            ${_pPrXml(itemB, isEnglish: isItemBEng, extra: '<w:spacing w:after="80"/>')}
+            ${_buildRun('•  $itemB', size: 24, isEnglish: isItemBEng)}
           </w:p>
         </w:tc>
       </w:tr>
@@ -611,7 +604,6 @@ class ExamWordService {
       <w:tblPr>
         <w:tblW w:w="10466" w:type="dxa"/>
         <w:jc w:val="center"/>
-        <w:bidiVisual w:val="1"/>
         <w:tblBorders>
           <w:top w:val="single" w:sz="6" w:color="CBD5E1"/>
           <w:left w:val="single" w:sz="6" w:color="CBD5E1"/>
@@ -636,28 +628,20 @@ class ExamWordService {
 
       // Show Correct Answer for non-MCQ / non-matching
       if (showAnswers && q.type != 'mcq' && q.type != 'matching' && q.correctAnswer.isNotEmpty) {
-        final safeAnswer = _escapeXml(q.correctAnswer);
-        final label = isQEnglish ? 'Answer: ' : 'الإجابة: ';
+        final answerText = q.correctAnswer;
+        final isAnsEng = isEnglishText(answerText);
+        final label = isAnsEng ? 'Answer: ' : 'الإجابة: ';
+        final fullAnsText = '$label$answerText';
+        final indXml = isAnsEng ? '<w:ind w:left="280"/>' : '<w:ind w:right="280"/>';
+
         sb.write('''
     <w:p>
-      <w:pPr>
-        <w:bidi w:val="${isQEnglish ? "0" : "1"}"/>
-        <w:jc w:val="${isQEnglish ? "left" : "right"}"/>
-        ${isQEnglish ? '<w:ind w:left="280"/>' : '<w:ind w:right="280"/>'}
-        <w:spacing w:before="120" w:after="160"/>
-      </w:pPr>
-      <w:r>
-        <w:rPr>
-          <w:rFonts w:ascii="Tajawal" w:hAnsi="Tajawal" w:cs="Tajawal"/>
-          <w:b/>
-          <w:color w:val="15803D"/>
-          <w:sz w:val="24"/>
-          <w:szCs w:val="24"/>
-          <w:rtl w:val="${isQEnglish ? "0" : "1"}"/>
-          <w:lang w:val="${isQEnglish ? "en-US" : "ar-SA"}" w:bidi="${isQEnglish ? "en-US" : "ar-SA"}"/>
-        </w:rPr>
-        <w:t xml:space="preserve">${isQEnglish ? "" : "\u200F"}$label$safeAnswer</w:t>
-      </w:r>
+      ${_pPrXml(
+        fullAnsText,
+        isEnglish: isAnsEng,
+        extra: '$indXml<w:spacing w:before="120" w:after="160"/>',
+      )}
+      ${_buildRun(fullAnsText, bold: true, color: '15803D', size: 24, preserveSpace: true, isEnglish: isAnsEng)}
     </w:p>
 ''');
       }
@@ -674,7 +658,6 @@ class ExamWordService {
     <w:sectPr>
       <w:pgSz w:w="11906" w:h="16838"/>
       <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="720" w:footer="720" w:gutter="0"/>
-      <w:bidi w:val="1"/>
       <w:docGrid w:linePitch="360"/>
     </w:sectPr>
   </w:body>
