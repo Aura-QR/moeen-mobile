@@ -271,6 +271,7 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                                     initialDate: DateTime.now(),
                                     firstDate: DateTime(2020),
                                     lastDate: DateTime(2030),
+                                    locale: const Locale('ar'),
                                   );
                                   if (date != null) {
                                     setState(() {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/network/local/cache_helper.dart';
@@ -126,6 +127,16 @@ class MyApp extends StatelessWidget {
             initialRoute: initialRoute,
             theme: ThemesManager.lightTheme,
             darkTheme: ThemesManager.darkTheme,
+            locale: themeCubit.isArabicLang ? const Locale('ar') : const Locale('en'),
+            supportedLocales: const [
+              Locale('ar'),
+              Locale('en'),
+            ],
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             themeMode:
                 themeCubit.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             builder: (context, child) {

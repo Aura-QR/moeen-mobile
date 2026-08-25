@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   bloc: ^9.2.0
   flutter_bloc: ^9.1.1
   shared_preferences: ^2.5.4

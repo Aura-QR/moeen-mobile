@@ -320,6 +320,7 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
       initialDate: initialDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
+      locale: const Locale('ar'),
     );
     if (picked != null) {
       setState(() {

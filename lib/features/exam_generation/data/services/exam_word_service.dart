@@ -52,25 +52,38 @@ class ExamWordService {
         .replaceAll("'", '&apos;');
   }
 
-  /// Generates paragraph properties XML (<w:pPr>) dynamically based on text language
   static String _pPrXml(
     String text, {
-    String? align, // 'left', 'right', 'center'
+    String? align,
     bool? isEnglish,
-    String extra = '',
+    String tabs = '',
+    String spacing = '',
   }) {
     final english = isEnglish ?? isEnglishText(text);
-    final jcVal = align ?? (english ? 'left' : 'right');
+    final requestedJc = align ?? (english ? 'left' : 'right');
     final bidiXml = english ? '' : '<w:bidi w:val="1"/>';
 
+    // Word/LibreOffice/Pages flip the visual meaning of w:jc left/right
+    // whenever w:bidi is present on the same paragraph. Compensate by
+    // emitting the opposite value so the VISUAL result matches intent.
+    String jcVal = requestedJc;
+    if (!english) {
+      if (requestedJc == 'right') {
+        jcVal = 'left';
+      } else if (requestedJc == 'left') {
+        jcVal = 'right';
+      }
+    }
+
     return '''<w:pPr>
+      $tabs
       $bidiXml
+      $spacing
       <w:jc w:val="$jcVal"/>
-      $extra
     </w:pPr>''';
   }
 
-  /// Generates run properties XML (<w:rPr>) dynamically based on text language
+  /// Generates run properties XML (`<w:rPr>`) dynamically based on text language
   static String _rPrXml(
     String text, {
     bool bold = false,
@@ -106,7 +119,7 @@ class ExamWordService {
     }
   }
 
-  /// Builds a complete <w:r> element for text
+  /// Builds a complete `<w:r>` element for text
   static String _buildRun(
     String text, {
     bool bold = false,
@@ -247,7 +260,8 @@ class ExamWordService {
 
     // 6. word/styles.xml
     final bool isExamRtl = !isEnglishText(exam.title);
-    final String bidiPPr = isExamRtl ? '<w:bidi w:val="1"/><w:jc w:val="right"/>' : '';
+    final String bidiXmlDefault = isExamRtl ? '<w:bidi w:val="1"/>' : '';
+    final String jcXmlDefault = isExamRtl ? '<w:jc w:val="left"/>' : '';
 
     final stylesXml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -262,8 +276,9 @@ class ExamWordService {
     </w:rPrDefault>
     <w:pPrDefault>
       <w:pPr>
-        $bidiPPr
+        $bidiXmlDefault
         <w:spacing w:after="100" w:line="240" w:lineRule="auto"/>
+        $jcXmlDefault
       </w:pPr>
     </w:pPrDefault>
   </w:docDefaults>
@@ -271,8 +286,9 @@ class ExamWordService {
     <w:name w:val="Normal"/>
     <w:qFormat/>
     <w:pPr>
-      $bidiPPr
+      $bidiXmlDefault
       <w:spacing w:after="100" w:line="240" w:lineRule="auto"/>
+      $jcXmlDefault
     </w:pPr>
     <w:rPr>
       <w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Tajawal"/>
@@ -356,19 +372,19 @@ class ExamWordService {
             <w:vAlign w:val="center"/>
           </w:tcPr>
           <w:p>
-            ${_pPrXml(officeText, align: 'right', isEnglish: true, extra: '<w:spacing w:after="40"/>')}
+            ${_pPrXml(officeText, isEnglish: isOfficeEng, spacing: '<w:spacing w:after="40"/>')}
             ${_buildRun(officeText, bold: true, color: 'FFFFFF', size: 32, isEnglish: isOfficeEng)}
           </w:p>
           <w:p>
-            ${_pPrXml(schoolText, align: 'right', isEnglish: true, extra: '<w:spacing w:after="160"/>')}
+            ${_pPrXml(schoolText, isEnglish: isSchoolEng, spacing: '<w:spacing w:after="160"/>')}
             ${_buildRun(schoolText, bold: true, color: '80DEEA', size: 20, isEnglish: isSchoolEng)}
           </w:p>
           <w:p>
-            ${_pPrXml(teacherFullText, align: 'right', isEnglish: true, extra: '<w:spacing w:after="40"/>')}
+            ${_pPrXml(teacherFullText, isEnglish: isTeacherEng, spacing: '<w:spacing w:after="40"/>')}
             ${_buildRun(teacherFullText, color: 'FFFFFF', size: 20, isEnglish: isTeacherEng)}
           </w:p>
           <w:p>
-            ${_pPrXml(dateFullText, align: 'right', isEnglish: true, extra: '<w:spacing w:after="0"/>')}
+            ${_pPrXml(dateFullText, isEnglish: isDateEng, spacing: '<w:spacing w:after="0"/>')}
             ${_buildRun(dateFullText, color: 'FFFFFF', size: 20, isEnglish: isDateEng)}
           </w:p>
         </w:tc>
@@ -383,7 +399,7 @@ class ExamWordService {
     if (hasImages) {
       sb.write('''
           <w:p>
-            <w:pPr><w:bidi w:val="1"/><w:jc w:val="left"/><w:spacing w:after="0"/></w:pPr>
+            <w:pPr><w:bidi w:val="1"/><w:spacing w:after="0"/><w:jc w:val="left"/></w:pPr>
             <w:r>
               <w:drawing>
                 <wp:inline distT="0" distB="0" distL="0" distR="0">
@@ -442,11 +458,11 @@ class ExamWordService {
     } else {
       sb.write('''
           <w:p>
-            ${_pPrXml('المملكة العربية السعودية', align: 'left', isEnglish: false, extra: '<w:spacing w:after="40"/>')}
+            ${_pPrXml('المملكة العربية السعودية', align: 'left', isEnglish: false, spacing: '<w:spacing w:after="40"/>')}
             ${_buildRun('المملكة العربية السعودية', bold: true, color: 'FFFFFF', size: 22, isEnglish: false)}
           </w:p>
           <w:p>
-            ${_pPrXml('وزارة التعليم', align: 'left', isEnglish: false, extra: '<w:spacing w:after="40"/>')}
+            ${_pPrXml('وزارة التعليم', align: 'left', isEnglish: false, spacing: '<w:spacing w:after="40"/>')}
             ${_buildRun('وزارة التعليم', bold: true, color: 'FFFFFF', size: 22, isEnglish: false)}
           </w:p>
 ''');
@@ -462,7 +478,7 @@ class ExamWordService {
     final isTitleEng = isEnglishText(exam.title);
     sb.write('''
     <w:p>
-      ${_pPrXml(exam.title, align: 'center', isEnglish: isTitleEng, extra: '<w:spacing w:before="360" w:after="360"/>')}
+      ${_pPrXml(exam.title, align: 'center', isEnglish: isTitleEng, spacing: '<w:spacing w:before="360" w:after="360"/>')}
       ${_buildRun(exam.title, bold: true, color: '073F49', size: 32, isEnglish: isTitleEng)}
     </w:p>
 ''');
@@ -484,7 +500,8 @@ class ExamWordService {
       ${_pPrXml(
         q.questionText,
         isEnglish: isQEng,
-        extra: '$tabsXml<w:spacing w:before="240" w:after="100"/>',
+        tabs: tabsXml,
+        spacing: '<w:spacing w:before="240" w:after="100"/>',
       )}
       ${_buildRun('${q.questionOrder}. ', bold: true, color: '1E293B', size: 24, preserveSpace: true, isEnglish: isQEng)}
       ${_buildRun(q.questionText, bold: true, color: '1E293B', size: 24, isEnglish: isQEng)}
@@ -520,7 +537,7 @@ class ExamWordService {
       ${_pPrXml(
         q.questionText,
         isEnglish: isQEng,
-        extra: '<w:spacing w:after="80"/>',
+        spacing: '<w:spacing w:after="80"/>',
       )}
       ${_buildRun('$label  ', bold: isBold, color: textColor, size: 24, preserveSpace: true, isEnglish: isQEng)}
       ${_buildRun(opt, bold: isBold, color: textColor, size: 24, isEnglish: isOptEng)}
@@ -546,7 +563,7 @@ class ExamWordService {
       ${_pPrXml(
         q.questionText,
         isEnglish: isQEng,
-        extra: '<w:spacing w:before="60" w:after="80"/>',
+        spacing: '<w:spacing w:before="60" w:after="80"/>',
       )}
       ${_buildRun('$trueBox ', bold: isTrueCorrect, color: trueColor, size: 24, preserveSpace: true, isEnglish: isQEng)}
       ${_buildRun('$trueLabel               ', bold: isTrueCorrect, color: trueColor, size: 24, preserveSpace: true, isEnglish: isQEng)}
@@ -597,14 +614,14 @@ class ExamWordService {
         <w:tc>
           <w:tcPr><w:tcW w:w="5233" w:type="dxa"/></w:tcPr>
           <w:p>
-            ${_pPrXml(itemA, isEnglish: isItemAEng, extra: '<w:spacing w:after="80"/>')}
+            ${_pPrXml(itemA, isEnglish: isItemAEng, spacing: '<w:spacing w:after="80"/>')}
             ${_buildRun('•  $itemA', size: 24, isEnglish: isItemAEng)}
           </w:p>
         </w:tc>
         <w:tc>
           <w:tcPr><w:tcW w:w="5233" w:type="dxa"/></w:tcPr>
           <w:p>
-            ${_pPrXml(itemB, isEnglish: isItemBEng, extra: '<w:spacing w:after="80"/>')}
+            ${_pPrXml(itemB, isEnglish: isItemBEng, spacing: '<w:spacing w:after="80"/>')}
             ${_buildRun('•  $itemB', size: 24, isEnglish: isItemBEng)}
           </w:p>
         </w:tc>
@@ -643,7 +660,6 @@ class ExamWordService {
       // Show Correct Answer for non-MCQ / non-matching
       if (showAnswers && q.type != 'mcq' && q.type != 'matching' && q.correctAnswer.isNotEmpty) {
         final answerText = q.correctAnswer;
-        final isAnsEng = isEnglishText(answerText);
         final label = isQEng ? 'Answer: ' : 'الإجابة: ';
         final fullAnsText = '$label$answerText';
 
@@ -652,7 +668,7 @@ class ExamWordService {
       ${_pPrXml(
         q.questionText,
         isEnglish: isQEng,
-        extra: '<w:spacing w:before="120" w:after="160"/>',
+        spacing: '<w:spacing w:before="120" w:after="160"/>',
       )}
       ${_buildRun(fullAnsText, bold: true, color: '15803D', size: 24, preserveSpace: true, isEnglish: isQEng)}
     </w:p>
@@ -670,9 +686,9 @@ class ExamWordService {
     final bool isExamRtl = !isEnglishText(exam.title);
     sb.write('''
     <w:sectPr>
-      ${isExamRtl ? '<w:bidi w:val="1"/>' : ''}
       <w:pgSz w:w="11906" w:h="16838"/>
       <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="720" w:footer="720" w:gutter="0"/>
+      ${isExamRtl ? '<w:bidi w:val="1"/>' : ''}
       <w:docGrid w:linePitch="360"/>
     </w:sectPr>
   </w:body>
