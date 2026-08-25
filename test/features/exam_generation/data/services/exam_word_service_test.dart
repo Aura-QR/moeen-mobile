@@ -211,5 +211,48 @@ void main() {
       expect(documentXml, contains('<w:jc w:val="left"/>'));
       expect(documentXml, contains('<w:jc w:val="right"/>'));
     });
+
+    test('generateWordBytes for Arabic exam sets section bidi and styles bidi to RTL', () async {
+      final arabicExam = ExamEntity(
+        id: 2,
+        teacherId: 1,
+        title: 'اختبار العلوم النهائي',
+        status: 'completed',
+        totalPoints: 5,
+        createdAt: '2026-08-25T10:00:00Z',
+        updatedAt: '2026-08-25T10:00:00Z',
+        questions: [
+          QuestionEntity(
+            id: 1,
+            lessonId: 1,
+            questionOrder: 1,
+            questionText: 'ما هي عاصمة المملكة العربية السعودية؟',
+            type: 'mcq',
+            options: ['الرياض', 'جدة', 'مكة', 'Riyadh'],
+            correctAnswer: 'الرياض',
+            points: 5,
+            source: 'ai',
+            usageCount: 0,
+          ),
+        ],
+      );
+
+      final Uint8List bytes = await ExamWordService.generateWordBytes(
+        exam: arabicExam,
+        showAnswers: false,
+        teacherName: 'أحمد',
+        schoolName: 'مدرسة المواهب',
+        educationOffice: 'الرياض',
+      );
+
+      final archive = ZipDecoder().decodeBytes(bytes);
+      final documentFile = archive.findFile('word/document.xml')!;
+      final stylesFile = archive.findFile('word/styles.xml')!;
+
+      final documentXml = utf8.decode(documentFile.content as List<int>);
+      // Verify documentXml contains bidi paragraph settings for Arabic question
+      expect(documentXml, contains('<w:bidi w:val="1"/>'));
+      expect(documentXml, contains('<w:jc w:val="right"/>'));
+    });
   });
 }
