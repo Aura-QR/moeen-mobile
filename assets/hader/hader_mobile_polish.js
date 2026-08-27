@@ -22,6 +22,9 @@
   if (window.__HADER_POLISH_READY__) return;
   window.__HADER_POLISH_READY__ = true;
 
+  // The dropdown content.js injects into each lesson card.
+  var SELECT_SELECTOR = '.Moeen-2-dashboard-select';
+
   // Selectors content.js uses to find the schedule. Anything containing one of
   // these is off-limits to the chrome-hiding pass below.
   var SCHEDULE_SELECTOR =
@@ -196,22 +199,139 @@
       badge.style.setProperty('transform', 'scale(' + scale + ')', 'important');
     }
 
-    // The dropdowns sit in the table's flow, so scaling them with a transform
-    // would misalign the cells. Their type is grown instead — that adds height
-    // to a row without widening a column, so it cannot push the table wider and
-    // set the viewport fitting off again.
-    document.querySelectorAll('.Moeen-2-dashboard-select').forEach(function (select) {
-      if (select.getAttribute('data-hader-scaled') === String(scale)) return;
-      select.setAttribute('data-hader-scaled', String(scale));
-      select.style.setProperty('font-size', Math.round(12 * scale) + 'px', 'important');
-      select.style.setProperty(
-        'padding',
-        Math.round(5 * scale) + 'px ' + Math.round(8 * scale) + 'px',
-        'important'
-      );
-      select.style.setProperty('border-width', Math.max(1, Math.round(1.5 * scale)) + 'px', 'important');
-      select.style.setProperty('border-radius', Math.round(4 * scale) + 'px', 'important');
+    // The dropdowns sit in the table's flow, where a transform would misalign
+    // the cells, so their type is grown instead. That adds row height without
+    // widening a column, so it cannot push the table wider and set the viewport
+    // fitting off again.
+    //
+    // But the box cannot grow: its width is the table column's, which at this
+    // zoom is only ~57 device px. Scaling the type blindly overflowed it and
+    // clipped "اختر الدرس..." down to "اخ". So the size is capped at whatever
+    // actually fits the text currently shown.
+    document.querySelectorAll(SELECT_SELECTOR).forEach(function (select) {
+      shortenPlaceholder(select);
+      sizeSelectType(select, scale);
+
+      // Picking a lesson swaps a four-character placeholder for a long title,
+      // so the size has to be recomputed. The polling below stops after ~30s,
+      // well before a teacher has worked through a week, so this cannot rely
+      // on it.
+      showChosenLesson(select, scale);
+
+      if (!select.getAttribute('data-hader-resize-bound')) {
+        select.setAttribute('data-hader-resize-bound', '1');
+        select.addEventListener('change', function () {
+          sizeSelectType(select, currentScale);
+          showChosenLesson(select, currentScale);
+        });
+      }
     });
+  }
+
+  /// Echoes the chosen lesson under the dropdown, where it can wrap.
+  ///
+  /// A lesson title runs about 40 characters and the column is ~129px wide, so
+  /// inside the closed dropdown it is clipped at any size a teacher could read.
+  /// The column cannot widen — that would push the table out and restart the
+  /// viewport fitting — but the row can grow taller, so the confirmation goes
+  /// below the control instead of inside it.
+  ///
+  /// Only the tail after "--" is shown: Madrasati's option text is
+  /// "<unit> -- <lesson>", and the lesson is the part being confirmed.
+  function showChosenLesson(select, scale) {
+    var card = select.parentElement;
+    if (!card) return;
+
+    var label = card.querySelector('.hader-chosen');
+    var opt = select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null;
+    var value = select.value;
+
+    if (!value || !opt) {
+      if (label) label.remove();
+      return;
+    }
+
+    var full = opt.textContent || '';
+    var parts = full.split('--');
+    var lesson = (parts[parts.length - 1] || full).trim();
+
+    if (!label) {
+      label = document.createElement('div');
+      label.className = 'hader-chosen';
+      card.appendChild(label);
+    }
+
+    if (label.getAttribute('data-hader-text') === lesson) return;
+    label.setAttribute('data-hader-text', lesson);
+    label.textContent = '✓ ' + lesson;
+    label.style.cssText = [
+      'margin:' + Math.round(3 * scale) + 'px auto 0',
+      'width:90%',
+      'font-size:' + Math.round(9 * scale) + 'px',
+      'line-height:1.35',
+      'color:#0E7A5E',
+      'font-weight:700',
+      'text-align:center',
+      'direction:rtl',
+      'word-break:break-word'
+    ].join(';');
+  }
+
+  /// content.js labels the empty option "اختر الدرس...", which cannot fit the
+  /// column at this zoom no matter the type size. The shorter label can.
+  ///
+  /// Only the placeholder is touched. It carries an empty value, and
+  /// handleDashboardSave() skips empty selects and reads option text only for a
+  /// real choice, so nothing downstream sees this.
+  function shortenPlaceholder(select) {
+    var first = select.options && select.options[0];
+    if (!first || first.value) return;
+    if (first.getAttribute('data-hader-short')) return;
+    first.setAttribute('data-hader-short', '1');
+    first.textContent = 'اختر';
+  }
+
+  /// Grows the type toward the counter-scaled size, but never past what the
+  /// box can show. A long lesson title lands smaller than the placeholder does,
+  /// which is the trade that keeps it legible instead of clipped.
+  function sizeSelectType(select, scale) {
+    var label = '';
+    if (select.selectedIndex >= 0 && select.options[select.selectedIndex]) {
+      label = select.options[select.selectedIndex].textContent || '';
+    }
+
+    var boxWidth = select.clientWidth || select.offsetWidth || 0;
+    if (!boxWidth) return;
+
+    // What the text actually gets is the box minus the engine's dropdown arrow
+    // and our own padding. The first cut of this ignored both and scaled the
+    // horizontal padding with the type, which ate 46px of a 129px column and
+    // clipped "اختر" to "اخـ" — the very thing it was meant to fix.
+    var ARROW = 34;
+    var PAD_X = 6;
+
+    var usable = boxWidth - ARROW - (PAD_X * 2);
+    // Arabic glyphs run about half the type size wide on average.
+    var fits = Math.floor(usable / Math.max(label.length, 1) / 0.55);
+
+    var target = Math.round(12 * scale);
+    var size = Math.max(13, Math.min(target, fits));
+
+    var applied = select.getAttribute('data-hader-type');
+    if (applied === String(size)) return;
+    select.setAttribute('data-hader-type', String(size));
+
+    select.style.setProperty('font-size', size + 'px', 'important');
+    // Vertical padding still scales — that is what makes the control easy to
+    // hit. Horizontal padding stays tight, because width is the scarce one.
+    select.style.setProperty(
+      'padding',
+      Math.round(size * 0.45) + 'px ' + PAD_X + 'px',
+      'important'
+    );
+    select.style.setProperty('border-width', Math.max(1, Math.round(scale)) + 'px', 'important');
+    select.style.setProperty('border-radius', Math.round(3 * scale) + 'px', 'important');
+    select.style.setProperty('text-overflow', 'ellipsis', 'important');
   }
 
   // ───────────────────────────────────────────────────────────────────────────

@@ -30,18 +30,13 @@
 <div class="schedule-desktop p-3">
 <h1 class="h5 text-primary">جدول الحصص الأسبوعي</h1>
 <table class="calendar-table">
-  <thead><tr><th>الحصة</th><th>الأحد</th><th>الاثنين</th></tr></thead>
+  <thead><tr><th></th><th>الحصة الأولى</th><th>الحصة الثانية</th><th>الحصة الثالثة</th><th>الحصة الرابعة</th><th>الحصة الخامسة</th><th>الحصة السادسة</th></tr></thead>
   <tbody>
-    <tr>
-      <td>الأولى</td>
-      <td class="day-cell"><div data-data="TT-1001" data-subject-id="86"><h3>القيم الإسلامية</h3><div class="meta">فصل 1/أ</div></div></td>
-      <td class="day-cell"><div data-data="TT-1002" data-subject-id="90"><h3>لغتي الجميلة</h3><div class="meta">فصل 1/ب</div></div></td>
-    </tr>
-    <tr>
-      <td>الثانية</td>
-      <td class="day-cell"><div data-data="TT-1003" data-subject-id="95"><h3>الرياضيات</h3><div class="meta">فصل 2/أ</div></div></td>
-      <td class="day-cell"><span class="meta">—</span></td>
-    </tr>
+    <tr><td class="period-label">الأحد</td><td class="day-cell"><div data-data="TT-1001" data-subject-id="86"><h3>اللغة العربية</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><div data-data="TT-1002" data-subject-id="90"><h3>الرياضيات</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><span class="meta">—</span></td><td class="day-cell"><div data-data="TT-1003" data-subject-id="105"><h3>التربية الفنية</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><div data-data="TT-1004" data-subject-id="110"><h3>القيم الإسلامية</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><span class="meta">—</span></td></tr>
+    <tr><td class="period-label">الاثنين</td><td class="day-cell"><div data-data="TT-1005" data-subject-id="90"><h3>الرياضيات</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><span class="meta">—</span></td><td class="day-cell"><div data-data="TT-1006" data-subject-id="105"><h3>التربية الفنية</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><div data-data="TT-1007" data-subject-id="110"><h3>القيم الإسلامية</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><span class="meta">—</span></td><td class="day-cell"><div data-data="TT-1008" data-subject-id="90"><h3>الرياضيات</h3><div class="meta">الاول بنات</div></div></td></tr>
+    <tr><td class="period-label">الثلاثاء</td><td class="day-cell"><span class="meta">—</span></td><td class="day-cell"><div data-data="TT-1009" data-subject-id="105"><h3>التربية الفنية</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><div data-data="TT-1010" data-subject-id="110"><h3>القيم الإسلامية</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><span class="meta">—</span></td><td class="day-cell"><div data-data="TT-1011" data-subject-id="90"><h3>الرياضيات</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><div data-data="TT-1012" data-subject-id="95"><h3>العلوم</h3><div class="meta">الاول بنات</div></div></td></tr>
+    <tr><td class="period-label">الأربعاء</td><td class="day-cell"><div data-data="TT-1013" data-subject-id="105"><h3>التربية الفنية</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><div data-data="TT-1014" data-subject-id="110"><h3>القيم الإسلامية</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><span class="meta">—</span></td><td class="day-cell"><div data-data="TT-1015" data-subject-id="90"><h3>الرياضيات</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><div data-data="TT-1016" data-subject-id="95"><h3>العلوم</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><span class="meta">—</span></td></tr>
+    <tr><td class="period-label">الخميس</td><td class="day-cell"><div data-data="TT-1017" data-subject-id="110"><h3>القيم الإسلامية</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><span class="meta">—</span></td><td class="day-cell"><div data-data="TT-1018" data-subject-id="90"><h3>الرياضيات</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><div data-data="TT-1019" data-subject-id="95"><h3>العلوم</h3><div class="meta">الاول بنات</div></div></td><td class="day-cell"><span class="meta">—</span></td><td class="day-cell"><div data-data="TT-1020" data-subject-id="110"><h3>القيم الإسلامية</h3><div class="meta">الاول بنات</div></div></td></tr>
   </tbody>
 </table>
 </div>
@@ -97,6 +92,43 @@ setTimeout(function(){
     toggle: !!document.querySelector('.hader-panel-toggle')
   }));
 }, 14000);
+</script>
+
+<script>
+// FITPROBE — the dropdown box is the table column's width and cannot grow, so
+// this checks the label actually fits it rather than being clipped.
+setTimeout(function(){
+  function measure(sel){
+    var opt = sel.options[sel.selectedIndex];
+    var label = opt ? opt.textContent : '';
+    var span = document.createElement('span');
+    var cs = getComputedStyle(sel);
+    span.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-size:'
+      + cs.fontSize + ';font-family:' + cs.fontFamily;
+    span.textContent = label;
+    document.body.appendChild(span);
+    var textW = span.offsetWidth; span.remove();
+    return { label: label, font: cs.fontSize, box: sel.clientWidth,
+             text: textW, fits: textW <= sel.clientWidth - 20 };
+  }
+  var sels = document.querySelectorAll('.Moeen-2-dashboard-select');
+  if (!sels.length) { console.log('FITPROBE {"error":"no selects"}'); return; }
+
+  var empty = measure(sels[0]);
+  // Now pick a real lesson and measure again, the way a teacher would.
+  sels[0].value = sels[0].options[1].value;
+  sels[0].dispatchEvent(new Event('change', {bubbles:true}));
+  setTimeout(function(){
+    var chosen = measure(sels[0]);
+    var echo = sels[0].parentElement.querySelector('.hader-chosen');
+    console.log('FITPROBE ' + JSON.stringify({
+      empty: empty,
+      chosen: chosen,
+      echo: echo ? { text: echo.textContent, font: getComputedStyle(echo).fontSize,
+                     height: echo.offsetHeight } : null
+    }));
+  }, 600);
+}, 15000);
 </script>
 </body>
 </html>
