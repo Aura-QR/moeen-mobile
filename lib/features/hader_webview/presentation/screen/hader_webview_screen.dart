@@ -91,6 +91,8 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
       final shimSource = await rootBundle.loadString(HaderAssets.shim);
       final constantsSource = await rootBundle.loadString(HaderAssets.constants);
       final contentSource = await rootBundle.loadString(HaderAssets.content);
+      final polishSource =
+          await rootBundle.loadString(HaderAssets.mobilePolish);
 
       final scripts = <UserScript>[
         UserScript(
@@ -125,6 +127,14 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
           // schedule cards on its own regardless.
           injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
           forMainFrameOnly: false,
+        ),
+        UserScript(
+          groupName: 'hader-polish',
+          source: polishSource,
+          // Decorates what content.js renders, so it must come after it. Top
+          // frame only: the hidden automation iframe has no UI to tidy.
+          injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END,
+          forMainFrameOnly: true,
         ),
       ];
 
