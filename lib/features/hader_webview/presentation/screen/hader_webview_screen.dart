@@ -60,6 +60,8 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
   /// is not blocked by the allowlist.
   late final String _initialHost =
       WebUri(widget.initialUrl ?? _startUrl).host.toLowerCase();
+  /// True when Madrasati served its signed-out page instead of the schedule.
+  bool _madrasatiSignedOut = false;
   double _progress = 0;
   String _statusMessage = 'جارٍ فتح مدرستي…';
   _StatusKind _statusKind = _StatusKind.info;
@@ -163,6 +165,57 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
     }
   }
 
+  /// Asks the page whether the teacher is actually signed in to Madrasati.
+  ///
+  /// Deep-linking to /SchoolSchedule while signed out does not redirect to a
+  /// login page — Madrasati serves "هذا المحتوى غير متوفر" with a sign-in link
+  /// in its nav. Nothing about that says what to do, and the status bar above
+  /// it would otherwise still read "اختر الحصص من الجدول".
+  static const String _sessionProbe = """
+(function () {
+  var cards = document.querySelectorAll(
+    'td.day-cell div[data-data], div.cs-lesson-card, [data-data], [data-timetable-id]'
+  ).length;
+  if (cards > 0) return 'ready';
+
+  var body = (document.body && document.body.innerText) || '';
+  var hasLoginLink = !!document.querySelector(
+    'a[href*="Login" i], a[href*="signin" i], a[href*="Account/Login" i]'
+  );
+  var saysUnavailable = body.indexOf('غير متوفر') !== -1;
+  var saysLogin = body.indexOf('تسجيل الدخول') !== -1;
+
+  if (saysUnavailable || (saysLogin && hasLoginLink)) return 'signed_out';
+  return 'waiting';
+})()
+""";
+
+  void _scheduleSessionChecks(InAppWebViewController controller) {
+    for (final delay in const [Duration(seconds: 3), Duration(seconds: 9)]) {
+      Future<void>.delayed(delay, () => _checkMadrasatiSession(controller));
+    }
+  }
+
+  Future<void> _checkMadrasatiSession(InAppWebViewController controller) async {
+    if (!mounted) return;
+    try {
+      final result = await controller.evaluateJavascript(source: _sessionProbe);
+      if (!mounted) return;
+      if (result == 'signed_out') {
+        setState(() => _madrasatiSignedOut = true);
+        _setStatus(
+          'سجّل الدخول إلى مدرستي أولاً لعرض جدولك',
+          _StatusKind.error,
+        );
+      } else if (result == 'ready') {
+        setState(() => _madrasatiSignedOut = false);
+        _setStatus('حضر جاهز — اختر الحصص من الجدول', _StatusKind.info);
+      }
+    } catch (error) {
+      debugPrint('[HaderWebView] session probe failed: $error');
+    }
+  }
+
   void _setStatus(String message, _StatusKind kind) {
     if (!mounted) return;
     setState(() {
@@ -230,6 +283,7 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
     return Column(
       children: [
         _buildStatusBar(),
+        if (_madrasatiSignedOut) _buildSignInPrompt(),
         if (_progress < 1.0)
           LinearProgressIndicator(
             value: _progress,
@@ -285,6 +339,10 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
         if (!mounted) return;
         setState(() => _progress = 1.0);
         _setStatus('حضر جاهز — اختر الحصص من الجدول', _StatusKind.info);
+        // The schedule renders after load, and a signed-out teacher gets a
+        // "content unavailable" page here rather than a sign-in prompt, so the
+        // check runs a moment later and again once the cards have had time.
+        _scheduleSessionChecks(controller);
       },
       onProgressChanged: (controller, progress) {
         if (!mounted) return;
@@ -325,6 +383,73 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
       onConsoleMessage: (controller, message) {
         debugPrint('[HaderWebView] ${message.message}');
       },
+    );
+  }
+
+  /// Shown when Madrasati served its signed-out page.
+  ///
+  /// Deep-linking to the schedule while signed out lands on "هذا المحتوى غير
+  /// متوفر", which does not tell a teacher what went wrong or what to do. The
+  /// button sends them to Madrasati's front door, where its own sign-in flow
+  /// takes over.
+  Widget _buildSignInPrompt() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+      color: ColorsManager.statusWarning.withValues(alpha: 0.10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lock_outline_rounded,
+                  size: 18, color: ColorsManager.statusWarning),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'جلسة مدرستي غير مفعّلة',
+                  style: TextStylesManager.bold16
+                      .copyWith(color: ColorsManager.themeDarkPrimary),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'سجّل الدخول بحساب مايكروسوفت الخاص بك، وسيعود بك حضر إلى الجدول.',
+            style: TextStylesManager.bold13
+                .copyWith(color: ColorsManager.textBody, height: 1.5),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            height: 42,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorsManager.themeActiveAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                setState(() => _madrasatiSignedOut = false);
+                _setStatus('جارٍ فتح صفحة تسجيل الدخول…', _StatusKind.working);
+                _controller?.loadUrl(
+                  urlRequest: URLRequest(
+                    url: WebUri('https://schools.madrasati.sa/'),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.login_rounded, size: 18),
+              label: Text(
+                'تسجيل الدخول إلى مدرستي',
+                style: TextStylesManager.bold14.copyWith(color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
