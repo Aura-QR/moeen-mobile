@@ -74,5 +74,29 @@ setTimeout(function(){
   }));
 }, 10000);
 </script>
+
+<script>
+// SCALEPROBE — Hader's own UI is counter-scaled against the page zoom; this
+// reports whether it ended up at a readable size rather than a third of one.
+setTimeout(function(){
+  var panel = document.getElementById('Moeen-2-dashboard-panel');
+  var sel   = document.querySelector('.Moeen-2-dashboard-select');
+  var pageScale = screen.width / window.innerWidth;      // ~0.31
+  function onScreen(el){ // rendered size in device px
+    if (!el) return null;
+    var r = el.getBoundingClientRect();
+    return { w: Math.round(r.width * pageScale), h: Math.round(r.height * pageScale) };
+  }
+  console.log('SCALEPROBE ' + JSON.stringify({
+    innerWidth: window.innerWidth,
+    screenWidth: screen.width,
+    expectedScale: +(window.innerWidth / screen.width).toFixed(2),
+    panelTransform: panel ? panel.style.transform : null,
+    panelOnScreen: onScreen(panel),
+    selectFontPx: sel ? Math.round(parseFloat(getComputedStyle(sel).fontSize) * pageScale) : null,
+    toggle: !!document.querySelector('.hader-panel-toggle')
+  }));
+}, 14000);
+</script>
 </body>
 </html>
