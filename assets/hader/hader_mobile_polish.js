@@ -265,10 +265,16 @@
     label.setAttribute('data-hader-text', lesson);
     label.textContent = '✓ ' + lesson;
     label.style.cssText = [
-      'margin:' + Math.round(3 * scale) + 'px auto 0',
+      'margin:' + Math.round(2 * scale) + 'px auto 0',
       'width:90%',
-      'font-size:' + Math.round(9 * scale) + 'px',
-      'line-height:1.35',
+      'font-size:' + Math.round(7 * scale) + 'px',
+      'line-height:1.25',
+      // Two lines is enough to recognise a lesson; without the cap a long
+      // title runs a card to four and the week stops fitting on screen.
+      'display:-webkit-box',
+      '-webkit-line-clamp:2',
+      '-webkit-box-orient:vertical',
+      'overflow:hidden',
       'color:#0E7A5E',
       'font-weight:700',
       'text-align:center',
@@ -314,7 +320,10 @@
     // Arabic glyphs run about half the type size wide on average.
     var fits = Math.floor(usable / Math.max(label.length, 1) / 0.55);
 
-    var target = Math.round(12 * scale);
+    // 12 was the extension's desktop size; counter-scaled straight it made a
+    // control taller than the card it sits in. 9 stays comfortably tappable
+    // while leaving the card room to show what was picked.
+    var target = Math.round(9 * scale);
     var size = Math.max(13, Math.min(target, fits));
 
     var applied = select.getAttribute('data-hader-type');
@@ -326,7 +335,7 @@
     // hit. Horizontal padding stays tight, because width is the scarce one.
     select.style.setProperty(
       'padding',
-      Math.round(size * 0.45) + 'px ' + PAD_X + 'px',
+      Math.round(size * 0.32) + 'px ' + PAD_X + 'px',
       'important'
     );
     select.style.setProperty('border-width', Math.max(1, Math.round(scale)) + 'px', 'important');
