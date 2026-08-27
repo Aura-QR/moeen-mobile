@@ -91,7 +91,7 @@ class _ChoseAppState extends State<ChoseApp>
   void _onContinue() {
     Navigator.pushNamed(
       context,
-      _selected == 0 ? Routes.haderPrep : Routes.addextention,
+      _selected == 0 ? Routes.haderWebView : Routes.addextention,
     );
   }
 

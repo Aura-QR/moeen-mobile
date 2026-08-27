@@ -263,7 +263,7 @@ class _InAppHeroCard extends StatelessWidget {
             height: 50,
             child: PrimaryElevatedButton(
               onPressed: () =>
-                  Navigator.pushNamed(context, Routes.haderPrep),
+                  Navigator.pushNamed(context, Routes.haderWebView),
               text: appTranslation().get('hader_inapp_btn'),
               icon: const Icon(Icons.auto_awesome_rounded, color: Colors.white),
             ),
