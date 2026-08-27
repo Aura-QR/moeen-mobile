@@ -14,7 +14,7 @@ class SubscriptionInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isSubscribed = teacher.isSubscribed;
+    final isSubscribed = teacher.isSubscribed && !teacher.isExpired;
     final isInTrial = teacher.isInTrial && !teacher.isExpired;
 
     final Color badgeBg = isSubscribed

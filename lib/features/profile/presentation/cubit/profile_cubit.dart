@@ -27,8 +27,13 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
 
     _isLoading = true;
-    if (profileModel == null && !isClosed) {
-      emit(ProfileLoadingState());
+    if (!isClosed) {
+      if (forceRefresh) {
+        profileModel = null;
+        emit(ProfileLoadingState());
+      } else if (profileModel == null) {
+        emit(ProfileLoadingState());
+      }
     }
 
     final result = await ApiService.getProfile();

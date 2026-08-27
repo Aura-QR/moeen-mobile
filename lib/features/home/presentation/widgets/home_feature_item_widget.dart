@@ -31,21 +31,15 @@ class HomeFeatureItemWidget extends StatelessWidget {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
         decoration: BoxDecoration(
-          color: isHighlighted
-              ? ColorsManager.goldMedium.withValues(alpha: 0.04)
-              : ColorsManager.surfacePrimary,
+          color: ColorsManager.surfacePrimary,
           border: Border.all(
-            color: isHighlighted
-                ? ColorsManager.goldMedium.withValues(alpha: 0.7)
-                : ColorsManager.primaryColor.withValues(alpha: 0.2),
-            width: isHighlighted ? 1.5 : 1,
+            color: ColorsManager.primaryColor.withValues(alpha: 0.2),
+            width: 1,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: isHighlighted
-                  ? ColorsManager.goldMedium.withValues(alpha: 0.08)
-                  : ColorsManager.primaryColor.withValues(alpha: 0.03),
+              color: ColorsManager.primaryColor.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -58,14 +52,12 @@ class HomeFeatureItemWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isHighlighted
-                    ? ColorsManager.goldMedium.withValues(alpha: 0.12)
-                    : iconBgColor,
+                color: iconBgColor,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
-                color: isHighlighted ? ColorsManager.goldMedium : iconColor,
+                color: iconColor,
                 size: 22,
               ),
             ),
@@ -74,9 +66,7 @@ class HomeFeatureItemWidget extends StatelessWidget {
               title,
               textAlign: TextAlign.center,
               style: TextStylesManager.bold14.copyWith(
-                color: isHighlighted
-                    ? ColorsManager.goldMedium
-                    : ColorsManager.mainText,
+                color: ColorsManager.mainText,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 height: 1.3,

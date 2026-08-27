@@ -6,6 +6,7 @@ import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart'
 import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ContactSupportScreen extends StatelessWidget {
   const ContactSupportScreen({super.key});
@@ -47,17 +48,39 @@ class ContactSupportScreen extends StatelessWidget {
                     crossAxisCount: 2,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 1.1,
+                    childAspectRatio: 0.8,
                     children: [
                       ContactOptionWidget(
                         icon: Icons.chat_bubble_outline,
                         title: appTranslation().get('whatsapp_support'),
+                        linkText: '01229681818',
                         subtitle: appTranslation().get('fast_communication_support'),
+                        onTap: () async {
+                          final Uri url = Uri.parse('whatsapp://send?phone=+201229681818');
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url);
+                          } else {
+                            final Uri webUrl = Uri.parse('https://wa.me/201229681818');
+                            if (await canLaunchUrl(webUrl)) {
+                              await launchUrl(webUrl);
+                            }
+                          }
+                        },
                       ),
                       ContactOptionWidget(
                         icon: Icons.email_outlined,
                         title: appTranslation().get('email_support'),
+                        linkText: 'qraura0@gmail.com',
                         subtitle: appTranslation().get('support_email'),
+                        onTap: () async {
+                          final Uri url = Uri(
+                            scheme: 'mailto',
+                            path: 'qraura0@gmail.com',
+                          );
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url);
+                          }
+                        },
                       ),
                       ContactOptionWidget(
                         icon: Icons.location_on_outlined,
@@ -112,45 +135,73 @@ class ContactOptionWidget extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final String? linkText;
+  final VoidCallback? onTap;
 
   const ContactOptionWidget({
     super.key,
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.linkText,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ColorsManager.surfacePrimary,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: ColorsManager.primaryColor, size: 28),
-          verticalSpace12,
-          Text(
-            title,
-            style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
-          ),
-          verticalSpace4,
-          Text(
-            subtitle,
-            style: TextStylesManager.regular10.copyWith(color: ColorsManager.secondaryText),
-          ),
-        ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: ColorsManager.surfacePrimary,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: ColorsManager.primaryColor, size: 24),
+            ),
+            verticalSpace12,
+            Text(
+              title,
+              style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
+              textAlign: TextAlign.center,
+            ),
+            if (linkText != null) ...[
+              verticalSpace8,
+              Text(
+                linkText!,
+                style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+            verticalSpace8,
+            Text(
+              subtitle,
+              style: TextStylesManager.regular10.copyWith(color: ColorsManager.secondaryText, height: 1.5),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -17,6 +17,7 @@ import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dar
 import 'package:moean/features/payment/presentation/cubit/subscription_state.dart';
 import 'package:moean/features/payment/data/models/subscription_current_model.dart';
 import 'package:moean/core/di/injections.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -79,6 +80,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
+                    sl<ProfileCubit>().fetchProfile(forceRefresh: true);
                     sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
                   } else if (state is PaymentCheckoutInProgress) {
                      ScaffoldMessenger.of(context).showSnackBar(
@@ -161,7 +163,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             return const Center(child: CircularProgressIndicator());
                           }
                           final currentSub = sl<SubscriptionCubit>().currentSubscription;
-                          if (currentSub != null && currentSub.isSubscribed) {
+                          if (currentSub != null && currentSub.isSubscribed && !currentSub.isSubscriptionExpired) {
                             return _ActiveSubscriptionCard(subscription: currentSub);
                           }
                           return _CheckoutBody(isSubmitting: state is OrderCreating);

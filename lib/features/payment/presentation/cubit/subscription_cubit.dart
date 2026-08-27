@@ -28,8 +28,14 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     }
 
     _isLoading = true;
-    if (currentSubscription == null && lastError == null && !isClosed) {
-      emit(SubscriptionLoading());
+    if (!isClosed) {
+      if (forceRefresh) {
+        currentSubscription = null;
+        lastError = null;
+        emit(SubscriptionLoading());
+      } else if (currentSubscription == null && lastError == null) {
+        emit(SubscriptionLoading());
+      }
     }
 
     final result = await ApiService.getCurrentSubscription();

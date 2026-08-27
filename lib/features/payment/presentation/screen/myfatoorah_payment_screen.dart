@@ -12,6 +12,10 @@ import 'package:moean/features/payment/presentation/widgets/visa_card_display.da
 import 'package:moean/core/utils/constants/secrets.dart';
 import 'package:myfatoorah_flutter/myfatoorah_flutter.dart';
 
+import 'package:moean/core/di/injections.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
+
 class MyfatoorahPaymentScreen extends StatefulWidget {
   const MyfatoorahPaymentScreen({super.key});
 
@@ -137,6 +141,8 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.details['message']?.toString() ?? 'لديك اشتراك نشط بالفعل ولا تحتاج إلى الدفع مرة أخرى.'), backgroundColor: ColorsManager.primaryColor),
           );
+          sl<ProfileCubit>().fetchProfile(forceRefresh: true);
+          sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
           Navigator.popUntil(context, (route) => route.isFirst);
         } else if (state is PaymentCheckoutInProgress) {
            ScaffoldMessenger.of(context).showSnackBar(
@@ -160,6 +166,8 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
              });
           }
         } else if (state is PaymentVerified) {
+          sl<ProfileCubit>().fetchProfile(forceRefresh: true);
+          sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
           Navigator.pushReplacementNamed(
             context,
             Routes.paymentResult,
