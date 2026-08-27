@@ -28,6 +28,16 @@ class OrderError extends PaymentState {
   OrderError(this.error);
 }
 
+class PaymentAlreadySubscribed extends PaymentState {
+  final Map<String, dynamic> details;
+  PaymentAlreadySubscribed(this.details);
+}
+
+class PaymentCheckoutInProgress extends PaymentState {
+  final Map<String, dynamic> details;
+  PaymentCheckoutInProgress(this.details);
+}
+
 // Bank Info
 class BankInfoLoading extends PaymentState {}
 class BankInfoLoaded extends PaymentState {

@@ -15,12 +15,17 @@ import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/core/widgets/session_monitor_wrapper.dart';
 import 'dart:developer' as developer;
 import 'package:moean/core/services/referral_service.dart';
+import 'package:moean/core/utils/constants/secrets.dart';
+import 'package:myfatoorah_flutter/myfatoorah_flutter.dart';
 
 final RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize MyFatoorah SDK early to avoid delay issues during checkout
+  MFSDK.init(Secrets.myfatoorahApiKey, MFCountry.SAUDIARABIA, MFEnvironment.LIVE);
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(

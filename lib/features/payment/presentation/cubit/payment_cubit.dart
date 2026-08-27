@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/network/remote/api_service.dart';
@@ -7,6 +8,7 @@ import 'package:moean/features/payment/data/models/subscription_plan_model.dart'
 import 'package:moean/features/payment/presentation/cubit/payment_state.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 
 class PaymentCubit extends Cubit<PaymentState> {
   PaymentCubit() : super(PaymentInitial());
@@ -63,7 +65,11 @@ class PaymentCubit extends Cubit<PaymentState> {
     if (isClosed) return;
     result.fold(
       (error) {
-        if (!isClosed) emit(OrderError(error));
+        if (!isClosed) {
+          if (!_handle409Error(error)) {
+            emit(OrderError(error));
+          }
+        }
       },
       (data) {
         currentOrder = OrderModel.fromJson(
@@ -132,6 +138,25 @@ class PaymentCubit extends Cubit<PaymentState> {
     );
   }
 
+  bool _handle409Error(String error) {
+    if (error.startsWith('__409__:')) {
+      try {
+        final parts = error.split(':');
+        final code = parts[1];
+        final jsonStr = parts.sublist(2).join(':');
+        final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+        if (code == 'already_subscribed') {
+          emit(PaymentAlreadySubscribed(map));
+          return true;
+        } else if (code == 'checkout_in_progress') {
+          emit(PaymentCheckoutInProgress(map));
+          return true;
+        }
+      } catch (_) {}
+    }
+    return false;
+  }
+
   // MyFatoorah Flow
   Future<void> initMyfatoorahPayment(int orderId) async {
     if (!isClosed) emit(MyfatoorahSessionLoading());
@@ -139,7 +164,11 @@ class PaymentCubit extends Cubit<PaymentState> {
     if (isClosed) return;
     result.fold(
       (error) {
-        if (!isClosed) emit(MyfatoorahSessionError(error));
+        if (!isClosed) {
+          if (!_handle409Error(error)) {
+            emit(MyfatoorahSessionError(error));
+          }
+        }
       },
       (data) {
         if (!isClosed) emit(MyfatoorahSessionLoaded(data));
@@ -153,10 +182,14 @@ class PaymentCubit extends Cubit<PaymentState> {
     if (isClosed) return;
     result.fold(
       (error) {
-        if (!isClosed) emit(MyfatoorahExecuteError(error));
+        if (!isClosed) {
+          if (!_handle409Error(error)) {
+            emit(MyfatoorahExecuteError(error));
+          }
+        }
       },
       (data) {
-        sl<SubscriptionCubit>().fetchCurrentSubscription();
+        sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
         if (!isClosed) emit(MyfatoorahExecuteLoaded(data));
       },
     );
@@ -177,7 +210,10 @@ class PaymentCubit extends Cubit<PaymentState> {
             data['payment'] as Map<String, dynamic>);
         
         // Refresh subscription state globally
-        sl<SubscriptionCubit>().fetchCurrentSubscription();
+        sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
+        
+        // Refresh profile state globally to reflect new subscription in fallback scenarios
+        sl<ProfileCubit>().fetchProfile(forceRefresh: true);
         
         if (!isClosed) emit(PaymentVerified(payment));
       },
@@ -206,7 +242,10 @@ class PaymentCubit extends Cubit<PaymentState> {
             data['payment'] as Map<String, dynamic>);
         
         // Refresh subscription state globally
-        sl<SubscriptionCubit>().fetchCurrentSubscription();
+        sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
+        
+        // Refresh profile state globally to reflect new subscription in fallback scenarios
+        sl<ProfileCubit>().fetchProfile(forceRefresh: true);
         
         if (!isClosed) emit(PaymentVerified(payment));
       },

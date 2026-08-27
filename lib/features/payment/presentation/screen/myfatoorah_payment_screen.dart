@@ -69,7 +69,7 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
       countryCode: MFCountry.SAUDIARABIA,
     );
     
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
         mfCardView.load(initiateSessionResponse, null);
       }
@@ -121,7 +121,9 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
           s is MyfatoorahExecuteLoaded ||
           s is MyfatoorahExecuteError ||
           s is PaymentVerified ||
-          s is PaymentVerifyError,
+          s is PaymentVerifyError ||
+          s is PaymentAlreadySubscribed ||
+          s is PaymentCheckoutInProgress,
       listener: (context, state) {
         if (state is MyfatoorahSessionError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -131,6 +133,17 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.error), backgroundColor: ColorsManager.errorColor),
           );
+        } else if (state is PaymentAlreadySubscribed) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.details['message']?.toString() ?? 'لديك اشتراك نشط بالفعل ولا تحتاج إلى الدفع مرة أخرى.'), backgroundColor: ColorsManager.primaryColor),
+          );
+          Navigator.popUntil(context, (route) => route.isFirst);
+        } else if (state is PaymentCheckoutInProgress) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.details['message']?.toString() ?? 'لديك عملية دفع قيد التنفيذ.'), backgroundColor: Colors.orange),
+          );
+          // If there's a payment URL, open it (but we might need url_launcher, which may not be imported. 
+          // So let's just show the message and user can retry. The endpoint will handle resuming if valid).
         } else if (state is MyfatoorahSessionLoaded) {
           final session = state.session['session'];
           if (session != null) {

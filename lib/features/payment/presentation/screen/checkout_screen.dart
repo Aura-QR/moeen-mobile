@@ -13,6 +13,11 @@ import 'package:moean/features/payment/presentation/cubit/payment_state.dart';
 import 'package:moean/features/payment/presentation/widgets/plan_card_widget.dart';
 import 'package:moean/features/payment/presentation/widgets/promo_code_section_widget.dart';
 
+import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
+import 'package:moean/features/payment/presentation/cubit/subscription_state.dart';
+import 'package:moean/features/payment/data/models/subscription_current_model.dart';
+import 'package:moean/core/di/injections.dart';
+
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
 
@@ -25,6 +30,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void initState() {
     super.initState();
     PaymentCubit.get(context).loadPlans();
+    sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
   }
 
   @override
@@ -53,7 +59,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Expanded(
               child: BlocConsumer<PaymentCubit, PaymentState>(
                 listenWhen: (_, s) =>
-                    s is OrderCreated || s is OrderError,
+                    s is OrderCreated || s is OrderError || s is PaymentAlreadySubscribed || s is PaymentCheckoutInProgress,
                 listener: (context, state) {
                   if (state is OrderError) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -65,6 +71,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             borderRadius: BorderRadius.circular(12)),
                       ),
                     );
+                  } else if (state is PaymentAlreadySubscribed) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.details['message']?.toString() ?? 'لديك اشتراك نشط بالفعل ولا تحتاج إلى الدفع مرة أخرى.', textAlign: TextAlign.center),
+                        backgroundColor: ColorsManager.primaryColor,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
+                  } else if (state is PaymentCheckoutInProgress) {
+                     ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.details['message']?.toString() ?? 'لديك عملية دفع قيد التنفيذ.', textAlign: TextAlign.center),
+                        backgroundColor: Colors.orange,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    // Persist checkout reference and resume, maybe push to MyfatoorahPaymentScreen if paymentUrl is present?
+                    // According to markdown, we should open that URL or refresh. For now, navigate to Myfatoorah screen if we have an orderId.
+                    final details = state.details['details'];
+                    if (details != null && details['order'] != null) {
+                       context.push<Map<String, dynamic>>(
+                        Routes.myfatoorahPayment,
+                        arguments: {
+                          'orderId': details['order']['id'],
+                          'amount': details['order']['amount'],
+                        },
+                      );
+                    }
                   } else if (state is OrderCreated) {
                     final cubit = PaymentCubit.get(context);
                     if (cubit.selectedMethodIndex == 0) {
@@ -118,8 +153,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         style: TextStylesManager.regular14,
                       ),
                     ),
-                    successBuilder: (_) =>
-                        _CheckoutBody(isSubmitting: state is OrderCreating),
+                    successBuilder: (_) {
+                      return BlocBuilder<SubscriptionCubit, SubscriptionState>(
+                        bloc: sl<SubscriptionCubit>(),
+                        builder: (context, subState) {
+                          if (subState is SubscriptionLoading) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          final currentSub = sl<SubscriptionCubit>().currentSubscription;
+                          if (currentSub != null && currentSub.isSubscribed) {
+                            return _ActiveSubscriptionCard(subscription: currentSub);
+                          }
+                          return _CheckoutBody(isSubmitting: state is OrderCreating);
+                        },
+                      );
+                    },
                   );
                 },
               ),
@@ -390,3 +438,54 @@ class _PaymentMethodTile extends StatelessWidget {
     );
   }
 }
+
+class _ActiveSubscriptionCard extends StatelessWidget {
+  final SubscriptionCurrentModel subscription;
+
+  const _ActiveSubscriptionCard({required this.subscription});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: ColorsManager.primaryColor.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.check_circle_outline, color: ColorsManager.primaryColor, size: 60),
+            verticalSpace16,
+            Text(
+              'اشتراكك نشط بالفعل',
+              style: TextStylesManager.bold18.copyWith(color: ColorsManager.primaryColor),
+            ),
+            verticalSpace10,
+            Text(
+              subscription.planTitle,
+              style: TextStylesManager.bold16.copyWith(color: ColorsManager.textPrimary),
+            ),
+            verticalSpace6,
+            Text(
+              subscription.expirationSubtitle,
+              style: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
+            ),
+            verticalSpace24,
+            PrimaryElevatedButton(
+              text: 'العودة',
+              onPressed: () => context.pop(),
+            ),
+          ],
+        ),
+        ),
+      ),
+    );
+  }
+}
+

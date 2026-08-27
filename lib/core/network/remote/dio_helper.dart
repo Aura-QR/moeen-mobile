@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:moean/core/di/injections.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
@@ -172,6 +173,14 @@ class DioHelper {
       final code = map['code']?.toString() ?? 'quota_exceeded';
       final message = map['message']?.toString() ?? 'ترقية الحساب المطلوبة';
       return '__402__:$code:$message';
+    }
+
+    if (response.statusCode == 409 && response.data is Map) {
+      final map = response.data as Map;
+      final code = map['code']?.toString() ?? '';
+      if (code == 'already_subscribed' || code == 'checkout_in_progress') {
+        return '__409__:$code:${jsonEncode(map)}';
+      }
     }
 
     if (response.data is Map) {

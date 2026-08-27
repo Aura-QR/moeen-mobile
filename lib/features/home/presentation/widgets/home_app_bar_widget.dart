@@ -14,6 +14,7 @@ import 'package:moean/core/di/injections.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
+import 'package:moean/features/payment/presentation/cubit/subscription_state.dart';
 import 'package:moean/features/payment/presentation/widgets/subscription_status_dialog.dart';
 
 class HomeAppBarWidget extends StatelessWidget {
@@ -193,7 +194,7 @@ class _SubscriptionButtonState extends State<_SubscriptionButton> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SubscriptionCubit, dynamic>(
+    return BlocBuilder<SubscriptionCubit, SubscriptionState>(
       bloc: sl<SubscriptionCubit>(),
       builder: (context, state) {
         final current = sl<SubscriptionCubit>().currentSubscription;
