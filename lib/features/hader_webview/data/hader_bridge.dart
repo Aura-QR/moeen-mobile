@@ -17,6 +17,7 @@ class HaderAssets {
   static const String desktopViewport =
       'assets/hader/hader_desktop_viewport.js';
   static const String mobilePolish = 'assets/hader/hader_mobile_polish.js';
+  static const String remoteControl = 'assets/hader/hader_remote_control.js';
   static const String constants = 'assets/hader/constants.js';
   static const String content = 'assets/hader/content.js';
   static const String courses = 'assets/hader/madrasati_courses_clean.json';
