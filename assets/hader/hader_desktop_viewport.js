@@ -32,21 +32,48 @@
   var currentWidth = BASE_WIDTH;
   var fitAttempts = 0;
 
+  var META_MARK = 'data-hader-viewport';
+
   function applyViewport(width) {
     var head = document.head || document.documentElement;
     if (!head) return;
 
-    var meta = document.querySelector('meta[name="viewport"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'viewport');
-      head.appendChild(meta);
+    var content = 'width=' + width + ', user-scalable=yes';
+
+    // Madrasati ships its own `width=device-width` viewport tag. Ours is
+    // injected at document start, so its tag is parsed *after* ours and lands
+    // later in <head> — and when a page carries several viewport tags the
+    // engine honours the last one. Ours was therefore being overridden the
+    // moment the real page's <head> finished parsing, which is why the desktop
+    // table rendered at 1:1 on a 402px screen instead of being scaled to fit.
+    //
+    // So: drop every viewport tag that is not ours, and keep ours last.
+    var metas = document.querySelectorAll('meta[name="viewport"]');
+    var mine = null;
+    for (var i = 0; i < metas.length; i++) {
+      if (metas[i].hasAttribute(META_MARK)) {
+        mine = metas[i];
+      } else {
+        metas[i].parentNode && metas[i].parentNode.removeChild(metas[i]);
+      }
     }
 
-    var content = 'width=' + width + ', user-scalable=yes';
-    if (meta.getAttribute('content') !== content) {
-      meta.setAttribute('content', content);
+    if (!mine) {
+      mine = document.createElement('meta');
+      mine.setAttribute('name', 'viewport');
+      mine.setAttribute(META_MARK, '1');
     }
+
+    if (mine.getAttribute('content') !== content) {
+      mine.setAttribute('content', content);
+    }
+
+    // Re-append so ours stays the last viewport tag even after the page adds
+    // more of its own.
+    if (mine.parentNode !== head || head.lastChild !== mine) {
+      head.appendChild(mine);
+    }
+
     currentWidth = width;
   }
 
@@ -80,7 +107,14 @@
   // head changes so a late-parsed tag cannot win.
   try {
     new MutationObserver(function () { applyViewport(currentWidth); })
-      .observe(document.head || document.documentElement, { childList: true });
+      .observe(document.head || document.documentElement, {
+        childList: true,
+        subtree: true,
+        // A page can also rewrite an existing tag's content rather than
+        // adding a new one.
+        attributes: true,
+        attributeFilter: ['content', 'name']
+      });
   } catch (_) {
     // Observer unavailable — the timed passes below still cover the common case.
   }
