@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
@@ -23,9 +21,6 @@ class _ChoseAppState extends State<ChoseApp>
     with SingleTickerProviderStateMixin {
   // ── Local selection state ─────────────────────────────────────────────────
   // 0 = Browser Extension (active), 1 = Mobile App (coming soon / disabled)
-  /// 0 = prepare inside the app, 1 = browser extension.
-  /// The in-app path leads because it is the only one that works on iOS.
-  int _selected = 0;
 
   // ── Animation ─────────────────────────────────────────────────────────────
   late final AnimationController _controller;
@@ -89,10 +84,7 @@ class _ChoseAppState extends State<ChoseApp>
   }
 
   void _onContinue() {
-    Navigator.pushNamed(
-      context,
-      _selected == 0 ? Routes.haderWebView : Routes.addextention,
-    );
+    Navigator.pushNamed(context, Routes.haderWebView);
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
@@ -215,32 +207,11 @@ class _ChoseAppState extends State<ChoseApp>
                               appTranslation().get('chose_app_app_subtitle'),
                           badge: appTranslation().get('chose_app_app_badge'),
                           badgeActive: true,
-                          isSelected: _selected == 0,
-                          onTap: () => setState(() => _selected = 0),
+                          // The only way to prepare now, so it is always the
+                          // active choice — there is nothing to pick between.
+                          isSelected: true,
                         ),
                       ),
-
-                      // Item 2 — Browser extension, Android only: no iOS browser
-                      // can load a Chrome extension, so the card is not offered
-                      // on a platform where it cannot work.
-                      if (Platform.isAndroid) ...[
-                        verticalSpace16,
-                        _animated(
-                          2,
-                          ChoseAppOptionCard(
-                            icon: Icons.extension_rounded,
-                            title: appTranslation()
-                                .get('chose_app_extension_title'),
-                            subtitle: appTranslation()
-                                .get('chose_app_extension_subtitle'),
-                            badge: appTranslation()
-                                .get('chose_app_extension_badge'),
-                            badgeActive: false,
-                            isSelected: _selected == 1,
-                            onTap: () => setState(() => _selected = 1),
-                          ),
-                        ),
-                      ],
 
                       verticalSpace24,
 
