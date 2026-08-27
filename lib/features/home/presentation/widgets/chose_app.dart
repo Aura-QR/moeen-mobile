@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/utils/constants/assets_helper.dart';
@@ -21,6 +23,8 @@ class _ChoseAppState extends State<ChoseApp>
     with SingleTickerProviderStateMixin {
   // ── Local selection state ─────────────────────────────────────────────────
   // 0 = Browser Extension (active), 1 = Mobile App (coming soon / disabled)
+  /// 0 = prepare inside the app, 1 = browser extension.
+  /// The in-app path leads because it is the only one that works on iOS.
   int _selected = 0;
 
   // ── Animation ─────────────────────────────────────────────────────────────
@@ -85,9 +89,10 @@ class _ChoseAppState extends State<ChoseApp>
   }
 
   void _onContinue() {
-    if (_selected == 0) {
-      Navigator.pushNamed(context, Routes.addextention);
-    }
+    Navigator.pushNamed(
+      context,
+      _selected == 0 ? Routes.haderWebView : Routes.addextention,
+    );
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────
@@ -200,40 +205,42 @@ class _ChoseAppState extends State<ChoseApp>
 
                       verticalSpace40,
 
-                      // Item 1 — Extension card
+                      // Item 1 — In-app preparation (works on iOS and Android)
                       _animated(
                         1,
-                        ChoseAppOptionCard(
-                          icon: Icons.extension_rounded,
-                          title: appTranslation()
-                              .get('chose_app_extension_title'),
-                          subtitle: appTranslation()
-                              .get('chose_app_extension_subtitle'),
-                          badge: appTranslation()
-                              .get('chose_app_extension_badge'),
-                          badgeActive: true,
-                          isSelected: _selected == 0,
-                          onTap: () => setState(() => _selected = 0),
-                        ),
-                      ),
-
-                      verticalSpace16,
-
-                      // Item 2 — Mobile app card (coming soon)
-                      _animated(
-                        2,
                         ChoseAppOptionCard(
                           icon: Icons.phone_iphone_rounded,
                           title: appTranslation().get('chose_app_app_title'),
                           subtitle:
                               appTranslation().get('chose_app_app_subtitle'),
                           badge: appTranslation().get('chose_app_app_badge'),
-                          badgeActive: false,
-                          isSelected: false,
-                          isDisabled: true,
-                          onTap: null,
+                          badgeActive: true,
+                          isSelected: _selected == 0,
+                          onTap: () => setState(() => _selected = 0),
                         ),
                       ),
+
+                      // Item 2 — Browser extension, Android only: no iOS browser
+                      // can load a Chrome extension, so the card is not offered
+                      // on a platform where it cannot work.
+                      if (Platform.isAndroid) ...[
+                        verticalSpace16,
+                        _animated(
+                          2,
+                          ChoseAppOptionCard(
+                            icon: Icons.extension_rounded,
+                            title: appTranslation()
+                                .get('chose_app_extension_title'),
+                            subtitle: appTranslation()
+                                .get('chose_app_extension_subtitle'),
+                            badge: appTranslation()
+                                .get('chose_app_extension_badge'),
+                            badgeActive: false,
+                            isSelected: _selected == 1,
+                            onTap: () => setState(() => _selected = 1),
+                          ),
+                        ),
+                      ],
 
                       verticalSpace24,
 
