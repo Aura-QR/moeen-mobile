@@ -60,7 +60,7 @@ class SuspendedWhatsappCardWidget extends StatelessWidget {
           ),
           verticalSpace16,
           InkWell(
-            onTap: () => cubit.launchWhatsApp('01229681818'),
+            onTap: () => cubit.launchWhatsApp('966565101406'),
             borderRadius: BorderRadius.circular(8),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),

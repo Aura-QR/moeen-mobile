@@ -6,6 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
+import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/features/hader_webview/data/hader_bridge.dart';
 
 /// Runs the Hader lesson-preparation automation inside the app.
@@ -262,6 +263,16 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
               onPressed: () => Navigator.of(context).maybePop(),
             ),
             actions: [
+              // Opens the 3-image step guide. It used to live on the
+              // now-removed "how do you want to prepare?" screen; teachers
+              // reach it from here instead, where they actually need it.
+              IconButton(
+                icon: const Icon(Icons.help_outline_rounded),
+                color: ColorsManager.themeDarkPrimary,
+                tooltip: 'كيفية الاستخدام',
+                onPressed: () =>
+                    Navigator.pushNamed(context, Routes.extensionUsage),
+              ),
               IconButton(
                 icon: const Icon(Icons.refresh_rounded),
                 color: ColorsManager.themeDarkPrimary,

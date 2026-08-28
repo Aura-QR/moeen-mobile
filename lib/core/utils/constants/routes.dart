@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:moean/core/di/injections.dart';
-import 'package:moean/features/home/presentation/widgets/chose_app.dart';
 import 'package:moean/features/home/presentation/widgets/download_extention.dart';
 import 'package:moean/features/hader_webview/presentation/screen/hader_webview_screen.dart';
 import 'package:moean/features/hader_webview/presentation/screen/hader_native_prep_screen.dart';
@@ -95,7 +94,6 @@ class Routes {
   static const String addextention = '/add-extension';
   static const String haderWebView = '/hader-webview';
   static const String haderPrep = '/hader-prep';
-  static const String choseapp = '/chose-app';
   static const String extensionUsage = '/extension-usage';
   static const String adminTeachers = '/admin/teachers';
   static const String adminContact = '/admin/contact';
@@ -180,7 +178,6 @@ class Routes {
       initialUrl: ModalRoute.of(context)?.settings.arguments as String?,
     ),
     haderPrep: (context) => const HaderNativePrepScreen(),
-    choseapp: (context) => const ChoseApp(),
     extensionUsage: (context) => const ExtensionUsageSlider(),
     adminTeachers: (context) => const AdminTeachersScreen(),
     adminContact: (context) => const AdminContactScreen(),

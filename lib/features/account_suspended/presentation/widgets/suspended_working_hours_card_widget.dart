@@ -60,7 +60,7 @@ class SuspendedWorkingHoursCardWidget extends StatelessWidget {
           ),
           verticalSpace16,
           InkWell(
-            onTap: () => cubit.launchPhone('01229681818'),
+            onTap: () => cubit.launchPhone('+966565101406'),
             borderRadius: BorderRadius.circular(8),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),

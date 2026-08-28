@@ -11,6 +11,18 @@ import 'package:url_launcher/url_launcher.dart';
 class ContactSupportScreen extends StatelessWidget {
   const ContactSupportScreen({super.key});
 
+  Future<void> _launchWhatsApp(String phone) async {
+    final Uri appUrl = Uri.parse('whatsapp://send?phone=$phone');
+    if (await canLaunchUrl(appUrl)) {
+      await launchUrl(appUrl);
+    } else {
+      final Uri webUrl = Uri.parse('https://wa.me/$phone');
+      if (await canLaunchUrl(webUrl)) {
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -52,20 +64,17 @@ class ContactSupportScreen extends StatelessWidget {
                     children: [
                       ContactOptionWidget(
                         icon: Icons.chat_bubble_outline,
-                        title: appTranslation().get('whatsapp_support'),
-                        linkText: '01229681818',
+                        title: appTranslation().get('whatsapp_support_1'),
+                        linkText: '966565101406',
                         subtitle: appTranslation().get('fast_communication_support'),
-                        onTap: () async {
-                          final Uri url = Uri.parse('whatsapp://send?phone=+201229681818');
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(url);
-                          } else {
-                            final Uri webUrl = Uri.parse('https://wa.me/201229681818');
-                            if (await canLaunchUrl(webUrl)) {
-                              await launchUrl(webUrl);
-                            }
-                          }
-                        },
+                        onTap: () => _launchWhatsApp('966565101406'),
+                      ),
+                      ContactOptionWidget(
+                        icon: Icons.chat_bubble_outline,
+                        title: appTranslation().get('whatsapp_support_2'),
+                        linkText: '966567448881',
+                        subtitle: appTranslation().get('fast_communication_support'),
+                        onTap: () => _launchWhatsApp('966567448881'),
                       ),
                       ContactOptionWidget(
                         icon: Icons.email_outlined,

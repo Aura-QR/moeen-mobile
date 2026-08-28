@@ -84,7 +84,7 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                               if (isAdmin) {
                                 context.push(Routes.adminTeachers);
                               } else {
-                                context.push(Routes.choseapp);
+                                context.push(Routes.haderWebView);
                               }
                             } else {
                               context.push(Routes.login);
