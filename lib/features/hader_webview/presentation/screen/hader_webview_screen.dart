@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 
@@ -8,6 +9,7 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/features/hader_webview/data/hader_bridge.dart';
+import 'package:moean/features/hader_webview/data/madrasati_session_store.dart';
 
 /// Runs the Hader lesson-preparation automation inside the app.
 ///
@@ -57,10 +59,6 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
   UnmodifiableListView<UserScript>? _userScripts;
   String? _setupError;
 
-  /// Host of the URL this screen was opened with, kept so navigation inside it
-  /// is not blocked by the allowlist.
-  late final String _initialHost =
-      WebUri(widget.initialUrl ?? _startUrl).host.toLowerCase();
   /// True when Madrasati served its signed-out page instead of the schedule.
   bool _madrasatiSignedOut = false;
   double _progress = 0;
@@ -88,6 +86,10 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
   /// hidden same-origin iframe.
   Future<void> _prepareUserScripts() async {
     try {
+      // Before anything is loaded: a cookie restored after the first request
+      // is too late — Madrasati has already redirected to sign-in by then.
+      await MadrasatiSessionStore.restore();
+
       final seed = await _bridge.buildSeed();
       final viewportSource =
           await rootBundle.loadString(HaderAssets.desktopViewport);
@@ -211,6 +213,9 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
       } else if (result == 'ready') {
         setState(() => _madrasatiSignedOut = false);
         _setStatus('حضر جاهز — اختر الحصص من الجدول', _StatusKind.info);
+        // Snapshot only from a page we know is signed in; taking one from the
+        // sign-in page would persist the absence of a session over a good one.
+        unawaited(MadrasatiSessionStore.save());
       }
     } catch (error) {
       debugPrint('[HaderWebView] session probe failed: $error');
@@ -362,19 +367,24 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
       shouldOverrideUrlLoading: (controller, action) async {
         final url = action.request.url;
         if (url == null) return NavigationActionPolicy.ALLOW;
-        // Madrasati signs in through Microsoft, so both hosts must stay in this
-        // WebView; anything else is an outbound link we do not follow.
-        final host = url.host.toLowerCase();
-        final isAllowed = host.endsWith('madrasati.sa') ||
-            host.endsWith('microsoftonline.com') ||
-            host.endsWith('microsoft.com') ||
-            host.endsWith('live.com') ||
-            host.endsWith('office.com') ||
-            // Whatever the caller pointed this screen at is allowed too, so a
-            // stand-in schedule page can be loaded when Madrasati is not
-            // reachable (it is geo-restricted outside Saudi Arabia).
-            host == _initialHost;
-        return isAllowed
+
+        // Anything the web can load is allowed through.
+        //
+        // This used to be a host allowlist covering Madrasati and the obvious
+        // Microsoft domains, and it broke sign-in: the flow also passes through
+        // aadcdn.msauth.net, msftauth.net, login.microsoftonline-p.com and the
+        // ministry's own identity provider, and cancelling any one of them
+        // surfaced as "WebKitErrorDomain code=102 — frame load interrupted"
+        // with the teacher stuck on the login page. The sibling
+        // MicrosoftLoginScreen restricts nothing and signs in fine.
+        //
+        // The allowlist was never a security boundary either — this WebView
+        // loads a page we do not control, and reaching a Microsoft CDN is not
+        // what would make it dangerous. Blocking an unknown scheme still
+        // matters, because a `msauth://` or `intent://` redirect would try to
+        // leave the app.
+        final scheme = url.scheme.toLowerCase();
+        return (scheme == 'http' || scheme == 'https')
             ? NavigationActionPolicy.ALLOW
             : NavigationActionPolicy.CANCEL;
       },
