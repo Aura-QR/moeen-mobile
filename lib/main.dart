@@ -12,6 +12,7 @@ import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:moean/core/utils/cubit/theme/theme_state.dart';
+import 'package:moean/core/widgets/app_update_gate.dart';
 import 'package:moean/core/widgets/session_monitor_wrapper.dart';
 import 'dart:developer' as developer;
 import 'package:moean/core/services/referral_service.dart';
@@ -149,8 +150,13 @@ class MyApp extends StatelessWidget {
                 textDirection: themeCubit.isArabicLang
                     ? TextDirection.rtl
                     : TextDirection.ltr,
-                // SessionMonitorWrapper listens to session expiry globally
-                child: SessionMonitorWrapper(child: child!),
+                // SessionMonitorWrapper listens to session expiry globally;
+                // AppUpdateGate prompts once per launch when a newer build
+                // is on the store. Both sit here so they work on whatever
+                // screen the app opened on.
+                child: AppUpdateGate(
+                  child: SessionMonitorWrapper(child: child!),
+                ),
               );
             },
           );
