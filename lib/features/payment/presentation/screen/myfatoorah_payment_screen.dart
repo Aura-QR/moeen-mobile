@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
@@ -29,6 +30,7 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
   String? _sessionId;
   
   late MFCardPaymentView mfCardView;
+  late MFApplePayButton mfApplePayButton;
   bool _isProcessing = false;
   
   @override
@@ -49,6 +51,12 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
     cardViewStyle.label?.fontWeight = MFFontWeight.Bold;
     
     mfCardView = MFCardPaymentView(cardViewStyle: cardViewStyle);
+    
+    if (Platform.isIOS) {
+      MFApplePayStyle applePayStyle = MFApplePayStyle();
+      applePayStyle.height = 50;
+      mfApplePayButton = MFApplePayButton(applePayStyle: applePayStyle);
+    }
   }
   
   bool _isInitialized = false;
@@ -76,6 +84,38 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
         mfCardView.load(initiateSessionResponse, null);
+        
+        if (Platform.isIOS) {
+          final invoiceAmount = double.tryParse(_amount) ?? 0.0;
+          final executeRequest = MFExecutePaymentRequest(
+            invoiceValue: invoiceAmount,
+            sessionId: _sessionId,
+          );
+          mfApplePayButton.load(
+            initiateSessionResponse, 
+            executeRequest, 
+            MFLanguage.ARABIC,
+          ).then((response) {
+            if (!mounted) return;
+            if (response.invoiceStatus == "Paid") {
+               final paymentKey = (response.invoiceTransactions != null && response.invoiceTransactions!.isNotEmpty)
+                   ? (response.invoiceTransactions!.first.paymentId ?? response.invoiceId?.toString() ?? "")
+                   : (response.invoiceId?.toString() ?? "");
+               PaymentCubit.get(context).verifyMyfatoorahPayment(paymentKey);
+            } else {
+               ScaffoldMessenger.of(context).showSnackBar(
+                 const SnackBar(content: Text("فشلت عملية الدفع")),
+               );
+            }
+          }).catchError((error) {
+            if (!mounted) return;
+            String errorMsg = error.toString();
+            if (error is MFError) {
+               errorMsg = error.message ?? errorMsg;
+            }
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMsg)));
+          });
+        }
       }
     });
   }
@@ -228,6 +268,24 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          if (Platform.isIOS) ...[
+                            SizedBox(
+                              height: 50,
+                              child: mfApplePayButton,
+                            ),
+                            verticalSpace16,
+                            Row(
+                              children: [
+                                const Expanded(child: Divider()),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  child: const Text("أو", style: TextStyle(color: Colors.grey)),
+                                ),
+                                const Expanded(child: Divider()),
+                              ],
+                            ),
+                            verticalSpace16,
+                          ],
                           Text(
                             appTranslation().get('card_details'),
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
