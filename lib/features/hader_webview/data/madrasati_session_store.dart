@@ -38,12 +38,23 @@ class MadrasatiSessionStore {
     'https://login.live.com',
   ];
 
-  /// Copies the current cookies into storage.
+  /// ASP.NET Core splits a large auth ticket across numbered cookies, so the
+  /// name to look for is a prefix, not an exact match.
+  static bool _isAuthCookie(String name) {
+    final n = name.trim().toLowerCase();
+    return n == '.aspnetcore.cookies' ||
+        RegExp(r'^\.aspnetcore\.cookiesc\d+$').hasMatch(n) ||
+        n == '.aspnetcore.identity.application' ||
+        RegExp(r'^\.aspnetcore\.identity\.applicationc\d+$').hasMatch(n);
+  }
+
+  /// Copies the current cookies into storage, and reports how many it kept.
   ///
-  /// Call this while the teacher is known to be signed in — a snapshot taken
-  /// from a signed-out page would persist the *absence* of a session and
-  /// overwrite a good one.
-  static Future<void> save() async {
+  /// Refuses to write unless an actual auth cookie is among them. That guard is
+  /// what makes this safe to call on any load: a page that has not signed in
+  /// yet, or has been bounced to the login screen, carries no auth cookie and
+  /// so cannot overwrite a good snapshot with an empty session.
+  static Future<int> save() async {
     try {
       final manager = CookieManager.instance();
       final saved = <Map<String, dynamic>>[];
@@ -66,14 +77,20 @@ class MadrasatiSessionStore {
         }
       }
 
-      if (saved.isEmpty) return; // nothing to remember; keep what we have
+      final hasAuth = saved.any((c) => _isAuthCookie(c['name'] as String));
+      if (!hasAuth) {
+        debugPrint('[MadrasatiSession] no auth cookie yet — keeping what we have');
+        return 0;
+      }
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_key, jsonEncode(saved));
       debugPrint('[MadrasatiSession] saved ${saved.length} cookies');
+      return saved.length;
     } catch (error) {
       // Persistence is a convenience. Losing it costs a login, not the feature.
       debugPrint('[MadrasatiSession] save failed: $error');
+      return 0;
     }
   }
 
@@ -83,14 +100,14 @@ class MadrasatiSessionStore {
   /// Must run *before* the WebView's first request, or the first navigation
   /// goes out unauthenticated and Madrasati redirects to sign-in regardless of
   /// what is restored afterwards.
-  static Future<void> restore() async {
+  static Future<int> restore() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_key);
-      if (raw == null || raw.isEmpty) return;
+      if (raw == null || raw.isEmpty) return 0;
 
       final decoded = jsonDecode(raw);
-      if (decoded is! List) return;
+      if (decoded is! List) return 0;
 
       final expiry = DateTime.now().add(_lifetime).millisecondsSinceEpoch;
       final manager = CookieManager.instance();
@@ -123,8 +140,10 @@ class MadrasatiSessionStore {
       }
 
       debugPrint('[MadrasatiSession] restored $restored cookies');
+      return restored;
     } catch (error) {
       debugPrint('[MadrasatiSession] restore failed: $error');
+      return 0;
     }
   }
 

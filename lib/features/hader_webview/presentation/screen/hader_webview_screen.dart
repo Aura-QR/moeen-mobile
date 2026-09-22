@@ -61,6 +61,11 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
 
   /// True when Madrasati served its signed-out page instead of the schedule.
   bool _madrasatiSignedOut = false;
+
+  /// How many cookies came back from the last launch. Surfaced in the sign-in
+  /// prompt because it separates two very different failures: nothing was ever
+  /// saved, versus Madrasati refusing a session that was.
+  int _restoredCookies = 0;
   double _progress = 0;
   String _statusMessage = 'جارٍ فتح مدرستي…';
   _StatusKind _statusKind = _StatusKind.info;
@@ -88,7 +93,7 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
     try {
       // Before anything is loaded: a cookie restored after the first request
       // is too late — Madrasati has already redirected to sign-in by then.
-      await MadrasatiSessionStore.restore();
+      _restoredCookies = await MadrasatiSessionStore.restore();
 
       final seed = await _bridge.buildSeed();
       final viewportSource =
@@ -194,7 +199,12 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
 """;
 
   void _scheduleSessionChecks(InAppWebViewController controller) {
-    for (final delay in const [Duration(seconds: 3), Duration(seconds: 9)]) {
+    for (final delay in const [
+      Duration(seconds: 3),
+      Duration(seconds: 9),
+      Duration(seconds: 20),
+      Duration(seconds: 35),
+    ]) {
       Future<void>.delayed(delay, () => _checkMadrasatiSession(controller));
     }
   }
@@ -210,13 +220,25 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
           'سجّل الدخول إلى مدرستي أولاً لعرض جدولك',
           _StatusKind.error,
         );
-      } else if (result == 'ready') {
+        return;
+      }
+
+      if (result == 'ready') {
         setState(() => _madrasatiSignedOut = false);
         _setStatus('حضر جاهز — اختر الحصص من الجدول', _StatusKind.info);
-        // Snapshot only from a page we know is signed in; taking one from the
-        // sign-in page would persist the absence of a session over a good one.
-        unawaited(MadrasatiSessionStore.save());
       }
+
+      // Anything that is not the sign-in page is worth a snapshot, including
+      // 'waiting'. Signing in and drawing the schedule are different events:
+      // content.js fetches a lesson tree per subject before the cards appear,
+      // which routinely outlasts these checks. Tying the snapshot to the cards
+      // meant a teacher could sign in, reach their schedule, and still have
+      // nothing saved — which is exactly what happened.
+      //
+      // Saving early is safe because the store refuses to write unless a real
+      // auth cookie is present, so a half-loaded page cannot clobber a good
+      // session.
+      await MadrasatiSessionStore.save();
     } catch (error) {
       debugPrint('[HaderWebView] session probe failed: $error');
     }
@@ -441,6 +463,19 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
             style: TextStylesManager.bold13
                 .copyWith(color: ColorsManager.textBody, height: 1.5),
           ),
+          if (_restoredCookies > 0) ...[
+            const SizedBox(height: 4),
+            // Says which half is at fault without needing a log: cookies came
+            // back and Madrasati still refused them, so the session expired on
+            // their side rather than never having been saved on ours.
+            Text(
+              'استُعيدت $_restoredCookies كوكيز من آخر مرة، لكن مدرستي أنهت الجلسة.',
+              style: TextStylesManager.bold13.copyWith(
+                color: ColorsManager.textBody.withValues(alpha: 0.7),
+                height: 1.5,
+              ),
+            ),
+          ],
           const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
