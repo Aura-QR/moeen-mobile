@@ -48,12 +48,12 @@ class MadrasatiSessionStore {
         RegExp(r'^\.aspnetcore\.identity\.applicationc\d+$').hasMatch(n);
   }
 
-  /// Copies the current cookies into storage, and reports how many it kept.
+  /// Copies the auth ticket into storage, and reports how many cookies it kept.
   ///
-  /// Refuses to write unless an actual auth cookie is among them. That guard is
-  /// what makes this safe to call on any load: a page that has not signed in
-  /// yet, or has been bounced to the login screen, carries no auth cookie and
-  /// so cannot overwrite a good snapshot with an empty session.
+  /// Nothing is written unless a ticket is actually present, which is what
+  /// makes this safe to call on any load: a page that has not signed in yet, or
+  /// has been bounced to the login screen, carries no ticket and so cannot
+  /// overwrite a good snapshot with an empty session.
   static Future<int> save() async {
     try {
       final manager = CookieManager.instance();
@@ -64,6 +64,14 @@ class MadrasatiSessionStore {
         for (final cookie in cookies) {
           final value = cookie.value?.toString() ?? '';
           if (cookie.name.isEmpty || value.isEmpty) continue;
+
+          // Only the auth ticket travels. The sign-in flow also drops
+          // single-use cookies — antiforgery tokens, OIDC correlation and
+          // nonce values — and those expire the moment they are used. Restoring
+          // a day-old copy of one does not just fail to help: it collides with
+          // the fresh value Madrasati issues and voids the session, which is
+          // why a restored login was being rejected within minutes.
+          if (!_isAuthCookie(cookie.name)) continue;
 
           saved.add({
             'origin': origin,
@@ -77,8 +85,7 @@ class MadrasatiSessionStore {
         }
       }
 
-      final hasAuth = saved.any((c) => _isAuthCookie(c['name'] as String));
-      if (!hasAuth) {
+      if (saved.isEmpty) {
         debugPrint('[MadrasatiSession] no auth cookie yet — keeping what we have');
         return 0;
       }
