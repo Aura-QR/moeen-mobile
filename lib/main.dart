@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -5,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/network/local/cache_helper.dart';
 import 'package:moean/core/network/local/secure_storage_helper.dart';
+import 'package:moean/core/models/user_model.dart';
 import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/core/services/madrasati_session_service.dart';
 import 'package:moean/core/theme/theme.dart';
@@ -24,9 +28,13 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize MyFatoorah SDK early to avoid delay issues during checkout
-  MFSDK.init(Secrets.myfatoorahApiKey, MFCountry.SAUDIARABIA, MFEnvironment.LIVE);
+  MFSDK.init(
+    Secrets.myfatoorahApiKey,
+    MFCountry.SAUDIARABIA,
+    MFEnvironment.LIVE,
+  );
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(
@@ -64,37 +72,57 @@ void main() async {
     token = savedToken;
     developer.log('Main: Token found, verifying via /auth/me...');
 
-    final meResult = await ApiService.getMe();
+    // Bounded on purpose. Dio allows 30s to connect and 60s to receive, and
+    // runApp() is behind this call — so a slow or unreachable network left the
+    // launch icon on screen for up to a minute and a half with nothing moving.
+    // A stuck splash is indistinguishable from a broken app.
+    Either<String, UserModel>? meResult;
+    try {
+      meResult = await ApiService.getMe().timeout(const Duration(seconds: 8));
+    } on TimeoutException {
+      // The token is kept rather than cleared: an unanswered request says
+      // nothing about whether it is still valid, and signing a teacher out
+      // because their connection was slow is the worse failure. A genuinely
+      // expired token is caught by the next request the app makes.
+      developer.log('Main: /auth/me timed out, continuing with saved token');
+    }
 
-    meResult.fold(
-      (error) {
-        // 401 or network error – clear token
-        developer.log('Main: Token invalid ($error), clearing...');
-        token = null;
-        secureStorage.deleteToken();
-        initialRoute = Routes.home; // start at home
-      },
-      (user) {
-        developer.log('Main: Token valid, user=${user.name}');
-        if (user.email == 'admin@moeen.com' || user.email == 'admin@moeen.sa') {
-          initialRoute = Routes.adminTeachers;
-        } else {
+    if (meResult == null) {
+      initialRoute = Routes.home;
+    } else {
+      meResult.fold(
+        (error) {
+          // 401 or network error – clear token
+          developer.log('Main: Token invalid ($error), clearing...');
+          token = null;
+          secureStorage.deleteToken();
           initialRoute = Routes.home; // start at home
-        }
-        sl<MadrasatiSessionService>().notifySessionActive();
-      },
-    );
+        },
+        (user) {
+          developer.log('Main: Token valid, user=${user.name}');
+          if (user.email == 'admin@moeen.com' ||
+              user.email == 'admin@moeen.sa') {
+            initialRoute = Routes.adminTeachers;
+          } else {
+            initialRoute = Routes.home; // start at home
+          }
+          sl<MadrasatiSessionService>().notifySessionActive();
+        },
+      );
+    }
   } else {
     developer.log('Main: No token found, going to home');
     initialRoute = Routes.home;
   }
 
-  runApp(MyApp(
-    isDark: isDark,
-    isArabic: isArabic,
-    translation: translation,
-    initialRoute: initialRoute,
-  ));
+  runApp(
+    MyApp(
+      isDark: isDark,
+      isArabic: isArabic,
+      translation: translation,
+      initialRoute: initialRoute,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -119,9 +147,7 @@ class MyApp extends StatelessWidget {
       ..initializeLanguage(isArabic: isArabic, translations: translation);
 
     return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (context) => themeCubit),
-      ],
+      providers: [BlocProvider(create: (context) => themeCubit)],
       child: BlocBuilder<ThemeCubit, ThemeState>(
         builder: (context, state) {
           final themeCubit = context.read<ThemeCubit>();
@@ -133,18 +159,16 @@ class MyApp extends StatelessWidget {
             initialRoute: initialRoute,
             theme: ThemesManager.lightTheme,
             darkTheme: ThemesManager.darkTheme,
-            locale: themeCubit.isArabicLang ? const Locale('ar') : const Locale('en'),
-            supportedLocales: const [
-              Locale('ar'),
-              Locale('en'),
-            ],
+            locale: themeCubit.isArabicLang
+                ? const Locale('ar')
+                : const Locale('en'),
+            supportedLocales: const [Locale('ar'), Locale('en')],
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            themeMode:
-                themeCubit.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            themeMode: themeCubit.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             builder: (context, child) {
               return Directionality(
                 textDirection: themeCubit.isArabicLang
