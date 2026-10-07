@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -200,6 +201,11 @@ class HaderBridge {
 
   /// Proxies an authenticated Hader API call, shaped like the response the
   /// extension's service worker returns: `{ ok, status, data }`.
+  ///
+  /// Error responses keep their status and body. content.js reads the
+  /// server's message from `data.message` to explain a refusal, such as a
+  /// reached daily limit (429) or an account used by another teacher (409);
+  /// going through DioHelper would reduce those to a bare string.
   Future<Map<String, dynamic>> _handleApi(List<dynamic> args) async {
     final payload = _firstArg(args);
     final method = (payload['method'] as String? ?? 'GET').toUpperCase();
@@ -209,20 +215,38 @@ class HaderBridge {
       return <String, dynamic>{'ok': false, 'status': 0, 'error': 'Missing API path'};
     }
 
-    final url = '$baseUrl$path';
-
-    final result = method == 'POST'
-        ? await DioHelper.postData(url: url, data: payload['body'])
-        : await DioHelper.getData(url: url);
-
-    return result.fold(
-      (error) => <String, dynamic>{'ok': false, 'status': 0, 'error': error},
-      (response) => <String, dynamic>{
-        'ok': (response.statusCode ?? 0) >= 200 && (response.statusCode ?? 0) < 300,
-        'status': response.statusCode ?? 0,
+    final authToken = token ?? await sl<SecureStorageHelper>().getToken();
+    try {
+      final response = await DioHelper.getDio().request<dynamic>(
+        '$baseUrl$path',
+        data: method == 'GET' ? null : payload['body'],
+        options: Options(
+          method: method,
+          validateStatus: (_) => true,
+          headers: <String, dynamic>{
+            'Accept': 'application/json',
+            if (method != 'GET') 'Content-Type': 'application/json',
+            if (authToken != null && authToken.isNotEmpty)
+              'Authorization': 'Bearer $authToken',
+          },
+        ),
+      );
+      final status = response.statusCode ?? 0;
+      return <String, dynamic>{
+        'ok': status >= 200 && status < 300,
+        'status': status,
         'data': response.data,
-      },
-    );
+      };
+    } on DioException catch (error) {
+      return <String, dynamic>{
+        'ok': false,
+        'status': error.response?.statusCode ?? 0,
+        'data': error.response?.data,
+        'error': error.message ?? 'Network error',
+      };
+    } catch (error) {
+      return <String, dynamic>{'ok': false, 'status': 0, 'error': error.toString()};
+    }
   }
 
   Future<bool> _handleMadrasatiSession(List<dynamic> args) async {

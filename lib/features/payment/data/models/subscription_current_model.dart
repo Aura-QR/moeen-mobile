@@ -93,19 +93,77 @@ class SubscriptionUsageModel {
   final int aiRemaining;
   final int lessonsRemainingToday;
 
+  /// Daily and monthly fair-use limits per tool, on every plan
+  /// (`usage.limits` from /subscription/current).
+  final List<UsageLimitModel> limits;
+
   SubscriptionUsageModel({
     required this.aiUsedThisMonth,
     required this.lessonsPreparedToday,
     required this.aiRemaining,
     required this.lessonsRemainingToday,
+    this.limits = const [],
   });
 
   factory SubscriptionUsageModel.fromJson(Map<String, dynamic> json) {
+    final rawLimits = json['limits'];
     return SubscriptionUsageModel(
       aiUsedThisMonth: json['ai_used_this_month'] as int? ?? 0,
       lessonsPreparedToday: json['lessons_prepared_today'] as int? ?? 0,
       aiRemaining: json['ai_remaining'] as int? ?? 0,
       lessonsRemainingToday: json['lessons_remaining_today'] as int? ?? 0,
+      limits: rawLimits is Map
+          ? rawLimits.entries
+              .where((entry) => entry.value is Map)
+              .map((entry) => UsageLimitModel.fromJson(
+                    entry.key.toString(),
+                    Map<String, dynamic>.from(entry.value as Map),
+                  ))
+              .toList()
+          : const [],
     );
   }
+}
+
+/// One tool's limits, e.g. lesson preparation: 20 a day and 500 a month.
+class UsageLimitModel {
+  final String tool;
+  final String label;
+  final UsageLimitPeriod daily;
+  final UsageLimitPeriod monthly;
+
+  const UsageLimitModel({
+    required this.tool,
+    required this.label,
+    required this.daily,
+    required this.monthly,
+  });
+
+  factory UsageLimitModel.fromJson(String tool, Map<String, dynamic> json) {
+    return UsageLimitModel(
+      tool: tool,
+      label: json['label']?.toString() ?? tool,
+      daily: UsageLimitPeriod.fromJson(json['daily']),
+      monthly: UsageLimitPeriod.fromJson(json['monthly']),
+    );
+  }
+}
+
+class UsageLimitPeriod {
+  /// Null when this period has no limit.
+  final int? limit;
+  final int used;
+
+  const UsageLimitPeriod({this.limit, this.used = 0});
+
+  factory UsageLimitPeriod.fromJson(dynamic json) {
+    if (json is! Map) return const UsageLimitPeriod();
+    return UsageLimitPeriod(
+      limit: int.tryParse('${json['limit']}'),
+      used: int.tryParse('${json['used']}') ?? 0,
+    );
+  }
+
+  /// "3 من 20", or just the count when there is no limit.
+  String get display => limit == null ? '$used' : '$used من $limit';
 }

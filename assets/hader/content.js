@@ -1892,6 +1892,9 @@
           added++;
         }
         updateDashboardCounter();
+        void saveShownWeekToHader();
+        // The poll runs every 1.5s; leave a running preparation's progress alone.
+        if (haderRemotePreparationRunning) return;
         var total = document.querySelectorAll('.Moeen-2-dashboard-select').length;
         if (total) {
           updateDashboardStatus("اختر درساً لكل حصة ثم اضغط «حضر» — " + total + " حصة متاحة", "info");
@@ -2346,29 +2349,16 @@
       };
       if (!payload.assignmentId) return false;
       try {
-        const script = document.createElement('script');
-        script.textContent =
-          '(function(payload){try{' +
-          'var list=null;' +
-          'if(typeof listOfAssignments!=="undefined"&&Array.isArray(listOfAssignments)){list=listOfAssignments;}' +
-          'else if(Array.isArray(window.listOfAssignments)){list=window.listOfAssignments;}' +
-          'if(list){' +
-          'var exists=list.some(function(x){return String(x&&x.assignmentId)===String(payload.assignmentId);});' +
-          'if(!exists){list.push({' +
-          'assignmentId:payload.assignmentId,grade:payload.grade,assignmentName:payload.assignmentName,' +
-          'startDateTime:payload.startDateTime,endDateTime:payload.endDateTime,' +
-          'startDateTimeHijri:payload.startDateTimeHijri,endDateTimeHijri:payload.endDateTimeHijri,' +
-          'isGradeBook:payload.isGradeBook,assignmentIdEnc:payload.assignmentIdEnc,' +
-          'assignmentType:payload.assignmentType,DayCount:payload.dayCount,TimeTableIds:payload.timeTableId?[{timeTableId:payload.timeTableId,slot:"",date:"",classroom:""}]:[]' +
-          '});}' +
-          '}' +
-          'if(typeof loadAssignmentsList==="function"){try{loadAssignmentsList();}catch(_){}}' +
-          'console.log("[Moeen-2] Page listOfAssignments injected -> AssignmentId:",payload.assignmentId,"list:",list&&list.length);' +
-          '}catch(e){console.warn("[Moeen-2] Page listOfAssignments injection failed:",e&&e.message);}})(' +
-          JSON.stringify(payload).replace(/</g, '\\u003c') +
-          ');';
-        (document.documentElement || document.head || document.body).appendChild(script);
-        script.remove();
+        void sendRuntimeMessage({
+          action: 'HADER_INJECT_HOMEWORK_PAGE_STATE',
+          payload: payload
+        }).then(function (result) {
+          if (result && result.success) {
+            console.log('[Moeen-2] Page listOfAssignments injected safely -> AssignmentId:', payload.assignmentId, 'list:', result.listLength);
+          } else {
+            console.warn('[Moeen-2] Page listOfAssignments MAIN-world injection failed:', result && result.error || 'unknown error');
+          }
+        });
         return true;
       } catch (e) {
         console.warn('[Moeen-2] Could not inject homework into page state:', e && e.message);
@@ -2752,8 +2742,34 @@
           },
           body: qBody.toString()
         });
-        let qHtml = await qRes.text();
-        try { const j = JSON.parse(qHtml); if (j && typeof j.html === 'string') qHtml = j.html; } catch (e) { }
+        const qRaw = await qRes.text();
+        const qSet = new Set();
+        // The endpoint answers application/json, not bare HTML. The question list can
+        // arrive as HTML inside any string field, or as an array of question objects —
+        // walk the whole payload and collect both.
+        let qHtml = qRaw;
+        let qJsonKeys = '';
+        try {
+          const j = JSON.parse(qRaw);
+          qJsonKeys = j && typeof j === 'object' ? Object.keys(j).slice(0, 12).join(',') : typeof j;
+          const htmlParts = [];
+          (function walk(node, depth) {
+            if (node == null || depth > 8) return;
+            if (typeof node === 'string') {
+              if (node.indexOf('<') !== -1) htmlParts.push(node);
+              return;
+            }
+            if (Array.isArray(node)) { node.forEach(function (n) { walk(n, depth + 1); }); return; }
+            if (typeof node !== 'object') return;
+            const keys = Object.keys(node);
+            const qIdKey = keys.find(function (k) { return /^(question_?id|qid)$/i.test(k); });
+            const looksLikeQuestion = keys.some(function (k) { return /question|difficult|typecode|text/i.test(k); });
+            const idKey = qIdKey || (looksLikeQuestion ? keys.find(function (k) { return /^id$/i.test(k); }) : '');
+            if (idKey && /^\d{4,12}$/.test(String(node[idKey]))) qSet.add(Number(node[idKey]));
+            keys.forEach(function (k) { walk(node[k], depth + 1); });
+          })(j, 0);
+          qHtml = htmlParts.join('\n');
+        } catch (e) { }
         // Try multiple ID extraction patterns for the Q-bank HTML
         const qPatterns = [
           /data-questionid=["'](\d{4,12})["']/gi,
@@ -2765,13 +2781,20 @@
           /class=["'][^"']*addQuestion[^"']*["'][^>]*data-id=["'](\d{4,12})["']/gi,
           /data-id=["'](\d{4,12})["'][^>]*class=["'][^"']*question/gi
         ];
-        const qSet = new Set();
         for (const pat of qPatterns) {
           let m; pat.lastIndex = 0;
           while ((m = pat.exec(qHtml)) !== null) qSet.add(Number(m[1]));
         }
         questionIds = [...qSet].slice(0, 1); // one question per assignment (competitor pattern)
         console.log('[Moeen-2] Homework: AddQuestionListPaging found', qSet.size, 'question(s) → using:', questionIds);
+        if (qSet.size === 0) {
+          // Leave enough of the response in the log to fix the parser from a real run.
+          console.log('[Moeen-2] Homework: AddQuestionListPaging status', qRes.status,
+            '| content-type:', qRes.headers.get('content-type'),
+            '| json keys:', qJsonKeys || '(not json)',
+            '| eschoolId:', schoolId,
+            '| body preview:', qRaw.slice(0, 1200));
+        }
       } catch (e) {
         console.warn('[Moeen-2] Homework: AddQuestionListPaging failed', e);
       }
@@ -4131,8 +4154,10 @@
           'ProjectId:', resolvedProjectId,
           'StartTime:', startTimeStr,
           'EndTime:', endTimeStr);
+      } else if (_shouldRunActivity) {
+        console.warn('[Moeen-2] Activity was enabled but no projectId was resolved — SaveLastLessonPlan will rely on homework/exam if available.');
       } else {
-        console.warn('[Moeen-2] No projectId — SaveLastLessonPlan will rely on homework/exam if available.');
+        console.log('[Moeen-2] Activity disabled — SaveLastLessonPlan relies on homework/exam/enrichment.');
       }
 
       // ── LectureClassLearningResources (Enrichment binding) ───────────────────────
@@ -4907,60 +4932,160 @@
         }
       }
 
-      // Generate up to three lessons at once. Madrasati writes remain ordered
-      // below because their before/after ProjectId snapshots must never overlap.
-      // This is a pipeline: saving lesson 1 starts as soon as its AI data is
-      // ready while lessons 2+ continue generating in the background.
-      updateDashboardStatus(
-        usingBrowserFallback
-          ? "🖥️ جاري التحضير داخل المتصفح لأن الخدمة السحابية غير متاحة..."
-          : "⚡ جاري تجهيز المحتوى بالتوازي قبل الحفظ...",
-        usingBrowserFallback ? "warning" : "loading"
-      );
-      var aiPrefetchPromises = scheduleWithConcurrency(
-        tokensToPrepare,
-        3,
-        function (item) { return prefetchAILessonDataForCard(item); }
-      );
-
-      var _saveIdx = 0;
-      for (var item of tokensToPrepare) {
-        _saveIdx++;
-        updateDashboardStatus(
-          "⏳ جاري تحضير حصة " + _saveIdx + " من " + tokensToPrepare.length + "...",
-          "loading"
-        );
-        try {
-          // Join the already-running background task for this lesson. Usually
-          // this resolves immediately because selection-time prefetch cached it.
-          await aiPrefetchPromises[_saveIdx - 1];
-
-          var success = await silentPrepareLesson(item.token, item.selection, item.subjectId, item.realSchoolId, item.div);
-
-          if (success) {
-            item.select.style.borderColor = '#1a9448';
-            item.select.style.background = 'rgba(26,148,72,0.04)';
-            successCount++;
-          } else {
-            item.select.style.borderColor = '#c0392b';
-            item.select.style.background = 'rgba(192,57,43,0.08)';
-          }
-        } catch (err) {
-          console.error("[Moeen-2] prep failed for", item.token, err);
-          item.select.style.borderColor = '#c0392b';
-          item.select.style.background = 'rgba(192,57,43,0.08)';
-        }
-      }
-
+      var outcome = await prepareDashboardThroughServer(tokensToPrepare);
       var _total = tokensToPrepare.length;
-      if (successCount === _total) {
-        updateDashboardStatus("✅ تم حفظ " + successCount + " حصة بنجاح! جاري إعادة تحميل الجدول...", "success");
+      if (outcome.stopped && outcome.done === 0 && outcome.failed === 0) {
+        updateDashboardStatus("❌ " + outcome.stopped, "error");
+      } else if (outcome.done === _total) {
+        updateDashboardStatus("✅ تم حفظ " + outcome.done + " حصة بنجاح! جاري إعادة تحميل الجدول...", "success");
         setTimeout(() => window.location.reload(), 2000);
-      } else if (successCount > 0) {
-        updateDashboardStatus("⚠️ تم حفظ " + successCount + " من " + _total + " حصة — بعض الحصص لم تكتمل، راجعها يدوياً", "warning");
+      } else if (outcome.done > 0) {
+        updateDashboardStatus(
+          "⚠️ تم حفظ " + outcome.done + " من " + _total + " حصة"
+            + (outcome.stopped ? " — " + outcome.stopped : " — بعض الحصص لم تكتمل، راجعها يدوياً"),
+          "warning"
+        );
       } else {
-        updateDashboardStatus("❌ تعذّر تحضير الحصص — تحقق من اتصالك وحاول مجدداً", "error");
+        updateDashboardStatus("❌ " + (outcome.stopped || "تعذّر تحضير الحصص — تحقق من اتصالك وحاول مجدداً"), "error");
       }
+    }
+
+    // The «حضر» button used to prepare every selected lesson after a single
+    // plan check and never reported back, so the daily and monthly limits and
+    // the Madrasati account link never applied to it. It now goes through the
+    // same server operation as preparation started from the Hader site:
+    // authorize (reserves quota, enforces limits) → claim (checks the Madrasati
+    // teacher) → prepare in this tab → complete (counts the lessons that
+    // succeeded). A refusal at any step stops before Madrasati is written.
+    var HADER_OPERATION_MAX_LESSONS = 10;
+
+    function haderDashboardModules() {
+      var modules = [];
+      if (getResourceEnabled('activity')) modules.push('assignment');
+      if (getResourceEnabled('homework')) modules.push('homework');
+      if (getResourceEnabled('exam')) modules.push('exam');
+      if (getResourceEnabled('enrichment')) modules.push('enrichment');
+      return modules.length ? modules : ['assignment'];
+    }
+
+    function haderCardClassroomId(div) {
+      var id = String(div.getAttribute('data-class-id') || '').trim();
+      if (id) return id;
+      var cell = div.closest('td') || div.parentElement;
+      var anchors = cell ? cell.querySelectorAll('a[href]') : [];
+      for (var i = 0; i < anchors.length; i++) {
+        var match = String(anchors[i].href || '').match(/classroomId=(\d+)/i);
+        if (match) return match[1];
+      }
+      return '';
+    }
+
+    function haderOperationRequestId() {
+      var random = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : Date.now() + '-' + Math.random().toString(36).slice(2);
+      return 'madrasati:' + random;
+    }
+
+    function haderApiMessage(response, fallback) {
+      return (response && response.data && response.data.message)
+        || (response && response.error)
+        || fallback;
+    }
+
+    async function prepareDashboardThroughServer(tokensToPrepare) {
+      var outcome = { done: 0, failed: 0, stopped: '' };
+      if (isHaderPreparationBusy()) {
+        outcome.stopped = 'يوجد تحضير جارٍ بالفعل في هذه الصفحة. انتظر حتى ينتهي.';
+        return outcome;
+      }
+      if (haderAllWeeksRunning) {
+        haderAllWeeksAbort = true;
+        await waitForHaderAllWeeksToStop(120000);
+      }
+
+      var shown = readMadrasatiPeriod();
+      var weekDate = shown && shown.week_date ? shown.week_date : null;
+      var modules = haderDashboardModules();
+      var identity = readMadrasatiUser();
+      var itemsByToken = {};
+      var lessons = tokensToPrepare.map(function (item) {
+        itemsByToken[item.token] = item;
+        var treeSubjectId = Number(String(item.selection.treeValue).split(',')[0]);
+        var lesson = {
+          lesson_token: item.token,
+          selection_value: item.selection.treeValue,
+          selection_text: item.selection.treeText,
+          // The server requires the lesson tree's subject, as the site sends.
+          subject_id: treeSubjectId || Number(item.subjectId) || 0,
+          classroom_id: haderCardClassroomId(item.div),
+          school_madrasati_id: String(item.realSchoolId || '').toUpperCase(),
+          selected_modules: modules
+        };
+        if (weekDate) lesson.week_date = weekDate;
+        return lesson;
+      });
+
+      for (var start = 0; start < lessons.length && !outcome.stopped; start += HADER_OPERATION_MAX_LESSONS) {
+        var batch = lessons.slice(start, start + HADER_OPERATION_MAX_LESSONS);
+        updateDashboardStatus('🔐 جاري التحقق من رصيدك في حضر...', 'loading');
+        var authorization = await sendRuntimeMessage({
+          action: 'HADER_AUTHORIZE_PREPARATION',
+          clientRequestId: haderOperationRequestId(),
+          lessons: batch
+        });
+        if (!authorization || !authorization.ok || !authorization.data || !authorization.data.success) {
+          outcome.stopped = haderApiMessage(authorization, 'تعذر الحصول على إذن التحضير من حضر. تحقق من اتصالك وحاول مجدداً.');
+          break;
+        }
+
+        var operationId = authorization.data.operation_id;
+        var ticket = authorization.data.ticket;
+        var claimBody = { ticket: ticket };
+        if (identity && identity.madrasati_user_id) {
+          claimBody.madrasati_user_id = identity.madrasati_user_id;
+          claimBody.madrasati_user_name = identity.madrasati_user_name || null;
+        }
+        var claim = await sendRuntimeMessage({
+          action: 'HADER_PREPARATION_TICKET',
+          step: 'claim',
+          operationId: operationId,
+          body: claimBody
+        });
+        if (!claim || !claim.ok || !claim.data || !claim.data.success) {
+          // A refused claim fails the operation on the server, which releases
+          // the quota it reserved.
+          outcome.stopped = haderApiMessage(claim, 'رفض حضر بدء التحضير لهذا الحساب.');
+          break;
+        }
+        if (claim.data.already_completed) continue;
+        var claimed = Array.isArray(claim.data.lessons) ? claim.data.lessons : [];
+
+        // Generate AI content for the batch three at a time; each lesson's own
+        // prefetch inside executeHaderBrowserPreparation joins the request
+        // already in flight instead of starting another.
+        scheduleWithConcurrency(
+          claimed.map(function (lesson) { return itemsByToken[lesson.lesson_token]; }).filter(Boolean),
+          3,
+          function (item) { return prefetchAILessonDataForCard(item); }
+        );
+
+        haderRemotePreparationRunning = true;
+        haderRemotePreparationStartedAt = Date.now();
+        var run = await executeHaderBrowserPreparation({ operationId: operationId, ticket: ticket, lessons: claimed });
+
+        var tokensById = {};
+        claimed.forEach(function (lesson) { tokensById[lesson.preparation_id] = lesson.lesson_token; });
+        run.results.forEach(function (result) {
+          var item = itemsByToken[tokensById[result.preparation_id]];
+          var ok = result.status === 'done';
+          if (ok) outcome.done++; else outcome.failed++;
+          if (!item) return;
+          item.select.style.borderColor = ok ? '#1a9448' : '#c0392b';
+          item.select.style.background = ok ? 'rgba(26,148,72,0.04)' : 'rgba(192,57,43,0.08)';
+        });
+      }
+      return outcome;
     }
     // src/content/dashboard-storage-helpers.js
     async function getDashboardSelectionForCurrentLesson() {
@@ -7341,8 +7466,1002 @@
       startQuick: () => AutomationController.startQuick()
     });
     setFinalSaveButtonDetector(findFinalSaveButtonSync);
+    var haderRemotePreparationRunning = false;
+
+    // The Madrasati teacher signed in to this page. Madrasati's menu config
+    // carries it: `user: { name: "…", sub: [{ url:
+    // "/TeacherProfile/My?schoolId=…&amp;userId=<32 hex>" }] }`. حضّر links
+    // each Hader account to one Madrasati teacher by this id.
+    var HADER_MADRASATI_USER_ID_RE = /TeacherProfile\/My\?[^"'<>\s]*?userId=([a-f0-9]{32})/i;
+    var HADER_MADRASATI_USER_NAME_RE = /\buser\s*:\s*\{[^{}]*?\bname\s*:\s*"([^"]{1,200})"/;
+    var haderMadrasatiUser = null;
+
+    function readMadrasatiUser() {
+      if (haderMadrasatiUser) return haderMadrasatiUser;
+      var sources = [];
+      document.querySelectorAll('a[href*="userId="]').forEach(function (anchor) {
+        sources.push(anchor.getAttribute('href') || '');
+      });
+      document.querySelectorAll('script:not([src])').forEach(function (script) {
+        sources.push(script.textContent || '');
+      });
+      var id = '';
+      var name = '';
+      for (var i = 0; i < sources.length && !(id && name); i++) {
+        if (!id) {
+          var idMatch = sources[i].match(HADER_MADRASATI_USER_ID_RE);
+          if (idMatch) id = idMatch[1].toUpperCase();
+        }
+        if (!name) {
+          var nameMatch = sources[i].match(HADER_MADRASATI_USER_NAME_RE);
+          if (nameMatch) name = nameMatch[1].trim();
+        }
+      }
+      if (!id) return { madrasati_user_id: null, madrasati_user_name: null };
+      // The signed-in teacher cannot change without a page load.
+      haderMadrasatiUser = { madrasati_user_id: id, madrasati_user_name: name || null };
+      return haderMadrasatiUser;
+    }
+
+    function haderExtractSchoolId(card) {
+      var cell = card.closest('td') || card.parentElement;
+      var anchors = cell ? cell.querySelectorAll('a') : [];
+      for (var i = 0; i < anchors.length; i++) {
+        var match = String(anchors[i].href || '').match(/schoolId=([a-f0-9]{32})/i)
+          || String(anchors[i].getAttribute('onclick') || '').match(/['"]([a-f0-9]{32})['"]/i);
+        if (match) return match[1].toUpperCase();
+      }
+      var cardMatch = String(card.getAttribute('onclick') || '').match(/['"]([a-f0-9]{32})['"]/i);
+      if (cardMatch) return cardMatch[1].toUpperCase();
+      var params = new URLSearchParams(window.location.search);
+      var fallback = params.get('SchoolId') || params.get('schoolId') || '';
+      return /^[a-f0-9]{32}$/i.test(fallback) ? fallback.toUpperCase() : '';
+    }
+
+    function haderWeekStart() {
+      var params = new URLSearchParams(window.location.search);
+      var candidates = [params.get('week_date'), params.get('week'), params.get('startDate'), params.get('date')];
+      document.querySelectorAll('[data-week-date],[data-start-date],input[name*="week" i],input[name*="date" i]').forEach(function (node) {
+        candidates.push(node.getAttribute('data-week-date') || node.getAttribute('data-start-date') || node.value || '');
+      });
+      var date = null;
+      for (var value of candidates) {
+        if (!value) continue;
+        var parsed = new Date(value);
+        if (!Number.isNaN(parsed.getTime())) { date = parsed; break; }
+      }
+      if (!date) date = new Date();
+      date.setHours(12, 0, 0, 0);
+      date.setDate(date.getDate() - date.getDay());
+      return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    }
+
+    // `light` skips waiting for the per-card lesson dropdowns. Those only feed
+    // preparation; the weekly report needs the timetable alone, and waiting for
+    // them cost up to 30s per week whenever a card never got a dropdown.
+    async function harvestScheduleForHader(harvestOptions) {
+      var light = Boolean(harvestOptions && harvestOptions.light);
+      if (detectPageState() !== FLOW_STATES.DASHBOARD) {
+        return { success: false, code: 'schedule_not_open', error: 'افتح صفحة جدول المعلم في مدرستي ثم أعد المحاولة.' };
+      }
+      if (light) {
+        var lightDeadline = Date.now() + 4000;
+        while (Date.now() < lightDeadline && !findScheduleCards().length) {
+          await sleep(250);
+        }
+      } else {
+        await injectDashboardUI();
+        var deadline = Date.now() + 30000;
+        while (Date.now() < deadline) {
+          await scanDashboardCards();
+          var cardCount = findScheduleCards().length;
+          var selectCount = document.querySelectorAll('.Moeen-2-dashboard-select').length;
+          if (cardCount > 0 && selectCount > 0 && selectCount >= cardCount) break;
+          await sleep(500);
+        }
+      }
+
+      var lessons = [];
+      var timetable = [];
+      var activities = [];
+      var invalid = [];
+      var missingCoreCount = 0;
+      var seen = new Set();
+
+      function readCardStatus(card) {
+        var surface = card.querySelector('.schedule-card') || card;
+        var classes = String(surface.className || '').toLowerCase();
+        var text = String(surface.textContent || '').replace(/\s+/g, ' ').trim();
+
+        if (
+          classes.indexOf(' done') !== -1 ||
+          surface.classList.contains('done') ||
+          surface.querySelector('.fa-circle-check,[data-status="done"]')
+        ) return 'prepared';
+
+        if (
+          classes.indexOf('incomplete') !== -1 ||
+          surface.querySelector('.btn-outline-warning,.btn-outline-secondary') ||
+          /غير\s*مكتمل|غير\s*مكتملة/.test(text)
+        ) return 'not_prepared';
+
+        return 'waiting';
+      }
+
+      function readCellPosition(card) {
+        var cell = card.closest('td') || card.parentElement;
+        var row = cell && cell.parentElement;
+        function boundedNumber(values, min, max, fallback) {
+          for (var value of values) {
+            if (value === null || value === undefined || value === '') continue;
+            var parsed = Number(value);
+            if (Number.isInteger(parsed) && parsed >= min && parsed <= max) return parsed;
+          }
+          return fallback;
+        }
+        return {
+          cell: cell,
+          day: boundedNumber([
+            card.getAttribute('data-day'),
+            cell && cell.getAttribute('data-day')
+          ], 0, 5, cell && cell.cellIndex > 0 ? cell.cellIndex - 1 : -1),
+          period: boundedNumber([
+            card.getAttribute('data-lecture-id'),
+            card.getAttribute('data-period'),
+            cell && cell.getAttribute('data-lecture-id'),
+            cell && cell.getAttribute('data-period'),
+            cell && cell.getAttribute('id'),
+            row && row.getAttribute('data-lecture-id'),
+            row && row.getAttribute('data-period'),
+            row && row.getAttribute('id')
+          ], 1, 10, row ? row.rowIndex : 0)
+        };
+      }
+
+      function isActivityCard(card) {
+        var heading = card.querySelector('h2,h3,h4,[data-subject-name],.subject-name,.course-name');
+        var title = String((heading && heading.textContent) || card.getAttribute('data-subject-name') || '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        var classes = String(card.className || '').toLowerCase();
+        return title === 'نشاط' || /(^|[-_ ])activity($|[-_ ])/.test(classes);
+      }
+
+      var seenActivities = new Set();
+      document.querySelectorAll('td.day-cell .cs-lesson-card,td.day-cell .schedule-card,td.day-cell [data-type="activity"],td.day-cell [data-activity-type="activity"]').forEach(function (candidate) {
+        var card = candidate.closest('.cs-lesson-card') || candidate;
+        if (seenActivities.has(card) || !isActivityCard(card)) return;
+        seenActivities.add(card);
+        var position = readCellPosition(card);
+        if (!Number.isInteger(position.day) || position.day < 0 || position.day > 5 || !Number.isInteger(position.period) || position.period < 1 || position.period > 10) return;
+        var classroomNode = card.querySelector('small,.class-name,[data-class-name],.p-1');
+        activities.push({
+          key: 'activity-' + position.day + '-' + position.period + '-' + activities.length,
+          subject_name: 'نشاط',
+          classroom_name: String((classroomNode && classroomNode.textContent) || '').replace(/\s+/g, ' ').trim(),
+          day: position.day,
+          period: position.period,
+          status: 'activity'
+        });
+      });
+
+      var scheduleCards = findScheduleCards();
+      var sourceLessonCardCount = scheduleCards.filter(function (item) {
+        return !isActivityCard(item.card);
+      }).length;
+      scheduleCards.forEach(function (item) {
+        var card = item.card;
+        if (isActivityCard(card)) return;
+        var token = String(card.getAttribute('data-data') || item.token || '').trim();
+        if (!token || seen.has(token)) return;
+        seen.add(token);
+        var position = readCellPosition(card);
+        var cell = position.cell;
+        var subjectId = Number(item.subjectId || card.getAttribute('data-subject-id') || 0);
+        if (!subjectId && cell) {
+          for (var anchor of cell.querySelectorAll('a[href]')) {
+            var subjectMatch = String(anchor.href || '').match(/subjectId=(\d+)/i);
+            if (subjectMatch) { subjectId = Number(subjectMatch[1]); break; }
+          }
+        }
+        var classroomId = String(card.getAttribute('data-class-id') || '').trim();
+        if (!classroomId && cell) {
+          for (var classroomAnchor of cell.querySelectorAll('a[href]')) {
+            var classroomMatch = String(classroomAnchor.href || '').match(/classroomId=(\d+)/i);
+            if (classroomMatch) { classroomId = classroomMatch[1]; break; }
+          }
+        }
+        var day = position.day;
+        var period = position.period;
+        var schoolId = haderExtractSchoolId(card);
+        var heading = card.querySelector('h2,h3,h4,[data-subject-name],.subject-name,.course-name');
+        var small = card.querySelector('small,.class-name,[data-class-name]');
+        var select = card.querySelector('.Moeen-2-dashboard-select');
+        var options = select ? Array.from(select.options).map(function (option) {
+          var parts = String(option.value || '').split(',');
+          if (!/^\d+,\d+,\d+$/.test(option.value || '')) return null;
+          return {
+            value: option.value,
+            text: String(option.textContent || '').trim(),
+            subject_id: Number(parts[0]),
+            chapter_id: Number(parts[1]),
+            lesson_id: Number(parts[2])
+          };
+        }).filter(Boolean) : [];
+        var hasCoreFields = !!subjectId && !!classroomId && !!schoolId
+          && Number.isInteger(day) && day >= 0 && day <= 5
+          && Number.isInteger(period) && period >= 1 && period <= 10;
+        if (!hasCoreFields) {
+          missingCoreCount++;
+          invalid.push({ token: token, subject_id: subjectId, classroom_id: classroomId, day: day, period: period, options: options.length });
+          return;
+        }
+        var subjectName = String(item.subjectName || (heading && heading.textContent) || '').trim();
+        var classroomName = String((small && small.textContent) || '').trim();
+        var status = readCardStatus(card);
+        if (!options.length) {
+          invalid.push({ token: token, subject_id: subjectId, classroom_id: classroomId, day: day, period: period, options: 0 });
+        }
+        lessons.push({
+          token: token,
+          subject_id: subjectId,
+          subject_name: subjectName,
+          classroom_id: classroomId,
+          classroom_name: classroomName,
+          school_madrasati_id: schoolId,
+          day: day,
+          period: period,
+          status: status,
+          options: options
+        });
+        timetable.push({
+          real_school_id: schoolId,
+          time_table_id: token,
+          encrypted_token: token,
+          subject_id: subjectId,
+          subject_name: subjectName,
+          classroom_id: classroomId,
+          classroom_name: classroomName,
+          madrasati_status: status,
+          day_of_week: day,
+          period_number: period
+        });
+      });
+      if (!lessons.length && !activities.length) {
+        return { success: false, code: 'schedule_empty', error: 'لم أتمكن من قراءة حصص صالحة من جدول مدرستي.', diagnostics: invalid.slice(0, 10) };
+      }
+      var captureComplete = missingCoreCount === 0 && lessons.length === sourceLessonCardCount;
+      var period = readMadrasatiPeriod();
+      var madrasatiUser = readMadrasatiUser();
+      return {
+        success: true,
+        week_date: (period && period.week_date) || haderWeekStart(),
+        week_source: period && period.week_date ? 'period' : 'fallback',
+        period_label: period ? period.label : '',
+        lessons: lessons,
+        activities: activities,
+        timetable: timetable,
+        invalid_count: invalid.length,
+        source_card_count: sourceLessonCardCount + activities.length,
+        captured_card_count: lessons.length + activities.length,
+        missing_card_count: missingCoreCount,
+        capture_complete: captureComplete,
+        madrasati_user_id: madrasatiUser.madrasati_user_id,
+        madrasati_user_name: madrasatiUser.madrasati_user_name
+      };
+    }
+
+    // Madrasati swaps the week grid in place (POST GetTeacherSchedule?week=N),
+    // so the URL never says which week is on screen. The period label
+    // ("الفترة 1448/05/07 - 1448/05/11") is the only on-page source of truth.
+    var haderHijriFormatter = null;
+
+    function haderHijriParts(date) {
+      try {
+        haderHijriFormatter = haderHijriFormatter || new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', {
+          year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'UTC'
+        });
+        var parts = {};
+        haderHijriFormatter.formatToParts(date).forEach(function (part) { parts[part.type] = part.value; });
+        return { y: parseInt(parts.year, 10), m: parseInt(parts.month, 10), d: parseInt(parts.day, 10) };
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function haderHijriToGregorian(y, m, d) {
+      var now = new Date();
+      var todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+      var today = haderHijriParts(new Date(todayUtc));
+      if (!today) return null;
+      var estimate = Math.round((y - today.y) * 354.367 + (m - today.m) * 29.5306 + (d - today.d));
+      for (var spread = 0; spread <= 6; spread++) {
+        for (var sign of [1, -1]) {
+          var candidate = new Date(todayUtc + (estimate + sign * spread) * 86400000);
+          var parts = haderHijriParts(candidate);
+          if (parts && parts.y === y && parts.m === m && parts.d === d) return candidate;
+          if (spread === 0) break;
+        }
+      }
+      return null;
+    }
+
+    function haderSundayOf(utcDate) {
+      var sunday = new Date(utcDate.getTime() - utcDate.getUTCDay() * 86400000);
+      return sunday.getUTCFullYear() + '-' + String(sunday.getUTCMonth() + 1).padStart(2, '0') + '-' + String(sunday.getUTCDate()).padStart(2, '0');
+    }
+
+    function haderLatinDigits(text) {
+      return String(text || '').replace(/[٠-٩]/g, function (digit) {
+        return String(digit.charCodeAt(0) - 0x0660);
+      });
+    }
+
+    function findMadrasatiPeriodLabel() {
+      var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+        acceptNode: function (node) {
+          return /الفترة/.test(node.nodeValue || '') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        }
+      });
+      var node;
+      while ((node = walker.nextNode())) {
+        var element = node.parentElement;
+        if (!element || element.closest('[class*="Moeen-2"]')) continue;
+        // The dates may sit in a sibling of the "الفترة" text, so climb a few
+        // levels until the element holds a Hijri date, but stop before it
+        // grows into a whole section of the page.
+        for (var depth = 0; element && depth < 4; depth++) {
+          var text = haderLatinDigits(element.textContent);
+          if (text.length > 160) break;
+          if (/1[34]\d\d\/\d{1,2}\/\d{1,2}/.test(text)) return element;
+          element = element.parentElement;
+        }
+      }
+      return null;
+    }
+
+    function readMadrasatiPeriod() {
+      var element = findMadrasatiPeriodLabel();
+      if (!element) return null;
+      var text = haderLatinDigits(element.textContent).replace(/\s+/g, ' ').trim();
+      var dates = [];
+      var pattern = /(1[34]\d\d)\/(\d{1,2})\/(\d{1,2})/g;
+      var match;
+      while ((match = pattern.exec(text))) {
+        var y = Number(match[1]);
+        var m = Number(match[2]);
+        var d = Number(match[3]);
+        dates.push({ y: y, m: m, d: d, ordinal: y * 372 + m * 31 + d });
+      }
+      if (!dates.length) return null;
+      // RTL rendering puts the end date first, so sort instead of trusting order.
+      dates.sort(function (left, right) { return left.ordinal - right.ordinal; });
+      var start = dates[0];
+      var gregorian = haderHijriToGregorian(start.y, start.m, start.d);
+      return {
+        element: element,
+        label: text,
+        key: dates.map(function (date) { return date.ordinal; }).join('|'),
+        ordinal: start.ordinal,
+        // Snap from mid-week: a one-day disagreement between Madrasati's Hijri
+        // calendar and Umm al-Qura would otherwise turn Sunday into Saturday
+        // and file the week under the previous one.
+        week_date: gregorian ? haderSundayOf(new Date(gregorian.getTime() + 2 * 86400000)) : null
+      };
+    }
+
+    function isHaderArrowDisabled(element) {
+      if (!element || !document.contains(element)) return true;
+      if (element.disabled || element.getAttribute('aria-disabled') === 'true') return true;
+      if (/(^|\s)disabled(\s|$)/i.test(String(element.className || ''))) return true;
+      return !isTrulyVisible(element);
+    }
+
+    function findMadrasatiWeekArrows(labelElement) {
+      var clickable = 'button,a,[role="button"],[onclick]';
+      var iconish = 'i,svg,span[class*="chevron" i],span[class*="arrow" i],span[class*="angle" i]';
+      var scope = labelElement;
+      for (var depth = 0; scope && depth < 5; depth++) {
+        var found = [];
+        scope.querySelectorAll(clickable + ',' + iconish).forEach(function (candidate) {
+          var target = candidate.closest(clickable) || candidate;
+          if (found.indexOf(target) !== -1 || target.closest('[class*="Moeen-2"]')) return;
+          var signature = [
+            target.className && target.className.baseVal !== undefined ? target.className.baseVal : target.className,
+            target.id, target.getAttribute('title'), target.getAttribute('aria-label'),
+            target.getAttribute('onclick'), target.getAttribute('href'),
+            Array.from(target.querySelectorAll('i,svg,span')).map(function (icon) {
+              return String(icon.getAttribute('class') || '');
+            }).join(' ')
+          ].join(' ');
+          var text = String(target.textContent || '').replace(/\s+/g, '');
+          var arrowText = /^[<>‹›«»❮❯]+$/.test(text);
+          var arrowSignature = /chevron|angle|arrow|next|prev|التالي|السابق|week/i.test(signature);
+          if (!arrowText && !(arrowSignature && text.length <= 20)) return;
+          var direction = 0;
+          if (/next|التالي|forward|week\s*\+|\+\s*1/i.test(signature + ' ' + text)) direction = 1;
+          else if (/prev|السابق|back|week\s*-|-\s*1/i.test(signature + ' ' + text)) direction = -1;
+          found.push(target);
+          found[found.length - 1].haderDirection = direction;
+        });
+        if (found.length >= 2) return found;
+        scope = scope.parentElement;
+      }
+      return [];
+    }
+
+    // Which unlabeled arrow (by DOM order) moves forward on this page, learned
+    // from the first click whose result we could verify.
+    var haderForwardArrowIndex = null;
+
+    async function waitForMadrasatiPeriodChange(previousKey, timeoutMs) {
+      var deadline = Date.now() + timeoutMs;
+      while (Date.now() < deadline) {
+        await sleep(250);
+        var period = readMadrasatiPeriod();
+        if (period && period.key !== previousKey) {
+          await waitForHaderDomQuiet(400, 2500);
+          return readMadrasatiPeriod() || period;
+        }
+      }
+      return null;
+    }
+
+    function isHaderOwnNode(node) {
+      var element = node && (node.nodeType === 1 ? node : node.parentElement);
+      return Boolean(element && element.closest && element.closest('[class*="Moeen-2"],[id^="Moeen-2"],[id^="hader-"],[id^="hadar-"]'));
+    }
+
+    // Waits until the schedule grid stops changing. Watches the grid only and
+    // ignores حضر's own dropdowns and badges: watching the whole page meant the
+    // extension's periodic UI refresh kept every week step waiting the full max.
+    function waitForHaderDomQuiet(quietMs, maxMs) {
+      return new Promise(function (resolve) {
+        var quietTimer = null;
+        var observer = new MutationObserver(function (records) {
+          var external = records.some(function (record) {
+            if (isHaderOwnNode(record.target)) return false;
+            var nodes = Array.from(record.addedNodes).concat(Array.from(record.removedNodes));
+            return !nodes.length || nodes.some(function (node) { return !isHaderOwnNode(node); });
+          });
+          if (!external) return;
+          clearTimeout(quietTimer);
+          quietTimer = setTimeout(finish, quietMs);
+        });
+        var hardTimer = setTimeout(finish, maxMs);
+        function finish() {
+          clearTimeout(quietTimer);
+          clearTimeout(hardTimer);
+          observer.disconnect();
+          resolve();
+        }
+        var cell = document.querySelector('td.day-cell');
+        var grid = cell && cell.closest('table');
+        observer.observe((grid && grid.parentElement) || document.body, { childList: true, subtree: true });
+        quietTimer = setTimeout(finish, quietMs);
+      });
+    }
+
+    async function clickMadrasatiArrowAndWait(arrow, before) {
+      if (isHaderArrowDisabled(arrow)) return null;
+      arrow.click();
+      return waitForMadrasatiPeriodChange(before.key, 20000);
+    }
+
+    // Moves the Madrasati grid one week in `direction` (1 forward, -1 back) and
+    // waits for the new week to render. Resolves { moved: false } at the end
+    // of the range or when the arrows cannot be found.
+    async function stepMadrasatiWeek(direction, isCorrection) {
+      var before = readMadrasatiPeriod();
+      if (!before) return { moved: false, reason: 'period_label_not_found' };
+      var arrows = findMadrasatiWeekArrows(before.element);
+      if (!arrows.length) return { moved: false, reason: 'week_arrows_not_found' };
+
+      var labelled = arrows.filter(function (arrow) { return arrow.haderDirection === direction; });
+      var unlabelled = arrows.filter(function (arrow) { return arrow.haderDirection === 0; });
+      var ordered = labelled.slice();
+      if (unlabelled.length === 2 && haderForwardArrowIndex !== null) {
+        ordered.push(unlabelled[direction === 1 ? haderForwardArrowIndex : 1 - haderForwardArrowIndex]);
+      } else {
+        ordered = ordered.concat(unlabelled);
+      }
+
+      for (var i = 0; i < ordered.length && i < 2; i++) {
+        var arrow = ordered[i];
+        var after = await clickMadrasatiArrowAndWait(arrow, before);
+        if (!after) continue;
+        var movedForward = after.ordinal > before.ordinal;
+        var unlabelledIndex = unlabelled.indexOf(arrow);
+        if (unlabelledIndex !== -1 && unlabelled.length === 2) {
+          haderForwardArrowIndex = movedForward ? unlabelledIndex : 1 - unlabelledIndex;
+        }
+        if ((direction === 1) === movedForward) return { moved: true, period: after };
+
+        // Wrong way: the learned arrow now points the right way. Undo, then step.
+        if (isCorrection) return { moved: false, reason: 'week_direction_unresolved' };
+        var back = await stepMadrasatiWeek(-direction, true);
+        if (!back.moved) return { moved: false, reason: 'week_direction_unresolved' };
+        return stepMadrasatiWeek(direction, true);
+      }
+      return { moved: false, reason: 'end_of_range' };
+    }
+
+    // Saves the week on screen to Hader, so the weekly plan and reports have it
+    // even for a teacher who only prepares from inside Madrasati, which is
+    // always the case in the mobile app. Once per week per page load, and
+    // quiet on failure: a teacher without a plan simply has nothing saved.
+    var haderSavedWeeks = {};
+
+    async function saveShownWeekToHader() {
+      if (haderAllWeeksRunning || haderRemotePreparationRunning) return;
+      var period = readMadrasatiPeriod();
+      if (!period || !period.week_date || haderSavedWeeks[period.week_date]) return;
+      haderSavedWeeks[period.week_date] = true;
+      var week = await harvestScheduleForHader({ light: true });
+      if (!week.success || !week.timetable || !week.timetable.length) return;
+      if (week.week_source !== 'period' || week.week_date !== period.week_date) {
+        // The grid moved while it was being read; try again on the next scan.
+        delete haderSavedWeeks[period.week_date];
+        return;
+      }
+      var response = await sendRuntimeMessage({
+        action: 'HADER_IMPORT_SHOWN_WEEK',
+        week: {
+          week_date: week.week_date,
+          timetable: week.timetable,
+          replace_week: week.capture_complete === true,
+          madrasati_user_id: week.madrasati_user_id || null,
+          madrasati_user_name: week.madrasati_user_name || null
+        }
+      });
+      if (!response || !response.ok) {
+        console.info('[حضر] The week on screen was not saved to Hader:', response && (response.status || response.error));
+      }
+    }
+
+    function slimHaderWeek(snapshot) {
+      return {
+        week_date: snapshot.week_date,
+        week_source: snapshot.week_source,
+        period_label: snapshot.period_label,
+        timetable: snapshot.timetable,
+        activities: snapshot.activities || [],
+        lesson_count: (snapshot.lessons || []).length,
+        invalid_count: snapshot.invalid_count || 0,
+        capture_complete: snapshot.capture_complete,
+        madrasati_user_id: snapshot.madrasati_user_id || null,
+        madrasati_user_name: snapshot.madrasati_user_name || null
+      };
+    }
+
+    var haderAllWeeksRunning = false;
+    // Set by a preparation request: the teacher is waiting on preparation,
+    // while the week walk is background work, so the walk yields.
+    var haderAllWeeksAbort = false;
+    var haderRemotePreparationStartedAt = 0;
+    // A preparation that has held the tab this long is assumed dead (a hung
+    // Madrasati request, say) and no longer blocks new ones.
+    var HADER_PREPARATION_STALE_MS = 15 * 60 * 1000;
+
+    function isHaderPreparationBusy() {
+      return haderRemotePreparationRunning
+        && Date.now() - haderRemotePreparationStartedAt < HADER_PREPARATION_STALE_MS;
+    }
+
+    async function waitForHaderAllWeeksToStop(timeoutMs) {
+      var deadline = Date.now() + timeoutMs;
+      while (haderAllWeeksRunning && Date.now() < deadline) {
+        await sleep(250);
+      }
+    }
+
+    // The weeks a sync reads around this week. Teachers prepare next week and
+    // look back over the last few; walking Madrasati's whole term (20 weeks
+    // out and 20 back) took minutes and read weeks nobody opened.
+    var HADER_WEEKS_BEFORE = 4;
+    var HADER_WEEKS_AFTER = 1;
+
+    function haderWeekCount(value, fallback) {
+      if (value === undefined || value === null || value === '') return fallback;
+      var number = Math.floor(Number(value));
+      if (!Number.isFinite(number)) return fallback;
+      return Math.min(Math.max(number, 0), 30);
+    }
+
+    // Reads this week, the weeks after it, then the weeks before it, and
+    // streams every week to حضّر as it is read. A request without
+    // weeksBefore/weeksAfter (an older site) gets the old forward walk of
+    // maxWeeks. `moves` in the result is the signed number of weeks the grid
+    // ends away from where it started, so the caller can bring the teacher back.
+    async function harvestAllWeeksForHader(harvestId, options) {
+      options = options || {};
+      var windowed = options.weeksBefore != null || options.weeksAfter != null;
+      var before = windowed ? haderWeekCount(options.weeksBefore, HADER_WEEKS_BEFORE) : 0;
+      var after = windowed
+        ? haderWeekCount(options.weeksAfter, HADER_WEEKS_AFTER)
+        : Math.min(Math.max(Number(options.maxWeeks) || 20, 1), 30) - 1;
+      var limit = before + after + 1;
+      var weeks = [];
+      var skipped = [];
+      var seen = {};
+      var offset = 0;
+      var stopReason = 'max_weeks';
+
+      function report(week) {
+        return sendRuntimeMessage({
+          action: 'HADER_ALL_WEEKS_PROGRESS',
+          payload: { harvest_id: harvestId, index: weeks.length + skipped.length, max_weeks: limit, week: week }
+        });
+      }
+
+      // Count from today's week, not whichever week the teacher left on screen.
+      if (windowed) {
+        var shown = readMadrasatiPeriod();
+        // Madrasati's weeks follow Riyadh time (UTC+3).
+        var thisWeek = haderSundayOf(new Date(Date.now() + 3 * 3600000));
+        if (shown && shown.week_date && shown.week_date !== thisWeek) {
+          try {
+            offset += await goToMadrasatiWeek(thisWeek);
+          } catch (error) {
+            // Out of reach: read around the week on screen instead.
+            offset += error.haderSteps || 0;
+          }
+        }
+      }
+
+      var first = await harvestScheduleForHader({ light: true });
+      if (!first.success) return { result: Object.assign({ harvest_id: harvestId }, first), moves: offset };
+      weeks.push(slimHaderWeek(first));
+      seen[first.week_date] = true;
+      await report(weeks[0]);
+
+      if (first.week_source !== 'period') {
+        // Without the period label we cannot prove which week each click
+        // landed on, and a wrong week_date would overwrite another week.
+        return {
+          result: { success: true, harvest_id: harvestId, weeks_count: 1, skipped_weeks: [], stop_reason: 'period_label_not_found', complete: false },
+          moves: offset
+        };
+      }
+
+      // Forward first: coming back then passes this week once, where going
+      // back first would pass every earlier week twice.
+      var legs = [{ direction: 1, count: after }, { direction: -1, count: before }];
+      var shownWeekDate = first.week_date;
+      var failed = false;
+      for (var l = 0; l < legs.length && !failed; l++) {
+        var leg = legs[l];
+        var read = 0;
+        while (read < leg.count) {
+          if (haderAllWeeksAbort) { stopReason = 'interrupted'; failed = true; break; }
+          var step = await stepMadrasatiWeek(leg.direction);
+          if (!step.moved) {
+            var reason = step.reason || 'end_of_range';
+            // The term ending on one side still leaves the other side to read.
+            if (reason === 'end_of_range') { stopReason = reason; break; }
+            stopReason = reason;
+            failed = true;
+            break;
+          }
+          offset += leg.direction;
+          var weekDate = step.period && step.period.week_date;
+          if (!weekDate || (leg.direction === 1 ? weekDate <= shownWeekDate : weekDate >= shownWeekDate)) {
+            stopReason = 'week_not_advanced';
+            failed = true;
+            break;
+          }
+          shownWeekDate = weekDate;
+          if (seen[weekDate]) continue;
+          seen[weekDate] = true;
+          read++;
+
+          var snapshot = await harvestScheduleForHader({ light: true });
+          if (!snapshot.success) {
+            if (snapshot.code !== 'schedule_empty') { stopReason = snapshot.code || 'harvest_failed'; failed = true; break; }
+            // A holiday week has no cards; keep walking past it.
+            skipped.push(weekDate);
+            await report({ week_date: weekDate, empty: true });
+            continue;
+          }
+          if (snapshot.week_source !== 'period' || snapshot.week_date !== weekDate) {
+            stopReason = 'week_not_advanced';
+            failed = true;
+            break;
+          }
+          var week = slimHaderWeek(snapshot);
+          weeks.push(week);
+          await report(week);
+        }
+      }
+
+      return {
+        result: {
+          success: true,
+          harvest_id: harvestId,
+          weeks_count: weeks.length,
+          skipped_weeks: skipped,
+          stop_reason: stopReason,
+          complete: stopReason === 'end_of_range' || stopReason === 'max_weeks'
+        },
+        moves: offset
+      };
+    }
+
+    // While حضر drives the Madrasati grid the page redraws week after week,
+    // which looks broken unless the teacher is told what is going on.
+    function showHaderWorkBanner(text) {
+      if (!isTopLevelPage() || !document.body) return;
+      var banner = document.getElementById('hader-work-banner');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'hader-work-banner';
+        banner.setAttribute('role', 'status');
+        banner.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999999;background:#0E7A5E;color:#fff;padding:12px 20px;border-radius:16px;font-family:system-ui,sans-serif;font-size:14px;font-weight:700;direction:rtl;box-shadow:0 12px 30px rgba(13,84,70,0.3);';
+        document.body.appendChild(banner);
+      }
+      banner.textContent = text;
+    }
+
+    function hideHaderWorkBanner() {
+      var banner = document.getElementById('hader-work-banner');
+      if (banner) banner.remove();
+    }
+
+    async function runHaderAllWeeksHarvest(message) {
+      var outcome = { result: null, moves: 0 };
+      showHaderWorkBanner('حضر يقرأ أسابيع الجدول… لا تغلق هذه الصفحة، وسيعود الجدول لأسبوعك عند الانتهاء.');
+      try {
+        outcome = await harvestAllWeeksForHader(message.harvestId, {
+          maxWeeks: message.maxWeeks,
+          weeksBefore: message.weeksBefore,
+          weeksAfter: message.weeksAfter
+        });
+      } catch (error) {
+        outcome.result = { success: false, harvest_id: message.harvestId, error: error?.message || String(error) };
+      }
+      try {
+        await sendRuntimeMessage({ action: 'HADER_ALL_WEEKS_DONE', payload: outcome.result });
+        // Put the teacher back. Madrasati opens on the current week, so one
+        // reload replaces walking back week by week. Not when a preparation
+        // interrupted the walk: a reload would kill that preparation, and it
+        // moves the grid to its own weeks anyway.
+        if (Math.abs(outcome.moves) > 1 && !haderAllWeeksAbort) {
+          hideHaderWorkBanner();
+          window.location.reload();
+          return;
+        }
+        var backDirection = outcome.moves > 0 ? -1 : 1;
+        for (var i = 0; i < Math.abs(outcome.moves); i++) {
+          var back = await stepMadrasatiWeek(backDirection);
+          if (!back.moved) break;
+        }
+      } finally {
+        hideHaderWorkBanner();
+        haderAllWeeksRunning = false;
+      }
+    }
+
+    function findHaderLessonSelect(token) {
+      return Array.from(document.querySelectorAll('.Moeen-2-dashboard-select')).find(function (candidate) {
+        return candidate.getAttribute('data-lesson-token') === token;
+      }) || null;
+    }
+
+    // Lesson dropdowns are attached asynchronously after a week renders, so
+    // wait for the ones this run needs instead of failing on the first look.
+    async function waitForHaderLessonSelect(token, timeoutMs) {
+      var select = findHaderLessonSelect(token);
+      if (select) return select;
+      await injectDashboardUI();
+      var deadline = Date.now() + timeoutMs;
+      while (Date.now() < deadline) {
+        await scanDashboardCards();
+        select = findHaderLessonSelect(token);
+        if (select) return select;
+        await sleep(500);
+      }
+      return null;
+    }
+
+    // Moves the Madrasati grid to the week that starts on `weekDate`
+    // (YYYY-MM-DD, a Sunday) and returns the signed number of steps taken.
+    async function goToMadrasatiWeek(weekDate) {
+      var current = readMadrasatiPeriod();
+      if (!current || !current.week_date) throw new Error('تعذر قراءة الأسبوع المعروض في مدرستي.');
+      var steps = 0;
+      for (var guard = 0; guard < 8 && current.week_date !== weekDate; guard++) {
+        var direction = weekDate > current.week_date ? 1 : -1;
+        var step = await stepMadrasatiWeek(direction);
+        if (!step.moved || !step.period) {
+          var error = new Error('تعذر الانتقال إلى أسبوع الحصة في مدرستي.');
+          error.haderSteps = steps;
+          throw error;
+        }
+        steps += direction;
+        current = step.period;
+      }
+      if (current.week_date !== weekDate) {
+        var farError = new Error('أسبوع الحصة بعيد عن الأسبوع المعروض في مدرستي.');
+        farError.haderSteps = steps;
+        throw farError;
+      }
+      return steps;
+    }
+
+    // Card tokens may not survive a reload of Madrasati, so a token saved by an
+    // earlier harvest can miss the card now on screen. The slot (day, period,
+    // classroom, subject) is unique within a week and does survive; use it to
+    // find the card's current token.
+    async function resolveHaderLessonToken(lesson) {
+      if (findHaderLessonSelect(lesson.lesson_token)) return lesson.lesson_token;
+      if (lesson.day_of_week == null || lesson.period_number == null || !lesson.classroom_id) return lesson.lesson_token;
+      var day = Number(lesson.day_of_week);
+      var period = Number(lesson.period_number);
+      if (!Number.isInteger(day) || !Number.isInteger(period)) return lesson.lesson_token;
+      var shown = await harvestScheduleForHader({ light: true });
+      if (!shown.success) return lesson.lesson_token;
+      if (shown.lessons.some(function (item) { return item.token === lesson.lesson_token; })) return lesson.lesson_token;
+      var matches = shown.lessons.filter(function (item) {
+        return item.day === day
+          && item.period === period
+          && String(item.classroom_id) === String(lesson.classroom_id)
+          && (!lesson.subject_id || Number(item.subject_id) === Number(lesson.subject_id));
+      });
+      return matches.length === 1 ? matches[0].token : lesson.lesson_token;
+    }
+
+    async function returnFromMadrasatiWeek(steps) {
+      var direction = steps > 0 ? -1 : 1;
+      for (var i = 0; i < Math.abs(steps); i++) {
+        var back = await stepMadrasatiWeek(direction);
+        if (!back.moved) break;
+      }
+    }
+
+    async function executeHaderBrowserPreparation(message) {
+      var results = [];
+      var completion = null;
+      // Net weeks moved away from where the teacher left Madrasati.
+      var weekSteps = 0;
+      // Group by week so the grid moves at most once per week. Lessons without
+      // a week_date (older site builds) run on whatever week is on screen.
+      var lessons = message.lessons.slice().sort(function (left, right) {
+        return String(left.week_date || '').localeCompare(String(right.week_date || ''));
+      });
+      showHaderWorkBanner('حضر يحضّر ' + lessons.length + ' حصة… لا تغلق هذه الصفحة.');
+      try {
+        for (var index = 0; index < lessons.length; index++) {
+          var lesson = lessons[index];
+          try {
+            if (lesson.week_date) {
+              var shown = readMadrasatiPeriod();
+              if (shown && shown.week_date && shown.week_date !== lesson.week_date) {
+                try {
+                  weekSteps += await goToMadrasatiWeek(lesson.week_date);
+                } catch (navigationError) {
+                  weekSteps += navigationError.haderSteps || 0;
+                  throw navigationError;
+                }
+              }
+            }
+            var token = await resolveHaderLessonToken(lesson);
+            var select = await waitForHaderLessonSelect(token, 30000);
+            if (!select) {
+              var onScreen = readMadrasatiPeriod();
+              throw new Error('لم أجد الحصة في جدول مدرستي'
+                + (onScreen && onScreen.label ? ' (المعروض: ' + onScreen.label.replace(/^.*?(1[34]\d\d)/, '$1') + ')' : '')
+                + '. حدّث الجدول في حضّر ثم أعد المحاولة.');
+            }
+            var option = Array.from(select.options).find(function (candidate) { return candidate.value === lesson.selection_value; });
+            if (!option) throw new Error('الدرس المختار غير متاح لهذه الحصة في مدرستي. حدّث الجدول.');
+            var modules = new Set(lesson.selected_modules || []);
+            setResourceEnabled('activity', modules.has('assignment'));
+            setResourceEnabled('homework', modules.has('homework'));
+            setResourceEnabled('exam', modules.has('exam'));
+            setResourceEnabled('enrichment', modules.has('enrichment'));
+            select.value = lesson.selection_value;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            var card = select.closest('div[data-data]') || select.parentElement;
+            var selection = { treeValue: lesson.selection_value, treeText: lesson.selection_text };
+            updateDashboardStatus('⏳ جاري تحضير حصة ' + (index + 1) + ' من ' + lessons.length + '...', 'loading');
+            await sendRuntimeMessage({
+              action: 'HADER_BROWSER_PREPARATION_PROGRESS',
+              payload: { operation_id: message.operationId, done: index, total: message.lessons.length, current: lesson.selection_text }
+            });
+            await prefetchAILessonDataForCard({ select: select, div: card, selection: selection });
+            var ok = await silentPrepareLesson(token, selection, lesson.subject_id, lesson.school_madrasati_id, card);
+            if (!ok) throw new Error('رفضت مدرستي حفظ التحضير.');
+            var scheduleCard = card && (card.querySelector('.schedule-card') || card);
+            if (scheduleCard) {
+              scheduleCard.classList.remove('waiting', 'incomplete');
+              scheduleCard.classList.add('done');
+              scheduleCard.setAttribute('data-status', 'done');
+            }
+            results.push({ preparation_id: lesson.preparation_id, status: 'done', error: null });
+          } catch (error) {
+            results.push({ preparation_id: lesson.preparation_id, status: 'error', error: error?.message || String(error) });
+          }
+          await sendRuntimeMessage({
+            action: 'HADER_BROWSER_PREPARATION_PROGRESS',
+            payload: { operation_id: message.operationId, done: index + 1, total: message.lessons.length, current: lesson.selection_text }
+          });
+        }
+      } finally {
+        try {
+          completion = await sendRuntimeMessage({
+            action: 'HADER_BROWSER_PREPARATION_RESULT',
+            operationId: message.operationId,
+            ticket: message.ticket,
+            results: results
+          });
+          // Put the teacher back on the week they were looking at.
+          if (weekSteps) await returnFromMadrasatiWeek(weekSteps);
+        } finally {
+          hideHaderWorkBanner();
+          haderRemotePreparationRunning = false;
+        }
+      }
+      return { results: results, completion: completion };
+    }
+
     if (isContextAlive()) {
       chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message && message.action === 'HADER_HARVEST_SCHEDULE') {
+          void harvestScheduleForHader().then(sendResponse).catch(function (error) {
+            sendResponse({ success: false, error: error?.message || String(error) });
+          });
+          return true;
+        }
+
+        if (message && message.action === 'HADER_GET_MADRASATI_USER') {
+          sendResponse(Object.assign({ success: true }, readMadrasatiUser()));
+          return true;
+        }
+
+        if (message && message.action === 'HADER_HARVEST_ALL_WEEKS') {
+          if (haderAllWeeksRunning) {
+            sendResponse({ success: false, code: 'busy', error: 'تحديث الأسابيع يعمل بالفعل في تبويب مدرستي. انتظر حتى ينتهي.' });
+            return true;
+          }
+          if (isHaderPreparationBusy()) {
+            sendResponse({ success: false, code: 'busy', error: 'يوجد تحضير جارٍ في تبويب مدرستي. حدّث الأسابيع بعد انتهائه.' });
+            return true;
+          }
+          if (detectPageState() !== FLOW_STATES.DASHBOARD) {
+            sendResponse({ success: false, code: 'schedule_not_open', error: 'افتح صفحة جدول المعلم في مدرستي ثم أعد المحاولة.' });
+            return true;
+          }
+          haderAllWeeksRunning = true;
+          haderAllWeeksAbort = false;
+          sendResponse({ success: true, accepted: true });
+          void runHaderAllWeeksHarvest(message);
+          return true;
+        }
+
+        if (message && message.action === 'HADER_EXECUTE_BROWSER_PREPARATION') {
+          if (isHaderPreparationBusy()) {
+            sendResponse({ success: false, error: 'يوجد تحضير جارٍ بالفعل في تبويب مدرستي. انتظر حتى ينتهي.' });
+            return true;
+          }
+          if (!Array.isArray(message.lessons) || !message.lessons.length) {
+            sendResponse({ success: false, error: 'لم يرسل الخادم أي حصص معتمدة.' });
+            return true;
+          }
+          haderRemotePreparationRunning = true;
+          haderRemotePreparationStartedAt = Date.now();
+          sendResponse({ success: true, accepted: true });
+          void (async function () {
+            // Preparation outranks a background week walk: stop the walk,
+            // let it put the grid back, then prepare.
+            if (haderAllWeeksRunning) {
+              haderAllWeeksAbort = true;
+              await waitForHaderAllWeeksToStop(120000);
+            }
+            await executeHaderBrowserPreparation(message);
+          })();
+          return true;
+        }
+
         if (message && message.action === "EXTRACT_COOKIES") {
           try {
             const cookies = document.cookie;
@@ -7415,6 +8534,16 @@
           banner.innerHTML = '🔒 <strong>حضر</strong> — يرجى تسجيل الدخول من أيقونة الامتداد لتفعيل الامتداد';
           document.body && document.body.prepend ? document.body.prepend(banner) : (document.body ? document.body.insertBefore(banner, document.body.firstChild) : null);
         }
+        // Signing in on the Hader site signs the extension in too; start
+        // over then, so the teacher does not have to reload Madrasati.
+        if (isTopLevelPage() && isHadarWorkflowPath()) {
+          chrome.storage.onChanged.addListener(function onHadarSignIn(changes, area) {
+            var next = area === 'local' && changes[AUTH_SESSION_KEY] && changes[AUTH_SESSION_KEY].newValue;
+            if (!next || !next.isAuthenticated || !next.token) return;
+            chrome.storage.onChanged.removeListener(onHadarSignIn);
+            window.location.reload();
+          });
+        }
         return; // Stop all automation
       }
       // ── Authenticated: run boot ──
@@ -7426,29 +8555,6 @@
         if (!subscriptionAccess.ok) {
           showSubscriptionAccessException(subscriptionAccess);
           return; // Stop all automation
-        }
-
-        // 3. Auto-push Madrasati session to Moeen web app if it's open
-        if (isHadarWorkflowPath()) {
-          try {
-            const cookies = document.cookie;
-            const schoolMatch = window.location.href.match(/[?&](?:SchoolId|schoolId|real_school_id)=([a-f0-9]{32})/i);
-            let schoolId = schoolMatch ? schoolMatch[1] : "";
-            if (!schoolId) {
-              const schoolEl = document.querySelector('[href*="SchoolId="], [src*="SchoolId="]');
-              if (schoolEl) {
-                const match = (schoolEl.getAttribute('href') || schoolEl.getAttribute('src')).match(/SchoolId=([a-f0-9]{32})/i);
-                if (match) schoolId = match[1];
-              }
-            }
-            chrome.runtime.sendMessage({
-              action: "PUSH_MADRASATI_SESSION",
-              session_cookie: cookies,
-              madrasati_school_id: schoolId
-            }, () => void chrome.runtime.lastError);
-          } catch (e) {
-            console.warn("[Moeen Extension] Failed to auto-push session:", e);
-          }
         }
 
         startScheduleRouteWatcher();

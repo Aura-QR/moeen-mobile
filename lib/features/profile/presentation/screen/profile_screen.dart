@@ -15,6 +15,13 @@ import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dar
 import 'package:moean/features/payment/presentation/cubit/subscription_state.dart';
 import 'package:moean/core/di/injections.dart';
 
+/// The fair-use limits shown on the profile, one per tool the app offers.
+const Map<String, IconData> _limitIcons = {
+  'lesson_prep': Icons.event_note_outlined,
+  'presentation': Icons.slideshow_outlined,
+  'test': Icons.quiz_outlined,
+};
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -182,6 +189,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       value: usage.lessonsRemainingToday.toString(),
                                       iconColor: ColorsManager.primaryColor,
                                     ),
+                                    // Only the tools the app offers.
+                                    for (final limit in usage.limits.where(
+                                        (l) => _limitIcons.containsKey(l.tool)))
+                                      ProfileInfoCard(
+                                        icon: _limitIcons[limit.tool]!,
+                                        title: 'حد ${limit.label}',
+                                        value: 'اليوم ${limit.daily.display} · الشهر ${limit.monthly.display}',
+                                        iconColor: ColorsManager.secondaryColor,
+                                      ),
                                   ],
                                 );
                               }

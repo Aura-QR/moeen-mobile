@@ -99,6 +99,20 @@
   // is what lets the auth check at content.js boot succeed on the first pass.
   // Writes update the mirror immediately and persist to Dart in the background.
   // ───────────────────────────────────────────────────────────────────────────
+  // chrome.storage.onChanged. content.js listens for the sign-in key while
+  // signed out so it can start over once signed in; without this object the
+  // listener call throws and boot stops.
+  var storageListeners = [];
+
+  function notifyStorage(areaName, changes) {
+    if (!Object.keys(changes).length) return;
+    Promise.resolve().then(function () {
+      storageListeners.slice().forEach(function (fn) {
+        try { fn(changes, areaName); } catch (error) { log('onChanged listener threw', error); }
+      });
+    });
+  }
+
   function makeArea(areaName, initial) {
     var store = initial && typeof initial === 'object' ? initial : {};
 
@@ -159,22 +173,37 @@
       },
       set: function (data, callback) {
         if (data && typeof data === 'object') {
-          Object.keys(data).forEach(function (key) { store[key] = data[key]; });
+          var changes = {};
+          Object.keys(data).forEach(function (key) {
+            changes[key] = { oldValue: store[key], newValue: data[key] };
+            store[key] = data[key];
+          });
           persist();
+          notifyStorage(areaName, changes);
         }
         done(callback, undefined);
         return Promise.resolve();
       },
       remove: function (keys, callback) {
         var list = Array.isArray(keys) ? keys : [keys];
-        list.forEach(function (key) { delete store[key]; });
+        var changes = {};
+        list.forEach(function (key) {
+          if (Object.prototype.hasOwnProperty.call(store, key)) changes[key] = { oldValue: store[key] };
+          delete store[key];
+        });
         persist();
+        notifyStorage(areaName, changes);
         done(callback, undefined);
         return Promise.resolve();
       },
       clear: function (callback) {
-        Object.keys(store).forEach(function (key) { delete store[key]; });
+        var changes = {};
+        Object.keys(store).forEach(function (key) {
+          changes[key] = { oldValue: store[key] };
+          delete store[key];
+        });
         persist();
+        notifyStorage(areaName, changes);
         done(callback, undefined);
         return Promise.resolve();
       },
@@ -304,6 +333,47 @@
   }
 
   // ───────────────────────────────────────────────────────────────────────────
+  // Homework page state
+  //
+  // The homework form keeps its assignment list in a page-world variable that
+  // content.js cannot reach from its own script. The extension's worker writes
+  // it with chrome.scripting in the MAIN world; the WebView has no isolated
+  // world, so an inline script does the same.
+  // ───────────────────────────────────────────────────────────────────────────
+  function injectHomeworkPageState(payload) {
+    try {
+      var script = document.createElement('script');
+      script.textContent =
+        '(function(payload){try{' +
+        'var list=null;' +
+        'if(typeof listOfAssignments!=="undefined"&&Array.isArray(listOfAssignments)){list=listOfAssignments;}' +
+        'else if(Array.isArray(window.listOfAssignments)){list=window.listOfAssignments;}' +
+        'if(list){' +
+        'var exists=list.some(function(x){return String(x&&x.assignmentId)===String(payload.assignmentId);});' +
+        'if(!exists){list.push({' +
+        'assignmentId:payload.assignmentId,grade:payload.grade,assignmentName:payload.assignmentName,' +
+        'startDateTime:payload.startDateTime,endDateTime:payload.endDateTime,' +
+        'startDateTimeHijri:payload.startDateTimeHijri,endDateTimeHijri:payload.endDateTimeHijri,' +
+        'isGradeBook:payload.isGradeBook,assignmentIdEnc:payload.assignmentIdEnc,' +
+        'assignmentType:payload.assignmentType,DayCount:payload.dayCount,TimeTableIds:payload.timeTableId?[{timeTableId:payload.timeTableId,slot:"",date:"",classroom:""}]:[]' +
+        '});}' +
+        '}' +
+        'if(typeof loadAssignmentsList==="function"){try{loadAssignmentsList();}catch(_){}}' +
+        'window.__haderHomeworkListLength=list?list.length:null;' +
+        '}catch(e){window.__haderHomeworkError=e&&e.message;}})(' +
+        JSON.stringify(payload).replace(/</g, '\\u003c') +
+        ');';
+      window.__haderHomeworkError = null;
+      (document.documentElement || document.head || document.body).appendChild(script);
+      script.remove();
+      if (window.__haderHomeworkError) return { success: false, error: window.__haderHomeworkError };
+      return { success: true, listLength: window.__haderHomeworkListLength };
+    } catch (error) {
+      return { success: false, error: String(error && error.message ? error.message : error) };
+    }
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
   // Message router — the in-page stand-in for background.js
   // ───────────────────────────────────────────────────────────────────────────
 
@@ -345,6 +415,73 @@
         path: '/lesson-preparations/log',
         body: msg.payload || {}
       });
+    }
+
+    // The «حضر» button runs the same server operation as the extension:
+    // authorize → claim → prepare in this page → complete. Each step is an
+    // API call, proxied through Dart for the same CORS reason as above.
+    if (action === 'HADER_AUTHORIZE_PREPARATION') {
+      return bridge('haderApi', {
+        method: 'POST',
+        path: '/extension/preparations/authorize',
+        body: { client_request_id: msg.clientRequestId, lessons: msg.lessons || [] }
+      });
+    }
+
+    if (action === 'HADER_PREPARATION_TICKET') {
+      if ((msg.step !== 'claim' && msg.step !== 'complete') || !msg.operationId) {
+        return Promise.resolve({ ok: false, status: 0, error: 'Unknown preparation step.' });
+      }
+      return bridge('haderApi', {
+        method: 'POST',
+        path: '/extension/preparations/' + encodeURIComponent(msg.operationId) + '/' + msg.step,
+        body: msg.body || {}
+      });
+    }
+
+    if (action === 'HADER_BROWSER_PREPARATION_RESULT') {
+      // In the extension the worker completes the operation and tells the
+      // Hader site; here completing is all there is to do.
+      return bridge('haderApi', {
+        method: 'POST',
+        path: '/extension/preparations/' + encodeURIComponent(msg.operationId) + '/complete',
+        body: { ticket: msg.ticket, results: msg.results || [] }
+      }).then(function (completion) {
+        var data = (completion && completion.data) || {};
+        return Object.assign({ success: !!(completion && completion.ok), status: completion && completion.status }, data);
+      });
+    }
+
+    if (action === 'HADER_BROWSER_PREPARATION_PROGRESS'
+      || action === 'HADER_ALL_WEEKS_PROGRESS'
+      || action === 'HADER_ALL_WEEKS_DONE') {
+      // Forwarded to the Hader site by the extension; nothing listens here.
+      return Promise.resolve({ success: true });
+    }
+
+    if (action === 'HADER_IMPORT_SHOWN_WEEK') {
+      var week = msg.week || {};
+      if (!week.week_date || !Array.isArray(week.timetable)) {
+        return Promise.resolve({ ok: false, status: 0 });
+      }
+      var importBody = {
+        week_date: week.week_date,
+        timetable: week.timetable,
+        replace_week: week.replace_week === true
+      };
+      if (week.madrasati_user_id) {
+        importBody.madrasati_user_id = week.madrasati_user_id;
+        importBody.madrasati_user_name = week.madrasati_user_name || null;
+      }
+      return bridge('haderApi', {
+        method: 'POST',
+        path: '/extension/schedule/import',
+        body: importBody
+      });
+    }
+
+    if (action === 'HADER_INJECT_HOMEWORK_PAGE_STATE') {
+      return Promise.resolve(injectHomeworkPageState(msg.payload || {}));
     }
 
     if (action === 'PUSH_MADRASATI_SESSION') {
@@ -442,7 +579,19 @@
 
     storage: {
       local: makeArea('local', SEED.storageLocal),
-      sync: makeArea('sync', SEED.storageSync)
+      sync: makeArea('sync', SEED.storageSync),
+      onChanged: {
+        addListener: function (fn) {
+          if (typeof fn === 'function') storageListeners.push(fn);
+        },
+        removeListener: function (fn) {
+          var i = storageListeners.indexOf(fn);
+          if (i !== -1) storageListeners.splice(i, 1);
+        },
+        hasListener: function (fn) {
+          return storageListeners.indexOf(fn) !== -1;
+        }
+      }
     }
   };
 
@@ -472,6 +621,25 @@
 
   // content.js reads its config off globalThis before the shim's consumers run.
   window.__HADER_IN_APP__ = true;
+
+  // The app's copy of content.js used to hand the page's cookies to Dart on
+  // every workflow page; the extension dropped that step, so the shim keeps it
+  // and content.js can be copied unchanged.
+  if (window === window.top
+    && /\/SchoolSchedule(?:\/|$)|\/Teacher\/(?:LessonPreparation|Preparation|Lessons)(?:\/|$)/i.test(window.location.pathname)) {
+    var pushSession = function () {
+      var schoolMatch = window.location.href.match(/[?&](?:SchoolId|schoolId|real_school_id)=([a-f0-9]{32})/i);
+      var schoolId = schoolMatch ? schoolMatch[1] : '';
+      if (!schoolId) {
+        var schoolEl = document.querySelector('[href*="SchoolId="], [src*="SchoolId="]');
+        var elMatch = schoolEl && String(schoolEl.getAttribute('href') || schoolEl.getAttribute('src') || '').match(/SchoolId=([a-f0-9]{32})/i);
+        if (elMatch) schoolId = elMatch[1];
+      }
+      routeMessage({ action: 'PUSH_MADRASATI_SESSION', session_cookie: document.cookie, madrasati_school_id: schoolId });
+    };
+    if (document.readyState === 'complete') pushSession();
+    else window.addEventListener('load', pushSession, { once: true });
+  }
 
   log('ready', {
     frame: window === window.top ? 'top' : 'sub',

@@ -10,6 +10,7 @@ import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/features/hader_webview/data/hader_bridge.dart';
 import 'package:moean/features/hader_webview/data/madrasati_session_store.dart';
+import 'package:moean/features/weekly_plan/presentation/weekly_plan_sheet.dart';
 
 /// Runs the Hader lesson-preparation automation inside the app.
 ///
@@ -299,6 +300,12 @@ class _HaderWebViewScreenState extends State<HaderWebViewScreen> {
                 tooltip: 'كيفية الاستخدام',
                 onPressed: () =>
                     Navigator.pushNamed(context, Routes.extensionUsage),
+              ),
+              IconButton(
+                icon: const Icon(Icons.description_outlined),
+                color: ColorsManager.themeDarkPrimary,
+                tooltip: 'خطة الأسبوع',
+                onPressed: () => showWeeklyPlanSheet(context),
               ),
               IconButton(
                 icon: const Icon(Icons.refresh_rounded),
