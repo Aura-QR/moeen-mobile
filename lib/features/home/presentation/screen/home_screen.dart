@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:moean/core/utils/constants/routes.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/models/madrasati_session_data.dart';
@@ -30,16 +29,6 @@ class HomeScreen extends StatelessWidget {
         builder: (context, themeState) {
           return Scaffold(
             backgroundColor: ColorsManager.background,
-            // «مساعد حضّر», the support chatbot the site has in its corner.
-            floatingActionButton: FloatingActionButton(
-              heroTag: 'support-chat',
-              backgroundColor: ColorsManager.themeActiveAccent,
-              foregroundColor: Colors.white,
-              tooltip: 'مساعد حضّر',
-              onPressed: () => Navigator.pushNamed(context, Routes.supportChat),
-              child: const Icon(Icons.support_agent_rounded),
-            ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
             body: Directionality(
               textDirection: TextDirection.rtl,
               child: Stack(
