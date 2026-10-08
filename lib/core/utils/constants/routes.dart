@@ -1,3 +1,4 @@
+import 'package:moean/features/support_chat/presentation/support_chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/features/home/presentation/widgets/download_extention.dart';
@@ -127,6 +128,7 @@ class Routes {
   static const String adminPromo = '/admin/promo';
   static const String curriculumDistribution = '/curriculum/distribution';
   static const String curriculumBooks = '/curriculum/books';
+  static const String supportChat = '/support-chat';
 
 
 
@@ -178,6 +180,7 @@ class Routes {
       initialUrl: ModalRoute.of(context)?.settings.arguments as String?,
     ),
     haderPrep: (context) => const HaderNativePrepScreen(),
+    supportChat: (context) => const SupportChatScreen(),
     extensionUsage: (context) => const ExtensionUsageSlider(),
     adminTeachers: (context) => const AdminTeachersScreen(),
     adminContact: (context) => const AdminContactScreen(),
