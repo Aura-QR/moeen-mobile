@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
+import 'dart:ui' show Rect;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
@@ -214,38 +215,45 @@ class PresentationsCubit extends Cubit<PresentationsState> {
     );
   }
 
-  Future<void> downloadPresentation({List<PresentationSlideModel>? extraSlides}) async {
-    if (generatedPresentation == null) return;
-    try {
-      final title = selectedLesson?.title ?? 'Presentation';
-      
-      final presentationToDownload = extraSlides != null && extraSlides.isNotEmpty
-          ? PresentationModel(
-              id: generatedPresentation!.id,
-              lessonId: generatedPresentation!.lessonId,
-              status: generatedPresentation!.status,
-              templateId: generatedPresentation!.templateId,
-              filePath: generatedPresentation!.filePath,
-              slideCount: generatedPresentation!.slideCount,
-              generatedAt: generatedPresentation!.generatedAt,
-              generationError: generatedPresentation!.generationError,
-              slides: [...generatedPresentation!.slides, ...extraSlides],
-            )
-          : generatedPresentation!;
-
-      final path = await PptxGeneratorService.generatePresentation(
-        presentationToDownload, 
-        title,
-        templateId: generatedPresentation!.templateId ?? selectedTemplate,
-        subjectName: selectedSubject?.name ?? '',
-        gradeName: selectedGrade?.name ?? '',
-        unitName: selectedUnit?.title ?? '',
-      );
-      await Share.shareXFiles([XFile(path)], text: 'Presentation: $title');
-    } catch (e) {
-      // emit an error if needed, but since it's a download action we might just print or show a toast via UI
-      print('Error generating PPTX: $e');
+  /// Builds the PPTX and opens the share sheet. Throws on failure so the
+  /// screen can tell the user.
+  Future<void> downloadPresentation({
+    List<PresentationSlideModel>? extraSlides,
+    Rect? sharePositionOrigin,
+  }) async {
+    if (generatedPresentation == null) {
+      throw StateError('No generated presentation');
     }
+    final title = selectedLesson?.title ?? 'Presentation';
+    
+    final presentationToDownload = extraSlides != null && extraSlides.isNotEmpty
+        ? PresentationModel(
+            id: generatedPresentation!.id,
+            lessonId: generatedPresentation!.lessonId,
+            status: generatedPresentation!.status,
+            templateId: generatedPresentation!.templateId,
+            filePath: generatedPresentation!.filePath,
+            slideCount: generatedPresentation!.slideCount,
+            generatedAt: generatedPresentation!.generatedAt,
+            generationError: generatedPresentation!.generationError,
+            slides: [...generatedPresentation!.slides, ...extraSlides],
+          )
+        : generatedPresentation!;
+
+    final path = await PptxGeneratorService.generatePresentation(
+      presentationToDownload, 
+      title,
+      templateId: generatedPresentation!.templateId ?? selectedTemplate,
+      subjectName: selectedSubject?.name ?? '',
+      gradeName: selectedGrade?.name ?? '',
+      unitName: selectedUnit?.title ?? '',
+    );
+    // iPad needs an anchor for the share popover, or nothing appears.
+    await Share.shareXFiles(
+      [XFile(path)],
+      text: 'Presentation: $title',
+      sharePositionOrigin: sharePositionOrigin,
+    );
   }
 
   void _pollPresentation(int lessonId, String templateId) async {

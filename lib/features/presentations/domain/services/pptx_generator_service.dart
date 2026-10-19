@@ -145,6 +145,13 @@ class PptxGeneratorService {
 
     await headlessWebView.run();
 
-    return completer.future;
+    // If the WebView never finishes loading, fail instead of waiting forever.
+    return completer.future.timeout(
+      const Duration(seconds: 60),
+      onTimeout: () {
+        headlessWebView?.dispose();
+        throw TimeoutException('PPTX generation timed out');
+      },
+    );
   }
 }

@@ -79,7 +79,36 @@ class PresentationPreviewScreen extends StatefulWidget {
 
 class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
   bool _isRandomPickerEnabled = false;
+  bool _isDownloading = false;
   final TextEditingController _namesController = TextEditingController();
+
+  Future<void> _download(
+    BuildContext buttonContext,
+    PresentationSlideModel? randomPickerSlide,
+  ) async {
+    if (_isDownloading) return;
+    final box = buttonContext.findRenderObject() as RenderBox?;
+    final origin = box == null ? null : box.localToGlobal(Offset.zero) & box.size;
+    setState(() => _isDownloading = true);
+    try {
+      await widget.cubit.downloadPresentation(
+        extraSlides: randomPickerSlide != null ? [randomPickerSlide] : null,
+        sharePositionOrigin: origin,
+      );
+    } catch (e) {
+      debugPrint('Error generating PPTX: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('تعذّر تجهيز ملف العرض، حاول مرة أخرى.\n$e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -147,9 +176,17 @@ class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
               onPressed: () => context.pop(),
             ),
             actions: [
-              IconButton(
-                icon: Icon(Icons.download, color: theme.primaryAccent),
-                onPressed: () => widget.cubit.downloadPresentation(extraSlides: randomPickerSlide != null ? [randomPickerSlide] : null),
+              Builder(
+                builder: (buttonContext) => IconButton(
+                  icon: _isDownloading
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: theme.primaryAccent),
+                        )
+                      : Icon(Icons.download, color: theme.primaryAccent),
+                  onPressed: () => _download(buttonContext, randomPickerSlide),
+                ),
               ),
             ],
           ),
@@ -211,10 +248,13 @@ class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: PrimaryElevatedButton(
-                  text: 'حفظ وتحميل (PPTX)',
-                  icon: const Icon(Icons.download),
-                  onPressed: () => widget.cubit.downloadPresentation(extraSlides: randomPickerSlide != null ? [randomPickerSlide] : null),
+                child: Builder(
+                  builder: (buttonContext) => PrimaryElevatedButton(
+                    text: 'حفظ وتحميل (PPTX)',
+                    icon: const Icon(Icons.download),
+                    isLoading: _isDownloading,
+                    onPressed: () => _download(buttonContext, randomPickerSlide),
+                  ),
                 ),
               ),
             ],
