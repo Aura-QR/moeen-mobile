@@ -3,6 +3,7 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/features/privacy_policy/presentation/widgets/privacy_cookie_bullet_widget.dart';
 import 'package:moean/features/privacy_policy/presentation/widgets/privacy_section_header_widget.dart';
 
 class PrivacySectionNoSellingWidget extends StatelessWidget {
@@ -78,6 +79,14 @@ class PrivacySectionNoSellingWidget extends StatelessWidget {
               height: 1.6,
             ),
             textAlign: TextAlign.right,
+          ),
+          verticalSpace10,
+          PrivacyCookieBulletWidget(
+            text: appTranslation().get('privacy_sec6_item1'),
+          ),
+          verticalSpace10,
+          PrivacyCookieBulletWidget(
+            text: appTranslation().get('privacy_sec6_item2'),
           ),
         ],
       ),

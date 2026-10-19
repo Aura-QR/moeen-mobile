@@ -48,6 +48,32 @@ class PrivacySectionCookiesWidget extends StatelessWidget {
           PrivacyCookieBulletWidget(
             text: appTranslation().get('privacy_sec8_item3'),
           ),
+          verticalSpace16,
+          Text(
+            appTranslation().get('privacy_sec8_meta_intro'),
+            style: TextStylesManager.regular13.copyWith(
+              color: ColorsManager.mainText,
+              height: 1.6,
+            ),
+            textAlign: TextAlign.right,
+          ),
+          verticalSpace14,
+          PrivacyCookieBulletWidget(
+            text: appTranslation().get('privacy_sec8_item4'),
+          ),
+          verticalSpace10,
+          PrivacyCookieBulletWidget(
+            text: appTranslation().get('privacy_sec8_item5'),
+          ),
+          verticalSpace16,
+          Text(
+            appTranslation().get('privacy_sec8_opt_out'),
+            style: TextStylesManager.regular13.copyWith(
+              color: ColorsManager.placeholder,
+              height: 1.6,
+            ),
+            textAlign: TextAlign.right,
+          ),
         ],
       ),
     );

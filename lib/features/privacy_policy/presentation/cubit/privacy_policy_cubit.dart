@@ -27,6 +27,7 @@ class PrivacyPolicyCubit extends Cubit<PrivacyPolicyState> {
     6: GlobalKey(),
     7: GlobalKey(),
     8: GlobalKey(),
+    9: GlobalKey(),
   };
 
   int? activeSection = 0;
@@ -107,7 +108,7 @@ class PrivacyPolicyCubit extends Cubit<PrivacyPolicyState> {
         ),
         (
           appTranslation().get('privacy_sec6_title'),
-          '${appTranslation().get('privacy_sec6_alert_title')}: ${appTranslation().get('privacy_sec6_alert_desc')}\n\n${appTranslation().get('privacy_sec6_p1')}'
+          '${appTranslation().get('privacy_sec6_alert_title')}: ${appTranslation().get('privacy_sec6_alert_desc')}\n\n${appTranslation().get('privacy_sec6_p1')}\n- ${appTranslation().get('privacy_sec6_item1')}\n- ${appTranslation().get('privacy_sec6_item2')}'
         ),
         (
           appTranslation().get('privacy_sec7_title'),
@@ -115,11 +116,15 @@ class PrivacyPolicyCubit extends Cubit<PrivacyPolicyState> {
         ),
         (
           appTranslation().get('privacy_sec8_title'),
-          '${appTranslation().get('privacy_sec8_intro')}\n- ${appTranslation().get('privacy_sec8_item1')}\n- ${appTranslation().get('privacy_sec8_item2')}\n- ${appTranslation().get('privacy_sec8_item3')}'
+          '${appTranslation().get('privacy_sec8_intro')}\n- ${appTranslation().get('privacy_sec8_item1')}\n- ${appTranslation().get('privacy_sec8_item2')}\n- ${appTranslation().get('privacy_sec8_item3')}\n\n${appTranslation().get('privacy_sec8_meta_intro')}\n- ${appTranslation().get('privacy_sec8_item4')}\n- ${appTranslation().get('privacy_sec8_item5')}\n\n${appTranslation().get('privacy_sec8_opt_out')}'
         ),
         (
           appTranslation().get('privacy_sec9_title'),
-          '${appTranslation().get('privacy_sec9_p1')}\n\n${appTranslation().get('privacy_sec9_box_title')}: ${appTranslation().get('privacy_sec9_box_desc')}\n${appTranslation().get('privacy_sec9_email')}'
+          '${appTranslation().get('privacy_sec9_intro')}\n\n${appTranslation().get('privacy_sec9_pixel_title')}\n- ${appTranslation().get('privacy_sec9_pixel_item1')}\n- ${appTranslation().get('privacy_sec9_pixel_item2')}\n- ${appTranslation().get('privacy_sec9_pixel_item3')}\n- ${appTranslation().get('privacy_sec9_pixel_item4')}\n\n${appTranslation().get('privacy_sec9_server_title')}\n- ${appTranslation().get('privacy_sec9_server_item1')}\n- ${appTranslation().get('privacy_sec9_server_item2')}\n- ${appTranslation().get('privacy_sec9_server_item3')}\n\n${appTranslation().get('privacy_sec9_hashing')}\n\n${appTranslation().get('privacy_sec9_never_title')}\n- ${appTranslation().get('privacy_sec9_never_item1')}\n- ${appTranslation().get('privacy_sec9_never_item2')}\n- ${appTranslation().get('privacy_sec9_never_item3')}\n- ${appTranslation().get('privacy_sec9_never_item4')}\n- ${appTranslation().get('privacy_sec9_never_item5')}\n\n${appTranslation().get('privacy_sec9_opt_out')}'
+        ),
+        (
+          appTranslation().get('privacy_sec10_title'),
+          '${appTranslation().get('privacy_sec10_p1')}\n\n${appTranslation().get('privacy_sec10_box_title')}: ${appTranslation().get('privacy_sec10_box_desc')}\n${appTranslation().get('privacy_sec10_email')}'
         ),
       ];
 
