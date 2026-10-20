@@ -197,7 +197,7 @@ class ExamInfoCubit extends Cubit<ExamInfoState> {
       },
       (data) {
         final units = data.chapters
-            .where((c) => selectedSemester == null || c.semester == selectedSemester)
+            .where((c) => c.lessonsInSemester(selectedSemester).isNotEmpty)
             .map((c) => (c.unitName != null && c.unitName!.isNotEmpty) ? c.unitName! : c.title)
             .where((u) => u.isNotEmpty)
             .toSet()

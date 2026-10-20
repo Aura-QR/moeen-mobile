@@ -89,6 +89,11 @@ class CurriculumChapterModel {
       lessons: (json['lessons'] as List?)?.map((e) => CurriculumLessonModel.fromJson(e)).toList() ?? [],
     );
   }
+
+  /// The chapter's lessons taught in [semester]. Goes by each lesson's own
+  /// term, because one chapter can hold both terms (e.g. Tajweed).
+  List<CurriculumLessonModel> lessonsInSemester(String? semester) =>
+      lessons.where((l) => l.isInSemester(semester)).toList();
 }
 
 class CurriculumLessonModel {
@@ -118,4 +123,9 @@ class CurriculumLessonModel {
       lessonApiId: json['lesson_api_id'],
     );
   }
+
+  /// A null [semester] means no term filter. Lessons marked 'year' are
+  /// taught all year, so they belong to both terms.
+  bool isInSemester(String? semester) =>
+      semester == null || this.semester == semester || this.semester == 'year';
 }

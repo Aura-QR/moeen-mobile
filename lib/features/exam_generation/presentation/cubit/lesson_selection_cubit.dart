@@ -114,10 +114,6 @@ class LessonSelectionCubit extends Cubit<LessonSelectionState> {
     List<CurriculumChapterModel> filtered = [];
     if (_subjectDetails != null) {
       for (var chapter in _subjectDetails!.chapters) {
-        if (_selectedSemester != null && chapter.semester != _selectedSemester) {
-          continue;
-        }
-
         if (_selectedUnitName != null && _selectedUnitName!.isNotEmpty) {
           final chapterUnitName = (chapter.unitName != null && chapter.unitName!.isNotEmpty) ? chapter.unitName! : chapter.title;
           if (chapterUnitName != _selectedUnitName) {
@@ -125,7 +121,7 @@ class LessonSelectionCubit extends Cubit<LessonSelectionState> {
           }
         }
         
-        final matchingLessons = chapter.lessons.where((l) {
+        final matchingLessons = chapter.lessonsInSemester(_selectedSemester).where((l) {
           final name = l.title.toLowerCase();
           final normalizedName = _normalizeArabic(name);
           return normalizedName.contains(normalizedQuery);
@@ -135,7 +131,7 @@ class LessonSelectionCubit extends Cubit<LessonSelectionState> {
           filtered.add(CurriculumChapterModel(
             chapterId: chapter.chapterId,
             title: chapter.title,
-            semester: chapter.semester,
+            semester: _selectedSemester ?? chapter.semester,
             unitId: chapter.unitId,
             unitName: chapter.unitName,
             lessons: matchingLessons,

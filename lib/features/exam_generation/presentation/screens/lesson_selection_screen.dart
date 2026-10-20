@@ -141,7 +141,7 @@ class _LessonSelectionScreenState extends State<LessonSelectionScreen> {
                         border: Border.all(color: ColorsManager.borderLightGray),
                       ),
                       child: Text(
-                        'الفصل: ${chapter.title} (الفصل: ${chapter.semester})',
+                        'الفصل: ${chapter.title} (الفصل: ${chapter.semester == 'year' ? 'طوال العام' : chapter.semester})',
                         style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor),
                       ),
                     ),
