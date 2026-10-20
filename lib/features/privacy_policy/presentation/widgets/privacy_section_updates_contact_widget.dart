@@ -31,7 +31,7 @@ class PrivacySectionUpdatesContactWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final email = appTranslation().get('privacy_sec9_email');
+    final email = appTranslation().get('privacy_sec10_email');
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -43,14 +43,14 @@ class PrivacySectionUpdatesContactWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           PrivacySectionHeaderWidget(
-            title: appTranslation().get('privacy_sec9_title'),
-            subtitle: appTranslation().get('privacy_sec9_subtitle'),
+            title: appTranslation().get('privacy_sec10_title'),
+            subtitle: appTranslation().get('privacy_sec10_subtitle'),
             icon: Icons.mail_outline_rounded,
-            tag: appTranslation().get('privacy_sec9_tag'),
+            tag: appTranslation().get('privacy_sec10_tag'),
           ),
           verticalSpace16,
           Text(
-            appTranslation().get('privacy_sec9_p1'),
+            appTranslation().get('privacy_sec10_p1'),
             style: TextStylesManager.regular13.copyWith(
               color: ColorsManager.mainText,
               height: 1.6,
@@ -80,7 +80,7 @@ class PrivacySectionUpdatesContactWidget extends StatelessWidget {
                     horizontalSpace8,
                     Expanded(
                       child: Text(
-                        appTranslation().get('privacy_sec9_box_title'),
+                        appTranslation().get('privacy_sec10_box_title'),
                         style: TextStylesManager.bold14.copyWith(
                           color: ColorsManager.primaryColor,
                         ),
@@ -91,7 +91,7 @@ class PrivacySectionUpdatesContactWidget extends StatelessWidget {
                 ),
                 verticalSpace8,
                 Text(
-                  appTranslation().get('privacy_sec9_box_desc'),
+                  appTranslation().get('privacy_sec10_box_desc'),
                   style: TextStylesManager.regular12.copyWith(
                     color: ColorsManager.placeholder,
                     height: 1.5,
@@ -112,7 +112,7 @@ class PrivacySectionUpdatesContactWidget extends StatelessWidget {
                         size: 18,
                       ),
                       label: Text(
-                        appTranslation().get('privacy_sec9_contact_btn'),
+                        appTranslation().get('privacy_sec10_contact_btn'),
                         style: TextStylesManager.bold13.copyWith(
                           color: ColorsManager.white,
                         ),

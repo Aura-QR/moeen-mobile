@@ -47,6 +47,9 @@ class PaymentCubit extends Cubit<PaymentState> {
   void selectPlan(int index) {
     selectedPlanIndex = index;
     if (!isClosed) emit(PlansLoaded(plans));
+    // A code can be limited to some plans, so check it again for the new one.
+    final code = appliedPromoCode;
+    if (code != null) validatePromo(code);
   }
 
   void selectMethod(int index) {
@@ -87,7 +90,8 @@ class PaymentCubit extends Cubit<PaymentState> {
       code: code.trim(),
       planSlug: planSlug,
     );
-    if (isClosed) return;
+    // The plan changed while this was in flight; the newer check wins.
+    if (isClosed || plans[selectedPlanIndex].slug != planSlug) return;
     result.fold(
       (error) {
         appliedPromoCode = null;

@@ -14,6 +14,7 @@ import 'package:moean/features/privacy_policy/presentation/widgets/privacy_secti
 import 'package:moean/features/privacy_policy/presentation/widgets/privacy_section_encryption_widget.dart';
 import 'package:moean/features/privacy_policy/presentation/widgets/privacy_section_intro_widget.dart';
 import 'package:moean/features/privacy_policy/presentation/widgets/privacy_section_madrasati_widget.dart';
+import 'package:moean/features/privacy_policy/presentation/widgets/privacy_section_measurement_widget.dart';
 import 'package:moean/features/privacy_policy/presentation/widgets/privacy_section_no_selling_widget.dart';
 import 'package:moean/features/privacy_policy/presentation/widgets/privacy_section_teacher_rights_widget.dart';
 import 'package:moean/features/privacy_policy/presentation/widgets/privacy_section_updates_contact_widget.dart';
@@ -115,6 +116,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   verticalSpace16,
                   Container(
                     key: cubit.sectionKeys[8],
+                    child: const PrivacySectionMeasurementWidget(),
+                  ),
+                  verticalSpace16,
+                  Container(
+                    key: cubit.sectionKeys[9],
                     child: const PrivacySectionUpdatesContactWidget(),
                   ),
                   verticalSpace32,

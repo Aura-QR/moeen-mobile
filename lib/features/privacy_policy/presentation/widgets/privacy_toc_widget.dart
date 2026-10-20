@@ -20,7 +20,8 @@ class PrivacyTocWidget extends StatelessWidget {
     (index: 5, key: 'privacy_sec6_toc', icon: Icons.share_rounded),
     (index: 6, key: 'privacy_sec7_toc', icon: Icons.person_outline_rounded),
     (index: 7, key: 'privacy_sec8_toc', icon: Icons.cookie_outlined),
-    (index: 8, key: 'privacy_sec9_toc', icon: Icons.mail_outline_rounded),
+    (index: 8, key: 'privacy_sec9_toc', icon: Icons.campaign_outlined),
+    (index: 9, key: 'privacy_sec10_toc', icon: Icons.mail_outline_rounded),
   ];
 
   @override

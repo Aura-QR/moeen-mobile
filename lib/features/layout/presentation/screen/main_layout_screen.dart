@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/theme/colors.dart';
+import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/features/layout/presentation/cubit/layout_cubit.dart';
 import 'package:moean/features/layout/presentation/cubit/layout_state.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
@@ -37,6 +38,23 @@ class MainLayoutScreen extends StatelessWidget {
             child: Scaffold(
               // Allow the body to extend behind the bottom nav bar
               extendBody: true,
+              // «مساعد حضّر», on the home tab only. It belongs to this
+              // Scaffold, not HomeScreen's: here Flutter places it above the
+              // curved nav bar, which otherwise draws over it.
+              floatingActionButton: cubit.currentIndex == 1
+                  ? FloatingActionButton(
+                      heroTag: 'support-chat',
+                      backgroundColor: ColorsManager.primaryColor,
+                      foregroundColor: ColorsManager.white,
+                      tooltip: 'مساعد حضّر',
+                      onPressed: () => Navigator.pushNamed(context, Routes.supportChat),
+                      child: const Icon(Icons.support_agent_rounded),
+                    )
+                  : null,
+              // Bottom left, as on the site.
+              floatingActionButtonLocation: Directionality.of(context) == TextDirection.rtl
+                  ? FloatingActionButtonLocation.endFloat
+                  : FloatingActionButtonLocation.startFloat,
               body: BlocBuilder<SubscriptionCubit, SubscriptionState>(
                 bloc: sl<SubscriptionCubit>(),
                 builder: (context, subState) {
