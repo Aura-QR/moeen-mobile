@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:archive/archive.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -735,15 +736,33 @@ class ExamWordService {
       educationOffice: educationOffice,
     );
 
+    await shareWordFile(filePath, exam.title);
+  }
+
+  static Future<void> shareWordFile(String filePath, String title) async {
     await Share.shareXFiles(
       [
         XFile(
           filePath,
           mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          name: '${exam.title}.docx',
+          name: '$title.docx',
         )
       ],
-      text: 'اختبار: ${exam.title}',
+      text: 'اختبار: $title',
     );
+  }
+
+  /// Opens the system "save as" dialog so the file lands in the device's
+  /// storage (Downloads by default). Returns false if the user cancelled.
+  static Future<bool> saveWordToDevice(String filePath) async {
+    final bytes = await File(filePath).readAsBytes();
+    final savedPath = await FilePicker.platform.saveFile(
+      dialogTitle: 'حفظ الاختبار',
+      fileName: filePath.split('/').last,
+      type: FileType.custom,
+      allowedExtensions: ['docx'],
+      bytes: bytes,
+    );
+    return savedPath != null;
   }
 }

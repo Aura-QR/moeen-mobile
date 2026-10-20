@@ -91,10 +91,26 @@ class _PresentationPreviewScreenState extends State<PresentationPreviewScreen> {
     final origin = box == null ? null : box.localToGlobal(Offset.zero) & box.size;
     setState(() => _isDownloading = true);
     try {
-      await widget.cubit.downloadPresentation(
+      final path = await widget.cubit.buildPresentationFile(
         extraSlides: randomPickerSlide != null ? [randomPickerSlide] : null,
-        sharePositionOrigin: origin,
       );
+      final saved = await widget.cubit.savePresentationToDevice(path);
+      if (!saved) {
+        // User dismissed the save dialog; fall back to the share sheet.
+        await widget.cubit.sharePresentationFile(path, sharePositionOrigin: origin);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('تم حفظ الملف على الجهاز'),
+            backgroundColor: Colors.green,
+            action: SnackBarAction(
+              label: 'مشاركة',
+              textColor: Colors.white,
+              onPressed: () => widget.cubit.sharePresentationFile(path, sharePositionOrigin: origin),
+            ),
+          ),
+        );
+      }
     } catch (e) {
       debugPrint('Error generating PPTX: $e');
       if (mounted) {

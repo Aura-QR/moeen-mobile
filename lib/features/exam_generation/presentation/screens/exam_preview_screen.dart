@@ -153,13 +153,30 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                     ),
                   );
                   try {
-                    await ExamWordService.shareWordExam(
+                    final filePath = await ExamWordService.generateWordFile(
                       exam: exam,
                       showAnswers: showAnswers,
                       teacherName: teacherName,
                       schoolName: schoolName,
                       educationOffice: educationOffice,
                     );
+                    final saved = await ExamWordService.saveWordToDevice(filePath);
+                    if (!saved) {
+                      // User dismissed the save dialog; fall back to the share sheet.
+                      await ExamWordService.shareWordFile(filePath, exam.title);
+                    } else if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('تم حفظ ملف الوورد على الجهاز'),
+                          backgroundColor: ColorsManager.successColor,
+                          action: SnackBarAction(
+                            label: 'مشاركة',
+                            textColor: Colors.white,
+                            onPressed: () => ExamWordService.shareWordFile(filePath, exam.title),
+                          ),
+                        ),
+                      );
+                    }
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(

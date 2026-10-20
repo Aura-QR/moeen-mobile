@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:ui' show Rect;
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -215,11 +217,10 @@ class PresentationsCubit extends Cubit<PresentationsState> {
     );
   }
 
-  /// Builds the PPTX and opens the share sheet. Throws on failure so the
+  /// Builds the PPTX and returns its temp path. Throws on failure so the
   /// screen can tell the user.
-  Future<void> downloadPresentation({
+  Future<String> buildPresentationFile({
     List<PresentationSlideModel>? extraSlides,
-    Rect? sharePositionOrigin,
   }) async {
     if (generatedPresentation == null) {
       throw StateError('No generated presentation');
@@ -240,14 +241,32 @@ class PresentationsCubit extends Cubit<PresentationsState> {
           )
         : generatedPresentation!;
 
-    final path = await PptxGeneratorService.generatePresentation(
-      presentationToDownload, 
+    return PptxGeneratorService.generatePresentation(
+      presentationToDownload,
       title,
       templateId: generatedPresentation!.templateId ?? selectedTemplate,
       subjectName: selectedSubject?.name ?? '',
       gradeName: selectedGrade?.name ?? '',
       unitName: selectedUnit?.title ?? '',
     );
+  }
+
+  /// Opens the system "save as" dialog so the file lands in the device's
+  /// storage (Downloads by default). Returns false if the user cancelled.
+  Future<bool> savePresentationToDevice(String path) async {
+    final bytes = await File(path).readAsBytes();
+    final savedPath = await FilePicker.platform.saveFile(
+      dialogTitle: 'حفظ العرض',
+      fileName: path.split(Platform.pathSeparator).last,
+      type: FileType.custom,
+      allowedExtensions: ['pptx'],
+      bytes: bytes,
+    );
+    return savedPath != null;
+  }
+
+  Future<void> sharePresentationFile(String path, {Rect? sharePositionOrigin}) async {
+    final title = selectedLesson?.title ?? 'Presentation';
     // iPad needs an anchor for the share popover, or nothing appears.
     await Share.shareXFiles(
       [XFile(path)],
