@@ -60,6 +60,12 @@ class PrivacySectionDataCollectedWidget extends StatelessWidget {
             description: appTranslation().get('privacy_sec2_card4_desc'),
             icon: Icons.memory_rounded,
           ),
+          verticalSpace10,
+          PrivacyDataCollectedCardWidget(
+            title: appTranslation().get('privacy_sec2_card5_title'),
+            description: appTranslation().get('privacy_sec2_card5_desc'),
+            icon: Icons.drive_folder_upload_outlined,
+          ),
         ],
       ),
     );
