@@ -40,3 +40,27 @@ class PaymentRequiredFailure extends Failure {
 class ServerFailure extends Failure {
   const ServerFailure(super.message);
 }
+
+/// Turns a raw [DioHelper] error string into a [Failure].
+///
+/// API messages are already written for the user and are kept as-is.
+/// Transport and status-line errors become a translation key, so the UI can
+/// always render `appTranslation().get(failure.message)`.
+Failure failureFromApiError(String error) {
+  if (error == 'Unauthenticated') {
+    return const UnauthorizedFailure('generic_error');
+  }
+  if (error.startsWith('No response')) {
+    return const ServerFailure('network_error');
+  }
+  if (error.startsWith('__')) {
+    final parts = error.split(':');
+    return ServerFailure(
+      parts.length >= 3 ? parts.sublist(2).join(':') : 'generic_error',
+    );
+  }
+  if (error.startsWith('Error') || error == 'something went wrong') {
+    return const ServerFailure('generic_error');
+  }
+  return ServerFailure(error);
+}

@@ -5,6 +5,7 @@ import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/reports/data/report_pdf_service.dart';
@@ -123,6 +124,14 @@ class _ReportScreenState extends State<ReportScreen> {
                 onPressed: () => context.pop(),
               ),
               actions: [
+                IconButton(
+                  tooltip: appTranslation().get('achievement_report_title'),
+                  icon: Icon(
+                    Icons.bar_chart_rounded,
+                    color: ColorsManager.primaryColor,
+                  ),
+                  onPressed: () => context.push(Routes.achievementReport),
+                ),
                 IconButton(
                   tooltip: appTranslation().get('saved_reports_subtitle'),
                   icon: Icon(

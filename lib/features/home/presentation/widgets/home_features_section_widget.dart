@@ -331,6 +331,30 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                           }
                         },
                       ),
+                       horizontalSpace12,
+                       HomeActionChipWidget(
+                        icon: Icons.workspace_premium_outlined,
+                        title: appTranslation().get('portfolio_title'),
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.portfolio);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.bar_chart_rounded,
+                        title: appTranslation().get('achievement_report_title'),
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.achievementReport);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
                     ],
                   ],
                 ),
@@ -441,6 +465,24 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                               onTap: () {
                                 if (token != null && token!.isNotEmpty) {
                                   context.push(Routes.curriculumBooks);
+                                } else {
+                                  context.push(Routes.login);
+                                }
+                              },
+                            ),
+                          ),
+                          horizontalSpace8,
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.workspace_premium_outlined,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: appTranslation().get('portfolio_title'),
+                              subtitle: appTranslation().get('portfolio_subtitle'),
+                              isHighlighted: false,
+                              onTap: () {
+                                if (token != null && token!.isNotEmpty) {
+                                  context.push(Routes.portfolio);
                                 } else {
                                   context.push(Routes.login);
                                 }

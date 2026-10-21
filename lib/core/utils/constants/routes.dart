@@ -75,6 +75,19 @@ import 'package:moean/features/curriculum/presentation/cubit/curriculum_distribu
 import 'package:moean/features/curriculum/presentation/cubit/curriculum_books_cubit.dart';
 import 'package:moean/features/curriculum/presentation/screens/curriculum_distribution_screen.dart';
 import 'package:moean/features/curriculum/presentation/screens/curriculum_books_screen.dart';
+import 'package:moean/core/utils/extensions/context_extension.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:moean/features/portfolio/data/repositories/portfolio_repository.dart';
+import 'package:moean/features/portfolio/data/services/portfolio_file_picker.dart';
+import 'package:moean/features/portfolio/data/services/portfolio_pdf_service.dart';
+import 'package:moean/features/portfolio/presentation/cubit/portfolio_list_cubit.dart';
+import 'package:moean/features/portfolio/presentation/cubit/portfolio_editor_cubit.dart';
+import 'package:moean/features/portfolio/presentation/screens/portfolio_list_screen.dart';
+import 'package:moean/features/portfolio/presentation/screens/portfolio_editor_screen.dart';
+import 'package:moean/features/reports/data/achievement_report_pdf_service.dart';
+import 'package:moean/features/reports/data/repositories/achievement_report_repository.dart';
+import 'package:moean/features/reports/presentation/cubit/achievement_report_cubit.dart';
+import 'package:moean/features/reports/presentation/screen/achievement_report_screen.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -128,6 +141,9 @@ class Routes {
   static const String adminPromo = '/admin/promo';
   static const String curriculumDistribution = '/curriculum/distribution';
   static const String curriculumBooks = '/curriculum/books';
+  static const String portfolio = '/portfolio';
+  static const String portfolioEditor = '/portfolio/editor';
+  static const String achievementReport = '/achievement-report';
   static const String supportChat = '/support-chat';
 
 
@@ -275,6 +291,31 @@ class Routes {
         BlocProvider(create: (_) => CurriculumBooksCubit()),
       ],
       child: const CurriculumBooksScreen(),
+    ),
+    portfolio: (context) => BlocProvider(
+      create: (_) => PortfolioListCubit(PortfolioRepository())..loadPortfolios(),
+      child: const PortfolioListScreen(),
+    ),
+    // Argument: the portfolio id (int).
+    portfolioEditor: (context) => BlocProvider(
+      create: (_) => PortfolioEditorCubit(
+        portfolioId: context.getArg<int>() ?? 0,
+        repository: PortfolioRepository(),
+        filePicker: PortfolioFilePicker(),
+        pdfBuilder: (portfolio, images) =>
+            PortfolioPdfService.build(portfolio: portfolio, images: images),
+      )..load(),
+      child: const PortfolioEditorScreen(),
+    ),
+    achievementReport: (context) => BlocProvider(
+      create: (_) => AchievementReportCubit(
+        AchievementReportRepository(),
+        pdfBuilder: (report) => AchievementReportPdfService.build(
+          report: report,
+          teacherName: sl<ProfileCubit>().profileModel?.user.name ?? '',
+        ),
+      )..load(),
+      child: const AchievementReportScreen(),
     ),
   };
 }

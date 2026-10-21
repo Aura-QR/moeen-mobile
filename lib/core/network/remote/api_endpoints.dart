@@ -88,3 +88,22 @@ const String curriculumProgressApi = '/curriculum/progress';
 String curriculumPlanWeekPrepareApi(int planId, int weekId) =>
     '/curriculum/plans/$planId/weeks/$weekId/prepare';
 
+
+// Portfolio API
+const String portfolioRolesApi = '/portfolios/roles';
+const String portfoliosApi = '/portfolios';
+String portfolioApi(int id) => '/portfolios/$id';
+String portfolioShareApi(int id) => '/portfolios/$id/share';
+String portfolioItemsApi(int id) => '/portfolios/$id/items';
+String portfolioItemApi(int id, int itemId) => '/portfolios/$id/items/$itemId';
+String portfolioItemUploadsApi(int id, int itemId) =>
+    '/portfolios/$id/items/$itemId/uploads';
+String portfolioItemFilesApi(int id, int itemId) =>
+    '/portfolios/$id/items/$itemId/files';
+String portfolioItemFilesOrderApi(int id, int itemId) =>
+    '/portfolios/$id/items/$itemId/files/order';
+String portfolioItemFileApi(int id, int itemId, int fileId) =>
+    '/portfolios/$id/items/$itemId/files/$fileId';
+
+// Achievement Report API
+const String achievementReportApi = '/reports/achievements';

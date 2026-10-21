@@ -12,6 +12,11 @@ import 'package:moean/features/curriculum/presentation/widgets/region_legend_row
 import 'package:moean/features/curriculum/presentation/widgets/weeks_grid.dart';
 import 'package:moean/features/curriculum/presentation/widgets/inline_books_section.dart';
 import 'package:moean/features/curriculum/presentation/widgets/curriculum_error_view.dart';
+import 'package:moean/features/curriculum/presentation/widgets/export_pdf_card.dart';
+import 'package:flutter/services.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
 
 class CurriculumBooksScreen extends StatefulWidget {
   const CurriculumBooksScreen({super.key});
@@ -96,6 +101,135 @@ class _CurriculumBooksScreenState extends State<CurriculumBooksScreen> {
   }
 
   String _selectedRegion = 'general';
+
+  Future<void> _exportSemesterPlanPdf({
+    required CurriculumPlanDetailModel detail,
+    required String school,
+    required String teacher,
+    required String manager,
+  }) async {
+    final plan = detail.plan;
+    final weeks = detail.weeks;
+    final pdf = pw.Document();
+
+    // Load Tajawal fonts for Arabic text rendering
+    final fontData = await rootBundle.load('assets/fonts/Tajawal-Regular.ttf');
+    final boldFontData = await rootBundle.load('assets/fonts/Tajawal-Bold.ttf');
+    final ttf = pw.Font.ttf(fontData);
+    final ttfBold = pw.Font.ttf(boldFontData);
+
+    const int weeksPerPage = 12;
+    final int totalPages = (weeks.length / weeksPerPage).ceil().clamp(1, 999);
+
+    for (int i = 0; i < weeks.length; i += weeksPerPage) {
+      final pageWeeks = weeks.sublist(
+        i,
+        (i + weeksPerPage) < weeks.length ? (i + weeksPerPage) : weeks.length,
+      );
+      final int pageNum = (i ~/ weeksPerPage) + 1;
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          textDirection: pw.TextDirection.rtl,
+          build: (pw.Context ctx) {
+            return pw.Directionality(
+              textDirection: pw.TextDirection.rtl,
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+                children: [
+                  // Header
+                  pw.Container(
+                    padding: const pw.EdgeInsets.all(10),
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: PdfColors.grey400),
+                      borderRadius: pw.BorderRadius.circular(8),
+                    ),
+                    child: pw.Column(
+                      children: [
+                        pw.Text(
+                          'الخطة الفصلية - ${plan.subjectName} - ${plan.gradeName} - الفصل ${plan.semester}',
+                          style: pw.TextStyle(font: ttfBold, fontSize: 13),
+                          textAlign: pw.TextAlign.center,
+                        ),
+                        pw.SizedBox(height: 6),
+                        pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+                          children: [
+                            pw.Text('المدرسة: $school', style: pw.TextStyle(font: ttf, fontSize: 9)),
+                            pw.Text('المعلم: $teacher', style: pw.TextStyle(font: ttf, fontSize: 9)),
+                            pw.Text('المدير: $manager', style: pw.TextStyle(font: ttf, fontSize: 9)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  pw.SizedBox(height: 10),
+                  // Table
+                  pw.Table(
+                    border: pw.TableBorder.all(color: PdfColors.grey400),
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(1),
+                      1: const pw.FlexColumnWidth(2),
+                      2: const pw.FlexColumnWidth(4),
+                      3: const pw.FlexColumnWidth(2),
+                    },
+                    children: [
+                      // Header row
+                      pw.TableRow(
+                        decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+                        children: [
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('الأسبوع', style: pw.TextStyle(font: ttfBold, fontSize: 9), textAlign: pw.TextAlign.center)),
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('التاريخ', style: pw.TextStyle(font: ttfBold, fontSize: 9), textAlign: pw.TextAlign.center)),
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('الدروس', style: pw.TextStyle(font: ttfBold, fontSize: 9), textAlign: pw.TextAlign.center)),
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('ملاحظات', style: pw.TextStyle(font: ttfBold, fontSize: 9), textAlign: pw.TextAlign.center)),
+                        ],
+                      ),
+                      // Week rows
+                      ...pageWeeks.map((week) {
+                        final isSpecial = week.isHoliday || week.isExam;
+                        final weekLabel = week.weekNumber != null
+                            ? 'أسبوع ${week.weekNumber}'
+                            : (week.title ?? (week.isHoliday ? 'إجازة' : 'اختبارات'));
+                        final dateLabel = '${week.startsOn} - ${week.endsOn}';
+                        final lessons = week.items.map((e) => e.title).join('\n');
+                        final notes = week.notes.join('\n');
+                        return pw.TableRow(
+                          decoration: isSpecial ? const pw.BoxDecoration(color: PdfColors.grey100) : null,
+                          children: [
+                            pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(weekLabel, style: pw.TextStyle(font: ttfBold, fontSize: 8))),
+                            pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(dateLabel, style: pw.TextStyle(font: ttf, fontSize: 8))),
+                            pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(isSpecial ? (week.title ?? weekLabel) : lessons, style: pw.TextStyle(font: ttf, fontSize: 8))),
+                            pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(notes, style: pw.TextStyle(font: ttf, fontSize: 8))),
+                          ],
+                        );
+                      }),
+                    ],
+                  ),
+                  pw.Spacer(),
+                  // Footer
+                  pw.Divider(color: PdfColors.grey400),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text('معلم المادة: $teacher', style: pw.TextStyle(font: ttf, fontSize: 9)),
+                      pw.Text('صفحة $pageNum من $totalPages', style: pw.TextStyle(font: ttf, fontSize: 9)),
+                      pw.Text('مدير المدرسة: $manager', style: pw.TextStyle(font: ttf, fontSize: 9)),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    await Printing.layoutPdf(
+      onLayout: (_) async => pdf.save(),
+      name: 'الخطة الفصلية - ${plan.subjectName}.pdf',
+    );
+  }
 
   void _onRegionChanged(String region) {
     setState(() => _selectedRegion = region);
@@ -185,6 +319,17 @@ class _CurriculumBooksScreenState extends State<CurriculumBooksScreen> {
                     if (_selectedSubject != null)
                       const SliverToBoxAdapter(
                         child: InlineBooksSection(),
+                      ),
+                    if (detail != null)
+                      SliverToBoxAdapter(
+                        child: ExportPdfCard(
+                          onExport: (school, teacher, manager) => _exportSemesterPlanPdf(
+                            detail: detail!,
+                            school: school,
+                            teacher: teacher,
+                            manager: manager,
+                          ),
+                        ),
                       ),
                     SliverToBoxAdapter(
                       child: RegionLegendRow(
