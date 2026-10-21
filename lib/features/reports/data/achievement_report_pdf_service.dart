@@ -7,13 +7,17 @@ import 'package:moean/features/reports/presentation/utils/achievement_date_forma
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
-/// The printable achievement report: teacher, period, totals, the lessons
-/// table, and signature lines for the teacher and the principal.
+/// The printable achievement report, matching the website's print view:
+/// brand header, period and teacher box, five totals, the lessons card,
+/// and signature columns for the teacher and the principal.
 class AchievementReportPdfService {
-  static final PdfColor _primary = PdfColor.fromHex('0E7A5E');
-  static final PdfColor _primaryLight = PdfColor.fromHex('E8F5F1');
+  static final PdfColor _ink = PdfColor.fromHex('102138');
+  static final PdfColor _green = PdfColor.fromHex('0B5D45');
+  static final PdfColor _greenSoft = PdfColor.fromHex('F1F8F5');
+  static final PdfColor _greenBorder = PdfColor.fromHex('D5E9E1');
   static final PdfColor _border = PdfColor.fromHex('E2E8F0');
   static final PdfColor _muted = PdfColor.fromHex('64748B');
+  static final PdfColor _line = PdfColor.fromHex('94A3B8');
 
   static Future<Uint8List> build({
     required AchievementReportModel report,
@@ -21,62 +25,37 @@ class AchievementReportPdfService {
   }) async {
     final regular = pw.Font.ttf(await rootBundle.load('assets/fonts/Tajawal-Regular.ttf'));
     final bold = pw.Font.ttf(await rootBundle.load('assets/fonts/Tajawal-Bold.ttf'));
+    final black = pw.Font.ttf(await rootBundle.load('assets/fonts/Tajawal-ExtraBold.ttf'));
     final doc = pw.Document(theme: pw.ThemeData.withFont(base: regular, bold: bold));
     final t = appTranslation().get;
-    final totals = report.totals;
+    final range = formatFullDateRange(report.from, report.to, t);
 
     doc.addPage(pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
+      margin: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 36),
       textDirection: pw.TextDirection.rtl,
       build: (_) => [
-        pw.Text(
-          t('achievement_report_title'),
-          style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: _primary),
-        ),
-        pw.SizedBox(height: 6),
-        pw.Text('${t('achievement_teacher')}: $teacherName'),
-        pw.Text(
-          '${t('achievement_period_${report.period}')} · ${formatAchievementRange(report.from, report.to, t)}',
-          style: pw.TextStyle(color: _muted),
-        ),
-        pw.SizedBox(height: 16),
-        _table(
-          headers: [t('achievement_metric'), t('achievement_count')],
-          rows: [
-            [t('achievement_lessons_prepared'), '${totals.lessonsPrepared}'],
-            [t('achievement_exams'), '${totals.exams}'],
-            [t('achievement_presentations'), '${totals.presentations}'],
-            [t('achievement_worksheets'), '${totals.worksheets}'],
-            [t('achievement_educational_reports'), '${totals.educationalReports}'],
-          ],
-          widths: const [3, 1],
-        ),
+        _header(report, range, black),
         pw.SizedBox(height: 18),
-        pw.Text(t('achievement_lessons'), style: pw.TextStyle(fontSize: 15, fontWeight: pw.FontWeight.bold)),
-        pw.SizedBox(height: 8),
-        if (report.lessons.isEmpty)
-          pw.Text(t('achievement_no_lessons'), style: pw.TextStyle(color: _muted))
-        else
-          _table(
-            headers: ['#', t('achievement_lesson'), t('achievement_date'), t('achievement_time')],
-            rows: [
-              for (var i = 0; i < report.lessons.length; i++)
-                [
-                  '${i + 1}',
-                  report.lessons[i].title,
-                  report.lessons[i].completedAt == null ? '' : formatDayMonth(report.lessons[i].completedAt!, t),
-                  report.lessons[i].completedAt == null ? '' : formatTime(report.lessons[i].completedAt!),
-                ],
-            ],
-            widths: const [0.5, 4, 1.6, 1],
-          ),
-        pw.SizedBox(height: 40),
+        _periodBox(report, range, teacherName, black),
+        pw.SizedBox(height: 14),
+        _totals(report.totals, black),
+        pw.SizedBox(height: 14),
+        ..._lessons(report, black),
+        pw.SizedBox(height: 36),
         pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            _signature(t('achievement_teacher'), teacherName),
-            _signature(t('achievement_principal'), ''),
+            pw.Expanded(child: _signature(t('achievement_pdf_subject_teacher'), teacherName)),
+            pw.SizedBox(width: 36),
+            pw.Expanded(child: _signature(t('achievement_principal'), '')),
           ],
+        ),
+        pw.SizedBox(height: 28),
+        pw.Divider(color: _border, thickness: 0.8),
+        pw.SizedBox(height: 6),
+        pw.Center(
+          child: pw.Text(t('achievement_pdf_footer'), style: pw.TextStyle(fontSize: 8, color: _muted)),
         ),
       ],
     ));
@@ -84,40 +63,180 @@ class AchievementReportPdfService {
     return doc.save();
   }
 
-  static pw.Widget _table({
-    required List<String> headers,
-    required List<List<String>> rows,
-    required List<double> widths,
-  }) {
-    return pw.Table(
-      border: pw.TableBorder.all(color: _border),
-      columnWidths: {for (var i = 0; i < widths.length; i++) i: pw.FlexColumnWidth(widths[i])},
-      children: [
-        pw.TableRow(
-          decoration: pw.BoxDecoration(color: _primaryLight),
-          children: [for (final h in headers) _cell(h, isHeader: true)],
-        ),
-        for (final row in rows) pw.TableRow(children: [for (final value in row) _cell(value)]),
-      ],
+  static pw.Widget _header(AchievementReportModel report, String range, pw.Font black) {
+    final t = appTranslation().get;
+    return pw.Column(children: [
+      pw.Text(t('portfolio_pdf_brand'), style: pw.TextStyle(font: black, fontSize: 24, color: _green)),
+      pw.Text(t('achievement_pdf_tagline'), style: pw.TextStyle(fontSize: 8, color: _muted)),
+      pw.SizedBox(height: 22),
+      pw.Text(t('achievement_pdf_title'), style: pw.TextStyle(font: black, fontSize: 21, color: _ink)),
+      pw.SizedBox(height: 8),
+      pw.Text(
+        '${t('achievement_pdf_report_${report.period}')} | $range',
+        style: pw.TextStyle(fontSize: 10, color: _muted),
+      ),
+      pw.SizedBox(height: 16),
+      pw.Container(height: 2, color: _green),
+    ]);
+  }
+
+  static pw.Widget _periodBox(AchievementReportModel report, String range, String teacherName, pw.Font black) {
+    final t = appTranslation().get;
+    return pw.Container(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      decoration: pw.BoxDecoration(
+        color: _greenSoft,
+        border: pw.Border.all(color: _greenBorder),
+        borderRadius: pw.BorderRadius.circular(8),
+      ),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(t('achievement_pdf_period_label'), style: pw.TextStyle(fontSize: 8, color: _muted)),
+              pw.SizedBox(height: 4),
+              pw.Text(range, style: pw.TextStyle(font: black, fontSize: 12, color: _ink)),
+              pw.SizedBox(height: 4),
+              pw.Text(t('achievement_pdf_caption_${report.period}'), style: pw.TextStyle(fontSize: 8, color: _muted)),
+            ],
+          ),
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(t('achievement_pdf_teacher_name'), style: pw.TextStyle(fontSize: 8, color: _muted)),
+              pw.SizedBox(height: 8),
+              pw.Text(teacherName.isEmpty ? '—' : teacherName, style: pw.TextStyle(font: black, fontSize: 11, color: _ink)),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  static pw.Widget _cell(String text, {bool isHeader = false}) => pw.Padding(
-        padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-        child: pw.Text(
-          text,
-          style: pw.TextStyle(fontSize: 10, fontWeight: isHeader ? pw.FontWeight.bold : null),
+  static pw.Widget _totals(AchievementTotalsModel totals, pw.Font black) {
+    final t = appTranslation().get;
+    final cards = [
+      ('achievement_lessons_prepared', totals.lessonsPrepared),
+      ('achievement_exams', totals.exams),
+      ('achievement_presentations', totals.presentations),
+      ('achievement_worksheets', totals.worksheets),
+      ('achievement_educational_reports', totals.educationalReports),
+    ];
+    return pw.Row(children: [
+      for (var i = 0; i < cards.length; i++) ...[
+        if (i > 0) pw.SizedBox(width: 7),
+        pw.Expanded(
+          child: pw.Container(
+            height: 62,
+            padding: const pw.EdgeInsets.all(10),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(color: _border),
+              borderRadius: pw.BorderRadius.circular(6),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              children: [
+                pw.Text('${cards[i].$2}', style: pw.TextStyle(font: black, fontSize: 15, color: _green)),
+                pw.SizedBox(height: 4),
+                pw.Text(t(cards[i].$1), style: pw.TextStyle(fontSize: 8, color: _muted)),
+              ],
+            ),
+          ),
         ),
-      );
+      ],
+    ]);
+  }
 
-  static pw.Widget _signature(String title, String name) => pw.SizedBox(
-        width: 200,
-        child: pw.Column(children: [
-          pw.Text(title, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-          pw.SizedBox(height: 4),
-          pw.Text(name),
-          pw.SizedBox(height: 28),
-          pw.Divider(color: _muted),
+  /// The card header and the lessons table; rows are separate children so a
+  /// long list breaks across pages.
+  static List<pw.Widget> _lessons(AchievementReportModel report, pw.Font black) {
+    final t = appTranslation().get;
+    final count = report.totals.lessonsPrepared;
+    final side = pw.BorderSide(color: _border);
+    final header = pw.Container(
+      padding: const pw.EdgeInsets.fromLTRB(14, 16, 14, 12),
+      decoration: pw.BoxDecoration(
+        border: pw.Border(top: side, left: side, right: side, bottom: report.lessons.isEmpty ? pw.BorderSide.none : side),
+      ),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(t('achievement_pdf_lessons_details'), style: pw.TextStyle(font: black, fontSize: 12, color: _ink)),
+          pw.Text(
+            t('achievement_pdf_lessons_count').replaceAll('{n}', '$count'),
+            style: pw.TextStyle(fontSize: 9, color: _muted),
+          ),
+        ],
+      ),
+    );
+
+    if (report.lessons.isEmpty) {
+      return [
+        header,
+        pw.Container(
+          padding: const pw.EdgeInsets.only(top: 22, bottom: 34),
+          decoration: pw.BoxDecoration(border: pw.Border(left: side, right: side, bottom: side)),
+          alignment: pw.Alignment.center,
+          child: pw.Text(t('achievement_no_lessons'), style: pw.TextStyle(fontSize: 10, color: _muted)),
+        ),
+      ];
+    }
+
+    pw.Widget row(List<String> cells, {bool isHeader = false}) => pw.Container(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: pw.BoxDecoration(
+            color: isHeader ? _greenSoft : null,
+            border: pw.Border(left: side, right: side, bottom: side),
+          ),
+          child: pw.Row(children: [
+            for (final (i, flex) in const [(0, 1), (1, 6), (2, 3), (3, 2)])
+              pw.Expanded(
+                flex: flex,
+                child: pw.Text(
+                  cells[i],
+                  style: pw.TextStyle(
+                    fontSize: 9,
+                    color: isHeader ? _green : _ink,
+                    font: isHeader ? black : null,
+                  ),
+                ),
+              ),
+          ]),
+        );
+
+    return [
+      header,
+      row(['#', t('achievement_lesson'), t('achievement_date'), t('achievement_time')], isHeader: true),
+      for (var i = 0; i < report.lessons.length; i++)
+        row([
+          '${i + 1}',
+          report.lessons[i].title,
+          report.lessons[i].completedAt == null
+              ? ''
+              : '${formatDayMonth(report.lessons[i].completedAt!, t)} ${report.lessons[i].completedAt!.year}',
+          report.lessons[i].completedAt == null ? '' : formatTime(report.lessons[i].completedAt!),
         ]),
-      );
+    ];
+  }
+
+  static pw.Widget _signature(String title, String name) {
+    final t = appTranslation().get;
+    final dots = '..............................';
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Container(height: 0.8, color: _line),
+        pw.SizedBox(height: 14),
+        pw.Text(title, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: _ink)),
+        pw.SizedBox(height: 12),
+        pw.Text('${t('achievement_pdf_name')} ${name.isEmpty ? dots : name}', style: pw.TextStyle(fontSize: 8, color: _ink)),
+        pw.SizedBox(height: 12),
+        pw.Text('${t('achievement_pdf_signature')} $dots', style: pw.TextStyle(fontSize: 8, color: _ink)),
+      ],
+    );
+  }
 }

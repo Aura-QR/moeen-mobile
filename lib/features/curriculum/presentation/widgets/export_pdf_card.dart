@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
+import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 
 class ExportPdfCard extends StatefulWidget {
   final Future<void> Function(String school, String teacher, String manager)? onExport;
 
-  const ExportPdfCard({super.key, this.onExport});
+  /// When set, a second button exports the same data as Word.
+  final Future<void> Function(String school, String teacher, String manager)? onExportWord;
+
+  /// Defaults to the curriculum distribution wording.
+  final String? title;
+  final String? subtitle;
+
+  const ExportPdfCard({super.key, this.onExport, this.onExportWord, this.title, this.subtitle});
 
   @override
   State<ExportPdfCard> createState() => _ExportPdfCardState();
@@ -18,6 +26,17 @@ class _ExportPdfCardState extends State<ExportPdfCard> {
   final _teacherController = TextEditingController();
   final _managerController = TextEditingController();
   bool _isExporting = false;
+  bool _isExportingWord = false;
+
+  Future<void> _exportWord() async {
+    setState(() => _isExportingWord = true);
+    await widget.onExportWord!(
+      _schoolController.text.trim(),
+      _teacherController.text.trim(),
+      _managerController.text.trim(),
+    );
+    if (mounted) setState(() => _isExportingWord = false);
+  }
 
   @override
   void dispose() {
@@ -67,14 +86,14 @@ class _ExportPdfCardState extends State<ExportPdfCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'تنزيل التوزيع',
+                      widget.title ?? 'تنزيل التوزيع',
                       style: TextStylesManager.bold14.copyWith(
                         color: ColorsManager.mainText,
                       ),
                     ),
                     verticalSpace2,
                     Text(
-                      'أضف بيانات مدرستك ثم اطبع الخطة أو احفظها بتنسيق PDF',
+                      widget.subtitle ?? 'أضف بيانات مدرستك ثم اطبع الخطة أو احفظها بتنسيق PDF',
                       style: TextStylesManager.regular12.copyWith(
                         color: ColorsManager.secondaryText,
                         fontSize: 10,
@@ -235,6 +254,29 @@ class _ExportPdfCardState extends State<ExportPdfCard> {
               ),
             ),
           ),
+          if (widget.onExportWord != null) ...[
+            verticalSpace10,
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _isExportingWord ? null : _exportWord,
+                icon: _isExportingWord
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: ColorsManager.primaryColor),
+                      )
+                    : const Icon(Icons.description_outlined, size: 18),
+                label: Text(appTranslation().get('semester_plan_download_word')),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: ColorsManager.primaryColor,
+                  side: BorderSide(color: ColorsManager.primaryColor),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

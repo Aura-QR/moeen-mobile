@@ -196,7 +196,9 @@ class PortfolioEditorCubit extends Cubit<PortfolioEditorState> {
         for (final item in portfolio.includedItems) {
           for (final file in item.files.where((f) => f.isImage)) {
             final bytes = await _repo.downloadBytes(file.url);
-            bytes.fold((_) {}, (data) => images[file.id] = data);
+            bytes.fold((_) {}, (data) {
+              if (data.isNotEmpty) images[file.id] = data;
+            });
           }
         }
         final pdf = await _pdfBuilder(portfolio, images);

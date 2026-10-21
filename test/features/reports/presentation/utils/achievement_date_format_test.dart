@@ -24,6 +24,14 @@ void main() {
     expect(formatAchievementRange(DateTime(2026, 10, 21), DateTime(2026, 10, 21), translate), '21 أكتوبر 2026');
   });
 
+  test('formatFullDateRange shows both years with a dash', () {
+    expect(
+      formatFullDateRange(DateTime(2026, 10, 18), DateTime(2026, 10, 24), translate),
+      '18 أكتوبر 2026 – 24 أكتوبر 2026',
+    );
+    expect(formatFullDateRange(DateTime(2026, 10, 21), DateTime(2026, 10, 21), translate), '21 أكتوبر 2026');
+  });
+
   test('formatTime pads hours and minutes', () {
     expect(formatTime(DateTime(2026, 10, 18, 9, 5)), '09:05');
   });

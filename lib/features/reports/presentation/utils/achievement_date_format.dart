@@ -18,6 +18,13 @@ String formatAchievementRange(DateTime from, DateTime to, Translate translate) {
       .replaceAll('{to}', '${formatDayMonth(to, translate)} ${to.year}');
 }
 
+/// «18 أكتوبر 2026 – 24 أكتوبر 2026», or «21 أكتوبر 2026» for a single day.
+String formatFullDateRange(DateTime from, DateTime to, Translate translate) {
+  final start = '${formatDayMonth(from, translate)} ${from.year}';
+  final end = '${formatDayMonth(to, translate)} ${to.year}';
+  return start == end ? start : '$start – $end';
+}
+
 /// «09:12».
 String formatTime(DateTime date) =>
     '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
