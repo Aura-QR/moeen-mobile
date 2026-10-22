@@ -92,7 +92,7 @@ class PrivacyPolicyCubit extends Cubit<PrivacyPolicyState> {
         ),
         (
           appTranslation().get('privacy_sec2_title'),
-          '${appTranslation().get('privacy_sec2_intro')}\n- ${appTranslation().get('privacy_sec2_card1_title')}: ${appTranslation().get('privacy_sec2_card1_desc')}\n- ${appTranslation().get('privacy_sec2_card2_title')}: ${appTranslation().get('privacy_sec2_card2_desc')}\n- ${appTranslation().get('privacy_sec2_card3_title')}: ${appTranslation().get('privacy_sec2_card3_desc')}\n- ${appTranslation().get('privacy_sec2_card4_title')}: ${appTranslation().get('privacy_sec2_card4_desc')}'
+          '${appTranslation().get('privacy_sec2_intro')}\n- ${appTranslation().get('privacy_sec2_card1_title')}: ${appTranslation().get('privacy_sec2_card1_desc')}\n- ${appTranslation().get('privacy_sec2_card2_title')}: ${appTranslation().get('privacy_sec2_card2_desc')}\n- ${appTranslation().get('privacy_sec2_card3_title')}: ${appTranslation().get('privacy_sec2_card3_desc')}\n- ${appTranslation().get('privacy_sec2_card4_title')}: ${appTranslation().get('privacy_sec2_card4_desc')}\n- ${appTranslation().get('privacy_sec2_card5_title')}: ${appTranslation().get('privacy_sec2_card5_desc')}'
         ),
         (
           appTranslation().get('privacy_sec3_title'),
