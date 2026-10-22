@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/utils/constants/primary/primary_confirm_dialog.dart';
+import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/classes/data/models/school_class_model.dart';
 import 'package:moean/features/classes/presentation/cubit/classes_cubit.dart';
@@ -29,7 +30,9 @@ class ClassesList extends StatelessWidget {
 
   Future<void> _onAction(BuildContext context, SchoolClassModel schoolClass, ClassCardAction action) async {
     final cubit = ClassesCubit.get(context);
-    if (action == ClassCardAction.edit) {
+    if (action == ClassCardAction.printSheet) {
+      Navigator.pushNamed(context, Routes.classSheets, arguments: schoolClass);
+    } else if (action == ClassCardAction.edit) {
       onOpen(schoolClass);
     } else if (await _confirmDelete(context)) {
       await cubit.delete(schoolClass);

@@ -122,6 +122,8 @@ import 'package:moean/features/grade_analysis/data/repositories/grade_analysis_r
 import 'package:moean/features/grade_analysis/presentation/cubit/grade_analysis_cubit.dart';
 import 'package:moean/features/grade_analysis/presentation/cubit/grade_results_cubit.dart';
 import 'package:moean/features/grade_analysis/presentation/screens/grade_analysis_screen.dart';
+import 'package:moean/features/class_sheets/presentation/screens/class_sheets_screen.dart';
+import 'package:moean/features/classes/data/models/school_class_model.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -187,6 +189,7 @@ class Routes {
   static const String activitiesPlan = '/tools/activities-plan';
   static const String gradeAnalysis = '/tools/grade-analysis';
   static const String thankYouCertificates = '/tools/certificates';
+  static const String classSheets = '/tools/sheets';
   static const String classes = '/classes';
   static const String classEditor = '/classes/editor';
 
@@ -439,6 +442,7 @@ class Routes {
             type: DocumentTypes.certificates,
             repository: DocumentsRepository(),
             fileService: DocumentFileService(),
+            landscape: true,
           ),
         ),
       ],
@@ -457,5 +461,23 @@ class Routes {
       )..load(),
       child: const ClassEditorScreen(),
     ),
+    // Argument: int documentId to reopen, or SchoolClassModel or Map with 'class' / 'document_id'.
+    classSheets: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      int? documentId;
+      SchoolClassModel? initialClass;
+      if (args is int) {
+        documentId = args;
+      } else if (args is SchoolClassModel) {
+        initialClass = args;
+      } else if (args is Map<String, dynamic>) {
+        documentId = args['document_id'] as int?;
+        initialClass = args['class'] as SchoolClassModel?;
+      }
+      return ClassSheetsScreen.create(
+        documentId: documentId,
+        initialClass: initialClass,
+      );
+    },
   };
 }

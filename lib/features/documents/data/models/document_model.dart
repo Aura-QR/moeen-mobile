@@ -16,6 +16,7 @@ abstract final class DocumentTypes {
   static const String activitiesPlan = 'activities_plan';
   static const String gradeAnalysis = 'grade_analysis';
   static const String certificates = 'certificates';
+  static const String classSheet = 'class_sheet';
 
   static const List<String> all = [
     strategyDocumentation,
@@ -24,12 +25,13 @@ abstract final class DocumentTypes {
     activitiesPlan,
     gradeAnalysis,
     certificates,
+    classSheet,
   ];
 
   static String labelKey(String type) => 'document_type_$type';
 
-  /// Printed on A4 landscape pages; the on-device PDF must use the same size.
-  static bool isLandscape(String type) => type == activitiesPlan || type == certificates;
+  /// Tools whose tables matter, so their export offers Excel.
+  static bool hasExcel(String type) => type == classSheet || type == gradeAnalysis;
 }
 
 /// A photo in `input.images`, with its signed URL once saved.

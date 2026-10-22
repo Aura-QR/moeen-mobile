@@ -10,11 +10,13 @@ import 'package:moean/features/documents/presentation/cubit/document_export_cubi
 import 'package:moean/features/documents/presentation/widgets/document_export_error_widget.dart';
 import 'package:moean/features/documents/presentation/widgets/document_export_option.dart';
 
-/// PDF, image, Word and print for a saved document.
+/// PDF, image, Word (and Excel where tables matter) and print for a saved document.
 class DocumentExportSheet extends StatelessWidget {
-  const DocumentExportSheet({super.key});
+  final bool withExcel;
 
-  static Future<void> show(BuildContext context, {required int documentId, bool landscape = false}) {
+  const DocumentExportSheet({super.key, this.withExcel = false});
+
+  static Future<void> show(BuildContext context, {required int documentId, bool withExcel = false}) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -23,11 +25,10 @@ class DocumentExportSheet extends StatelessWidget {
       builder: (_) => BlocProvider(
         create: (_) => DocumentExportCubit(
           documentId: documentId,
-          landscape: landscape,
           repository: DocumentsRepository(),
           fileService: DocumentFileService(),
         ),
-        child: const DocumentExportSheet(),
+        child: DocumentExportSheet(withExcel: withExcel),
       ),
     );
   }
@@ -36,6 +37,7 @@ class DocumentExportSheet extends StatelessWidget {
     (DocumentExportAction.pdf, Icons.picture_as_pdf_rounded, ColorsManager.errorColor, 'document_export_pdf'),
     (DocumentExportAction.image, Icons.image_outlined, ColorsManager.whatsappIconColor, 'document_export_image'),
     (DocumentExportAction.word, Icons.description_rounded, ColorsManager.emailIconColor, 'document_export_word'),
+    (DocumentExportAction.excel, Icons.table_chart_rounded, ColorsManager.primaryColor, 'document_export_excel'),
     (DocumentExportAction.print, Icons.print_outlined, ColorsManager.textBody, 'document_export_print'),
   ];
 
@@ -67,6 +69,7 @@ class DocumentExportSheet extends StatelessWidget {
                   childAspectRatio: 1.35,
                   children: [
                     for (final (action, icon, color, key) in _options)
+                      if (withExcel || action != DocumentExportAction.excel)
                       DocumentExportOption(
                         icon: icon,
                         color: color,

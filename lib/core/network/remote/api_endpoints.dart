@@ -127,6 +127,7 @@ const String enrichmentToolApi = '/tools/enrichment';
 const String activitiesToolApi = '/tools/activities';
 const String activitiesPlanApi = '/tools/activities/plan';
 const String certificatesToolApi = '/tools/certificates';
+const String sheetsToolApi = '/tools/sheets';
 
 // T7 «تحليل نتائج الطلاب» (GRADE_ANALYSIS_API.md)
 const String gradesToolApi = '/tools/grades';

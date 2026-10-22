@@ -15,6 +15,7 @@ class DocumentFileService {
   static const String pngMime = 'image/png';
   static const String docxMime =
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  static const String xlsxMime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
   /// Converts HTML to PDF in MainActivity (HtmlPdfConverter.kt).
   static const MethodChannel _androidHtmlPdf = MethodChannel('com.haderedu.app/html_pdf');

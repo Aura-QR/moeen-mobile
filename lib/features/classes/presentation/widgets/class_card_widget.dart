@@ -5,7 +5,7 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/classes/data/models/school_class_model.dart';
 
-enum ClassCardAction { edit, delete }
+enum ClassCardAction { edit, delete, printSheet }
 
 /// A row in «فصولي»: name, grade and subject, and the number of students.
 class ClassCardWidget extends StatelessWidget {
@@ -81,6 +81,17 @@ class ClassCardWidget extends StatelessWidget {
                   onSelected: onAction,
                   icon: Icon(Icons.more_vert_rounded, color: ColorsManager.secondaryText),
                   itemBuilder: (_) => [
+                    PopupMenuItem(
+                      value: ClassCardAction.printSheet,
+                      child: Row(
+                        children: [
+                          
+                           Icon(Icons.print_outlined, size: 18, color: ColorsManager.primaryColor),
+                          horizontalSpace8,
+                          Text(appTranslation().get('sheets_print_sheet')),
+                        ],
+                      ),
+                    ),
                     PopupMenuItem(value: ClassCardAction.edit, child: Text(appTranslation().get('edit'))),
                     PopupMenuItem(
                       value: ClassCardAction.delete,

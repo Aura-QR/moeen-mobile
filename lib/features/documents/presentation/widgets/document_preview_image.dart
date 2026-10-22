@@ -6,32 +6,29 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/documents/presentation/cubit/document_preview_cubit.dart';
 
-/// The page from the [DocumentPreviewCubit] above, at the page's
-/// [aspectRatio]. The last image stays, dimmed, while a newer one renders.
+/// The page from the [DocumentPreviewCubit] above, portrait or landscape as
+/// the page is. The last image stays, dimmed, while a newer one renders.
 class DocumentPreviewImage extends StatelessWidget {
-  /// Width over height, e.g. 297 / 210 for A4 landscape.
-  final double aspectRatio;
-
-  const DocumentPreviewImage({super.key, required this.aspectRatio});
+  const DocumentPreviewImage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: aspectRatio,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          // The page itself stays light in dark mode, as printed.
-          color: ColorsManager.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: ColorsManager.borderLightGray),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: BlocBuilder<DocumentPreviewCubit, DocumentPreviewState>(
-            builder: (context, state) {
-              final image = state.image;
-              final isLoading = state.status == DocumentPreviewStatus.loading;
-              return Stack(
+    return BlocBuilder<DocumentPreviewCubit, DocumentPreviewState>(
+      builder: (context, state) {
+        final image = state.image;
+        final isLoading = state.status == DocumentPreviewStatus.loading;
+        return AspectRatio(
+          aspectRatio: state.aspectRatio,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              // The page itself stays light in dark mode, as printed.
+              color: ColorsManager.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: ColorsManager.borderLightGray),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
                 fit: StackFit.expand,
                 children: [
                   if (image != null)
@@ -60,11 +57,11 @@ class DocumentPreviewImage extends StatelessWidget {
                       ),
                     ),
                 ],
-              );
-            },
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -22,10 +22,11 @@ class DocumentPreviewCubit extends Cubit<DocumentPreviewState> {
     required DocumentsRepository repository,
     required DocumentFileService fileService,
     Duration debounce = const Duration(milliseconds: 600),
+    bool landscape = false,
   }) : _repo = repository,
        _files = fileService,
        _debounce = debounce,
-       super(const DocumentPreviewState());
+       super(DocumentPreviewState(isLandscape: landscape));
 
   /// A [DocumentTypes] value.
   final String type;
@@ -51,15 +52,20 @@ class DocumentPreviewCubit extends Cubit<DocumentPreviewState> {
     if (isClosed || request != _request) return;
     result.fold(
       (failure) => emit(state.copyWith(status: DocumentPreviewStatus.failure, errorMessage: failure.message)),
-      (image) => emit(DocumentPreviewState(status: DocumentPreviewStatus.success, image: image)),
+      (page) => emit(
+        DocumentPreviewState(status: DocumentPreviewStatus.success, image: page.image, isLandscape: page.isLandscape),
+      ),
     );
   }
 
-  Future<Either<Failure, Uint8List>> _image(Map<String, dynamic> input) async {
+  Future<Either<Failure, ({Uint8List image, bool isLandscape})>> _image(Map<String, dynamic> input) async {
     final page = await _repo.previewDocument(type, input);
     return page.fold(Left.new, (page) async {
-      final pdf = await _files.htmlToPdf(page.html, landscape: DocumentTypes.isLandscape(type));
-      return pdf.fold(Left.new, _files.firstPageAsPng);
+      final pdf = await _files.htmlToPdf(page.html, landscape: page.isLandscape);
+      return pdf.fold(Left.new, (bytes) async {
+        final image = await _files.firstPageAsPng(bytes);
+        return image.map((image) => (image: image, isLandscape: page.isLandscape));
+      });
     });
   }
 

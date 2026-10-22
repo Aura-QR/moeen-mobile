@@ -21,7 +21,7 @@ Future<void> runDocumentFollowUp(
       await DocumentExportSheet.show(
         context,
         documentId: documentId,
-        landscape: DocumentTypes.isLandscape(documentType),
+        withExcel: DocumentTypes.hasExcel(documentType),
       );
     case DocumentFollowUp.attachToPortfolio:
       final attached = await AttachToPortfolioSheet.show(

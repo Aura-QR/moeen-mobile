@@ -7,7 +7,8 @@ import 'package:moean/core/utils/constants/primary/primary_section_card.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/thank_you_certificates/presentation/cubit/certificates_cubit.dart';
 import 'package:moean/features/thank_you_certificates/presentation/widgets/certificate_name_tile.dart';
-import 'package:moean/features/thank_you_certificates/presentation/widgets/certificate_preview_sheet.dart';
+import 'package:moean/features/documents/data/models/document_model.dart';
+import 'package:moean/features/documents/presentation/widgets/document_preview_sheet.dart';
 import 'package:moean/features/documents/presentation/widgets/student_picker_sheet.dart';
 
 /// «الأسماء»: from «فصولي», pasted, or imported from Excel. One certificate each.
@@ -26,7 +27,14 @@ class CertificatesNamesSection extends StatelessWidget {
 
   void _preview(BuildContext context, String name) {
     final input = CertificatesCubit.get(context).previewInput(name: name, fallbackName: name);
-    if (input != null) CertificatePreviewSheet.show(context, name: name, input: input);
+    if (input == null) return;
+    DocumentPreviewSheet.show(
+      context,
+      type: DocumentTypes.certificates,
+      input: input,
+      title: appTranslation().get('certificates_preview_of').replaceAll('{name}', name),
+      landscape: true,
+    );
   }
 
   @override

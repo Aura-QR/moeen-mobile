@@ -11,13 +11,12 @@ import 'package:moean/features/documents/data/services/document_file_service.dar
 part 'document_export_state.dart';
 
 /// The export sheet: PDF and image are made on the phone from the print
-/// HTML; Word is built on the server queue. The document must be saved first.
+/// HTML; Word and Excel are built on the server queue. The document must be saved first.
 class DocumentExportCubit extends Cubit<DocumentExportState> {
   static DocumentExportCubit get(BuildContext context) => BlocProvider.of(context);
 
   DocumentExportCubit({
     required this.documentId,
-    this.landscape = false,
     required DocumentsRepository repository,
     required DocumentFileService fileService,
     Duration pollInterval = const Duration(seconds: 2),
@@ -29,9 +28,6 @@ class DocumentExportCubit extends Cubit<DocumentExportState> {
         super(const DocumentExportState());
 
   final int documentId;
-
-  /// The page size the print HTML sets ([DocumentTypes.isLandscape]).
-  final bool landscape;
   final DocumentsRepository _repo;
   final DocumentFileService _files;
   final Duration _pollInterval;
@@ -49,7 +45,8 @@ class DocumentExportCubit extends Cubit<DocumentExportState> {
       DocumentExportAction.pdf => _sharePdf(),
       DocumentExportAction.image => _shareImage(),
       DocumentExportAction.print => _print(),
-      DocumentExportAction.word => _shareWord(),
+      DocumentExportAction.word => _shareServerFile(DocumentExportFormat.docx, DocumentFileService.docxMime),
+      DocumentExportAction.excel => _shareServerFile(DocumentExportFormat.xlsx, DocumentFileService.xlsxMime),
     };
     final outcome = await result;
     if (isClosed) return;
@@ -94,25 +91,25 @@ class DocumentExportCubit extends Cubit<DocumentExportState> {
 
     final printPage = await _repo.getPrint(documentId);
     return printPage.fold(Left.new, (page) async {
-      final bytes = await _files.htmlToPdf(page.html, landscape: landscape);
+      final bytes = await _files.htmlToPdf(page.html, landscape: page.isLandscape);
       return bytes.map((data) => _pdf = (bytes: data, name: page.fileName));
     });
   }
 
-  Future<Either<Failure, Unit>> _shareWord() async {
-    final export = await _waitForWord();
+  Future<Either<Failure, Unit>> _shareServerFile(String format, String mime) async {
+    final export = await _waitForExport(format);
     return export.fold(Left.new, (export) async {
       final bytes = await _repo.downloadFile(export.url ?? '');
       return bytes.fold(
         Left.new,
-        (data) => _files.share(data, fileName: export.fileName, mime: DocumentFileService.docxMime),
+        (data) => _files.share(data, fileName: export.fileName, mime: mime),
       );
     });
   }
 
-  /// Requests the Word file, then polls until it's done or failed.
-  Future<Either<Failure, DocumentExportModel>> _waitForWord() async {
-    final requested = await _repo.requestExport(documentId, DocumentExportFormat.docx);
+  /// Requests the [format] file, then polls until it's done or failed.
+  Future<Either<Failure, DocumentExportModel>> _waitForExport(String format) async {
+    final requested = await _repo.requestExport(documentId, format);
     return requested.fold(Left.new, (first) async {
       var export = first;
       for (var attempt = 0; export.isPending; attempt++) {

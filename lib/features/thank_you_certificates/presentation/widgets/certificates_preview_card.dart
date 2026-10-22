@@ -4,7 +4,6 @@ import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_section_card.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
-import 'package:moean/features/thank_you_certificates/presentation/widgets/certificate_preview_sheet.dart';
 import 'package:moean/features/documents/presentation/widgets/document_preview_image.dart';
 
 /// «المعاينة»: the first certificate, re-rendered a moment after each change.
@@ -19,7 +18,7 @@ class CertificatesPreviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const DocumentPreviewImage(aspectRatio: CertificatePreviewSheet.aspectRatio),
+          const DocumentPreviewImage(),
           verticalSpace8,
           Text(
             appTranslation().get('certificates_preview_note'),

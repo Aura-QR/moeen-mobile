@@ -287,6 +287,14 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                       ),
                       horizontalSpace12,
                       HomeActionChipWidget(
+                        icon: Icons.table_chart_outlined,
+                        title: appTranslation().get('document_type_class_sheet'),
+                        onTap: () => context.push(
+                          token?.isNotEmpty == true ? Routes.classSheets : Routes.login,
+                        ),
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
                         icon: Icons.groups_2_outlined,
                         title: appTranslation().get('classes_title'),
                         onTap: () => context.push(
@@ -694,6 +702,20 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                               isHighlighted: false,
                               onTap: () => context.push(
                                 token?.isNotEmpty == true ? Routes.thankYouCertificates : Routes.login,
+                              ),
+                            ),
+                          ),
+                          horizontalSpace8,
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.table_chart_outlined,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: appTranslation().get('document_type_class_sheet'),
+                              subtitle: appTranslation().get('document_type_class_sheet_subtitle'),
+                              isHighlighted: false,
+                              onTap: () => context.push(
+                                token?.isNotEmpty == true ? Routes.classSheets : Routes.login,
                               ),
                             ),
                           ),

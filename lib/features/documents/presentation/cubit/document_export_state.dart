@@ -1,6 +1,6 @@
 part of 'document_export_cubit.dart';
 
-enum DocumentExportAction { pdf, image, word, print }
+enum DocumentExportAction { pdf, image, word, excel, print }
 
 class DocumentExportState {
   /// What is running now; null when idle.

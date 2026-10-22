@@ -8,6 +8,12 @@ class DocumentPrintModel {
 
   const DocumentPrintModel({required this.html, required this.fileName});
 
+  static final RegExp _landscapePage = RegExp(r'@page\s*\{[^}]*size:\s*A4\s+landscape');
+
+  /// The page sets A4 landscape (`@page { size: A4 landscape }`), as certificates,
+  /// the activities plan and wide class sheets do. The PDF must use the same size.
+  bool get isLandscape => _landscapePage.hasMatch(html);
+
   factory DocumentPrintModel.fromJson(Map<String, dynamic> json) {
     return DocumentPrintModel(
       html: json['html']?.toString() ?? '',
@@ -18,6 +24,7 @@ class DocumentPrintModel {
 
 abstract final class DocumentExportFormat {
   static const String docx = 'docx';
+  static const String xlsx = 'xlsx';
 }
 
 /// A server-built file. Poll while [isPending].
