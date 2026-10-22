@@ -127,6 +127,9 @@ const String enrichmentToolApi = '/tools/enrichment';
 const String classesApi = '/classes';
 const String classesImportApi = '/classes/import';
 String classApi(int id) => '/classes/$id';
+// «استيراد من مدرستي»: classes and names read from Madrasati with the connected account
+const String madrasatiClassesApi = '/classes/madrasati';
+String madrasatiClassApi(String madrasatiId) => '/classes/madrasati/${Uri.encodeComponent(madrasatiId)}';
 
 // AI suggestions for the document tools (AI_JOBS_API.md)
 const String aiJobsApi = '/ai-jobs';

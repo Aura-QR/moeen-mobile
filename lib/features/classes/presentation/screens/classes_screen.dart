@@ -9,7 +9,9 @@ import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart'
 import 'package:moean/core/utils/constants/primary/primary_error_view.dart';
 import 'package:moean/core/utils/constants/primary/primary_snack_bar.dart';
 import 'package:moean/core/utils/constants/routes.dart';
+import 'package:moean/features/classes/data/repositories/classes_repository.dart';
 import 'package:moean/features/classes/presentation/cubit/classes_cubit.dart';
+import 'package:moean/features/classes/presentation/widgets/madrasati_import_sheet.dart';
 import 'package:moean/features/classes/presentation/widgets/classes_list.dart';
 
 /// F7 «فصولي».
@@ -31,6 +33,12 @@ class ClassesScreen extends StatelessWidget {
     _openEditor(context);
   }
 
+  Future<void> _importFromMadrasati(BuildContext context) async {
+    final cubit = ClassesCubit.get(context);
+    final saved = await MadrasatiImportSheet.show(context, ClassesRepository());
+    if (saved) cubit.load();
+  }
+
   @override
   Widget build(BuildContext context) {
     final cubit = ClassesCubit.get(context);
@@ -44,6 +52,13 @@ class ClassesScreen extends StatelessWidget {
           appTranslation().get('classes_title'),
           style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
         ),
+        actions: [
+          IconButton(
+            tooltip: appTranslation().get('classes_madrasati_title'),
+            icon: Icon(Icons.cloud_download_outlined, color: ColorsManager.primaryColor),
+            onPressed: () => _importFromMadrasati(context),
+          ),
+        ],
       ),
       body: BlocConsumer<ClassesCubit, ClassesState>(
         listenWhen: (_, current) => current.feedback != null,

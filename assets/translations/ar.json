@@ -1111,5 +1111,14 @@
   "strategy_section_notes": "ملاحظات",
   "strategy_notes_hint": "ملاحظات إضافية (اختياري)",
   "document_status": "حالة المستند",
-  "document_status_note": "اختر «نهائي» عندما يصبح المستند جاهزًا للاعتماد"
+  "document_status_note": "اختر «نهائي» عندما يصبح المستند جاهزًا للاعتماد",
+  "classes_madrasati_title": "استيراد من مدرستي",
+  "classes_madrasati_subtitle": "نقرأ أسماء الطلاب فقط من «قائمة الطلاب» في حسابك على مدرستي، ولا نغيّر شيئًا هناك. راجع الأسماء قبل الحفظ.",
+  "classes_madrasati_read": "قراءة الأسماء",
+  "classes_madrasati_save": "حفظ في فصولي",
+  "classes_madrasati_reading": "جاري القراءة…",
+  "classes_madrasati_count": "{count} طالبًا",
+  "classes_madrasati_failed": "تعذرت القراءة",
+  "classes_madrasati_replaces": "ستُستبدل أسماء الفصل الموجود بنفس الاسم",
+  "classes_madrasati_empty": "لا توجد فصول في حسابك على مدرستي."
 }

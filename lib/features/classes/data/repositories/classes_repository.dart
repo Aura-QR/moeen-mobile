@@ -50,5 +50,23 @@ class ClassesRepository {
         },
       );
 
+  /// Classes on the teacher's Madrasati «قائمة الطلاب». Needs a connected Madrasati account.
+  Future<Either<Failure, List<MadrasatiClassModel>>> getMadrasatiClasses() => handleApiResponse(
+        DioHelper.getData(url: madrasatiClassesApi),
+        (data) => ((data as Map<String, dynamic>)['classes'] as List? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(MadrasatiClassModel.fromJson)
+            .toList(),
+      );
+
+  /// One Madrasati class's student names, for review. Nothing is saved.
+  Future<Either<Failure, List<String>>> readMadrasatiClass(String madrasatiId) => handleApiResponse(
+        DioHelper.getData(url: madrasatiClassApi(madrasatiId)),
+        (data) {
+          final names = (data as Map<String, dynamic>)['students'];
+          return names is List ? names.map((name) => name.toString()).toList() : const <String>[];
+        },
+      );
+
   static SchoolClassModel _class(dynamic data) => SchoolClassModel.fromJson(data as Map<String, dynamic>);
 }
