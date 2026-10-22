@@ -17,6 +17,7 @@ class DocumentExportCubit extends Cubit<DocumentExportState> {
 
   DocumentExportCubit({
     required this.documentId,
+    this.landscape = false,
     required DocumentsRepository repository,
     required DocumentFileService fileService,
     Duration pollInterval = const Duration(seconds: 2),
@@ -28,6 +29,9 @@ class DocumentExportCubit extends Cubit<DocumentExportState> {
         super(const DocumentExportState());
 
   final int documentId;
+
+  /// The page size the print HTML sets ([DocumentTypes.isLandscape]).
+  final bool landscape;
   final DocumentsRepository _repo;
   final DocumentFileService _files;
   final Duration _pollInterval;
@@ -90,7 +94,7 @@ class DocumentExportCubit extends Cubit<DocumentExportState> {
 
     final printPage = await _repo.getPrint(documentId);
     return printPage.fold(Left.new, (page) async {
-      final bytes = await _files.htmlToPdf(page.html);
+      final bytes = await _files.htmlToPdf(page.html, landscape: landscape);
       return bytes.map((data) => _pdf = (bytes: data, name: page.fileName));
     });
   }

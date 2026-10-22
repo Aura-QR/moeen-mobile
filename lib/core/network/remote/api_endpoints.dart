@@ -111,6 +111,8 @@ String portfolioItemDocumentsApi(int id, int itemId) =>
 const String documentDefaultsApi = '/me/document-defaults';
 const String documentsApi = '/documents';
 const String documentUploadsApi = '/documents/uploads';
+// Renders the form as it is now, without saving (§ 4.3)
+const String documentPreviewApi = '/documents/preview';
 String documentApi(int id) => '/documents/$id';
 String documentDuplicateApi(int id) => '/documents/$id/duplicate';
 String documentPrintApi(int id) => '/documents/$id/print';
@@ -124,6 +126,13 @@ const String remedialToolApi = '/tools/remedial';
 const String enrichmentToolApi = '/tools/enrichment';
 const String activitiesToolApi = '/tools/activities';
 const String activitiesPlanApi = '/tools/activities/plan';
+const String certificatesToolApi = '/tools/certificates';
+
+// T7 «تحليل نتائج الطلاب» (GRADE_ANALYSIS_API.md)
+const String gradesToolApi = '/tools/grades';
+const String gradesAnalyzeApi = '/tools/grades/analyze';
+const String gradesImportApi = '/tools/grades/import';
+const String gradesDataApi = '/tools/grades/data';
 
 // «فصولي» saved classes (CLASSES_API.md)
 const String classesApi = '/classes';

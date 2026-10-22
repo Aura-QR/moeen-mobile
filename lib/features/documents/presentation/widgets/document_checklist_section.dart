@@ -16,6 +16,12 @@ class DocumentChecklistSection extends StatelessWidget {
   final void Function(int index, String text) onEdit;
   final ValueChanged<int> onRemove;
 
+  /// The card's title; defaults to the section's label.
+  final String? title;
+
+  /// The «إضافة …» button and its dialog.
+  final String addKey;
+
   const DocumentChecklistSection({
     super.key,
     required this.section,
@@ -23,6 +29,8 @@ class DocumentChecklistSection extends StatelessWidget {
     required this.onAdd,
     required this.onEdit,
     required this.onRemove,
+    this.title,
+    this.addKey = 'plan_add_line',
   });
 
   Future<String?> _ask(BuildContext context, String titleKey, String initial) async {
@@ -38,7 +46,7 @@ class DocumentChecklistSection extends StatelessWidget {
   }
 
   Future<void> _add(BuildContext context) async {
-    final text = await _ask(context, 'plan_add_line', '');
+    final text = await _ask(context, addKey, '');
     if (text != null) onAdd(text);
   }
 
@@ -51,7 +59,7 @@ class DocumentChecklistSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return PrimarySectionCard(
       icon: Icons.checklist_rounded,
-      title: section.label,
+      title: title ?? section.label,
       trailing: Text(
         '${section.checkedTexts.length}/${section.maxChecked}',
         style: TextStylesManager.medium12.copyWith(color: ColorsManager.secondaryText),
@@ -73,7 +81,7 @@ class DocumentChecklistSection extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: () => _add(context),
                 icon: const Icon(Icons.add_rounded, size: 20),
-                label: Text(appTranslation().get('plan_add_line')),
+                label: Text(appTranslation().get(addKey)),
               ),
             ),
         ],

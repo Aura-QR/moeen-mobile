@@ -6,6 +6,7 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/conditional_builder.dart';
 import 'package:moean/core/utils/constants/primary/primary_error_view.dart';
 import 'package:moean/core/utils/constants/primary/primary_snack_bar.dart';
+import 'package:moean/features/documents/data/models/document_model.dart';
 import 'package:moean/features/documents/presentation/document_follow_up.dart';
 import 'package:moean/features/strategy_documentation/presentation/cubit/strategy_documentation_cubit.dart';
 import 'package:moean/features/strategy_documentation/presentation/widgets/strategy_actions_bar.dart';
@@ -25,6 +26,7 @@ class StrategyDocumentationScreen extends StatelessWidget {
       context,
       followUp: state.followUp,
       documentId: documentId,
+      documentType: DocumentTypes.strategyDocumentation,
       portfolioItemKey: StrategyDocumentationCubit.portfolioItemKey,
     );
   }

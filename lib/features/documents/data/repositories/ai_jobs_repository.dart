@@ -7,12 +7,10 @@ import 'package:moean/features/documents/data/models/ai_job_model.dart';
 
 /// AI suggestions for the document tools (AI_JOBS_API.md).
 class AiJobsRepository {
-  /// Done at once when every lesson is cached, pending otherwise.
-  Future<Either<Failure, AiJobModel>> start(String kind, List<int> lessonIds) => handleApiResponse(
-        DioHelper.postData(url: aiJobsApi, data: {
-          'kind': kind,
-          'input': {'lesson_ids': lessonIds},
-        }),
+  /// [input] depends on [kind], e.g. `{lesson_ids: […]}` for the plans. Done at
+  /// once when the answer is cached, pending otherwise.
+  Future<Either<Failure, AiJobModel>> start(String kind, Map<String, dynamic> input) => handleApiResponse(
+        DioHelper.postData(url: aiJobsApi, data: {'kind': kind, 'input': input}),
         _job,
       );
 

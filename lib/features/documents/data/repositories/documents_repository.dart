@@ -107,6 +107,14 @@ class DocumentsRepository {
         (data) => DocumentPrintModel.fromJson(data as Map<String, dynamic>),
       );
 
+  /// [input] rendered as the print page would be, without saving. Validated
+  /// like a save (`422` on the same fields).
+  Future<Either<Failure, DocumentPrintModel>> previewDocument(String type, Map<String, dynamic> input) =>
+      handleApiResponse(
+        DioHelper.postData(url: documentPreviewApi, data: {'type': type, 'input': input}),
+        (data) => DocumentPrintModel.fromJson(data as Map<String, dynamic>),
+      );
+
   /// `200` when this version's file exists, `202` while it renders.
   Future<Either<Failure, DocumentExportModel>> requestExport(int id, String format) =>
       handleApiResponse(

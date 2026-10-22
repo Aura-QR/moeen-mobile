@@ -26,6 +26,7 @@ class ActivitiesPlanScreen extends StatelessWidget {
       context,
       followUp: state.followUp,
       documentId: documentId,
+      documentType: DocumentTypes.activitiesPlan,
       portfolioItemKey: ActivitiesPlanCubit.portfolioItemKey,
     );
   }

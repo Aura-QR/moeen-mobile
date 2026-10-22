@@ -18,7 +18,8 @@ class MainActivity : FlutterActivity() {
                 result.error("bad_args", "html is required", null)
                 return@setMethodCallHandler
             }
-            converter.convert(html) { bytes, error ->
+            val landscape = call.argument<Boolean>("landscape") ?: false
+            converter.convert(html, landscape) { bytes, error ->
                 if (bytes != null) result.success(bytes) else result.error("convert_failed", error, null)
             }
         }

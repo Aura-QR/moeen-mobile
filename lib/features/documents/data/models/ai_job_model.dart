@@ -4,6 +4,7 @@ library;
 abstract final class AiJobKinds {
   static const String remedialSuggestions = 'remedial_suggestions';
   static const String enrichmentSuggestions = 'enrichment_suggestions';
+  static const String gradeRecommendations = 'grade_recommendations';
 }
 
 abstract final class AiJobStatus {

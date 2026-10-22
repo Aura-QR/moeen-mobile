@@ -37,6 +37,16 @@ const List<DocumentTool> documentTools = [
     icon: Icons.local_activity_outlined,
     route: Routes.activitiesPlan,
   ),
+  DocumentTool(
+    type: DocumentTypes.gradeAnalysis,
+    icon: Icons.insights_rounded,
+    route: Routes.gradeAnalysis,
+  ),
+  DocumentTool(
+    type: DocumentTypes.certificates,
+    icon: Icons.workspace_premium_outlined,
+    route: Routes.thankYouCertificates,
+  ),
 ];
 
 DocumentTool? documentToolFor(String type) => documentTools.where((tool) => tool.type == type).firstOrNull;

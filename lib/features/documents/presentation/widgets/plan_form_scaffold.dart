@@ -6,16 +6,15 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/conditional_builder.dart';
 import 'package:moean/core/utils/constants/primary/primary_error_view.dart';
 import 'package:moean/core/utils/constants/primary/primary_snack_bar.dart';
-import 'package:moean/core/utils/constants/primary/upgrade_prompt_bottom_sheet.dart';
-import 'package:moean/features/documents/presentation/cubit/ai_suggestions_cubit.dart';
 import 'package:moean/features/documents/presentation/cubit/plan_form_cubit.dart';
 import 'package:moean/features/documents/presentation/cubit/plan_tool_config.dart';
 import 'package:moean/features/documents/presentation/document_follow_up.dart';
+import 'package:moean/features/documents/presentation/widgets/document_ai_listener.dart';
 import 'package:moean/features/documents/presentation/widgets/plan_actions_bar.dart';
 
 /// The screen around a plan form: load states, messages, the export and
 /// portfolio sheets after a save, and AI suggestions joining the sections.
-/// Needs a [PlanFormCubit] and an [AiSuggestionsCubit] above it.
+/// Needs a [PlanFormCubit] and an AiSuggestionsCubit above it.
 class PlanFormScaffold extends StatelessWidget {
   final String titleKey;
   final Widget body;
@@ -32,21 +31,9 @@ class PlanFormScaffold extends StatelessWidget {
       context,
       followUp: state.followUp,
       documentId: documentId,
+      documentType: PlanFormCubit.get(context).config.documentType,
       portfolioItemKey: PlanToolConfig.portfolioItemKey,
     );
-  }
-
-  void _onAiEvent(BuildContext context, AiSuggestionsState state) {
-    final payment = state.paymentRequired;
-    if (payment != null) {
-      UpgradePromptBottomSheet.show(
-        context,
-        message: payment.message,
-        isQuotaExceeded: payment.code == 'quota_exceeded',
-      );
-      return;
-    }
-    PlanFormCubit.get(context).addSuggestions(state.result);
   }
 
   @override
@@ -63,11 +50,8 @@ class PlanFormScaffold extends StatelessWidget {
           style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
         ),
       ),
-      body: BlocListener<AiSuggestionsCubit, AiSuggestionsState>(
-        listenWhen: (previous, current) =>
-            (current.status == AiSuggestionsStatus.done && previous.status != AiSuggestionsStatus.done) ||
-            (current.paymentRequired != null && previous.paymentRequired != current.paymentRequired),
-        listener: _onAiEvent,
+      body: DocumentAiListener(
+        onResult: cubit.addSuggestions,
         child: BlocConsumer<PlanFormCubit, PlanFormState>(
           listenWhen: (_, current) => current.feedback != null || current.followUp != null,
           listener: _onPlanEvent,

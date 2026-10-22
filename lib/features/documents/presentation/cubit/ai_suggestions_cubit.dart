@@ -7,8 +7,8 @@ import 'package:moean/features/documents/data/repositories/ai_jobs_repository.da
 
 part 'ai_suggestions_state.dart';
 
-/// «اقترح من الدرس»: asks for suggestions for the picked lessons and waits
-/// for them. The form adds [AiSuggestionsState.result] to its sections.
+/// AI suggestions for a form («اقترح من الدرس», «اقترح توصيات»): starts the
+/// job and waits for it. The form adds [AiSuggestionsState.result] to its sections.
 class AiSuggestionsCubit extends Cubit<AiSuggestionsState> {
   static AiSuggestionsCubit get(BuildContext context) => BlocProvider.of(context);
 
@@ -30,11 +30,11 @@ class AiSuggestionsCubit extends Cubit<AiSuggestionsState> {
   /// 30 × 2 s = the 60 s the API doc allows.
   final int _maxPollAttempts;
 
-  /// Also the retry: the same request again.
-  Future<void> suggest(List<int> lessonIds) async {
-    if (state.isLoading || lessonIds.isEmpty) return;
+  /// [input] is the job's `input` for [kind]. Also the retry: the same request again.
+  Future<void> suggest(Map<String, dynamic> input) async {
+    if (state.isLoading || input.isEmpty) return;
     emit(const AiSuggestionsState(status: AiSuggestionsStatus.loading));
-    final result = await _waitForJob(lessonIds);
+    final result = await _waitForJob(input);
     if (isClosed) return;
     result.fold(
       (failure) => emit(failure is PaymentRequiredFailure
@@ -45,8 +45,8 @@ class AiSuggestionsCubit extends Cubit<AiSuggestionsState> {
   }
 
   /// `200` is already done (cached); `202` is polled until done or failed.
-  Future<Either<Failure, AiJobModel>> _waitForJob(List<int> lessonIds) async {
-    final started = await _repo.start(kind, lessonIds);
+  Future<Either<Failure, AiJobModel>> _waitForJob(Map<String, dynamic> input) async {
+    final started = await _repo.start(kind, input);
     return started.fold(Left.new, (first) async {
       var job = first;
       for (var attempt = 0; job.isPending; attempt++) {

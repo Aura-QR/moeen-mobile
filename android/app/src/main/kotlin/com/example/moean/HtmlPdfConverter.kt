@@ -13,7 +13,7 @@ import java.io.File
 
 /**
  * Turns the self-contained A4 page from `GET /documents/{id}/print` into PDF
- * bytes on the device.
+ * bytes on the device, portrait or landscape (certificates, the activities plan).
  *
  * Replaces printing's convertHtml, which never completes on recent Android:
  * its WebView is never attached to a window, so the page never finishes
@@ -23,7 +23,7 @@ import java.io.File
 class HtmlPdfConverter(private val activity: Activity) {
     private val handler = Handler(Looper.getMainLooper())
 
-    fun convert(html: String, onResult: (bytes: ByteArray?, error: String?) -> Unit) {
+    fun convert(html: String, landscape: Boolean, onResult: (bytes: ByteArray?, error: String?) -> Unit) {
         val content = activity.findViewById<ViewGroup>(android.R.id.content)
         val webView = WebView(activity)
         var finished = false
@@ -45,20 +45,21 @@ class HtmlPdfConverter(private val activity: Activity) {
                 // Fires once per frame on some versions; only the first one prints.
                 if (render != null || finished) return
                 // Lets the embedded fonts and images finish decoding first.
-                render = Runnable { print(webView, ::finish) }.also { handler.postDelayed(it, RENDER_DELAY_MS) }
+                render = Runnable { print(webView, landscape, ::finish) }.also { handler.postDelayed(it, RENDER_DELAY_MS) }
             }
         }
 
         // Index 0 keeps it under the Flutter view, out of sight and touch.
-        content.addView(webView, 0, FrameLayout.LayoutParams(A4_WIDTH_PX, A4_HEIGHT_PX))
+        val (width, height) = if (landscape) A4_HEIGHT_PX to A4_WIDTH_PX else A4_WIDTH_PX to A4_HEIGHT_PX
+        content.addView(webView, 0, FrameLayout.LayoutParams(width, height))
         timeout = Runnable { finish(null, "Timed out") }.also { handler.postDelayed(it, TIMEOUT_MS) }
         webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
     }
 
-    private fun print(webView: WebView, finish: (ByteArray?, String?) -> Unit) {
+    private fun print(webView: WebView, landscape: Boolean, finish: (ByteArray?, String?) -> Unit) {
         val output = File.createTempFile("document", ".pdf", activity.cacheDir)
         val attributes = PrintAttributes.Builder()
-            .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+            .setMediaSize(PrintAttributes.MediaSize.ISO_A4.let { if (landscape) it.asLandscape() else it })
             .setResolution(PrintAttributes.Resolution("pdf", "pdf", 600, 600))
             // The page sets its own margins with @page.
             .setMinMargins(PrintAttributes.Margins.NO_MARGINS)

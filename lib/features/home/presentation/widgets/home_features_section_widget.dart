@@ -271,6 +271,22 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                       ),
                       horizontalSpace12,
                       HomeActionChipWidget(
+                        icon: Icons.insights_rounded,
+                        title: appTranslation().get('document_type_grade_analysis'),
+                        onTap: () => context.push(
+                          token?.isNotEmpty == true ? Routes.gradeAnalysis : Routes.login,
+                        ),
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.workspace_premium_outlined,
+                        title: appTranslation().get('document_type_certificates'),
+                        onTap: () => context.push(
+                          token?.isNotEmpty == true ? Routes.thankYouCertificates : Routes.login,
+                        ),
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
                         icon: Icons.groups_2_outlined,
                         title: appTranslation().get('classes_title'),
                         onTap: () => context.push(
@@ -640,6 +656,44 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                               isHighlighted: false,
                               onTap: () => context.push(
                                 token?.isNotEmpty == true ? Routes.classes : Routes.login,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  verticalSpace10,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.insights_rounded,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: appTranslation().get('document_type_grade_analysis'),
+                              subtitle: appTranslation().get('document_type_grade_analysis_subtitle'),
+                              isHighlighted: false,
+                              onTap: () => context.push(
+                                token?.isNotEmpty == true ? Routes.gradeAnalysis : Routes.login,
+                              ),
+                            ),
+                          ),
+                          horizontalSpace8,
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.workspace_premium_outlined,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: appTranslation().get('document_type_certificates'),
+                              subtitle: appTranslation().get('document_type_certificates_subtitle'),
+                              isHighlighted: false,
+                              onTap: () => context.push(
+                                token?.isNotEmpty == true ? Routes.thankYouCertificates : Routes.login,
                               ),
                             ),
                           ),

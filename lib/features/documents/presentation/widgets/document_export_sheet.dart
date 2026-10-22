@@ -14,7 +14,7 @@ import 'package:moean/features/documents/presentation/widgets/document_export_op
 class DocumentExportSheet extends StatelessWidget {
   const DocumentExportSheet({super.key});
 
-  static Future<void> show(BuildContext context, {required int documentId}) {
+  static Future<void> show(BuildContext context, {required int documentId, bool landscape = false}) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -23,6 +23,7 @@ class DocumentExportSheet extends StatelessWidget {
       builder: (_) => BlocProvider(
         create: (_) => DocumentExportCubit(
           documentId: documentId,
+          landscape: landscape,
           repository: DocumentsRepository(),
           fileService: DocumentFileService(),
         ),

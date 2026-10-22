@@ -109,6 +109,19 @@ import 'package:moean/features/enrichment_plan/presentation/screens/enrichment_p
 import 'package:moean/features/activities_plan/data/repositories/activities_repository.dart';
 import 'package:moean/features/activities_plan/presentation/cubit/activities_plan_cubit.dart';
 import 'package:moean/features/activities_plan/presentation/screens/activities_plan_screen.dart';
+import 'package:moean/features/thank_you_certificates/data/repositories/certificates_repository.dart';
+import 'package:moean/features/thank_you_certificates/presentation/cubit/certificates_cubit.dart';
+import 'package:moean/features/thank_you_certificates/presentation/screens/certificates_screen.dart';
+import 'package:moean/features/documents/data/models/ai_job_model.dart';
+import 'package:moean/features/documents/data/models/document_model.dart';
+import 'package:moean/features/documents/data/repositories/ai_jobs_repository.dart';
+import 'package:moean/features/documents/data/services/document_file_service.dart';
+import 'package:moean/features/documents/presentation/cubit/ai_suggestions_cubit.dart';
+import 'package:moean/features/documents/presentation/cubit/document_preview_cubit.dart';
+import 'package:moean/features/grade_analysis/data/repositories/grade_analysis_repository.dart';
+import 'package:moean/features/grade_analysis/presentation/cubit/grade_analysis_cubit.dart';
+import 'package:moean/features/grade_analysis/presentation/cubit/grade_results_cubit.dart';
+import 'package:moean/features/grade_analysis/presentation/screens/grade_analysis_screen.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -172,6 +185,8 @@ class Routes {
   static const String remedialPlan = '/tools/remedial-plan';
   static const String enrichmentPlan = '/tools/enrichment-plan';
   static const String activitiesPlan = '/tools/activities-plan';
+  static const String gradeAnalysis = '/tools/grade-analysis';
+  static const String thankYouCertificates = '/tools/certificates';
   static const String classes = '/classes';
   static const String classEditor = '/classes/editor';
 
@@ -388,6 +403,46 @@ class Routes {
         filePicker: DeviceFilePicker(),
       )..load(),
       child: const ActivitiesPlanScreen(),
+    ),
+    // Argument: the document id (int) to reopen, or none for a new one.
+    gradeAnalysis: (context) => MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => GradeAnalysisCubit(
+            documentId: context.getArg<int>(),
+            gradesRepository: GradeAnalysisRepository(),
+            documentsRepository: DocumentsRepository(),
+            filePicker: DeviceFilePicker(),
+          )..load(),
+        ),
+        BlocProvider(create: (_) => GradeResultsCubit(GradeAnalysisRepository())),
+        BlocProvider(
+          create: (_) => AiSuggestionsCubit(kind: AiJobKinds.gradeRecommendations, repository: AiJobsRepository()),
+        ),
+      ],
+      child: const GradeAnalysisScreen(),
+    ),
+    // Argument: the document id (int) to reopen, or none for a new one.
+    thankYouCertificates: (context) => MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => CertificatesCubit(
+            documentId: context.getArg<int>(),
+            certificatesRepository: CertificatesRepository(),
+            documentsRepository: DocumentsRepository(),
+            classesRepository: ClassesRepository(),
+            filePicker: DeviceFilePicker(),
+          )..load(),
+        ),
+        BlocProvider(
+          create: (_) => DocumentPreviewCubit(
+            type: DocumentTypes.certificates,
+            repository: DocumentsRepository(),
+            fileService: DocumentFileService(),
+          ),
+        ),
+      ],
+      child: const CertificatesScreen(),
     ),
     classes: (context) => BlocProvider(
       create: (_) => ClassesCubit(ClassesRepository())..load(),

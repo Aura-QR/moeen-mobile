@@ -23,14 +23,18 @@ class DocumentFileService {
   static const Duration _convertTimeout = Duration(seconds: 60);
 
   /// A4 PDF from the self-contained page `GET /documents/{id}/print` returns.
+  /// [landscape] must match the page's own `@page` size, or each page is squeezed.
   /// On Android printing's convertHtml never completes (its WebView is never
   /// attached), so the app's own converter is used there. iOS keeps
   /// convertHtml, which printing 5.14 marks deprecated but still implements.
-  Future<Either<Failure, Uint8List>> htmlToPdf(String html) => _guard(() async {
+  Future<Either<Failure, Uint8List>> htmlToPdf(String html, {bool landscape = false}) => _guard(() async {
         final pdf = Platform.isAndroid
-            ? await _androidHtmlPdf.invokeMethod<Uint8List>('convert', {'html': html})
+            ? await _androidHtmlPdf.invokeMethod<Uint8List>('convert', {'html': html, 'landscape': landscape})
             // ignore: deprecated_member_use
-            : await Printing.convertHtml(format: PdfPageFormat.a4, html: html);
+            : await Printing.convertHtml(
+                format: landscape ? PdfPageFormat.a4.landscape : PdfPageFormat.a4,
+                html: html,
+              );
         if (pdf == null || pdf.isEmpty) throw StateError('empty PDF');
         return pdf;
       }).timeout(_convertTimeout, onTimeout: () => const Left(ServerFailure('document_export_failed')));
