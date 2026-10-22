@@ -236,7 +236,7 @@ class PortfolioItemModel {
 class PortfolioFileModel {
   final int id;
 
-  /// `file` (stored in R2) or `link`.
+  /// `file` (stored in R2), `link`, or `document` (a saved teacher document).
   final String kind;
   final String? title;
   final String? mime;
@@ -244,6 +244,7 @@ class PortfolioFileModel {
   final String? originalName;
 
   /// For stored files this is a signed URL that expires after 60 minutes.
+  /// Empty for a document until the queue has built its file.
   final String url;
   final int sortOrder;
 
@@ -259,7 +260,8 @@ class PortfolioFileModel {
   });
 
   bool get isLink => kind == 'link';
-  bool get isImage => !isLink && (mime ?? '').startsWith('image/');
+  bool get isDocument => kind == 'document';
+  bool get isImage => kind == 'file' && (mime ?? '').startsWith('image/');
   bool get isPdf => mime == 'application/pdf';
 
   String get displayName {

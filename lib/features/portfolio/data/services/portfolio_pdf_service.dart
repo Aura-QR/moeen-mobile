@@ -320,6 +320,7 @@ class PortfolioPdfService {
   /// An image with its caption, or a card linking to a PDF or a URL.
   static pw.Widget _proof(PortfolioFileModel file, pw.MemoryImage? image, _Fonts fonts) {
     final t = appTranslation().get;
+    final kind = file.isLink ? 'link' : (file.isDocument ? 'document' : 'file');
     final name = (file.title?.isNotEmpty ?? false)
         ? file.title!
         : (file.originalName?.isNotEmpty ?? false)
@@ -357,7 +358,7 @@ class PortfolioPdfService {
                     padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: pw.BoxDecoration(color: _emerald100, borderRadius: pw.BorderRadius.circular(6)),
                     child: pw.Text(
-                      t(file.isLink ? 'portfolio_pdf_link_badge' : 'portfolio_pdf_file_badge'),
+                      t('portfolio_pdf_${kind}_badge'),
                       style: pw.TextStyle(font: fonts.black, fontSize: 9, color: _emerald800),
                     ),
                   ),
@@ -377,7 +378,7 @@ class PortfolioPdfService {
                   ),
                   pw.SizedBox(height: 6),
                   pw.Text(
-                    t(file.isLink ? 'portfolio_pdf_link_label' : 'portfolio_pdf_file_label'),
+                    t('portfolio_pdf_${kind}_label'),
                     style: pw.TextStyle(fontSize: 9, color: _slate500),
                   ),
                 ],

@@ -4,16 +4,16 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:moean/core/errors/failures.dart';
+import 'package:moean/core/models/upload_models.dart';
+import 'package:moean/core/services/device_file_picker.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_model.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_roles_model.dart';
-import 'package:moean/features/portfolio/data/models/portfolio_upload_models.dart';
 import 'package:moean/features/portfolio/data/repositories/portfolio_repository.dart';
-import 'package:moean/features/portfolio/data/services/portfolio_file_picker.dart';
 import 'package:moean/features/portfolio/presentation/cubit/portfolio_editor_cubit.dart';
 
 class MockPortfolioRepository extends Mock implements PortfolioRepository {}
 
-class MockPortfolioFilePicker extends Mock implements PortfolioFilePicker {}
+class MockDeviceFilePicker extends Mock implements DeviceFilePicker {}
 
 const _portfolioId = 7;
 
@@ -44,17 +44,17 @@ PortfolioModel _portfolio({bool isPublic = false}) => PortfolioModel.fromJson({
 
 void main() {
   late MockPortfolioRepository repo;
-  late MockPortfolioFilePicker picker;
+  late MockDeviceFilePicker picker;
   late PortfolioEditorCubit cubit;
   Map<int, Uint8List>? builtWithImages;
 
   setUpAll(() {
-    registerFallbackValue(PortfolioPickedFile(bytes: Uint8List(0), name: 'x', mime: null));
+    registerFallbackValue(DevicePickedFile(bytes: Uint8List(0), name: 'x', mime: null));
   });
 
   setUp(() {
     repo = MockPortfolioRepository();
-    picker = MockPortfolioFilePicker();
+    picker = MockDeviceFilePicker();
     builtWithImages = null;
     cubit = PortfolioEditorCubit(
       portfolioId: _portfolioId,
@@ -110,8 +110,8 @@ void main() {
     setUp(() async => cubit.load());
 
     test('does nothing when the teacher cancels', () async {
-      when(() => picker.pick(PortfolioFileSource.gallery)).thenAnswer((_) async => null);
-      await cubit.pickAndUpload(31, PortfolioFileSource.gallery);
+      when(() => picker.pick(DeviceFileSource.gallery)).thenAnswer((_) async => null);
+      await cubit.pickAndUpload(31, DeviceFileSource.gallery);
 
       verifyNever(() => repo.uploadFile(
             portfolioId: any(named: 'portfolioId'),
@@ -122,26 +122,26 @@ void main() {
     });
 
     test('rejects an unsupported type before uploading', () async {
-      when(() => picker.pick(PortfolioFileSource.gallery))
-          .thenAnswer((_) async => PortfolioPickedFile(bytes: Uint8List(10), name: 'a.heic', mime: null));
+      when(() => picker.pick(DeviceFileSource.gallery))
+          .thenAnswer((_) async => DevicePickedFile(bytes: Uint8List(10), name: 'a.heic', mime: null));
       final feedback = cubit.stream.firstWhere((s) => s.feedback != null);
-      await cubit.pickAndUpload(31, PortfolioFileSource.gallery);
+      await cubit.pickAndUpload(31, DeviceFileSource.gallery);
 
       expect((await feedback).feedback!.message, 'portfolio_unsupported_file');
     });
 
     test('rejects a file over 10 MB before uploading', () async {
-      when(() => picker.pick(PortfolioFileSource.pdf)).thenAnswer((_) async =>
-          PortfolioPickedFile(bytes: Uint8List(10 * 1024 * 1024 + 1), name: 'big.pdf', mime: 'application/pdf'));
+      when(() => picker.pick(DeviceFileSource.pdf)).thenAnswer((_) async =>
+          DevicePickedFile(bytes: Uint8List(10 * 1024 * 1024 + 1), name: 'big.pdf', mime: 'application/pdf'));
       final feedback = cubit.stream.firstWhere((s) => s.feedback != null);
-      await cubit.pickAndUpload(31, PortfolioFileSource.pdf);
+      await cubit.pickAndUpload(31, DeviceFileSource.pdf);
 
       expect((await feedback).feedback!.message, 'portfolio_file_too_large');
     });
 
     test('uploads with progress, then reloads the portfolio', () async {
-      final file = PortfolioPickedFile(bytes: Uint8List(100), name: 'plan.png', mime: 'image/png');
-      when(() => picker.pick(PortfolioFileSource.camera)).thenAnswer((_) async => file);
+      final file = DevicePickedFile(bytes: Uint8List(100), name: 'plan.png', mime: 'image/png');
+      when(() => picker.pick(DeviceFileSource.camera)).thenAnswer((_) async => file);
       when(() => repo.uploadFile(
             portfolioId: _portfolioId,
             itemId: 31,
@@ -153,7 +153,7 @@ void main() {
       });
       final progress = cubit.stream.firstWhere((s) => s.uploadProgress == 0.5);
 
-      await cubit.pickAndUpload(31, PortfolioFileSource.camera);
+      await cubit.pickAndUpload(31, DeviceFileSource.camera);
 
       expect((await progress).uploadingItemId, 31);
       expect(cubit.state.uploadingItemId, isNull);

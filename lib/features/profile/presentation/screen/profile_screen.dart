@@ -204,6 +204,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               return const SizedBox.shrink();
                             },
                           ),
+                          if (profile.teacher != null)
+                            ProfileInfoCard(
+                              icon: Icons.account_balance_outlined,
+                              title: appTranslation().get('document_defaults_title'),
+                              value: appTranslation().get('document_defaults_profile_hint'),
+                              onTap: () => Navigator.pushNamed(context, Routes.documentDefaults),
+                            ),
+                          if (profile.teacher != null)
+                            ProfileInfoCard(
+                              icon: Icons.groups_2_outlined,
+                              title: appTranslation().get('classes_title'),
+                              value: appTranslation().get('classes_profile_hint'),
+                              onTap: () => Navigator.pushNamed(context, Routes.classes),
+                            ),
                           ProfileInfoCard(
                             icon: profile.madrasatiConnected ? Icons.link : Icons.link_off,
                             title: appTranslation().get('madrasati_status'),

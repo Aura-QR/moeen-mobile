@@ -13,4 +13,10 @@ void main() {
   test('non-digit text is untouched', () {
     expect(localizeDigits('الصف الأول', isArabic: true), 'الصف الأول');
   });
+
+  test('latinDigits turns typed Arabic-Indic digits into 0-9', () {
+    expect(latinDigits('٢٨'), '28');
+    expect(latinDigits('٥/١'), '5/1');
+    expect(latinDigits('28'), '28');
+  });
 }

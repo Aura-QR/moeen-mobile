@@ -6,9 +6,9 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/portfolio/presentation/cubit/portfolio_editor_cubit.dart';
 import 'package:moean/features/portfolio/presentation/widgets/portfolio_completion_ring_widget.dart';
-import 'package:moean/features/portfolio/presentation/widgets/portfolio_confirm_dialog.dart';
+import 'package:moean/core/utils/constants/primary/primary_confirm_dialog.dart';
 import 'package:moean/features/portfolio/presentation/widgets/portfolio_header_action_widget.dart';
-import 'package:moean/features/portfolio/presentation/widgets/portfolio_input_dialog.dart';
+import 'package:moean/core/utils/constants/primary/primary_input_dialog.dart';
 import 'package:moean/features/portfolio/presentation/widgets/portfolio_missing_chips_widget.dart';
 
 class PortfolioEditorHeaderWidget extends StatelessWidget {
@@ -19,17 +19,17 @@ class PortfolioEditorHeaderWidget extends StatelessWidget {
 
   Future<void> _rename(BuildContext context, String current) async {
     final cubit = PortfolioEditorCubit.get(context);
-    final values = await PortfolioInputDialog.show(
+    final values = await PrimaryInputDialog.show(
       context,
       titleKey: 'portfolio_rename',
-      fields: [PortfolioInputField(hintKey: 'portfolio_title_hint', initialValue: current)],
+      fields: [PrimaryInputField(hintKey: 'portfolio_title_hint', initialValue: current)],
     );
     if (values != null) cubit.rename(values.first);
   }
 
   Future<void> _delete(BuildContext context) async {
     final cubit = PortfolioEditorCubit.get(context);
-    final confirmed = await showPortfolioConfirmDialog(
+    final confirmed = await showPrimaryConfirmDialog(
       context,
       titleKey: 'portfolio_delete',
       messageKey: 'portfolio_delete_confirm',

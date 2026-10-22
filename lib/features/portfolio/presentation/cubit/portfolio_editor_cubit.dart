@@ -4,11 +4,12 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/errors/failures.dart';
+import 'package:moean/core/models/ui_feedback.dart';
+import 'package:moean/core/models/upload_models.dart';
+import 'package:moean/core/services/device_file_picker.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_model.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_roles_model.dart';
-import 'package:moean/features/portfolio/data/models/portfolio_upload_models.dart';
 import 'package:moean/features/portfolio/data/repositories/portfolio_repository.dart';
-import 'package:moean/features/portfolio/data/services/portfolio_file_picker.dart';
 
 part 'portfolio_editor_state.dart';
 
@@ -26,7 +27,7 @@ class PortfolioEditorCubit extends Cubit<PortfolioEditorState> {
   PortfolioEditorCubit({
     required this.portfolioId,
     required PortfolioRepository repository,
-    required PortfolioFilePicker filePicker,
+    required DeviceFilePicker filePicker,
     required PortfolioPdfBuilder pdfBuilder,
   })  : _repo = repository,
         _picker = filePicker,
@@ -35,7 +36,7 @@ class PortfolioEditorCubit extends Cubit<PortfolioEditorState> {
 
   final int portfolioId;
   final PortfolioRepository _repo;
-  final PortfolioFilePicker _picker;
+  final DeviceFilePicker _picker;
   final PortfolioPdfBuilder _pdfBuilder;
 
   /// Loads the portfolio and the roles. File URLs expire after 60 minutes,
@@ -55,7 +56,7 @@ class PortfolioEditorCubit extends Cubit<PortfolioEditorState> {
     result.fold(
       (failure) => emit(state.portfolio == null
           ? state.copyWith(status: PortfolioEditorStatus.failure, errorMessage: failure.message)
-          : state.copyWith(feedback: PortfolioFeedback(failure.message))),
+          : state.copyWith(feedback: UiFeedback(failure.message))),
       (portfolio) => emit(state.copyWith(status: PortfolioEditorStatus.success, portfolio: portfolio)),
     );
   }
@@ -98,17 +99,17 @@ class PortfolioEditorCubit extends Cubit<PortfolioEditorState> {
     await _mutate(_repo.deleteItem(portfolioId, item.id));
   }
 
-  Future<void> pickAndUpload(int itemId, PortfolioFileSource source) async {
+  Future<void> pickAndUpload(int itemId, DeviceFileSource source) async {
     final file = await _picker.pick(source);
     if (file == null || isClosed) return;
 
     final roles = state.roles ?? const PortfolioRolesModel(roles: []);
     if (file.mime == null || !roles.allowedMimes.contains(file.mime)) {
-      emit(state.copyWith(feedback: const PortfolioFeedback('portfolio_unsupported_file')));
+      emit(state.copyWith(feedback: const UiFeedback('portfolio_unsupported_file')));
       return;
     }
     if (file.byteSize > roles.maxFileBytes) {
-      emit(state.copyWith(feedback: const PortfolioFeedback('portfolio_file_too_large')));
+      emit(state.copyWith(feedback: const UiFeedback('portfolio_file_too_large')));
       return;
     }
 
@@ -129,7 +130,7 @@ class PortfolioEditorCubit extends Cubit<PortfolioEditorState> {
   Future<void> addLink(int itemId, String url, String title) async {
     final uri = Uri.tryParse(url.trim());
     if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) {
-      emit(state.copyWith(feedback: const PortfolioFeedback('portfolio_link_https_only')));
+      emit(state.copyWith(feedback: const UiFeedback('portfolio_link_https_only')));
       return;
     }
     await _mutate(
@@ -157,7 +158,7 @@ class PortfolioEditorCubit extends Cubit<PortfolioEditorState> {
     final result = await _repo.enableShare(portfolioId);
     if (isClosed) return;
     result.fold(
-      (failure) => emit(state.copyWith(isSharing: false, feedback: PortfolioFeedback(failure.message))),
+      (failure) => emit(state.copyWith(isSharing: false, feedback: UiFeedback(failure.message))),
       (url) => emit(state.copyWith(isSharing: false, portfolio: portfolio.copyWith(isPublic: true, shareUrl: url))),
     );
   }
@@ -169,7 +170,7 @@ class PortfolioEditorCubit extends Cubit<PortfolioEditorState> {
     final result = await _repo.disableShare(portfolioId);
     if (isClosed) return;
     result.fold(
-      (failure) => emit(state.copyWith(isSharing: false, feedback: PortfolioFeedback(failure.message))),
+      (failure) => emit(state.copyWith(isSharing: false, feedback: UiFeedback(failure.message))),
       (_) => emit(state.copyWith(isSharing: false, portfolio: portfolio.copyWith(isPublic: false, clearShareUrl: true))),
     );
   }
@@ -179,7 +180,7 @@ class PortfolioEditorCubit extends Cubit<PortfolioEditorState> {
     final result = await _repo.deletePortfolio(portfolioId);
     if (isClosed) return;
     result.fold(
-      (failure) => emit(state.copyWith(isSaving: false, feedback: PortfolioFeedback(failure.message))),
+      (failure) => emit(state.copyWith(isSaving: false, feedback: UiFeedback(failure.message))),
       (_) => emit(state.copyWith(isSaving: false, deleted: true)),
     );
   }
@@ -190,7 +191,7 @@ class PortfolioEditorCubit extends Cubit<PortfolioEditorState> {
     final result = await _repo.getPortfolio(portfolioId);
     if (isClosed) return;
     await result.fold(
-      (failure) async => emit(state.copyWith(isExporting: false, feedback: PortfolioFeedback(failure.message))),
+      (failure) async => emit(state.copyWith(isExporting: false, feedback: UiFeedback(failure.message))),
       (portfolio) async {
         final images = <int, Uint8List>{};
         for (final item in portfolio.includedItems) {
@@ -226,13 +227,13 @@ class PortfolioEditorCubit extends Cubit<PortfolioEditorState> {
   Future<void> _afterMutation(Either<Failure, Unit> result, {String? successKey}) async {
     await result.fold(
       (failure) async {
-        emit(state.copyWith(feedback: PortfolioFeedback(failure.message)));
+        emit(state.copyWith(feedback: UiFeedback(failure.message)));
         await refresh();
       },
       (_) async {
         await refresh();
         if (successKey != null && !isClosed) {
-          emit(state.copyWith(feedback: PortfolioFeedback(successKey, isError: false)));
+          emit(state.copyWith(feedback: UiFeedback(successKey, isError: false)));
         }
       },
     );

@@ -2,14 +2,6 @@ part of 'portfolio_editor_cubit.dart';
 
 enum PortfolioEditorStatus { loading, success, failure }
 
-/// A one-shot message for a snackbar: a translation key or an API message.
-class PortfolioFeedback {
-  final String message;
-  final bool isError;
-
-  const PortfolioFeedback(this.message, {this.isError = true});
-}
-
 class PortfolioEditorState {
   final PortfolioEditorStatus status;
   final PortfolioModel? portfolio;
@@ -24,7 +16,7 @@ class PortfolioEditorState {
   final double uploadProgress;
 
   /// One-shot fields, cleared by [copyWith] unless passed.
-  final PortfolioFeedback? feedback;
+  final UiFeedback? feedback;
   final Uint8List? pdfBytes;
   final bool deleted;
 
@@ -54,7 +46,7 @@ class PortfolioEditorState {
     int? uploadingItemId,
     bool clearUploading = false,
     double? uploadProgress,
-    PortfolioFeedback? feedback,
+    UiFeedback? feedback,
     Uint8List? pdfBytes,
     bool deleted = false,
   }) {

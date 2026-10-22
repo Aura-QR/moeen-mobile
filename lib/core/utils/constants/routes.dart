@@ -78,7 +78,7 @@ import 'package:moean/features/curriculum/presentation/screens/curriculum_books_
 import 'package:moean/core/utils/extensions/context_extension.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:moean/features/portfolio/data/repositories/portfolio_repository.dart';
-import 'package:moean/features/portfolio/data/services/portfolio_file_picker.dart';
+import 'package:moean/core/services/device_file_picker.dart';
 import 'package:moean/features/portfolio/data/services/portfolio_pdf_service.dart';
 import 'package:moean/features/portfolio/presentation/cubit/portfolio_list_cubit.dart';
 import 'package:moean/features/portfolio/presentation/cubit/portfolio_editor_cubit.dart';
@@ -88,6 +88,24 @@ import 'package:moean/features/reports/data/achievement_report_pdf_service.dart'
 import 'package:moean/features/reports/data/repositories/achievement_report_repository.dart';
 import 'package:moean/features/reports/presentation/cubit/achievement_report_cubit.dart';
 import 'package:moean/features/reports/presentation/screen/achievement_report_screen.dart';
+import 'package:moean/features/documents/data/repositories/documents_repository.dart';
+import 'package:moean/features/documents/presentation/cubit/document_defaults_cubit.dart';
+import 'package:moean/features/documents/presentation/cubit/my_documents_cubit.dart';
+import 'package:moean/features/documents/presentation/screens/document_defaults_screen.dart';
+import 'package:moean/features/documents/presentation/screens/my_documents_screen.dart';
+import 'package:moean/features/strategy_documentation/data/repositories/strategy_repository.dart';
+import 'package:moean/features/strategy_documentation/presentation/cubit/strategy_documentation_cubit.dart';
+import 'package:moean/features/strategy_documentation/presentation/screens/strategy_documentation_screen.dart';
+import 'package:moean/features/classes/data/repositories/classes_repository.dart';
+import 'package:moean/features/classes/presentation/cubit/class_editor_cubit.dart';
+import 'package:moean/features/classes/presentation/cubit/classes_cubit.dart';
+import 'package:moean/features/classes/presentation/screens/class_editor_screen.dart';
+import 'package:moean/features/classes/presentation/screens/classes_screen.dart';
+import 'package:moean/features/documents/presentation/widgets/plan_form_providers.dart';
+import 'package:moean/features/remedial_plan/presentation/remedial_plan_tool.dart';
+import 'package:moean/features/remedial_plan/presentation/screens/remedial_plan_screen.dart';
+import 'package:moean/features/enrichment_plan/presentation/enrichment_plan_tool.dart';
+import 'package:moean/features/enrichment_plan/presentation/screens/enrichment_plan_screen.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -145,6 +163,13 @@ class Routes {
   static const String portfolioEditor = '/portfolio/editor';
   static const String achievementReport = '/achievement-report';
   static const String supportChat = '/support-chat';
+  static const String myDocuments = '/documents';
+  static const String documentDefaults = '/documents/defaults';
+  static const String strategyDocumentation = '/tools/strategy-documentation';
+  static const String remedialPlan = '/tools/remedial-plan';
+  static const String enrichmentPlan = '/tools/enrichment-plan';
+  static const String classes = '/classes';
+  static const String classEditor = '/classes/editor';
 
 
 
@@ -301,7 +326,7 @@ class Routes {
       create: (_) => PortfolioEditorCubit(
         portfolioId: context.getArg<int>() ?? 0,
         repository: PortfolioRepository(),
-        filePicker: PortfolioFilePicker(),
+        filePicker: DeviceFilePicker(),
         pdfBuilder: (portfolio, images) =>
             PortfolioPdfService.build(portfolio: portfolio, images: images),
       )..load(),
@@ -316,6 +341,52 @@ class Routes {
         ),
       )..load(),
       child: const AchievementReportScreen(),
+    ),
+    myDocuments: (context) => BlocProvider(
+      create: (_) => MyDocumentsCubit(DocumentsRepository())..load(),
+      child: const MyDocumentsScreen(),
+    ),
+    // Pops with true after a save.
+    documentDefaults: (context) => BlocProvider(
+      create: (_) => DocumentDefaultsCubit(
+        repository: DocumentsRepository(),
+        filePicker: DeviceFilePicker(),
+      )..load(),
+      child: const DocumentDefaultsScreen(),
+    ),
+    // Argument: the document id (int) to reopen, or none for a new one.
+    strategyDocumentation: (context) => BlocProvider(
+      create: (_) => StrategyDocumentationCubit(
+        documentId: context.getArg<int>(),
+        strategyRepository: StrategyRepository(),
+        documentsRepository: DocumentsRepository(),
+        filePicker: DeviceFilePicker(),
+      )..load(),
+      child: const StrategyDocumentationScreen(),
+    ),
+    // Argument: the document id (int) to reopen, or none for a new one.
+    remedialPlan: (context) => PlanFormProviders(
+      tool: remedialPlanTool,
+      documentId: context.getArg<int>(),
+      child: const RemedialPlanScreen(),
+    ),
+    enrichmentPlan: (context) => PlanFormProviders(
+      tool: enrichmentPlanTool,
+      documentId: context.getArg<int>(),
+      child: const EnrichmentPlanScreen(),
+    ),
+    classes: (context) => BlocProvider(
+      create: (_) => ClassesCubit(ClassesRepository())..load(),
+      child: const ClassesScreen(),
+    ),
+    // Argument: the class id (int) to edit, or none for a new one. Pops with true after a save.
+    classEditor: (context) => BlocProvider(
+      create: (_) => ClassEditorCubit(
+        classId: context.getArg<int>(),
+        repository: ClassesRepository(),
+        filePicker: DeviceFilePicker(),
+      )..load(),
+      child: const ClassEditorScreen(),
     ),
   };
 }

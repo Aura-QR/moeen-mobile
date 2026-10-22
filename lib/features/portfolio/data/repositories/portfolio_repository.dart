@@ -1,29 +1,28 @@
 import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
 import 'package:moean/core/errors/failures.dart';
+import 'package:moean/core/models/upload_models.dart';
 import 'package:moean/core/network/remote/api_endpoints.dart';
+import 'package:moean/core/network/remote/api_response_handler.dart';
 import 'package:moean/core/network/remote/dio_helper.dart';
+import 'package:moean/core/services/storage_client.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_model.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_roles_model.dart';
-import 'package:moean/features/portfolio/data/models/portfolio_upload_models.dart';
 
 /// Repository for the portfolio endpoints in
 /// PORTFOLIO_AND_ACHIEVEMENTS_API.md § 1.
 class PortfolioRepository {
-  PortfolioRepository({Dio? storageDio}) : _storageDio = storageDio ?? Dio();
+  PortfolioRepository({StorageClient? storage}) : _storage = storage ?? StorageClient();
 
-  /// Plain client for R2. The API client adds the Authorization header and
-  /// our interceptors, and R2 rejects signed requests that carry them.
-  final Dio _storageDio;
+  final StorageClient _storage;
 
-  Future<Either<Failure, PortfolioRolesModel>> getRoles() => _handle(
+  Future<Either<Failure, PortfolioRolesModel>> getRoles() => handleApiResponse(
         DioHelper.getData(url: portfolioRolesApi),
         PortfolioRolesModel.fromJson,
       );
 
-  Future<Either<Failure, List<PortfolioModel>>> getPortfolios() => _handle(
+  Future<Either<Failure, List<PortfolioModel>>> getPortfolios() => handleApiResponse(
         DioHelper.getData(url: portfoliosApi),
         (data) => (data as List)
             .whereType<Map<String, dynamic>>()
@@ -35,7 +34,7 @@ class PortfolioRepository {
     required String role,
     String? title,
   }) =>
-      _handle(
+      handleApiResponse(
         DioHelper.postData(url: portfoliosApi, data: {
           'role': role,
           if (title != null && title.isNotEmpty) 'title': title,
@@ -43,7 +42,7 @@ class PortfolioRepository {
         (data) => PortfolioModel.fromJson(data as Map<String, dynamic>),
       );
 
-  Future<Either<Failure, PortfolioModel>> getPortfolio(int id) => _handle(
+  Future<Either<Failure, PortfolioModel>> getPortfolio(int id) => handleApiResponse(
         DioHelper.getData(url: portfolioApi(id)),
         (data) => PortfolioModel.fromJson(data as Map<String, dynamic>),
       );
@@ -55,7 +54,7 @@ class PortfolioRepository {
     String? role,
     PortfolioProfileModel? profile,
   }) =>
-      _handle(
+      handleApiResponse(
         DioHelper.patchData(url: portfolioApi(id), data: {
           'title': ?title,
           'role': ?role,
@@ -64,19 +63,19 @@ class PortfolioRepository {
         (_) => unit,
       );
 
-  Future<Either<Failure, Unit>> deletePortfolio(int id) => _handle(
+  Future<Either<Failure, Unit>> deletePortfolio(int id) => handleApiResponse(
         DioHelper.deleteData(url: portfolioApi(id)),
         (_) => unit,
       );
 
   /// Returns the share URL. Calling it again keeps the same link.
-  Future<Either<Failure, String>> enableShare(int id) => _handle(
+  Future<Either<Failure, String>> enableShare(int id) => handleApiResponse(
         DioHelper.postData(url: portfolioShareApi(id), data: {}),
         (data) => (data as Map<String, dynamic>)['share_url']?.toString() ?? '',
       );
 
   /// Retires the token for good; sharing again makes a new link.
-  Future<Either<Failure, Unit>> disableShare(int id) => _handle(
+  Future<Either<Failure, Unit>> disableShare(int id) => handleApiResponse(
         DioHelper.deleteData(url: portfolioShareApi(id)),
         (_) => unit,
       );
@@ -86,7 +85,7 @@ class PortfolioRepository {
     required String title,
     String? description,
   }) =>
-      _handle(
+      handleApiResponse(
         DioHelper.postData(url: portfolioItemsApi(id), data: {
           'title': title,
           if (description != null && description.isNotEmpty) 'description': description,
@@ -101,7 +100,7 @@ class PortfolioRepository {
     String? description,
     bool? included,
   }) =>
-      _handle(
+      handleApiResponse(
         DioHelper.patchData(url: portfolioItemApi(id, itemId), data: {
           'title': ?title,
           'description': ?description,
@@ -110,7 +109,7 @@ class PortfolioRepository {
         (_) => unit,
       );
 
-  Future<Either<Failure, Unit>> deleteItem(int id, int itemId) => _handle(
+  Future<Either<Failure, Unit>> deleteItem(int id, int itemId) => handleApiResponse(
         DioHelper.deleteData(url: portfolioItemApi(id, itemId)),
         (_) => unit,
       );
@@ -119,22 +118,22 @@ class PortfolioRepository {
   Future<Either<Failure, Unit>> uploadFile({
     required int portfolioId,
     required int itemId,
-    required PortfolioPickedFile file,
+    required DevicePickedFile file,
     void Function(double progress)? onProgress,
   }) async {
-    final ticketResult = await _handle(
+    final ticketResult = await handleApiResponse(
       DioHelper.postData(
         url: portfolioItemUploadsApi(portfolioId, itemId),
         data: {'mime': file.mime, 'byte_size': file.byteSize},
       ),
-      (data) => PortfolioUploadTicketModel.fromJson(data as Map<String, dynamic>),
+      (data) => StorageUploadTicketModel.fromJson(data as Map<String, dynamic>),
     );
 
     return ticketResult.fold(Left.new, (ticket) async {
-      final putResult = await _putToStorage(ticket, file.bytes, onProgress);
+      final putResult = await _storage.upload(ticket, file.bytes, onProgress: onProgress);
       return putResult.fold(
         Left.new,
-        (_) => _handle(
+        (_) => handleApiResponse(
           DioHelper.postData(
             url: portfolioItemFilesApi(portfolioId, itemId),
             data: {
@@ -155,7 +154,7 @@ class PortfolioRepository {
     required String url,
     String? title,
   }) =>
-      _handle(
+      handleApiResponse(
         DioHelper.postData(url: portfolioItemFilesApi(portfolioId, itemId), data: {
           'kind': 'link',
           'url': url,
@@ -164,75 +163,33 @@ class PortfolioRepository {
         (_) => unit,
       );
 
+  /// Adds a saved teacher document as evidence (DOCUMENTS_API.md § 6). The
+  /// file's `url` stays null until the queue has built it.
+  Future<Either<Failure, Unit>> attachDocument({
+    required int portfolioId,
+    required int itemId,
+    required int documentId,
+  }) =>
+      handleApiResponse(
+        DioHelper.postData(
+          url: portfolioItemDocumentsApi(portfolioId, itemId),
+          data: {'document_id': documentId},
+        ),
+        (_) => unit,
+      );
+
   /// [ids] must hold every file id of the item, in the new order.
   Future<Either<Failure, Unit>> reorderFiles(int id, int itemId, List<int> ids) =>
-      _handle(
+      handleApiResponse(
         DioHelper.putData(url: portfolioItemFilesOrderApi(id, itemId), data: {'ids': ids}),
         (_) => unit,
       );
 
-  Future<Either<Failure, Unit>> deleteFile(int id, int itemId, int fileId) => _handle(
+  Future<Either<Failure, Unit>> deleteFile(int id, int itemId, int fileId) => handleApiResponse(
         DioHelper.deleteData(url: portfolioItemFileApi(id, itemId, fileId)),
         (_) => unit,
       );
 
   /// Downloads a signed file URL, used for the PDF images.
-  Future<Either<Failure, Uint8List>> downloadBytes(String url) async {
-    try {
-      final response = await _storageDio.get<List<int>>(
-        url,
-        options: Options(responseType: ResponseType.bytes),
-      );
-      return Right(Uint8List.fromList(response.data ?? const []));
-    } on DioException {
-      return const Left(ServerFailure('network_error'));
-    }
-  }
-
-  Future<Either<Failure, Unit>> _putToStorage(
-    PortfolioUploadTicketModel ticket,
-    Uint8List bytes,
-    void Function(double progress)? onProgress,
-  ) async {
-    try {
-      await _storageDio.put<void>(
-        ticket.uploadUrl,
-        data: Stream.fromIterable([bytes]),
-        options: Options(
-          headers: {
-            ...ticket.headers,
-            Headers.contentLengthHeader: bytes.length,
-          },
-        ),
-        onSendProgress: (sent, total) {
-          if (total > 0) onProgress?.call(sent / total);
-        },
-      );
-      return const Right(unit);
-    } on DioException {
-      return const Left(ServerFailure('portfolio_upload_failed'));
-    }
-  }
-
-  /// Unwraps `{ data: ... }` and maps errors to [Failure].
-  Future<Either<Failure, T>> _handle<T>(
-    Future<Either<String, Response>> request,
-    T Function(dynamic data) parse,
-  ) async {
-    final response = await request;
-    return response.fold(
-      (error) => Left(failureFromApiError(error)),
-      (res) {
-        try {
-          final body = res.data;
-          final data = body is Map<String, dynamic> && body.containsKey('data')
-              ? body['data']
-              : body;
-          return Right(parse(data));
-        } catch (_) {
-          return const Left(ServerFailure('generic_error'));
-        }
-      },
-    );
-  }
+  Future<Either<Failure, Uint8List>> downloadBytes(String url) => _storage.download(url);
 }

@@ -25,7 +25,11 @@ class PortfolioFileThumbnailWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final icon = file.isLink ? Icons.link_rounded : Icons.picture_as_pdf_rounded;
+    final (icon, iconColor) = file.isLink
+        ? (Icons.link_rounded, ColorsManager.statusWaiting)
+        : file.isDocument
+            ? (Icons.description_rounded, ColorsManager.primaryColor)
+            : (Icons.picture_as_pdf_rounded, ColorsManager.errorColor);
     return Padding(
       padding: const EdgeInsetsDirectional.only(end: 10),
       child: GestureDetector(
@@ -55,7 +59,7 @@ class PortfolioFileThumbnailWidget extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(icon, color: file.isLink ? ColorsManager.statusWaiting : ColorsManager.errorColor, size: 30),
+                        Icon(icon, color: iconColor, size: 30),
                         Text(
                           file.displayName,
                           maxLines: 2,

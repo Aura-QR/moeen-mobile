@@ -228,6 +228,48 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                         }
                       },
                     ),
+                    if (!isAdmin) ...[
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.folder_copy_outlined,
+                        title: appTranslation().get('my_documents_title'),
+                        onTap: () => context.push(
+                          token?.isNotEmpty == true ? Routes.myDocuments : Routes.login,
+                        ),
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.tips_and_updates_outlined,
+                        title: appTranslation().get('document_type_strategy_documentation'),
+                        onTap: () => context.push(
+                          token?.isNotEmpty == true ? Routes.strategyDocumentation : Routes.login,
+                        ),
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.healing_outlined,
+                        title: appTranslation().get('document_type_remedial_plan'),
+                        onTap: () => context.push(
+                          token?.isNotEmpty == true ? Routes.remedialPlan : Routes.login,
+                        ),
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.rocket_launch_outlined,
+                        title: appTranslation().get('document_type_enrichment_plan'),
+                        onTap: () => context.push(
+                          token?.isNotEmpty == true ? Routes.enrichmentPlan : Routes.login,
+                        ),
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.groups_2_outlined,
+                        title: appTranslation().get('classes_title'),
+                        onTap: () => context.push(
+                          token?.isNotEmpty == true ? Routes.classes : Routes.login,
+                        ),
+                      ),
+                    ],
                     if (isAdmin) ...[
                       horizontalSpace12,
                       HomeActionChipWidget(
@@ -487,6 +529,96 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                                   context.push(Routes.login);
                                 }
                               },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  verticalSpace10,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.tips_and_updates_outlined,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: appTranslation().get('document_type_strategy_documentation'),
+                              subtitle: appTranslation().get('document_type_strategy_documentation_subtitle'),
+                              isHighlighted: false,
+                              onTap: () => context.push(
+                                token?.isNotEmpty == true ? Routes.strategyDocumentation : Routes.login,
+                              ),
+                            ),
+                          ),
+                          horizontalSpace8,
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.folder_copy_outlined,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: appTranslation().get('my_documents_title'),
+                              subtitle: appTranslation().get('my_documents_subtitle'),
+                              isHighlighted: false,
+                              onTap: () => context.push(
+                                token?.isNotEmpty == true ? Routes.myDocuments : Routes.login,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  verticalSpace10,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.healing_outlined,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: appTranslation().get('document_type_remedial_plan'),
+                              subtitle: appTranslation().get('document_type_remedial_plan_subtitle'),
+                              isHighlighted: false,
+                              onTap: () => context.push(
+                                token?.isNotEmpty == true ? Routes.remedialPlan : Routes.login,
+                              ),
+                            ),
+                          ),
+                          horizontalSpace8,
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.rocket_launch_outlined,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: appTranslation().get('document_type_enrichment_plan'),
+                              subtitle: appTranslation().get('document_type_enrichment_plan_subtitle'),
+                              isHighlighted: false,
+                              onTap: () => context.push(
+                                token?.isNotEmpty == true ? Routes.enrichmentPlan : Routes.login,
+                              ),
+                            ),
+                          ),
+                          horizontalSpace8,
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.groups_2_outlined,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: appTranslation().get('classes_title'),
+                              subtitle: appTranslation().get('classes_subtitle'),
+                              isHighlighted: false,
+                              onTap: () => context.push(
+                                token?.isNotEmpty == true ? Routes.classes : Routes.login,
+                              ),
                             ),
                           ),
                         ],

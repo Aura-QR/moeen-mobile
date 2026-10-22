@@ -4,7 +4,7 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/widgets/custom_app_dialog.dart';
 
 /// Asks before a destructive action. Resolves to true on confirm.
-Future<bool> showPortfolioConfirmDialog(
+Future<bool> showPrimaryConfirmDialog(
   BuildContext context, {
   required String titleKey,
   required String messageKey,

@@ -55,9 +55,12 @@ Failure failureFromApiError(String error) {
   }
   if (error.startsWith('__')) {
     final parts = error.split(':');
-    return ServerFailure(
-      parts.length >= 3 ? parts.sublist(2).join(':') : 'generic_error',
-    );
+    final message = parts.length >= 3 ? parts.sublist(2).join(':') : 'generic_error';
+    // No trial or subscription: the UI offers the upgrade sheet.
+    if (parts.first == '__402__') {
+      return PaymentRequiredFailure(message, code: parts.length >= 2 ? parts[1] : 'quota_exceeded');
+    }
+    return ServerFailure(message);
   }
   if (error.startsWith('Error') || error == 'something went wrong') {
     return const ServerFailure('generic_error');

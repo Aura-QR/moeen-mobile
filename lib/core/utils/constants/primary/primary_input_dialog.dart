@@ -4,44 +4,46 @@ import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/widgets/custom_app_dialog.dart';
 
-/// One text field in a [PortfolioInputDialog].
-class PortfolioInputField {
+/// One text field in a [PrimaryInputDialog].
+class PrimaryInputField {
   final String hintKey;
   final String initialValue;
   final int maxLines;
+  final int? maxLength;
   final TextInputType keyboardType;
 
-  const PortfolioInputField({
+  const PrimaryInputField({
     required this.hintKey,
     this.initialValue = '',
     this.maxLines = 1,
+    this.maxLength,
     this.keyboardType = TextInputType.text,
   });
 }
 
 /// A dialog with text fields. Pops with the values, in field order.
-class PortfolioInputDialog extends StatefulWidget {
+class PrimaryInputDialog extends StatefulWidget {
   final String titleKey;
-  final List<PortfolioInputField> fields;
+  final List<PrimaryInputField> fields;
 
-  const PortfolioInputDialog({super.key, required this.titleKey, required this.fields});
+  const PrimaryInputDialog({super.key, required this.titleKey, required this.fields});
 
   static Future<List<String>?> show(
     BuildContext context, {
     required String titleKey,
-    required List<PortfolioInputField> fields,
+    required List<PrimaryInputField> fields,
   }) {
     return showDialog<List<String>>(
       context: context,
-      builder: (_) => PortfolioInputDialog(titleKey: titleKey, fields: fields),
+      builder: (_) => PrimaryInputDialog(titleKey: titleKey, fields: fields),
     );
   }
 
   @override
-  State<PortfolioInputDialog> createState() => _PortfolioInputDialogState();
+  State<PrimaryInputDialog> createState() => _PrimaryInputDialogState();
 }
 
-class _PortfolioInputDialogState extends State<PortfolioInputDialog> {
+class _PrimaryInputDialogState extends State<PrimaryInputDialog> {
   late final List<TextEditingController> _controllers = [
     for (final field in widget.fields) TextEditingController(text: field.initialValue),
   ];
@@ -70,6 +72,7 @@ class _PortfolioInputDialogState extends State<PortfolioInputDialog> {
               controller: _controllers[i],
               hint: appTranslation().get(widget.fields[i].hintKey),
               maxLines: widget.fields[i].maxLines,
+              maxLength: widget.fields[i].maxLength,
               keyboardType: widget.fields[i].keyboardType,
             ),
           ],

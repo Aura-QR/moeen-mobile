@@ -20,6 +20,12 @@ void main() {
       expect(failureFromApiError('__402__:quota_exceeded:ترقية الحساب').message, 'ترقية الحساب');
     });
 
+    test('marks 402 as PaymentRequiredFailure with its code', () {
+      final failure = failureFromApiError('__402__:subscription_required:ترقية الحساب');
+      expect(failure, isA<PaymentRequiredFailure>());
+      expect((failure as PaymentRequiredFailure).code, 'subscription_required');
+    });
+
     test('marks Unauthenticated as UnauthorizedFailure', () {
       expect(failureFromApiError('Unauthenticated'), isA<UnauthorizedFailure>());
     });

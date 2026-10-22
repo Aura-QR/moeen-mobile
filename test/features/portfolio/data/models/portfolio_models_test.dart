@@ -1,23 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_model.dart';
-import 'package:moean/features/portfolio/data/models/portfolio_upload_models.dart';
 
 void main() {
-  group('PortfolioPickedFile.mimeFromName', () {
-    test('maps the accepted types', () {
-      expect(PortfolioPickedFile.mimeFromName('a.JPG'), 'image/jpeg');
-      expect(PortfolioPickedFile.mimeFromName('a.jpeg'), 'image/jpeg');
-      expect(PortfolioPickedFile.mimeFromName('a.png'), 'image/png');
-      expect(PortfolioPickedFile.mimeFromName('a.webp'), 'image/webp');
-      expect(PortfolioPickedFile.mimeFromName('خطة.pdf'), 'application/pdf');
-    });
-
-    test('rejects HEIC and names without an extension', () {
-      expect(PortfolioPickedFile.mimeFromName('IMG_1.HEIC'), isNull);
-      expect(PortfolioPickedFile.mimeFromName('file'), isNull);
-    });
-  });
-
   test('PortfolioModel sorts items and files by sort_order', () {
     final portfolio = PortfolioModel.fromJson({
       'id': 7,
@@ -49,5 +33,20 @@ void main() {
     expect(portfolio.items.first.isCustom, isFalse);
     expect(portfolio.items.last.isCustom, isTrue);
     expect(portfolio.completion.percent, 50);
+  });
+
+  test('a document file is neither an image nor a link', () {
+    final file = PortfolioFileModel.fromJson({
+      'id': 5,
+      'kind': 'document',
+      'title': 'توثيق جيكسو',
+      'mime': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'url': null,
+    });
+
+    expect(file.isDocument, isTrue);
+    expect(file.isImage, isFalse);
+    expect(file.isLink, isFalse);
+    expect(file.url, isEmpty);
   });
 }

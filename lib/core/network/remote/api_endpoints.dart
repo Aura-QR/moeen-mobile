@@ -104,6 +104,33 @@ String portfolioItemFilesOrderApi(int id, int itemId) =>
     '/portfolios/$id/items/$itemId/files/order';
 String portfolioItemFileApi(int id, int itemId, int fileId) =>
     '/portfolios/$id/items/$itemId/files/$fileId';
+String portfolioItemDocumentsApi(int id, int itemId) =>
+    '/portfolios/$id/items/$itemId/documents';
+
+// Teacher Documents API (DOCUMENTS_API.md)
+const String documentDefaultsApi = '/me/document-defaults';
+const String documentsApi = '/documents';
+const String documentUploadsApi = '/documents/uploads';
+String documentApi(int id) => '/documents/$id';
+String documentDuplicateApi(int id) => '/documents/$id/duplicate';
+String documentPrintApi(int id) => '/documents/$id/print';
+String documentExportsApi(int id) => '/documents/$id/exports';
+String documentExportApi(int id, int exportId) => '/documents/$id/exports/$exportId';
+
+// Tool catalogues
+const String strategiesApi = '/tools/strategies';
+String strategyApi(String key) => '/tools/strategies/$key';
+const String remedialToolApi = '/tools/remedial';
+const String enrichmentToolApi = '/tools/enrichment';
+
+// «فصولي» saved classes (CLASSES_API.md)
+const String classesApi = '/classes';
+const String classesImportApi = '/classes/import';
+String classApi(int id) => '/classes/$id';
+
+// AI suggestions for the document tools (AI_JOBS_API.md)
+const String aiJobsApi = '/ai-jobs';
+String aiJobApi(int id) => '/ai-jobs/$id';
 
 // Achievement Report API
 const String achievementReportApi = '/reports/achievements';

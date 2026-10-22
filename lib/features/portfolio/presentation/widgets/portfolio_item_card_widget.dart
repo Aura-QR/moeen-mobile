@@ -3,15 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/utils/constants/primary/primary_confirm_dialog.dart';
+import 'package:moean/core/utils/constants/primary/primary_file_source_sheet.dart';
+import 'package:moean/core/utils/constants/primary/primary_input_dialog.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_model.dart';
 import 'package:moean/features/portfolio/presentation/cubit/portfolio_editor_cubit.dart';
-import 'package:moean/features/portfolio/presentation/widgets/portfolio_add_evidence_sheet.dart';
-import 'package:moean/features/portfolio/presentation/widgets/portfolio_confirm_dialog.dart';
 import 'package:moean/features/portfolio/presentation/widgets/portfolio_evidence_badge_widget.dart';
 import 'package:moean/features/portfolio/presentation/widgets/portfolio_expandable_card_widget.dart';
 import 'package:moean/features/portfolio/presentation/widgets/portfolio_files_strip_widget.dart';
-import 'package:moean/features/portfolio/presentation/widgets/portfolio_input_dialog.dart';
 
 class PortfolioItemCardWidget extends StatelessWidget {
   final PortfolioItemModel item;
@@ -21,9 +21,9 @@ class PortfolioItemCardWidget extends StatelessWidget {
   /// Standard items only allow editing the description.
   Future<void> _edit(BuildContext context) async {
     final cubit = PortfolioEditorCubit.get(context);
-    final values = await PortfolioInputDialog.show(context, titleKey: 'portfolio_edit_item', fields: [
-      if (item.isCustom) PortfolioInputField(hintKey: 'portfolio_item_title', initialValue: item.title),
-      PortfolioInputField(hintKey: 'portfolio_item_description', initialValue: item.description ?? '', maxLines: 3),
+    final values = await PrimaryInputDialog.show(context, titleKey: 'portfolio_edit_item', fields: [
+      if (item.isCustom) PrimaryInputField(hintKey: 'portfolio_item_title', initialValue: item.title),
+      PrimaryInputField(hintKey: 'portfolio_item_description', initialValue: item.description ?? '', maxLines: 3),
     ]);
     if (values == null) return;
     cubit.updateItem(item, title: item.isCustom ? values.first : null, description: values.last);
@@ -31,22 +31,22 @@ class PortfolioItemCardWidget extends StatelessWidget {
 
   Future<void> _addEvidence(BuildContext context) async {
     final cubit = PortfolioEditorCubit.get(context);
-    final source = await PortfolioAddEvidenceSheet.show(context);
+    final source = await PrimaryFileSourceSheet.show(context, titleKey: 'portfolio_add_evidence');
     if (source != null) cubit.pickAndUpload(item.id, source);
   }
 
   Future<void> _addLink(BuildContext context) async {
     final cubit = PortfolioEditorCubit.get(context);
-    final values = await PortfolioInputDialog.show(context, titleKey: 'portfolio_add_link', fields: const [
-      PortfolioInputField(hintKey: 'portfolio_link_url', keyboardType: TextInputType.url),
-      PortfolioInputField(hintKey: 'portfolio_link_title'),
+    final values = await PrimaryInputDialog.show(context, titleKey: 'portfolio_add_link', fields: const [
+      PrimaryInputField(hintKey: 'portfolio_link_url', keyboardType: TextInputType.url),
+      PrimaryInputField(hintKey: 'portfolio_link_title'),
     ]);
     if (values != null) cubit.addLink(item.id, values[0], values[1]);
   }
 
   Future<void> _delete(BuildContext context) async {
     final cubit = PortfolioEditorCubit.get(context);
-    final confirmed = await showPortfolioConfirmDialog(
+    final confirmed = await showPrimaryConfirmDialog(
       context,
       titleKey: 'portfolio_delete_item',
       messageKey: 'portfolio_delete_item_confirm',

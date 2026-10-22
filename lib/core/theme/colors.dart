@@ -42,7 +42,7 @@ class ColorsManager {
 
   static Color get mainText => isDark ? textPrimaryDark : const Color(0xFF111827);
   static Color get secondaryText => isDark ? mutedDark : const Color(0xFF6B7280);
-  static Color get borderLightGray => isDark ? white.withOpacity(0.1) : const Color(0xFFE5E7EB);
+  static Color get borderLightGray => isDark ? white.withValues(alpha: 0.1) : const Color(0xFFE5E7EB);
  
   static Color get background => isDark ? backgroundDark : backgroundColorLight;
   static Color get textPrimary => isDark ? textPrimaryDark : textPrimaryLight;
@@ -51,12 +51,18 @@ class ColorsManager {
   static Color get primaryAction => primaryColor;
 
   static const Color borderLight = themeDivider;
-  static Color get borderColor => isDark ? white.withOpacity(0.24) : borderLight;
+  static Color get borderColor => isDark ? white.withValues(alpha: 0.24) : borderLight;
 
   // 135deg Gold Gradient Colors
   static const Color goldLight = Color(0xFFF5D76E);
 
   static const Color goldMedium = Color(0xFFC9A227);
+
+  // Document themes; must match `documents.themes` on the backend.
+  static const Color documentThemeTeal = Color(0xFF0E7A5E);
+  static const Color documentThemeBlue = Color(0xFF1D4E89);
+  static const Color documentThemePurple = Color(0xFF5B3E96);
+  static const Color documentThemeGray = Color(0xFF3F4A4F);
 
 
   // Prescriptions Feature Colors

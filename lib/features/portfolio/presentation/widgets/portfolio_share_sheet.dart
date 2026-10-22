@@ -6,7 +6,7 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_elevated_button.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/portfolio/presentation/cubit/portfolio_editor_cubit.dart';
-import 'package:moean/features/portfolio/presentation/widgets/portfolio_confirm_dialog.dart';
+import 'package:moean/core/utils/constants/primary/primary_confirm_dialog.dart';
 import 'package:moean/features/portfolio/presentation/widgets/portfolio_share_link_widget.dart';
 
 class PortfolioShareSheet extends StatelessWidget {
@@ -26,7 +26,7 @@ class PortfolioShareSheet extends StatelessWidget {
   /// Stopping retires the token, so the current link stops working for good.
   Future<void> _stop(BuildContext context) async {
     final cubit = PortfolioEditorCubit.get(context);
-    final confirmed = await showPortfolioConfirmDialog(
+    final confirmed = await showPrimaryConfirmDialog(
       context,
       titleKey: 'portfolio_stop_sharing',
       messageKey: 'portfolio_stop_sharing_warning',
