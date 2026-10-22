@@ -1111,5 +1111,14 @@
   "strategy_section_notes": "Notes",
   "strategy_notes_hint": "Additional notes (optional)",
   "document_status": "Document status",
-  "document_status_note": "Choose «Final» when the document is ready to approve"
+  "document_status_note": "Choose «Final» when the document is ready to approve",
+  "classes_madrasati_title": "Import from Madrasati",
+  "classes_madrasati_subtitle": "We read only student names from «قائمة الطلاب» in your Madrasati account and change nothing there. Review the names before saving.",
+  "classes_madrasati_read": "Read names",
+  "classes_madrasati_save": "Save to My classes",
+  "classes_madrasati_reading": "Reading…",
+  "classes_madrasati_count": "{count} students",
+  "classes_madrasati_failed": "Couldn't read",
+  "classes_madrasati_replaces": "The class with the same name will get these names",
+  "classes_madrasati_empty": "No classes in your Madrasati account."
 }

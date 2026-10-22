@@ -60,3 +60,20 @@ class SchoolClassModel {
         'students': students,
       };
 }
+
+/// A class on the teacher's Madrasati «قائمة الطلاب» (`GET /classes/madrasati`).
+class MadrasatiClassModel {
+  final String madrasatiId;
+  final String name;
+
+  /// The «فصولي» class with the same name, whose names an import replaces.
+  final int? existingClassId;
+
+  const MadrasatiClassModel({required this.madrasatiId, required this.name, this.existingClassId});
+
+  factory MadrasatiClassModel.fromJson(Map<String, dynamic> json) => MadrasatiClassModel(
+        madrasatiId: json['madrasati_id']?.toString() ?? '',
+        name: json['name']?.toString() ?? '',
+        existingClassId: json['existing_class_id'] is int ? json['existing_class_id'] as int : int.tryParse('${json['existing_class_id']}'),
+      );
+}
