@@ -662,7 +662,7 @@
   "privacy_official_document_badge": "Official Privacy Protection Document",
   "privacy_hero_title": "Privacy Policy & Data Protection",
   "privacy_hero_desc": "This page outlines Haddher platform's commitments to protecting teachers' data, lesson prep content, and full compliance with the Personal Data Protection Law (PDPL) in Saudi Arabia.",
-  "privacy_last_updated": "Last updated: October 21, 2026",
+  "privacy_last_updated": "Last updated: October 23, 2026",
   "privacy_share_link": "Share Link",
   "privacy_print_pdf": "Print / PDF",
   "privacy_share_text": "Privacy Policy & Data Protection - Haddher Platform: https://hader.sa/privacy",
@@ -1120,5 +1120,9 @@
   "classes_madrasati_count": "{count} students",
   "classes_madrasati_failed": "Couldn't read",
   "classes_madrasati_replaces": "The class with the same name will get these names",
-  "classes_madrasati_empty": "No classes in your Madrasati account."
+  "classes_madrasati_empty": "No classes in your Madrasati account.",
+  "privacy_sec2_card6_title": "Your students' names in My classes (optional)",
+  "privacy_sec2_card6_desc": "If you use My classes, we store only your students' names as you enter them, for your tools such as plans and certificates. You can type them, import them from an Excel or CSV file (we don't keep the file), or import them from «قائمة الطلاب» in your Madrasati account through the connection you set up; we then read only student and class names and change nothing on Madrasati. We don't store ID or phone numbers, no one else sees the names, and we don't share them or send them to AI services. A class and its names are permanently deleted when you delete it. You are responsible for making sure this follows your school's rules.",
+  "privacy_sec2_card7_title": "AI suggestions",
+  "privacy_sec2_card7_desc": "When you ask for suggestions such as «اقترح من الدرس», we send the AI provider only the lesson's details (stage, grade, subject and lesson title), never your name or your students' names. We may keep the suggestions for each lesson and show them to other teachers who ask for the same lesson, because they contain no personal data."
 }
