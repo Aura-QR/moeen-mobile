@@ -13,6 +13,7 @@ import 'package:moean/features/documents/data/models/picked_lesson_model.dart';
 import 'package:moean/features/documents/data/repositories/documents_repository.dart';
 import 'package:moean/features/strategy_documentation/data/models/strategy_models.dart';
 import 'package:moean/features/strategy_documentation/data/repositories/strategy_repository.dart';
+import 'package:moean/features/documents/presentation/document_follow_up.dart';
 import 'package:moean/features/strategy_documentation/presentation/cubit/strategy_documentation_cubit.dart';
 
 class MockStrategyRepository extends Mock implements StrategyRepository {}
@@ -201,7 +202,7 @@ void main() {
     await cubit.selectStrategy('jigsaw');
     await cubit.saveAndExport();
 
-    expect(cubit.state.followUp, StrategyFollowUp.export);
+    expect(cubit.state.followUp, DocumentFollowUp.export);
     expect(cubit.state.documentId, 12);
     await cubit.close();
   });

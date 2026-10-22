@@ -10,8 +10,7 @@ import 'package:moean/core/utils/constants/primary/upgrade_prompt_bottom_sheet.d
 import 'package:moean/features/documents/presentation/cubit/ai_suggestions_cubit.dart';
 import 'package:moean/features/documents/presentation/cubit/plan_form_cubit.dart';
 import 'package:moean/features/documents/presentation/cubit/plan_tool_config.dart';
-import 'package:moean/features/documents/presentation/widgets/attach_to_portfolio_sheet.dart';
-import 'package:moean/features/documents/presentation/widgets/document_export_sheet.dart';
+import 'package:moean/features/documents/presentation/document_follow_up.dart';
 import 'package:moean/features/documents/presentation/widgets/plan_actions_bar.dart';
 
 /// The screen around a plan form: load states, messages, the export and
@@ -29,19 +28,12 @@ class PlanFormScaffold extends StatelessWidget {
 
     final documentId = state.documentId;
     if (documentId == null) return;
-    switch (state.followUp) {
-      case PlanFollowUp.export:
-        await DocumentExportSheet.show(context, documentId: documentId);
-      case PlanFollowUp.attachToPortfolio:
-        final attached = await AttachToPortfolioSheet.show(
-          context,
-          documentId: documentId,
-          suggestedItemKey: PlanToolConfig.portfolioItemKey,
-        );
-        if (attached && context.mounted) showPrimarySnackBar(context, 'document_attached', isError: false);
-      case null:
-        break;
-    }
+    await runDocumentFollowUp(
+      context,
+      followUp: state.followUp,
+      documentId: documentId,
+      portfolioItemKey: PlanToolConfig.portfolioItemKey,
+    );
   }
 
   void _onAiEvent(BuildContext context, AiSuggestionsState state) {

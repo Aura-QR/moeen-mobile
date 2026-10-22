@@ -15,6 +15,7 @@ import 'package:moean/features/documents/data/models/student_picker_result.dart'
 import 'package:moean/features/documents/data/repositories/documents_repository.dart';
 import 'package:moean/features/documents/data/repositories/plan_catalogue_repository.dart';
 import 'package:moean/features/documents/presentation/cubit/document_header_overrides.dart';
+import 'package:moean/features/documents/presentation/document_follow_up.dart';
 import 'package:moean/features/documents/presentation/cubit/plan_tool_config.dart';
 
 part 'plan_form_state.dart';
@@ -223,11 +224,11 @@ class PlanFormCubit extends Cubit<PlanFormState> {
   Future<void> save() => _save(null);
 
   /// Exports always use the saved version, so this saves first.
-  Future<void> saveAndExport() => _save(PlanFollowUp.export);
+  Future<void> saveAndExport() => _save(DocumentFollowUp.export);
 
-  Future<void> saveAndAttach() => _save(PlanFollowUp.attachToPortfolio);
+  Future<void> saveAndAttach() => _save(DocumentFollowUp.attachToPortfolio);
 
-  Future<void> _save(PlanFollowUp? followUp) async {
+  Future<void> _save(DocumentFollowUp? followUp) async {
     if (state.isSaving || state.isUploadingImage) return;
     if (config.hasPlanType && state.usesLessons && state.lessons.isEmpty) {
       emit(state.copyWith(feedback: const UiFeedback('plan_lessons_required')));

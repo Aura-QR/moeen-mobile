@@ -11,6 +11,7 @@ import 'package:moean/features/documents/data/models/document_upload_rules.dart'
 import 'package:moean/features/documents/data/models/picked_lesson_model.dart';
 import 'package:moean/features/documents/data/repositories/documents_repository.dart';
 import 'package:moean/features/documents/presentation/cubit/document_header_overrides.dart';
+import 'package:moean/features/documents/presentation/document_follow_up.dart';
 import 'package:moean/features/strategy_documentation/data/models/strategy_documentation_input.dart';
 import 'package:moean/features/strategy_documentation/data/models/strategy_models.dart';
 import 'package:moean/features/strategy_documentation/data/repositories/strategy_repository.dart';
@@ -188,11 +189,11 @@ class StrategyDocumentationCubit extends Cubit<StrategyDocumentationState> {
   Future<void> save() => _save(null);
 
   /// Exports always use the saved version, so this saves first.
-  Future<void> saveAndExport() => _save(StrategyFollowUp.export);
+  Future<void> saveAndExport() => _save(DocumentFollowUp.export);
 
-  Future<void> saveAndAttach() => _save(StrategyFollowUp.attachToPortfolio);
+  Future<void> saveAndAttach() => _save(DocumentFollowUp.attachToPortfolio);
 
-  Future<void> _save(StrategyFollowUp? followUp) async {
+  Future<void> _save(DocumentFollowUp? followUp) async {
     if (state.isSaving || state.isUploadingImage) return;
     final error = _validate();
     if (error != null) {

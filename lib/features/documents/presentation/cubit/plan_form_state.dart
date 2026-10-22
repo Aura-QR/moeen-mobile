@@ -2,9 +2,6 @@ part of 'plan_form_cubit.dart';
 
 enum PlanFormStatus { loading, success, failure }
 
-/// What to open once a save succeeds.
-enum PlanFollowUp { export, attachToPortfolio }
-
 class PlanFormState {
   /// The key [PlanFormCubit] uses for «الفئة المستهدفة» in its line methods.
   static const String targetGroupsKey = 'target_groups';
@@ -36,7 +33,7 @@ class PlanFormState {
   final bool isSaving;
 
   /// One-shot fields, cleared by [copyWith] unless passed.
-  final PlanFollowUp? followUp;
+  final DocumentFollowUp? followUp;
   final UiFeedback? feedback;
 
   const PlanFormState({
@@ -93,7 +90,7 @@ class PlanFormState {
     DocumentTheme? theme,
     String? documentStatus,
     bool? isSaving,
-    PlanFollowUp? followUp,
+    DocumentFollowUp? followUp,
     UiFeedback? feedback,
   }) {
     return PlanFormState(

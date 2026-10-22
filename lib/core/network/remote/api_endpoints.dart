@@ -122,6 +122,8 @@ const String strategiesApi = '/tools/strategies';
 String strategyApi(String key) => '/tools/strategies/$key';
 const String remedialToolApi = '/tools/remedial';
 const String enrichmentToolApi = '/tools/enrichment';
+const String activitiesToolApi = '/tools/activities';
+const String activitiesPlanApi = '/tools/activities/plan';
 
 // «فصولي» saved classes (CLASSES_API.md)
 const String classesApi = '/classes';

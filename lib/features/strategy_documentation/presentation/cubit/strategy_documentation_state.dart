@@ -2,9 +2,6 @@ part of 'strategy_documentation_cubit.dart';
 
 enum StrategyDocumentationStatus { loading, success, failure }
 
-/// What to open once a save succeeds.
-enum StrategyFollowUp { export, attachToPortfolio }
-
 class StrategyDocumentationState {
   final StrategyDocumentationStatus status;
   final String? errorMessage;
@@ -30,7 +27,7 @@ class StrategyDocumentationState {
   final bool isSaving;
 
   /// One-shot fields, cleared by [copyWith] unless passed.
-  final StrategyFollowUp? followUp;
+  final DocumentFollowUp? followUp;
   final UiFeedback? feedback;
 
   const StrategyDocumentationState({
@@ -76,7 +73,7 @@ class StrategyDocumentationState {
     DocumentTheme? theme,
     String? documentStatus,
     bool? isSaving,
-    StrategyFollowUp? followUp,
+    DocumentFollowUp? followUp,
     UiFeedback? feedback,
   }) {
     return StrategyDocumentationState(

@@ -6,8 +6,7 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/conditional_builder.dart';
 import 'package:moean/core/utils/constants/primary/primary_error_view.dart';
 import 'package:moean/core/utils/constants/primary/primary_snack_bar.dart';
-import 'package:moean/features/documents/presentation/widgets/attach_to_portfolio_sheet.dart';
-import 'package:moean/features/documents/presentation/widgets/document_export_sheet.dart';
+import 'package:moean/features/documents/presentation/document_follow_up.dart';
 import 'package:moean/features/strategy_documentation/presentation/cubit/strategy_documentation_cubit.dart';
 import 'package:moean/features/strategy_documentation/presentation/widgets/strategy_actions_bar.dart';
 import 'package:moean/features/strategy_documentation/presentation/widgets/strategy_documentation_body.dart';
@@ -22,19 +21,12 @@ class StrategyDocumentationScreen extends StatelessWidget {
 
     final documentId = state.documentId;
     if (documentId == null) return;
-    switch (state.followUp) {
-      case StrategyFollowUp.export:
-        await DocumentExportSheet.show(context, documentId: documentId);
-      case StrategyFollowUp.attachToPortfolio:
-        final attached = await AttachToPortfolioSheet.show(
-          context,
-          documentId: documentId,
-          suggestedItemKey: StrategyDocumentationCubit.portfolioItemKey,
-        );
-        if (attached && context.mounted) showPrimarySnackBar(context, 'document_attached', isError: false);
-      case null:
-        break;
-    }
+    await runDocumentFollowUp(
+      context,
+      followUp: state.followUp,
+      documentId: documentId,
+      portfolioItemKey: StrategyDocumentationCubit.portfolioItemKey,
+    );
   }
 
   @override

@@ -106,6 +106,9 @@ import 'package:moean/features/remedial_plan/presentation/remedial_plan_tool.dar
 import 'package:moean/features/remedial_plan/presentation/screens/remedial_plan_screen.dart';
 import 'package:moean/features/enrichment_plan/presentation/enrichment_plan_tool.dart';
 import 'package:moean/features/enrichment_plan/presentation/screens/enrichment_plan_screen.dart';
+import 'package:moean/features/activities_plan/data/repositories/activities_repository.dart';
+import 'package:moean/features/activities_plan/presentation/cubit/activities_plan_cubit.dart';
+import 'package:moean/features/activities_plan/presentation/screens/activities_plan_screen.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -168,6 +171,7 @@ class Routes {
   static const String strategyDocumentation = '/tools/strategy-documentation';
   static const String remedialPlan = '/tools/remedial-plan';
   static const String enrichmentPlan = '/tools/enrichment-plan';
+  static const String activitiesPlan = '/tools/activities-plan';
   static const String classes = '/classes';
   static const String classEditor = '/classes/editor';
 
@@ -374,6 +378,16 @@ class Routes {
       tool: enrichmentPlanTool,
       documentId: context.getArg<int>(),
       child: const EnrichmentPlanScreen(),
+    ),
+    // Argument: the document id (int) to reopen, or none for a new one.
+    activitiesPlan: (context) => BlocProvider(
+      create: (_) => ActivitiesPlanCubit(
+        documentId: context.getArg<int>(),
+        activitiesRepository: ActivitiesRepository(),
+        documentsRepository: DocumentsRepository(),
+        filePicker: DeviceFilePicker(),
+      )..load(),
+      child: const ActivitiesPlanScreen(),
     ),
     classes: (context) => BlocProvider(
       create: (_) => ClassesCubit(ClassesRepository())..load(),

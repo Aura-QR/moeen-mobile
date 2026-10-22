@@ -13,8 +13,9 @@ abstract final class DocumentTypes {
   static const String strategyDocumentation = 'strategy_documentation';
   static const String remedialPlan = 'remedial_plan';
   static const String enrichmentPlan = 'enrichment_plan';
+  static const String activitiesPlan = 'activities_plan';
 
-  static const List<String> all = [strategyDocumentation, remedialPlan, enrichmentPlan];
+  static const List<String> all = [strategyDocumentation, remedialPlan, enrichmentPlan, activitiesPlan];
 
   static String labelKey(String type) => 'document_type_$type';
 }

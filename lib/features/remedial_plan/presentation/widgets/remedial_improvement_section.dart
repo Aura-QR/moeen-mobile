@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:moean/core/theme/colors.dart';
-import 'package:moean/core/theme/text_styles.dart';
+import 'package:moean/core/utils/constants/primary/primary_choice_chips.dart';
 import 'package:moean/core/utils/constants/primary/primary_section_card.dart';
 import 'package:moean/features/documents/presentation/cubit/plan_form_cubit.dart';
 
@@ -18,24 +17,11 @@ class RemedialImprovementSection extends StatelessWidget {
       title: catalogue.improvementLabel,
       child: BlocSelector<PlanFormCubit, PlanFormState, String>(
         selector: (state) => state.improvement,
-        builder: (context, improvement) => Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final level in catalogue.improvementOptions)
-              ChoiceChip(
-                label: Text(level),
-                selected: level == improvement,
-                onSelected: (_) => cubit.setImprovement(level),
-                showCheckmark: false,
-                selectedColor: ColorsManager.primaryColor,
-                backgroundColor: ColorsManager.background,
-                side: BorderSide(color: level == improvement ? ColorsManager.primaryColor : ColorsManager.borderColor),
-                labelStyle: TextStylesManager.medium13.copyWith(
-                  color: level == improvement ? ColorsManager.white : ColorsManager.mainText,
-                ),
-              ),
-          ],
+        builder: (context, improvement) => PrimaryChoiceChips<String>(
+          options: catalogue.improvementOptions,
+          labelOf: (level) => level,
+          isSelected: (level) => level == improvement,
+          onTap: cubit.setImprovement,
         ),
       ),
     );

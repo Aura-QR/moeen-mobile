@@ -32,6 +32,11 @@ const List<DocumentTool> documentTools = [
     icon: Icons.rocket_launch_outlined,
     route: Routes.enrichmentPlan,
   ),
+  DocumentTool(
+    type: DocumentTypes.activitiesPlan,
+    icon: Icons.local_activity_outlined,
+    route: Routes.activitiesPlan,
+  ),
 ];
 
 DocumentTool? documentToolFor(String type) => documentTools.where((tool) => tool.type == type).firstOrNull;

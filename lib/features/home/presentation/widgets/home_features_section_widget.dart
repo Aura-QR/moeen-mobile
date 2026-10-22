@@ -263,6 +263,14 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                       ),
                       horizontalSpace12,
                       HomeActionChipWidget(
+                        icon: Icons.local_activity_outlined,
+                        title: appTranslation().get('document_type_activities_plan'),
+                        onTap: () => context.push(
+                          token?.isNotEmpty == true ? Routes.activitiesPlan : Routes.login,
+                        ),
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
                         icon: Icons.groups_2_outlined,
                         title: appTranslation().get('classes_title'),
                         onTap: () => context.push(
@@ -566,6 +574,20 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                               isHighlighted: false,
                               onTap: () => context.push(
                                 token?.isNotEmpty == true ? Routes.myDocuments : Routes.login,
+                              ),
+                            ),
+                          ),
+                          horizontalSpace8,
+                          Expanded(
+                            child: HomeFeatureItemWidget(
+                              icon: Icons.local_activity_outlined,
+                              iconColor: ColorsManager.primaryColor,
+                              iconBgColor: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                              title: appTranslation().get('document_type_activities_plan'),
+                              subtitle: appTranslation().get('document_type_activities_plan_subtitle'),
+                              isHighlighted: false,
+                              onTap: () => context.push(
+                                token?.isNotEmpty == true ? Routes.activitiesPlan : Routes.login,
                               ),
                             ),
                           ),
