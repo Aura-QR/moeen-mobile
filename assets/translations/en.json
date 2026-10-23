@@ -1394,5 +1394,19 @@
   "sheets_column_quiz": "Quiz",
   "sheets_column_tasks": "Performance Tasks",
   "sheets_column_total": "Total",
-  "sheets_column_notes": "Notes"
+  "sheets_column_notes": "Notes",
+  "privacy_sec2_card9_title": "Online tests (student links)",
+  "privacy_sec2_card9_desc": "When you share a test with your students by link or QR code, each student enters their name, any extra fields you ask for (such as a seat number) and their answers, without an account. We never ask for ID or phone numbers. The student's browser keeps a random code that prevents submitting twice and lets them resume. Only you see the answers; they are never sent to AI, and they are deleted automatically 180 days after the test is created, or at once when you delete the test or a submission.",
+  "privacy_sec2_card10_title": "Sharing files by link and QR code",
+  "privacy_sec2_card10_desc": "When you share a file we store it and give you a link and a QR code. Anyone with the link can download it until it expires, so don't share files with personal data that must not be published. The file page shows nothing about you. The link stops when you delete the file or it expires, and an expired file is deleted 30 days later. We only count downloads. QR codes for links are made on your device.",
+  "logout_all_devices": "Log out of all devices",
+  "logout_all_devices_desc": "You will be logged out of every device signed in to your account.",
+  "login_welcome_title": "Welcome to Hader",
+  "login_welcome_subtitle": "Log in to prepare your lessons and use the teacher tools",
+  "name": "Name",
+  "correct_answer": "Correct answer",
+  "ext_cancel": "Cancel",
+  "ext_install_kiwi": "Install Kiwi Browser",
+  "ext_kiwi_needed_title": "Kiwi Browser needed",
+  "ext_kiwi_needed_body": "To use the Hader extension on your phone, install Kiwi Browser and open Madrasati from it."
 }

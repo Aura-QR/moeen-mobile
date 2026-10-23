@@ -358,18 +358,6 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                      
                       horizontalSpace12,
 
-                       HomeActionChipWidget(
-                        icon: Icons.workspace_premium_rounded,
-                        title: appTranslation().get('certificates'),
-                        onTap: () {
-                          if (token != null && token!.isNotEmpty) {
-                            context.push(Routes.certificates);
-                          } else {
-                            context.push(Routes.login);
-                          }
-                        },
-                      ),
-                      horizontalSpace12,
                       HomeActionChipWidget(
                         icon: Icons.people_alt_outlined,
                         title: appTranslation().get('referral_chip_label'),
