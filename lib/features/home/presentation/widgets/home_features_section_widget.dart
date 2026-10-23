@@ -343,6 +343,18 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                     if (!isAdmin) ...[
                       horizontalSpace12,
                       HomeActionChipWidget(
+                        icon: Icons.print_outlined,
+                        title: appTranslation().get('prep_history_title'),
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.preparationHistory);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
                         icon: Icons.description_outlined,
                         title: "الاختبارات السابقه",
                         

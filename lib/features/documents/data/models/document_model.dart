@@ -17,6 +17,7 @@ abstract final class DocumentTypes {
   static const String gradeAnalysis = 'grade_analysis';
   static const String certificates = 'certificates';
   static const String classSheet = 'class_sheet';
+  static const String lessonPreparation = 'lesson_preparation';
 
   static const List<String> all = [
     strategyDocumentation,
@@ -26,6 +27,7 @@ abstract final class DocumentTypes {
     gradeAnalysis,
     certificates,
     classSheet,
+    lessonPreparation,
   ];
 
   static String labelKey(String type) => 'document_type_$type';

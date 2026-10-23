@@ -47,6 +47,16 @@ const List<DocumentTool> documentTools = [
     icon: Icons.workspace_premium_outlined,
     route: Routes.thankYouCertificates,
   ),
+  DocumentTool(
+    type: DocumentTypes.classSheet,
+    icon: Icons.table_chart_outlined,
+    route: Routes.classSheets,
+  ),
+  DocumentTool(
+    type: DocumentTypes.lessonPreparation,
+    icon: Icons.print_outlined,
+    route: Routes.preparationPrint,
+  ),
 ];
 
 DocumentTool? documentToolFor(String type) => documentTools.where((tool) => tool.type == type).firstOrNull;

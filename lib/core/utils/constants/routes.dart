@@ -124,6 +124,8 @@ import 'package:moean/features/grade_analysis/presentation/cubit/grade_results_c
 import 'package:moean/features/grade_analysis/presentation/screens/grade_analysis_screen.dart';
 import 'package:moean/features/class_sheets/presentation/screens/class_sheets_screen.dart';
 import 'package:moean/features/classes/data/models/school_class_model.dart';
+import 'package:moean/features/preparation_print/presentation/screens/preparation_history_screen.dart';
+import 'package:moean/features/preparation_print/presentation/screens/preparation_print_screen.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -190,6 +192,8 @@ class Routes {
   static const String gradeAnalysis = '/tools/grade-analysis';
   static const String thankYouCertificates = '/tools/certificates';
   static const String classSheets = '/tools/sheets';
+  static const String preparationHistory = '/preparations';
+  static const String preparationPrint = '/tools/preparation-print';
   static const String classes = '/classes';
   static const String classEditor = '/classes/editor';
 
@@ -461,6 +465,12 @@ class Routes {
       )..load(),
       child: const ClassEditorScreen(),
     ),
+    preparationHistory: (context) => PreparationHistoryScreen.create(),
+    // Argument: the `lesson_preparation` document id. Without one, «تحضيراتي» opens to pick lessons.
+    preparationPrint: (context) {
+      final id = context.getArg<int>();
+      return id == null ? PreparationHistoryScreen.create() : PreparationPrintScreen.create(id);
+    },
     // Argument: int documentId to reopen, or SchoolClassModel or Map with 'class' / 'document_id'.
     classSheets: (context) {
       final args = ModalRoute.of(context)?.settings.arguments;
