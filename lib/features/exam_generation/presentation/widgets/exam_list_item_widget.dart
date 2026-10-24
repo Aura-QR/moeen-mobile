@@ -17,6 +17,7 @@ class ExamListItemWidget extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback onView;
   final VoidCallback? onTap;
+  final VoidCallback? onShareOnline;
 
   const ExamListItemWidget({
     super.key,
@@ -31,6 +32,7 @@ class ExamListItemWidget extends StatelessWidget {
     required this.onDelete,
     required this.onView,
     this.onTap,
+    this.onShareOnline,
   });
 
   @override
@@ -126,6 +128,18 @@ class ExamListItemWidget extends StatelessWidget {
                         iconColor: Colors.white,
                         backgroundColor: ColorsManager.primaryColor,
                         onTap: onPublish,
+                      ),
+                    ],
+                    if (onShareOnline != null) ...[
+                      horizontalSpace6,
+                      _buildActionButton(
+                        title: appTranslation().get('online_tests_share'),
+                        icon: Icons.qr_code_2,
+                        textColor: ColorsManager.primaryColor,
+                        iconColor: ColorsManager.primaryColor,
+                        backgroundColor: ColorsManager.primaryColor.withValues(alpha: 0.06),
+                        border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.35)),
+                        onTap: onShareOnline!,
                       ),
                     ],
                     horizontalSpace6,
