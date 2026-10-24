@@ -125,6 +125,10 @@ import 'package:moean/features/grade_analysis/presentation/screens/grade_analysi
 import 'package:moean/features/class_sheets/presentation/screens/class_sheets_screen.dart';
 import 'package:moean/features/classes/data/models/school_class_model.dart';
 import 'package:moean/features/preparation_print/presentation/screens/preparation_history_screen.dart';
+import 'package:moean/features/online_tests/presentation/screens/create_online_test_screen.dart';
+import 'package:moean/features/online_tests/presentation/screens/online_test_screen.dart';
+import 'package:moean/features/online_tests/presentation/screens/online_tests_screen.dart';
+import 'package:moean/features/online_tests/presentation/screens/submission_review_screen.dart';
 import 'package:moean/features/preparation_print/presentation/screens/preparation_print_screen.dart';
 
 class Routes {
@@ -194,6 +198,10 @@ class Routes {
   static const String classSheets = '/tools/sheets';
   static const String preparationHistory = '/preparations';
   static const String preparationPrint = '/tools/preparation-print';
+  static const String onlineTests = '/online-tests';
+  static const String createOnlineTest = '/online-tests/create';
+  static const String onlineTest = '/online-tests/test';
+  static const String onlineTestReview = '/online-tests/review';
   static const String classes = '/classes';
   static const String classEditor = '/classes/editor';
 
@@ -466,6 +474,13 @@ class Routes {
       child: const ClassEditorScreen(),
     ),
     preparationHistory: (context) => PreparationHistoryScreen.create(),
+    onlineTests: (context) => OnlineTestsScreen.create(),
+    // Argument: {'exam_id': int, 'title': String}.
+    createOnlineTest: (context) => CreateOnlineTestScreen.create(context.getArg<Map<String, dynamic>>() ?? const {}),
+    // Argument: the online test id.
+    onlineTest: (context) => OnlineTestScreen.create(context.getArg<int>() ?? 0),
+    // Argument: {'test_id': int, 'submission_id': int, 'next': List<int>}.
+    onlineTestReview: (context) => SubmissionReviewScreen.create(context.getArg<Map<String, dynamic>>() ?? const {}),
     // Argument: the `lesson_preparation` document id. Without one, «تحضيراتي» opens to pick lessons.
     preparationPrint: (context) {
       final id = context.getArg<int>();

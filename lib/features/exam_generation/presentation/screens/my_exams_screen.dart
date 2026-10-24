@@ -109,7 +109,7 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
               const double colQuestions = 110;
               const double colGrade = 110;
               const double colDate = 130;
-              const double colActions = 280;
+              const double colActions = 400;
               const double totalWidth = colTitle + colStatus + colQuestions + colGrade + colDate + colActions;
 
               return Padding(
@@ -163,6 +163,9 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
                                             onDelete: () => _confirmDelete(context, exam.id),
                                             onView: () => _navigateToExamPreview(context, exam.id),
                                             onTap: () => _navigateToExamPreview(context, exam.id),
+                                            onShareOnline: exam.questionsCount > 0
+                                                ? () => Navigator.pushNamed(context, Routes.createOnlineTest, arguments: {'exam_id': exam.id, 'title': exam.title})
+                                                : null,
                                           );
                                         },
                                       ),

@@ -18,6 +18,8 @@ const String madrasatiScheduleApi = '/madrasati/schedule';
 const String prepareApi = '/prepare';
 const String preparationsApi = '/preparations';
 const String preparationDocumentApi = '/preparations/document';
+// L4 «الاختبارات الإلكترونية» (ONLINE_TESTS_API.md).
+const String onlineTestsApi = '/online-tests';
 
 // Admin API
 const String adminTeachersApi = '/admin/teachers';

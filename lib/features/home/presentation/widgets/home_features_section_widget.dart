@@ -355,6 +355,18 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                       ),
                       horizontalSpace12,
                       HomeActionChipWidget(
+                        icon: Icons.qr_code_2_outlined,
+                        title: appTranslation().get('online_tests_title'),
+                        onTap: () {
+                          if (token != null && token!.isNotEmpty) {
+                            context.push(Routes.onlineTests);
+                          } else {
+                            context.push(Routes.login);
+                          }
+                        },
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
                         icon: Icons.description_outlined,
                         title: "الاختبارات السابقه",
                         
