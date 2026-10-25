@@ -50,10 +50,24 @@ class ExamListItemWidget extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
-                  child: Text(
-                    exam.title,
-                    style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
-                    overflow: TextOverflow.ellipsis,
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          exam.title,
+                          style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (exam.kind == 'diagnostic') ...[
+                        horizontalSpace6,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(color: ColorsManager.secondaryColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
+                          child: Text(appTranslation().get('diagnostic_tag'), style: TextStylesManager.bold10.copyWith(color: ColorsManager.secondaryColor)),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),

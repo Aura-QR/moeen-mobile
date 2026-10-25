@@ -65,6 +65,14 @@ class _MyExamsScreenState extends State<MyExamsScreen> {
         ),
         actions: [
           IconButton(
+            icon: Icon(Icons.track_changes, color: ColorsManager.mainText),
+            tooltip: appTranslation().get('diagnostic_title'),
+            onPressed: () async {
+              final saved = await Navigator.pushNamed(context, Routes.diagnosticTest);
+              if (saved == true && context.mounted) context.read<MyExamsCubit>().fetchExams();
+            },
+          ),
+          IconButton(
             icon: Icon(Icons.quiz_outlined, color: ColorsManager.mainText),
             onPressed: () {
               context.push(Routes.customQuestions);

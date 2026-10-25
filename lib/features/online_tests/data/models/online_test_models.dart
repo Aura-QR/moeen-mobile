@@ -51,6 +51,9 @@ class OnlineTest {
   final String state;
   final int submissions;
   final int? timeLimitMinutes;
+
+  /// Made from a diagnostic exam: its results can be read per skill.
+  final bool isDiagnostic;
   final List<OnlineTestGroup> groups;
   final DateTime? createdAt;
 
@@ -64,6 +67,7 @@ class OnlineTest {
     this.state = OnlineTestState.open,
     this.submissions = 0,
     this.timeLimitMinutes,
+    this.isDiagnostic = false,
     this.groups = const [],
     this.createdAt,
   });
@@ -80,6 +84,7 @@ class OnlineTest {
       state: json['state']?.toString() ?? OnlineTestState.open,
       submissions: _int(json['submissions']),
       timeLimitMinutes: settings['time_limit_minutes'] == null ? null : _int(settings['time_limit_minutes']),
+      isDiagnostic: json['is_diagnostic'] == true,
       groups: _maps(json['groups']).map(OnlineTestGroup.fromJson).toList(),
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
     );

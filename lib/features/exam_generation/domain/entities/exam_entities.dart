@@ -74,6 +74,9 @@ class ExamListEntity {
   final int id;
   final String title;
   final String status;
+
+  /// `regular` or `diagnostic` (L2: each question checks a named skill).
+  final String kind;
   final int questionsCount;
   final int totalPoints;
   final String createdAt;
@@ -83,6 +86,7 @@ class ExamListEntity {
     required this.id,
     required this.title,
     required this.status,
+    this.kind = 'regular',
     required this.questionsCount,
     required this.totalPoints,
     required this.createdAt,
