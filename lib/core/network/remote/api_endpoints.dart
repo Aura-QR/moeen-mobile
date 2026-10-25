@@ -20,6 +20,8 @@ const String preparationsApi = '/preparations';
 const String preparationDocumentApi = '/preparations/document';
 // L4 «الاختبارات الإلكترونية» (ONLINE_TESTS_API.md).
 const String onlineTestsApi = '/online-tests';
+// L2 «الاختبار التشخيصي» (DIAGNOSTIC_TEST_API.md).
+const String diagnosticTestsApi = '/diagnostic-tests';
 
 // Admin API
 const String adminTeachersApi = '/admin/teachers';

@@ -68,6 +68,15 @@ class _OnlineTestResultsTabState extends State<OnlineTestResultsTab> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (test.isDiagnostic) ...[
+            FilledButton.icon(
+              style: FilledButton.styleFrom(backgroundColor: ColorsManager.secondaryColor, minimumSize: const Size.fromHeight(48)),
+              icon: const Icon(Icons.track_changes),
+              label: Text(appTranslation().get('diagnostic_diagnosis')),
+              onPressed: () => Navigator.pushNamed(context, Routes.diagnosis, arguments: test.id),
+            ),
+            verticalSpace8,
+          ],
           PrimaryElevatedButton(
             text: appTranslation().get('online_tests_to_analysis'),
             isLoading: state.isBusy,

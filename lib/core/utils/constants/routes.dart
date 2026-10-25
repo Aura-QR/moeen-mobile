@@ -129,6 +129,8 @@ import 'package:moean/features/online_tests/presentation/screens/create_online_t
 import 'package:moean/features/online_tests/presentation/screens/online_test_screen.dart';
 import 'package:moean/features/online_tests/presentation/screens/online_tests_screen.dart';
 import 'package:moean/features/online_tests/presentation/screens/submission_review_screen.dart';
+import 'package:moean/features/diagnostic_test/presentation/screens/diagnostic_create_screen.dart';
+import 'package:moean/features/diagnostic_test/presentation/screens/diagnosis_screen.dart';
 import 'package:moean/features/preparation_print/presentation/screens/preparation_print_screen.dart';
 
 class Routes {
@@ -202,6 +204,8 @@ class Routes {
   static const String createOnlineTest = '/online-tests/create';
   static const String onlineTest = '/online-tests/test';
   static const String onlineTestReview = '/online-tests/review';
+  static const String diagnosticTest = '/exams/diagnostic';
+  static const String diagnosis = '/online-tests/diagnosis';
   static const String classes = '/classes';
   static const String classEditor = '/classes/editor';
 
@@ -481,6 +485,9 @@ class Routes {
     onlineTest: (context) => OnlineTestScreen.create(context.getArg<int>() ?? 0),
     // Argument: {'test_id': int, 'submission_id': int, 'next': List<int>}.
     onlineTestReview: (context) => SubmissionReviewScreen.create(context.getArg<Map<String, dynamic>>() ?? const {}),
+    diagnosticTest: (context) => DiagnosticCreateScreen.create(),
+    // Argument: the online test id.
+    diagnosis: (context) => DiagnosisScreen.create(context.getArg<int>() ?? 0),
     // Argument: the `lesson_preparation` document id. Without one, «تحضيراتي» opens to pick lessons.
     preparationPrint: (context) {
       final id = context.getArg<int>();
