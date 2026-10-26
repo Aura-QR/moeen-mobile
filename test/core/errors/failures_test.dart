@@ -26,6 +26,12 @@ void main() {
       expect((failure as PaymentRequiredFailure).code, 'subscription_required');
     });
 
+    test('marks 429 as RateLimitFailure with the server message', () {
+      final failure = failureFromApiError('__429__:rate_limit:تجاوزت الحد اليومي للذكاء الاصطناعي');
+      expect(failure, isA<RateLimitFailure>());
+      expect(failure.message, 'تجاوزت الحد اليومي للذكاء الاصطناعي');
+    });
+
     test('turns a kept 422 into ValidationFailure with its field keys', () {
       final failure = failureFromApiError(
         '__422__:{"message":"الرابط غير صالح","errors":{"input.blocks.2.url":["الرابط غير صالح"]}}',

@@ -5,10 +5,12 @@ abstract final class AiJobKinds {
   static const String remedialSuggestions = 'remedial_suggestions';
   static const String enrichmentSuggestions = 'enrichment_suggestions';
   static const String gradeRecommendations = 'grade_recommendations';
+  static const String roleDocument = 'role_document';
 }
 
 abstract final class AiJobStatus {
   static const String pending = 'pending';
+  static const String running = 'running';
   static const String done = 'done';
   static const String failed = 'failed';
 }
@@ -21,6 +23,9 @@ class AiJobModel {
   /// Lists keyed like the tool's sections, e.g. `weaknesses`. Empty until done.
   final Map<String, List<String>> result;
 
+  /// Full structured `result` object (e.g. `{title, meta, blocks}` for [AiJobKinds.roleDocument]).
+  final Map<String, dynamic> rawResult;
+
   /// A message for the user when [isFailed].
   final String? error;
 
@@ -29,10 +34,11 @@ class AiJobModel {
     required this.kind,
     required this.status,
     this.result = const {},
+    this.rawResult = const {},
     this.error,
   });
 
-  bool get isPending => status == AiJobStatus.pending;
+  bool get isPending => status == AiJobStatus.pending || status == AiJobStatus.running;
   bool get isDone => status == AiJobStatus.done;
   bool get isFailed => status == AiJobStatus.failed;
 
@@ -48,6 +54,7 @@ class AiJobModel {
                 if (entry.value is List) entry.key.toString(): (entry.value as List).map((e) => e.toString()).toList(),
             }
           : const {},
+      rawResult: result is Map ? Map<String, dynamic>.from(result) : const {},
       error: json['error']?.toString(),
     );
   }

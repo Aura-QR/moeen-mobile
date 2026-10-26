@@ -39,6 +39,10 @@ class PaymentRequiredFailure extends Failure {
   const PaymentRequiredFailure(super.message, {this.code = 'quota_exceeded'});
 }
 
+class RateLimitFailure extends Failure {
+  const RateLimitFailure(super.message);
+}
+
 class ServerFailure extends Failure {
   const ServerFailure(super.message);
 }
@@ -74,6 +78,9 @@ Failure failureFromApiError(String error) {
     // No trial or subscription: the UI offers the upgrade sheet.
     if (parts.first == '__402__') {
       return PaymentRequiredFailure(message, code: parts.length >= 2 ? parts[1] : 'quota_exceeded');
+    }
+    if (parts.first == '__429__') {
+      return RateLimitFailure(message);
     }
     return ServerFailure(message);
   }

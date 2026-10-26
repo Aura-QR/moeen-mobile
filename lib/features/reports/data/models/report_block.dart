@@ -64,6 +64,7 @@ sealed class ReportBlock extends Equatable {
                 ? (json['widths'] as List).map((w) => _number(w) ?? 1).toList()
                 : const [],
             compact: json['compact'] == true,
+            namesColumn: json['names_column'],
           ),
         ReportBlockKinds.kv => KvBlock(id, pairs: _maps(json['pairs']).map(ReportPair.fromJson).toList()),
         ReportBlockKinds.columns => ColumnsBlock(
@@ -179,7 +180,9 @@ class TableBlock extends ReportBlock {
   final List<double> widths;
   final bool compact;
 
-  const TableBlock(super.id, {required this.columns, this.rows = const [], this.widths = const [], this.compact = false});
+  final Object? namesColumn;
+
+  const TableBlock(super.id, {required this.columns, this.rows = const [], this.widths = const [], this.compact = false, this.namesColumn});
 
   @override
   String get kind => ReportBlockKinds.table;
@@ -199,7 +202,7 @@ class TableBlock extends ReportBlock {
       };
 
   @override
-  TableBlock withId(int id) => TableBlock(id, columns: columns, rows: rows, widths: widths, compact: compact);
+  TableBlock withId(int id) => TableBlock(id, columns: columns, rows: rows, widths: widths, compact: compact, namesColumn: namesColumn);
 
   /// Changing the columns drops [widths], which no longer match.
   TableBlock copyWith({List<String>? columns, List<List<String>>? rows, bool? compact}) => TableBlock(
@@ -208,10 +211,11 @@ class TableBlock extends ReportBlock {
         rows: rows ?? this.rows,
         widths: columns == null || columns.length == this.columns.length ? widths : const [],
         compact: compact ?? this.compact,
+        namesColumn: namesColumn,
       );
 
   @override
-  List<Object?> get props => [id, columns, rows, widths, compact];
+  List<Object?> get props => [id, columns, rows, widths, compact, namesColumn];
 }
 
 class ReportPair extends Equatable {

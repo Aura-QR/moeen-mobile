@@ -8,6 +8,9 @@ class CertificatesState {
 
   /// Null until the first save; later saves PATCH it.
   final int? documentId;
+
+  /// Optional portfolio element sent on `POST /documents` (e.g. from role suites).
+  final String? initialElement;
   final CertificatesCatalogueModel catalogue;
   final DocumentDefaultsModel defaults;
 
@@ -39,6 +42,7 @@ class CertificatesState {
     this.status = CertificatesStatus.loading,
     this.errorMessage,
     this.documentId,
+    this.initialElement,
     this.catalogue = const CertificatesCatalogueModel(),
     this.defaults = const DocumentDefaultsModel(),
     this.names = const [],
@@ -68,6 +72,7 @@ class CertificatesState {
     CertificatesStatus? status,
     String? errorMessage,
     int? documentId,
+    String? initialElement,
     CertificatesCatalogueModel? catalogue,
     DocumentDefaultsModel? defaults,
     List<String>? names,
@@ -90,6 +95,7 @@ class CertificatesState {
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
       documentId: documentId ?? this.documentId,
+      initialElement: initialElement ?? this.initialElement,
       catalogue: catalogue ?? this.catalogue,
       defaults: defaults ?? this.defaults,
       names: names ?? this.names,

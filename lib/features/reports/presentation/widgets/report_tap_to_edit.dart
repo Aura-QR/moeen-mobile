@@ -3,15 +3,20 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 
-/// A text shown as it prints, opening its editor on tap. Empty shows
-/// [placeholderKey] in grey.
+/// A text shown as it prints, opening its editor on tap when [onTap] is provided.
 class ReportTapToEdit extends StatelessWidget {
   final String text;
   final String placeholderKey;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final TextStyle? style;
 
-  const ReportTapToEdit({super.key, required this.text, required this.placeholderKey, required this.onTap, this.style});
+  const ReportTapToEdit({
+    super.key,
+    required this.text,
+    required this.placeholderKey,
+    this.onTap,
+    this.style,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +42,8 @@ class ReportTapToEdit extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(Icons.edit_outlined, size: 16, color: ColorsManager.secondaryText),
+            if (onTap != null)
+              Icon(Icons.edit_outlined, size: 16, color: ColorsManager.secondaryText),
           ],
         ),
       ),

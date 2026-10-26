@@ -10,17 +10,21 @@ import 'package:moean/core/utils/constants/spacing.dart';
 /// header, or a translated label).
 class ReportField {
   final String label;
+  final String? hint;
   final String initialValue;
   final int maxLines;
   final int? maxLength;
   final TextInputType keyboardType;
+  final bool readOnly;
 
   const ReportField({
     required this.label,
+    this.hint,
     this.initialValue = '',
     this.maxLines = 1,
     this.maxLength,
     this.keyboardType = TextInputType.text,
+    this.readOnly = false,
   });
 }
 
@@ -33,7 +37,11 @@ class ReportFieldsSheet extends StatefulWidget {
 
   const ReportFieldsSheet({super.key, required this.titleKey, required this.fields});
 
-  static Future<List<String>?> show(BuildContext context, {required String titleKey, required List<ReportField> fields}) {
+  static Future<List<String>?> show(
+    BuildContext context, {
+    required String titleKey,
+    required List<ReportField> fields,
+  }) {
     return showModalBottomSheet<List<String>>(
       context: context,
       isScrollControlled: true,
@@ -79,11 +87,13 @@ class _ReportFieldsSheetState extends State<ReportFieldsSheet> {
               for (var i = 0; i < widget.fields.length; i++) ...[
                 PrimaryTextField(
                   controller: _controllers[i],
-                  label: widget.fields[i].label,
-                  hint: widget.fields[i].label,
+                  label: widget.fields[i].label.isEmpty ? null : widget.fields[i].label,
+                  hint: widget.fields[i].hint ?? widget.fields[i].label,
                   maxLines: widget.fields[i].maxLines,
                   maxLength: widget.fields[i].maxLength,
                   keyboardType: widget.fields[i].keyboardType,
+                  readOnly: widget.fields[i].readOnly,
+                  enabled: !widget.fields[i].readOnly,
                 ),
                 verticalSpace10,
               ],

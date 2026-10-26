@@ -11,6 +11,7 @@ import 'package:moean/features/reports/presentation/widgets/report_fields_sheet.
 import 'package:moean/features/reports/presentation/widgets/report_tap_to_edit.dart';
 
 /// Two or three columns side by side, each a heading and its lines.
+/// On sensitive forms, column count and headings remain editable while item lines are read-only.
 class ReportColumnsEditor extends StatelessWidget {
   final ColumnsBlock block;
 
@@ -19,20 +20,29 @@ class ReportColumnsEditor extends StatelessWidget {
   Future<void> _editHeading(BuildContext context, int index) async {
     final cubit = ReportEditorCubit.get(context);
     final column = block.columns[index];
-    final values = await ReportFieldsSheet.show(context, titleKey: 'report_column_heading', fields: [
-      ReportField(label: '', initialValue: column.heading, maxLength: 150),
-    ]);
-    if (values != null) cubit.updateBlock(block.setColumn(index, column.copyWith(heading: values.first.trim())));
+    final values = await ReportFieldsSheet.show(
+      context,
+      titleKey: 'report_column_heading',
+      fields: [
+        ReportField(label: '', initialValue: column.heading, maxLength: 150),
+      ],
+    );
+    if (values != null) {
+      cubit.updateBlock(block.setColumn(index, column.copyWith(heading: values.first.trim())));
+    }
   }
 
   void _setItems(BuildContext context, int index, List<String> items) {
-    ReportEditorCubit.get(context).updateBlock(block.setColumn(index, block.columns[index].copyWith(items: items)));
+    ReportEditorCubit.get(context).updateBlock(
+      block.setColumn(index, block.columns[index].copyWith(items: items)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final cubit = ReportEditorCubit.get(context);
     final limits = cubit.state.limits;
+    final isSensitive = cubit.state.isSensitive;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -50,18 +60,27 @@ class ReportColumnsEditor extends StatelessWidget {
             style: TextStylesManager.bold14,
             onTap: () => _editHeading(context, i),
           ),
-          PrimaryEditableList(
-            title: appTranslation().get('report_table_column_n').replaceAll('{n}', '${i + 1}'),
-            items: block.columns[i].items,
-            maxItems: limits.listItems,
-            maxLength: limits.itemChars,
-            addKey: 'report_add_item',
-            onAdd: (text) => _setItems(context, i, block.columns[i].items.addLine(text, limits.listItems)),
-            onEdit: (index, text) => _setItems(context, i, block.columns[i].items.editLine(index, text)),
-            onRemove: (index) => _setItems(context, i, block.columns[i].items.removeLine(index)),
-            onReorder: (oldIndex, newIndex) =>
-                _setItems(context, i, block.columns[i].items.moveLine(oldIndex, newIndex)),
-          ),
+          if (isSensitive) ...[
+            verticalSpace6,
+            ReportTapToEdit(
+              text: '',
+              placeholderKey: 'role_sensitive_handwritten_hint',
+              style: TextStylesManager.regular13,
+              onTap: null,
+            ),
+          ] else
+            PrimaryEditableList(
+              title: appTranslation().get('report_table_column_n').replaceAll('{n}', '${i + 1}'),
+              items: block.columns[i].items,
+              maxItems: limits.listItems,
+              maxLength: limits.itemChars,
+              addKey: 'report_add_item',
+              onAdd: (text) => _setItems(context, i, block.columns[i].items.addLine(text, limits.listItems)),
+              onEdit: (index, text) => _setItems(context, i, block.columns[i].items.editLine(index, text)),
+              onRemove: (index) => _setItems(context, i, block.columns[i].items.removeLine(index)),
+              onReorder: (oldIndex, newIndex) =>
+                  _setItems(context, i, block.columns[i].items.moveLine(oldIndex, newIndex)),
+            ),
         ],
       ],
     );

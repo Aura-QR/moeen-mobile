@@ -6,6 +6,7 @@ import 'package:moean/features/reports/presentation/widgets/report_fields_sheet.
 import 'package:moean/features/reports/presentation/widgets/report_tap_to_edit.dart';
 
 /// A heading (one line) or a paragraph.
+/// On sensitive forms, headings remain editable while paragraph text is read-only.
 class ReportTextBlockEditor extends StatelessWidget {
   final ReportBlock block;
 
@@ -21,6 +22,7 @@ class ReportTextBlockEditor extends StatelessWidget {
 
   Future<void> _edit(BuildContext context) async {
     final cubit = ReportEditorCubit.get(context);
+    if (cubit.state.isSensitive && !_isHeading) return;
     final values = await ReportFieldsSheet.show(
       context,
       titleKey: _isHeading ? 'report_kind_heading' : 'report_kind_paragraph',
@@ -44,11 +46,12 @@ class ReportTextBlockEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isSensitiveParagraph = ReportEditorCubit.get(context).state.isSensitive && !_isHeading;
     return ReportTapToEdit(
-      text: _text,
-      placeholderKey: 'report_tap_to_write',
+      text: isSensitiveParagraph ? '' : _text,
+      placeholderKey: isSensitiveParagraph ? 'role_sensitive_handwritten_hint' : 'report_tap_to_write',
       style: _isHeading ? TextStylesManager.bold16 : TextStylesManager.regular14,
-      onTap: () => _edit(context),
+      onTap: isSensitiveParagraph ? null : () => _edit(context),
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:moean/features/reports/presentation/widgets/report_fields_sheet.
 import 'package:moean/features/reports/presentation/widgets/report_table_row_tile.dart';
 
 /// Label and value rows.
+/// In sensitive forms, labels remain editable while values are read-only.
 class ReportKvEditor extends StatelessWidget {
   final KvBlock block;
 
@@ -15,31 +16,48 @@ class ReportKvEditor extends StatelessWidget {
   /// [index] null adds a row.
   Future<void> _edit(BuildContext context, int? index) async {
     final cubit = ReportEditorCubit.get(context);
+    final isSensitive = cubit.state.isSensitive;
     final pair = index == null ? const ReportPair() : block.pairs[index];
-    final values = await ReportFieldsSheet.show(context, titleKey: 'report_kind_kv', fields: [
-      ReportField(label: appTranslation().get('report_label'), initialValue: pair.label, maxLength: 120),
-      ReportField(
-        label: appTranslation().get('report_value'),
-        initialValue: pair.value,
-        maxLines: 3,
-        maxLength: cubit.state.limits.itemChars,
-      ),
-    ]);
+    final values = await ReportFieldsSheet.show(
+      context,
+      titleKey: 'report_kind_kv',
+      fields: [
+        ReportField(
+          label: appTranslation().get('report_label'),
+          initialValue: pair.label,
+          maxLength: 120,
+        ),
+        ReportField(
+          label: appTranslation().get('report_value'),
+          hint: isSensitive
+              ? appTranslation().get('role_sensitive_handwritten_hint')
+              : appTranslation().get('report_value'),
+          initialValue: isSensitive ? '' : pair.value,
+          maxLines: isSensitive ? 1 : 3,
+          maxLength: cubit.state.limits.itemChars,
+          readOnly: isSensitive,
+        ),
+      ],
+    );
     if (values == null) return;
-    cubit.updateBlock(index == null
-        ? block.addPair(values[0], values[1], cubit.state.limits.kvPairs)
-        : block.setPair(index, values[0], values[1]));
+    final val = isSensitive ? '' : values[1];
+    cubit.updateBlock(
+      index == null
+          ? block.addPair(values[0], val, cubit.state.limits.kvPairs)
+          : block.setPair(index, values[0], val),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final cubit = ReportEditorCubit.get(context);
+    final isSensitive = cubit.state.isSensitive;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (var i = 0; i < block.pairs.length; i++)
           ReportTableRowTile(
-            cells: [block.pairs[i].label, block.pairs[i].value],
+            cells: [block.pairs[i].label, isSensitive ? '' : block.pairs[i].value],
             onTap: () => _edit(context, i),
             onRemove: () => cubit.updateBlock(block.removePair(i)),
           ),

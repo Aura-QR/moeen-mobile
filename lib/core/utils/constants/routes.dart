@@ -158,6 +158,15 @@ import 'package:moean/features/online_tests/presentation/screens/submission_revi
 import 'package:moean/features/diagnostic_test/presentation/screens/diagnostic_create_screen.dart';
 import 'package:moean/features/diagnostic_test/presentation/screens/diagnosis_screen.dart';
 import 'package:moean/features/preparation_print/presentation/screens/preparation_print_screen.dart';
+import 'package:moean/core/router/app_router.dart';
+import 'package:moean/features/reports/data/models/role_report_editor_args.dart';
+import 'package:moean/features/role_suites/data/models/role_suite_models.dart';
+import 'package:moean/features/role_suites/data/repositories/role_suites_repository.dart';
+import 'package:moean/features/role_suites/presentation/cubit/role_documents_cubit.dart';
+import 'package:moean/features/role_suites/presentation/cubit/role_suites_cubit.dart';
+import 'package:moean/features/role_suites/presentation/screens/role_documents_screen.dart';
+import 'package:moean/features/role_suites/presentation/screens/role_suites_screen.dart';
+import 'package:moean/features/thank_you_certificates/data/models/role_certificate_prefill.dart';
 
 class Routes {
   static const String splash = '/splash';
@@ -244,6 +253,8 @@ class Routes {
   static const String sharedFiles = '/qr-codes/files';
   static const String reportTools = '/tools/reports';
   static const String reportEditor = '/tools/reports/editor';
+  static const String roleSuites = AppRouter.roleSuites;
+  static const String roleDocuments = AppRouter.roleDocuments;
 
 
 
@@ -508,6 +519,7 @@ class Routes {
         BlocProvider(
           create: (_) => CertificatesCubit(
             documentId: context.getArg<int>(),
+            rolePrefill: context.getArg<RoleCertificatePrefill>(),
             certificatesRepository: CertificatesRepository(),
             documentsRepository: DocumentsRepository(),
             classesRepository: ClassesRepository(),
@@ -646,11 +658,80 @@ class Routes {
           reports: ReportsRepository(),
           documents: DocumentsRepository(),
           picker: DeviceFilePicker(),
+          roleSuites: RoleSuitesRepository(),
+          aiJobs: AiJobsRepository(),
           documentId: argument is int ? argument : null,
           templateKey: argument is String ? argument : null,
+          roleArgs: argument is RoleReportEditorArgs ? argument : null,
         )..load(),
         child: const ReportEditorScreen(),
       );
     },
+    roleSuites: (context) => BlocProvider(
+      create: (_) => RoleSuitesCubit(
+        rolesRepository: RoleSuitesRepository(),
+        portfolioRepository: PortfolioRepository(),
+      )..load(),
+      child: const RoleSuitesScreen(),
+    ),
+    roleDocuments: (context) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      return _buildRoleDocumentsScreen(args: args);
+    },
   };
+
+  static Widget _buildRoleDocumentsScreen({String? pathRoleKey, Object? args}) {
+    String roleKey = pathRoleKey ?? '';
+    String initialLabel = '';
+    if (args is RoleSuiteSummary) {
+      if (roleKey.isEmpty) roleKey = args.key;
+      initialLabel = args.label;
+    } else if (args is String && roleKey.isEmpty) {
+      roleKey = args;
+    } else if (args is Map<String, dynamic>) {
+      if (roleKey.isEmpty) roleKey = args['key']?.toString() ?? args['role']?.toString() ?? '';
+      initialLabel = args['label']?.toString() ?? '';
+    }
+    return BlocProvider(
+      create: (_) => RoleDocumentsCubit(
+        roleKey: roleKey,
+        initialLabel: initialLabel,
+        repository: RoleSuitesRepository(),
+      )..load(),
+      child: const RoleDocumentsScreen(),
+    );
+  }
+
+  static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    final uri = Uri.tryParse(settings.name ?? '');
+    if (uri == null) return null;
+    final segments = uri.pathSegments;
+    // Dynamic route `/tools/roles/{role}`
+    if (segments.length == 3 && segments[0] == 'tools' && segments[1] == 'roles' && segments[2] != 'documents') {
+      return MaterialPageRoute<dynamic>(
+        settings: settings,
+        builder: (_) => _buildRoleDocumentsScreen(pathRoleKey: segments[2], args: settings.arguments),
+      );
+    }
+    // Deep-link `/reports/evidence/new?role={role}&doc={doc}`
+    if (segments.length == 3 && segments[0] == 'reports' && segments[1] == 'evidence' && segments[2] == 'new') {
+      final role = uri.queryParameters['role'] ?? '';
+      final doc = uri.queryParameters['doc'] ?? '';
+      return MaterialPageRoute<dynamic>(
+        settings: settings,
+        builder: (_) => BlocProvider(
+          create: (_) => ReportEditorCubit(
+            reports: ReportsRepository(),
+            documents: DocumentsRepository(),
+            picker: DeviceFilePicker(),
+            roleSuites: RoleSuitesRepository(),
+            aiJobs: AiJobsRepository(),
+            roleArgs: role.isNotEmpty && doc.isNotEmpty ? RoleReportEditorArgs(role: role, doc: doc) : null,
+          )..load(),
+          child: const ReportEditorScreen(),
+        ),
+      );
+    }
+    return null;
+  }
 }

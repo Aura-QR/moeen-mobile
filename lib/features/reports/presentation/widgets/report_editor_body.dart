@@ -6,6 +6,8 @@ import 'package:moean/features/reports/presentation/widgets/report_blocks_sectio
 import 'package:moean/features/reports/presentation/widgets/report_element_section.dart';
 import 'package:moean/features/reports/presentation/widgets/report_media_and_design_sections.dart';
 import 'package:moean/features/reports/presentation/widgets/report_meta_section.dart';
+import 'package:moean/features/reports/presentation/widgets/report_role_ai_card.dart';
+import 'package:moean/features/reports/presentation/widgets/report_sensitive_banner.dart';
 import 'package:moean/features/reports/presentation/widgets/report_signatures_section.dart';
 import 'package:moean/features/reports/presentation/widgets/report_title_section.dart';
 
@@ -41,10 +43,12 @@ class _ReportEditorBodyState extends State<ReportEditorBody> {
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
+          const ReportSensitiveBanner(),
           const ReportTitleSection(),
           verticalSpace14,
           const ReportMetaSection(),
           verticalSpace14,
+          const ReportRoleAiCard(),
           ReportBlocksSection(keyOf: _keyOf),
           verticalSpace14,
           const ReportSignaturesSection(),

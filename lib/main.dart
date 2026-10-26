@@ -156,6 +156,7 @@ class MyApp extends StatelessWidget {
             navigatorKey: navigatorKey,
             debugShowCheckedModeBanner: false,
             routes: Routes.routes,
+            onGenerateRoute: Routes.onGenerateRoute,
             initialRoute: initialRoute,
             theme: ThemesManager.lightTheme,
             darkTheme: ThemesManager.darkTheme,

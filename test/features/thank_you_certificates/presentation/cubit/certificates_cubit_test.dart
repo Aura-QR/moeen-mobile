@@ -13,6 +13,7 @@ import 'package:moean/features/documents/data/models/document_model.dart';
 import 'package:moean/features/documents/data/models/student_picker_result.dart';
 import 'package:moean/features/documents/data/repositories/documents_repository.dart';
 import 'package:moean/features/thank_you_certificates/data/models/certificates_catalogue_model.dart';
+import 'package:moean/features/thank_you_certificates/data/models/role_certificate_prefill.dart';
 import 'package:moean/features/thank_you_certificates/data/repositories/certificates_repository.dart';
 import 'package:moean/features/thank_you_certificates/presentation/cubit/certificates_cubit.dart';
 
@@ -261,6 +262,54 @@ void main() {
     expect(cubit.titleController.text, 'شهادة تحسن');
     expect(cubit.textController.text, 'نص خاص {name}');
     expect(cubit.state.isOverridingHeader, isTrue);
+    await cubit.close();
+  });
+
+  test('RoleCertificatePrefill prefills wording from role suite and sends element on save', () async {
+    when(
+      () => documents.createDocument(
+        type: DocumentTypes.certificates,
+        input: any(named: 'input'),
+        status: any(named: 'status'),
+        element: 'school_community',
+      ),
+    ).thenAnswer((_) async => Right(_saved(88)));
+
+    final cubit = CertificatesCubit(
+      rolePrefill: const RoleCertificatePrefill(
+        element: 'school_community',
+        input: {
+          'reason': 'improvement',
+          'design': 'classic_green',
+          'title': 'شهادة شكر للمشاركة في النشاط',
+          'text': 'تتقدم إدارة المدرسة بالشكر للطالبة {name} على تميزها في برامج النشاط.',
+        },
+      ),
+      certificatesRepository: certificates,
+      documentsRepository: documents,
+      classesRepository: classes,
+      filePicker: picker,
+      today: () => DateTime(2026, 10, 26),
+    );
+    await cubit.load();
+
+    expect(cubit.state.reason, 'improvement');
+    expect(cubit.titleController.text, 'شهادة شكر للمشاركة في النشاط');
+    expect(cubit.textController.text, contains('{name}'));
+    expect(cubit.portfolioItemKey, 'school_community');
+
+    cubit.setNames(const StudentPickerResult(students: ['ريم']));
+    await cubit.save();
+
+    verify(
+      () => documents.createDocument(
+        type: DocumentTypes.certificates,
+        input: any(named: 'input'),
+        status: DocumentStatus.draft,
+        element: 'school_community',
+      ),
+    ).called(1);
+    expect(cubit.state.documentId, 88);
     await cubit.close();
   });
 }

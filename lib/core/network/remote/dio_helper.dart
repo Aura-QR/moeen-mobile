@@ -192,6 +192,11 @@ class DioHelper {
       final message = map['message']?.toString() ?? 'ترقية الحساب المطلوبة';
       return '__402__:$code:$message';
     }
+    if (response.statusCode == 429 && response.data is Map) {
+      final map = response.data as Map;
+      final message = map['message']?.toString() ?? 'quota_exceeded';
+      return '__429__:rate_limit:$message';
+    }
 
     if (response.statusCode == 409 && response.data is Map) {
       final map = response.data as Map;

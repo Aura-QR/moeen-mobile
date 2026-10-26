@@ -21,6 +21,23 @@ extension ReportLines on List<String> {
   }
 }
 
+/// Resolves `names_column` (0-based `int` index or column header `String`) into
+/// a valid column index in [columns], or null when unset / out of range.
+int? resolveNamesColumnIndex(Object? rawNamesColumn, List<String> columns) {
+  if (rawNamesColumn == null || columns.isEmpty) return null;
+  if (rawNamesColumn is int) {
+    return rawNamesColumn >= 0 && rawNamesColumn < columns.length ? rawNamesColumn : null;
+  }
+  final text = rawNamesColumn.toString().trim();
+  if (text.isEmpty) return null;
+  final parsed = int.tryParse(text);
+  if (parsed != null) {
+    return parsed >= 0 && parsed < columns.length ? parsed : null;
+  }
+  final byHeader = columns.indexWhere((col) => col.trim() == text);
+  return byHeader >= 0 ? byHeader : null;
+}
+
 extension TableBlockEdits on TableBlock {
   TableBlock setColumns(List<String> headers) => copyWith(columns: headers.map((h) => h.trim()).toList());
 
@@ -42,6 +59,26 @@ extension TableBlockEdits on TableBlock {
       copyWith(rows: [...squaredRows]..[index] = cells.map((c) => c.trim()).toList());
 
   TableBlock removeRow(int index) => copyWith(rows: [...squaredRows]..removeAt(index));
+
+  /// Fills [names] into [columnIndex], one per row from the first empty row in
+  /// [columnIndex], adding rows if needed up to [maxRows] (FRONTEND_TASK_ROLE_SUITES.md § 6).
+  TableBlock fillNamesColumn(int columnIndex, List<String> names, int maxRows) {
+    if (columnIndex < 0 || columnIndex >= columns.length) return this;
+    final cleaned = names.map((n) => n.trim()).where((n) => n.isNotEmpty).toList();
+    if (cleaned.isEmpty) return this;
+    final updated = [for (final row in squaredRows) [...row]];
+    var startRow = updated.indexWhere((row) => row[columnIndex].trim().isEmpty);
+    if (startRow < 0) startRow = updated.length;
+    for (var i = 0; i < cleaned.length; i++) {
+      final target = startRow + i;
+      if (target >= maxRows) break;
+      while (updated.length <= target) {
+        updated.add(List.filled(columns.length, ''));
+      }
+      updated[target][columnIndex] = cleaned[i];
+    }
+    return copyWith(rows: updated);
+  }
 }
 
 extension KvBlockEdits on KvBlock {

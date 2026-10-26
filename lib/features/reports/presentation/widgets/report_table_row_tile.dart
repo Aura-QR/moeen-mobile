@@ -2,14 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 
-/// One table row as a compact strip of cells; tap to edit it.
+/// One table row as a compact strip of cells; tap to edit it unless [onTap] is null.
 class ReportTableRowTile extends StatelessWidget {
   final List<String> cells;
   final bool isHeader;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final VoidCallback? onRemove;
 
-  const ReportTableRowTile({super.key, required this.cells, required this.onTap, this.isHeader = false, this.onRemove});
+  const ReportTableRowTile({
+    super.key,
+    required this.cells,
+    this.onTap,
+    this.isHeader = false,
+    this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +48,7 @@ class ReportTableRowTile extends StatelessWidget {
                 onPressed: onRemove,
                 icon: Icon(Icons.close_rounded, size: 16, color: ColorsManager.secondaryText),
               )
-            else
+            else if (onTap != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Icon(Icons.edit_outlined, size: 16, color: ColorsManager.secondaryText),

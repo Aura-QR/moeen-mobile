@@ -139,6 +139,11 @@ String documentExportApi(int id, int exportId) => '/documents/$id/exports/$expor
 // Tool catalogues
 const String reportsToolApi = '/tools/reports';
 String reportTemplateApi(String key) => '/tools/reports/$key';
+// L1 «حقائب الأدوار» (DOCUMENTS_API.md § 13)
+const String rolesToolApi = '/tools/roles';
+String roleSuiteApi(String role) => '/tools/roles/${Uri.encodeComponent(role)}';
+String roleDocumentApi(String role, String doc) =>
+    '/tools/roles/${Uri.encodeComponent(role)}/${Uri.encodeComponent(doc)}';
 const String strategiesApi = '/tools/strategies';
 String strategyApi(String key) => '/tools/strategies/$key';
 const String remedialToolApi = '/tools/remedial';

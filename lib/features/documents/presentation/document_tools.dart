@@ -15,6 +15,9 @@ class DocumentTool {
   String get subtitleKey => '${titleKey}_subtitle';
 }
 
+/// Menu key for L1 «حقائب الأدوار» (role documents save as `report` or `certificates`).
+const String roleSuitesToolType = 'role_suites';
+
 /// Register every new tool here so «مستنداتي» can create and open it.
 const List<DocumentTool> documentTools = [
   DocumentTool(
@@ -61,6 +64,11 @@ const List<DocumentTool> documentTools = [
     type: DocumentTypes.report,
     icon: Icons.summarize_outlined,
     route: Routes.reportEditor,
+  ),
+  DocumentTool(
+    type: roleSuitesToolType,
+    icon: Icons.work_outline_rounded,
+    route: Routes.roleSuites,
   ),
 ];
 

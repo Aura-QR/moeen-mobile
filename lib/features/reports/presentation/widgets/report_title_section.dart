@@ -8,7 +8,7 @@ import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/reports/presentation/cubit/report_editor_cubit.dart';
 
-/// The report's title, and «أنشئ بالذكاء الاصطناعي» (not yet available).
+/// The report's title, and the disabled «أنشئ بالذكاء الاصطناعي» placeholder on non-role reports.
 class ReportTitleSection extends StatelessWidget {
   const ReportTitleSection({super.key});
 
@@ -19,7 +19,10 @@ class ReportTitleSection extends StatelessWidget {
       icon: Icons.summarize_outlined,
       title: appTranslation().get('report_title_label'),
       child: BlocBuilder<ReportEditorCubit, ReportEditorState>(
-        buildWhen: (previous, current) => previous.titleError != current.titleError,
+        buildWhen: (previous, current) =>
+            previous.titleError != current.titleError ||
+            previous.isRoleDocument != current.isRoleDocument ||
+            previous.isSensitive != current.isSensitive,
         builder: (context, state) => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -36,15 +39,17 @@ class ReportTitleSection extends StatelessWidget {
                 style: TextStylesManager.regular12.copyWith(color: ColorsManager.errorColor),
               ),
             ],
-            verticalSpace8,
-            OutlinedButton.icon(
-              onPressed: null,
-              icon: const Icon(Icons.auto_awesome_outlined, size: 18),
-              label: Text(
-                '${appTranslation().get('report_ai_generate')} (${appTranslation().get('report_soon')})',
-                style: TextStylesManager.medium13,
+            if (!state.isRoleDocument && !state.isSensitive) ...[
+              verticalSpace8,
+              OutlinedButton.icon(
+                onPressed: null,
+                icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+                label: Text(
+                  '${appTranslation().get('report_ai_generate')} (${appTranslation().get('report_soon')})',
+                  style: TextStylesManager.medium13,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

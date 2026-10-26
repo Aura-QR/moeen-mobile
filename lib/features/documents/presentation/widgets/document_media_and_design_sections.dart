@@ -19,6 +19,7 @@ class DocumentMediaAndDesignSections extends StatelessWidget {
   final DocumentTheme theme;
   final ValueChanged<DocumentTheme> onThemeChanged;
   final int maxImages;
+  final bool showImages;
 
   const DocumentMediaAndDesignSections({
     super.key,
@@ -31,6 +32,7 @@ class DocumentMediaAndDesignSections extends StatelessWidget {
     required this.theme,
     required this.onThemeChanged,
     this.maxImages = DocumentUploadRules.maxImagesPerDocument,
+    this.showImages = true,
   });
 
   @override
@@ -38,14 +40,16 @@ class DocumentMediaAndDesignSections extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        DocumentImagesSection(
-          images: images,
-          isUploading: isUploading,
-          onPick: onPickImage,
-          onRemove: onRemoveImage,
-          maxImages: maxImages,
-        ),
-        verticalSpace14,
+        if (showImages) ...[
+          DocumentImagesSection(
+            images: images,
+            isUploading: isUploading,
+            onPick: onPickImage,
+            onRemove: onRemoveImage,
+            maxImages: maxImages,
+          ),
+          verticalSpace14,
+        ],
         DocumentStatusDropdown(
           // Rebuilds the field when a reopened document brings its status.
           key: ValueKey(status),

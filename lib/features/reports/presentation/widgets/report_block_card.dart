@@ -19,14 +19,15 @@ import 'package:moean/features/reports/presentation/widgets/report_text_block_ed
 enum _BlockAction { duplicate, remove }
 
 /// One block: its kind, a drag handle, «نسخ»/«حذف», then its editor.
-/// Rebuilds only when this block or its error changes.
+/// Rebuilds only when this block, its error, or role-mode metadata changes.
 class ReportBlockCard extends StatelessWidget {
   final int blockId;
   final int index;
 
   const ReportBlockCard({super.key, required this.blockId, required this.index});
 
-  ReportBlock? _blockOf(ReportEditorState state) => state.input.blocks.where((b) => b.id == blockId).firstOrNull;
+  ReportBlock? _blockOf(ReportEditorState state) =>
+      state.input.blocks.where((b) => b.id == blockId).firstOrNull;
 
   void _onAction(BuildContext context, _BlockAction action) {
     final cubit = ReportEditorCubit.get(context);
@@ -42,10 +43,15 @@ class ReportBlockCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ReportEditorCubit, ReportEditorState>(
       buildWhen: (previous, current) =>
-          _blockOf(previous) != _blockOf(current) || previous.blockErrors[blockId] != current.blockErrors[blockId],
+          _blockOf(previous) != _blockOf(current) ||
+          previous.blockErrors[blockId] != current.blockErrors[blockId] ||
+          previous.isSensitive != current.isSensitive ||
+          previous.roleTemplate?.namesColumn != current.roleTemplate?.namesColumn,
       builder: (context, state) {
         final block = _blockOf(state);
-        if (block == null) return const SizedBox.shrink();
+        if (block == null || (state.isSensitive && block is ImagesBlock)) {
+          return const Offstage();
+        }
         final error = state.blockErrors[blockId];
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
@@ -53,7 +59,9 @@ class ReportBlockCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: ColorsManager.surfacePrimary,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: error != null ? ColorsManager.errorColor : ColorsManager.borderLightGray),
+            border: Border.all(
+              color: error != null ? ColorsManager.errorColor : ColorsManager.borderLightGray,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -77,8 +85,14 @@ class ReportBlockCard extends StatelessWidget {
                     icon: Icon(Icons.more_vert_rounded, color: ColorsManager.secondaryText),
                     onSelected: (action) => _onAction(context, action),
                     itemBuilder: (_) => [
-                      PopupMenuItem(value: _BlockAction.duplicate, child: Text(appTranslation().get('report_duplicate'))),
-                      PopupMenuItem(value: _BlockAction.remove, child: Text(appTranslation().get('delete'))),
+                      PopupMenuItem(
+                        value: _BlockAction.duplicate,
+                        child: Text(appTranslation().get('report_duplicate')),
+                      ),
+                      PopupMenuItem(
+                        value: _BlockAction.remove,
+                        child: Text(appTranslation().get('delete')),
+                      ),
                     ],
                   ),
                 ],
@@ -95,7 +109,9 @@ class ReportBlockCard extends StatelessWidget {
                   ChartBlock() => ReportChartEditor(block: block),
                   QrBlock() => ReportQrEditor(block: block),
                   PageBreakBlock() || UnknownBlock() => Text(
-                      appTranslation().get(block is PageBreakBlock ? 'report_page_break_hint' : 'report_unsupported_block'),
+                      appTranslation().get(
+                        block is PageBreakBlock ? 'report_page_break_hint' : 'report_unsupported_block',
+                      ),
                       style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText),
                     ),
                 },

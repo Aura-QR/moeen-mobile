@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/models/ui_feedback.dart';
 import 'package:moean/core/services/device_file_picker.dart';
-import 'package:moean/features/thank_you_certificates/data/models/certificates_catalogue_model.dart';
-import 'package:moean/features/thank_you_certificates/data/models/certificates_input.dart';
-import 'package:moean/features/thank_you_certificates/data/repositories/certificates_repository.dart';
 import 'package:moean/features/classes/data/models/school_class_model.dart';
 import 'package:moean/features/classes/data/repositories/classes_repository.dart';
 import 'package:moean/features/documents/data/models/document_defaults_model.dart';
@@ -13,6 +10,10 @@ import 'package:moean/features/documents/data/models/student_picker_result.dart'
 import 'package:moean/features/documents/data/repositories/documents_repository.dart';
 import 'package:moean/features/documents/presentation/cubit/document_header_overrides.dart';
 import 'package:moean/features/documents/presentation/document_follow_up.dart';
+import 'package:moean/features/thank_you_certificates/data/models/certificates_catalogue_model.dart';
+import 'package:moean/features/thank_you_certificates/data/models/certificates_input.dart';
+import 'package:moean/features/thank_you_certificates/data/models/role_certificate_prefill.dart';
+import 'package:moean/features/thank_you_certificates/data/repositories/certificates_repository.dart';
 
 part 'certificates_state.dart';
 
@@ -25,21 +26,24 @@ class CertificatesCubit extends Cubit<CertificatesState> {
 
   CertificatesCubit({
     int? documentId,
+    RoleCertificatePrefill? rolePrefill,
     required CertificatesRepository certificatesRepository,
     required DocumentsRepository documentsRepository,
     required ClassesRepository classesRepository,
     required DeviceFilePicker filePicker,
     DateTime Function() today = DateTime.now,
-  }) : _certificates = certificatesRepository,
+  }) : _rolePrefill = rolePrefill,
+       _certificates = certificatesRepository,
        _documents = documentsRepository,
        _classes = classesRepository,
        _picker = filePicker,
        _today = today,
-       super(CertificatesState(documentId: documentId)) {
+       super(CertificatesState(documentId: documentId, initialElement: rolePrefill?.element)) {
     titleController.addListener(_textChanged);
     textController.addListener(_textChanged);
   }
 
+  final RoleCertificatePrefill? _rolePrefill;
   final CertificatesRepository _certificates;
   final DocumentsRepository _documents;
   final ClassesRepository _classes;
@@ -54,7 +58,11 @@ class CertificatesCubit extends Cubit<CertificatesState> {
   Map<String, dynamic> _extra = const {};
 
   /// The portfolio item preselected when adding the certificates to a portfolio.
-  String get portfolioItemKey => state.reason == improvementReason ? 'learner_results' : 'learning_environment';
+  String get portfolioItemKey {
+    final custom = state.initialElement?.trim();
+    if (custom != null && custom.isNotEmpty) return custom;
+    return state.reason == improvementReason ? 'learner_results' : 'learning_environment';
+  }
 
   /// Whether the title or text differ from the reason's defaults.
   bool get isTextEdited =>
@@ -84,7 +92,8 @@ class CertificatesCubit extends Cubit<CertificatesState> {
     final options = catalogue.getOrElse(() => const CertificatesCatalogueModel());
     final teacher = defaults.getOrElse(() => const DocumentDefaultsModel());
     final saved = document?.fold((_) => null, (doc) => doc);
-    final input = saved == null ? null : CertificatesInput.fromJson(saved.input);
+    final prefill = saved == null && _rolePrefill != null ? CertificatesInput.fromJson(_rolePrefill.input) : null;
+    final input = saved == null ? prefill : CertificatesInput.fromJson(saved.input);
     _extra = input?.extra ?? const {};
     if (input != null && input.header.isNotEmpty) {
       header.fill(input.header);
@@ -100,8 +109,8 @@ class CertificatesCubit extends Cubit<CertificatesState> {
         audience: input?.audience.isNotEmpty == true ? input!.audience : teacher.genderForm.name,
         reason: _known(input?.reason, options.reasons.map((reason) => reason.key)),
         design: _known(input?.design, options.designs.map((design) => design.key)),
-        date: input == null ? _today() : input.date,
-        clearDate: input != null && input.date == null,
+        date: saved == null ? (prefill?.date ?? _today()) : input?.date,
+        clearDate: saved != null && input?.date == null,
         isOverridingHeader: input?.header.isNotEmpty ?? false,
       ),
     );
@@ -237,8 +246,14 @@ class CertificatesCubit extends Cubit<CertificatesState> {
     emit(state.copyWith(isSaving: true));
     final id = state.documentId;
     final json = input!.toJson();
+    final element = state.initialElement?.trim();
     final result = id == null
-        ? await _documents.createDocument(type: DocumentTypes.certificates, input: json, status: DocumentStatus.draft)
+        ? await _documents.createDocument(
+            type: DocumentTypes.certificates,
+            input: json,
+            status: DocumentStatus.draft,
+            element: element == null || element.isEmpty ? null : element,
+          )
         : await _documents.updateDocument(id, json, status: DocumentStatus.draft);
     if (isClosed) return;
     result.fold(
