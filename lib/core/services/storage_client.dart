@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
@@ -35,6 +36,41 @@ class StorageClient {
       );
       return const Right(unit);
     } on DioException {
+      return const Left(ServerFailure('upload_failed'));
+    }
+  }
+
+  /// PUTs the file at [path] to the signed URL without loading it into memory.
+  Future<Either<Failure, Unit>> uploadFile(
+    StorageUploadTicketModel ticket,
+    String path,
+    int byteSize, {
+    void Function(double progress)? onProgress,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      await _dio.put<void>(
+        ticket.uploadUrl,
+        data: File(path).openRead(),
+        cancelToken: cancelToken,
+        options: Options(
+          sendTimeout: const Duration(minutes: 30),
+          headers: {
+            ...ticket.headers,
+            Headers.contentLengthHeader: byteSize,
+          },
+        ),
+        onSendProgress: (sent, _) {
+          if (byteSize > 0) onProgress?.call(sent / byteSize);
+        },
+      );
+      return const Right(unit);
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel) {
+        return const Left(ServerFailure('qr_upload_cancelled'));
+      }
+      return const Left(ServerFailure('upload_failed'));
+    } catch (_) {
       return const Left(ServerFailure('upload_failed'));
     }
   }

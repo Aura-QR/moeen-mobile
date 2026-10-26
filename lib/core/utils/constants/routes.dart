@@ -1,3 +1,21 @@
+import 'package:moean/features/exam_extraction/data/models/extraction_page_model.dart';
+import 'package:moean/features/exam_extraction/data/models/extraction_job_model.dart';
+import 'package:moean/features/exam_extraction/data/repositories/exam_extraction_repository.dart';
+import 'package:moean/features/exam_extraction/presentation/cubit/extraction_pages_cubit.dart';
+import 'package:moean/features/exam_extraction/presentation/cubit/extraction_job_cubit.dart';
+import 'package:moean/features/exam_extraction/presentation/cubit/extraction_review_cubit.dart';
+import 'package:moean/features/exam_extraction/presentation/screens/extraction_pages_screen.dart';
+import 'package:moean/features/exam_extraction/presentation/screens/extraction_reading_screen.dart';
+import 'package:moean/features/exam_extraction/presentation/screens/extraction_review_screen.dart';
+import 'package:moean/features/qr_codes/data/models/shared_file_model.dart';
+import 'package:moean/features/qr_codes/data/repositories/shared_files_repository.dart';
+import 'package:moean/features/qr_codes/presentation/cubit/link_qr_cubit.dart';
+import 'package:moean/features/qr_codes/presentation/cubit/qr_export_cubit.dart';
+import 'package:moean/features/qr_codes/presentation/cubit/shared_file_upload_cubit.dart';
+import 'package:moean/features/qr_codes/presentation/cubit/shared_files_list_cubit.dart';
+import 'package:moean/features/qr_codes/presentation/screens/qr_codes_screen.dart';
+import 'package:moean/features/qr_codes/presentation/screens/shared_file_result_screen.dart';
+import 'package:moean/features/qr_codes/presentation/screens/shared_files_screen.dart';
 import 'package:moean/features/support_chat/presentation/support_chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:moean/core/di/injections.dart';
@@ -31,6 +49,11 @@ import 'package:moean/features/contact/presentation/cubit/contact_cubit.dart';
 import 'package:moean/features/contact/presentation/screen/ticket_details_screen.dart';
 import 'package:moean/features/reports/presentation/screen/report_screen.dart';
 import 'package:moean/features/reports/presentation/cubit/report_cubit.dart';
+import 'package:moean/features/reports/data/repositories/reports_repository.dart';
+import 'package:moean/features/reports/presentation/cubit/report_editor_cubit.dart';
+import 'package:moean/features/reports/presentation/cubit/report_templates_cubit.dart';
+import 'package:moean/features/reports/presentation/screen/report_editor_screen.dart';
+import 'package:moean/features/reports/presentation/screen/report_templates_screen.dart';
 import 'package:moean/features/payment/presentation/cubit/payment_cubit.dart';
 import 'package:moean/features/payment/presentation/screen/checkout_screen.dart';
 import 'package:moean/features/payment/presentation/screen/bank_transfer_screen.dart';
@@ -84,6 +107,9 @@ import 'package:moean/features/portfolio/presentation/cubit/portfolio_list_cubit
 import 'package:moean/features/portfolio/presentation/cubit/portfolio_editor_cubit.dart';
 import 'package:moean/features/portfolio/presentation/screens/portfolio_list_screen.dart';
 import 'package:moean/features/portfolio/presentation/screens/portfolio_editor_screen.dart';
+import 'package:moean/features/performance/presentation/cubit/performance_cubit.dart';
+import 'package:moean/features/performance/presentation/screens/performance_item_screen.dart';
+import 'package:moean/features/performance/presentation/screens/performance_screen.dart';
 import 'package:moean/features/reports/data/achievement_report_pdf_service.dart';
 import 'package:moean/features/reports/data/repositories/achievement_report_repository.dart';
 import 'package:moean/features/reports/presentation/cubit/achievement_report_cubit.dart';
@@ -187,6 +213,8 @@ class Routes {
   static const String curriculumBooks = '/curriculum/books';
   static const String portfolio = '/portfolio';
   static const String portfolioEditor = '/portfolio/editor';
+  static const String portfolioPerformance = '/portfolio/performance';
+  static const String portfolioPerformanceItem = '/portfolio/performance/item';
   static const String achievementReport = '/achievement-report';
   static const String supportChat = '/support-chat';
   static const String myDocuments = '/documents';
@@ -208,6 +236,14 @@ class Routes {
   static const String diagnosis = '/online-tests/diagnosis';
   static const String classes = '/classes';
   static const String classEditor = '/classes/editor';
+  static const String examExtraction = '/exam-extraction';
+  static const String examExtractionReading = '/exam-extraction/reading';
+  static const String examExtractionReview = '/exam-extraction/review';
+  static const String qrCodes = '/qr-codes';
+  static const String sharedFileResult = '/qr-codes/result';
+  static const String sharedFiles = '/qr-codes/files';
+  static const String reportTools = '/tools/reports';
+  static const String reportEditor = '/tools/reports/editor';
 
 
 
@@ -370,6 +406,31 @@ class Routes {
       )..load(),
       child: const PortfolioEditorScreen(),
     ),
+    portfolioPerformance: (context) => BlocProvider(
+      create: (_) => PerformanceCubit(
+        portfolioId: context.getArg<int>() ?? 0,
+        repository: PortfolioRepository(),
+      )..load(),
+      child: const PerformanceScreen(),
+    ),
+    portfolioPerformanceItem: (context) {
+      final args = context.getArg<({int portfolioId, int itemId})>();
+      final portfolioId = args?.portfolioId ?? 0;
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => PerformanceCubit(portfolioId: portfolioId, repository: PortfolioRepository())..load()),
+          BlocProvider(
+            create: (_) => PortfolioEditorCubit(
+              portfolioId: portfolioId,
+              repository: PortfolioRepository(),
+              filePicker: DeviceFilePicker(),
+              pdfBuilder: (portfolio, images) => PortfolioPdfService.build(portfolio: portfolio, images: images),
+            )..load(),
+          ),
+        ],
+        child: PerformanceItemScreen(itemId: args?.itemId ?? 0),
+      );
+    },
     achievementReport: (context) => BlocProvider(
       create: (_) => AchievementReportCubit(
         AchievementReportRepository(),
@@ -509,6 +570,86 @@ class Routes {
       return ClassSheetsScreen.create(
         documentId: documentId,
         initialClass: initialClass,
+      );
+    },
+    examExtraction: (context) => BlocProvider(
+      create: (_) => ExtractionPagesCubit(),
+      child: const ExtractionPagesScreen(),
+    ),
+    examExtractionReading: (context) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final pages =
+          args?['pages'] as List<ExtractionPageModel>? ?? const [];
+      final count = args?['count'] as int? ?? 10;
+      final notes = args?['notes'] as String?;
+      return BlocProvider(
+        create: (_) => ExtractionJobCubit(
+          repository: ExamExtractionRepository(),
+        )..start(pages: pages, count: count, notes: notes),
+        child: const ExtractionReadingScreen(),
+      );
+    },
+    examExtractionReview: (context) {
+      final job =
+          ModalRoute.of(context)?.settings.arguments as ExtractionJobModel?;
+      return BlocProvider(
+        create: (_) => ExtractionReviewCubit(
+          repository: ExamExtractionRepository(),
+          initialQuestions: job?.questions ?? const [],
+          source: job?.source,
+        ),
+        child: const ExtractionReviewScreen(),
+      );
+    },
+    qrCodes: (context) {
+      final isLoggedIn =
+          ModalRoute.of(context)?.settings.arguments as bool? ?? false;
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => LinkQrCubit()),
+          BlocProvider(
+            create: (_) => SharedFileUploadCubit(
+              repository: SharedFilesRepository(),
+            ),
+          ),
+          BlocProvider(create: (_) => QrExportCubit()),
+        ],
+        child: QrCodesScreen(isLoggedIn: isLoggedIn),
+      );
+    },
+    sharedFileResult: (context) {
+      final file =
+          ModalRoute.of(context)?.settings.arguments as SharedFileModel?;
+      return BlocProvider(
+        create: (_) => QrExportCubit(),
+        child: file != null
+            ? SharedFileResultScreen(file: file)
+            : const Scaffold(body: SizedBox.shrink()),
+      );
+    },
+    sharedFiles: (context) => BlocProvider(
+      create: (_) => SharedFilesListCubit(
+        repository: SharedFilesRepository(),
+      ),
+      child: const SharedFilesScreen(),
+    ),
+    reportTools: (context) => BlocProvider(
+      create: (_) => ReportTemplatesCubit(reports: ReportsRepository(), documents: DocumentsRepository())..load(),
+      child: const ReportTemplatesScreen(),
+    ),
+    // Argument: a saved report's id (int), a template key (String), or none for a blank report.
+    reportEditor: (context) {
+      final argument = ModalRoute.of(context)?.settings.arguments;
+      return BlocProvider(
+        create: (_) => ReportEditorCubit(
+          reports: ReportsRepository(),
+          documents: DocumentsRepository(),
+          picker: DeviceFilePicker(),
+          documentId: argument is int ? argument : null,
+          templateKey: argument is String ? argument : null,
+        )..load(),
+        child: const ReportEditorScreen(),
       );
     },
   };

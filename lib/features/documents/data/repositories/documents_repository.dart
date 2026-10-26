@@ -52,13 +52,21 @@ class DocumentsRepository {
       );
 
   /// [status] is [DocumentStatus.draft] or [DocumentStatus.finalized].
+  /// [keepFieldErrors]: a `422` comes back as a [ValidationFailure] with the
+  /// failing fields, for forms that mark them.
   Future<Either<Failure, DocumentModel>> createDocument({
     required String type,
     required Map<String, dynamic> input,
     required String status,
+    String? element,
+    bool keepFieldErrors = false,
   }) =>
       handleApiResponse(
-        DioHelper.postData(url: documentsApi, data: {'type': type, 'input': input, 'status': status}),
+        DioHelper.postData(
+          url: documentsApi,
+          data: {'type': type, 'input': input, 'status': status, 'element': ?element},
+          keepFieldErrors: keepFieldErrors,
+        ),
         _document,
       );
 
@@ -67,9 +75,21 @@ class DocumentsRepository {
     int id,
     Map<String, dynamic> input, {
     required String status,
+    bool keepFieldErrors = false,
   }) =>
       handleApiResponse(
-        DioHelper.patchData(url: documentApi(id), data: {'input': input, 'status': status}),
+        DioHelper.patchData(
+          url: documentApi(id),
+          data: {'input': input, 'status': status},
+          keepFieldErrors: keepFieldErrors,
+        ),
+        _document,
+      );
+
+  /// Which portfolio element the document counts for; null keeps it out of
+  /// the performance file.
+  Future<Either<Failure, DocumentModel>> setElement(int id, String? element) => handleApiResponse(
+        DioHelper.patchData(url: documentApi(id), data: {'element': element ?? noDocumentElement}),
         _document,
       );
 

@@ -30,70 +30,117 @@ class SheetKindSelector extends StatelessWidget {
           ),
         ),
         verticalSpace12,
-        SizedBox(
-          height: 120,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: kinds.length,
-            separatorBuilder: (_, _) => horizontalSpace12,
-            itemBuilder: (context, index) {
-              final kind = kinds[index];
-              final isSelected = kind.key == selectedKind.key;
-
-              return SizedBox(
-                width: 140,
-                child: Material(
-                  color: isSelected
-                      ? ColorsManager.primaryColor.withValues(alpha: 0.08)
-                      : ColorsManager.surfacePrimary,
-                  borderRadius: BorderRadius.circular(16),
-                  child: InkWell(
-                    onTap: () => onSelected(kind),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderLightGray,
-                          width: isSelected ? 2 : 1,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            kind.icon,
-                            color: isSelected ? ColorsManager.primaryColor : ColorsManager.secondaryText,
-                            size: 26,
-                          ),
-                          const Spacer(),
-                          Text(
-                            appTranslation().get(kind.label),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStylesManager.bold13.copyWith(
-                              color: isSelected ? ColorsManager.primaryColor : ColorsManager.mainText,
-                            ),
-                          ),
-                          verticalSpace4,
-                          Text(
-                            appTranslation().get(kind.description),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStylesManager.regular10.copyWith(color: ColorsManager.secondaryText),
-                          ),
-                        ],
-                      ),
-                    ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (int index = 0; index < kinds.length; index++) ...[
+                  if (index > 0) horizontalSpace10,
+                  _KindCard(
+                    kind: kinds[index],
+                    isSelected: kinds[index].key == selectedKind.key,
+                    onTap: () => onSelected(kinds[index]),
                   ),
-                ),
-              );
-            },
+                ],
+              ],
+            ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _KindCard extends StatelessWidget {
+  final SheetKindModel kind;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _KindCard({
+    required this.kind,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 156,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: isSelected
+              ? ColorsManager.primaryColor.withValues(alpha: 0.09)
+              : ColorsManager.surfacePrimary,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderColor,
+            width: isSelected ? 2 : 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(14),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? ColorsManager.primaryColor
+                              : ColorsManager.primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          kind.icon,
+                          color: isSelected ? Colors.white : ColorsManager.primaryColor,
+                          size: 20,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (isSelected)
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: ColorsManager.primaryColor,
+                          size: 18,
+                        ),
+                    ],
+                  ),
+                  verticalSpace10,
+                  Text(
+                    appTranslation().get(kind.label),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStylesManager.bold13.copyWith(
+                      color: isSelected ? ColorsManager.primaryColor : ColorsManager.mainText,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

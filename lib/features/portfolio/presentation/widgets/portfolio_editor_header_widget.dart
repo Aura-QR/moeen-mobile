@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/portfolio/presentation/cubit/portfolio_editor_cubit.dart';
 import 'package:moean/features/portfolio/presentation/widgets/portfolio_completion_ring_widget.dart';
@@ -25,6 +26,13 @@ class PortfolioEditorHeaderWidget extends StatelessWidget {
       fields: [PrimaryInputField(hintKey: 'portfolio_title_hint', initialValue: current)],
     );
     if (values != null) cubit.rename(values.first);
+  }
+
+  /// Evidence and documents may change there, so the editor reloads after.
+  Future<void> _openPerformance(BuildContext context, int portfolioId) async {
+    final cubit = PortfolioEditorCubit.get(context);
+    await Navigator.pushNamed(context, Routes.portfolioPerformance, arguments: portfolioId);
+    cubit.refresh();
   }
 
   Future<void> _delete(BuildContext context) async {
@@ -104,6 +112,12 @@ class PortfolioEditorHeaderWidget extends StatelessWidget {
                     label: appTranslation().get('portfolio_pdf'),
                     isLoading: state.isExporting,
                     onTap: PortfolioEditorCubit.get(context).exportPdf,
+                  ),
+                  horizontalSpace8,
+                  PortfolioHeaderActionWidget(
+                    icon: Icons.insights_outlined,
+                    label: appTranslation().get('performance_title'),
+                    onTap: () => _openPerformance(context, portfolio.id),
                   ),
                   horizontalSpace8,
                   PortfolioHeaderActionWidget(

@@ -8,7 +8,7 @@ import 'package:moean/features/documents/data/models/document_model.dart';
 import 'package:moean/features/documents/presentation/document_tools.dart';
 import 'package:moean/features/documents/presentation/widgets/document_status_badge.dart';
 
-enum DocumentCardAction { duplicate, delete }
+enum DocumentCardAction { element, duplicate, delete }
 
 /// A row in «مستنداتي»: title, type, status and last edit, with a menu.
 class DocumentCardWidget extends StatelessWidget {
@@ -95,6 +95,11 @@ class DocumentCardWidget extends StatelessWidget {
                   onSelected: onAction,
                   icon: Icon(Icons.more_vert_rounded, color: ColorsManager.secondaryText),
                   itemBuilder: (_) => [
+                    if (document.type != DocumentTypes.performanceFile)
+                      PopupMenuItem(
+                        value: DocumentCardAction.element,
+                        child: Text(appTranslation().get('document_element_label')),
+                      ),
                     PopupMenuItem(
                       value: DocumentCardAction.duplicate,
                       child: Text(appTranslation().get('document_duplicate')),

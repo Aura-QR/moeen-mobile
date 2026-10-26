@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 abstract class Failure {
   final String message;
   const Failure(this.message);
@@ -49,6 +51,19 @@ class ServerFailure extends Failure {
 Failure failureFromApiError(String error) {
   if (error == 'Unauthenticated') {
     return const UnauthorizedFailure('generic_error');
+  }
+  // Before the generic `__` branch: the JSON holds colons.
+  if (error.startsWith('__422__:')) {
+    try {
+      final body = jsonDecode(error.substring('__422__:'.length)) as Map<String, dynamic>;
+      final errors = body['errors'];
+      return ValidationFailure(
+        body['message']?.toString() ?? 'generic_error',
+        errors is Map ? Map<String, dynamic>.from(errors) : const {},
+      );
+    } catch (_) {
+      return const ServerFailure('generic_error');
+    }
   }
   if (error.startsWith('No response')) {
     return const ServerFailure('network_error');

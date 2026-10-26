@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
+import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 
 class MyExamsHeaderWidget extends StatelessWidget {
@@ -28,11 +29,48 @@ class MyExamsHeaderWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          InkWell(
+            onTap: () => Navigator.pushNamed(context, Routes.examExtraction),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: ColorsManager.primaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: ColorsManager.primaryColor.withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.document_scanner_outlined,
+                    color: ColorsManager.primaryColor,
+                    size: 20,
+                  ),
+                  horizontalSpace10,
+                  Expanded(
+                    child: Text(
+                      appTranslation().get('exam_extract_entry'),
+                      style: TextStylesManager.bold13.copyWith(
+                        color: ColorsManager.primaryColor,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: ColorsManager.primaryColor,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          verticalSpace12,
           Container(
             height: 48,
             width: double.infinity,
             decoration: BoxDecoration(
-          //    color: ColorsManager.borderLightGray.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: TextField(

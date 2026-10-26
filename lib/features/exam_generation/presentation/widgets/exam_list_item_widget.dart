@@ -7,166 +7,253 @@ import 'package:moean/features/exam_generation/domain/entities/exam_entities.dar
 
 class ExamListItemWidget extends StatelessWidget {
   final ExamListEntity exam;
-  final double colTitle;
-  final double colStatus;
-  final double colQuestions;
-  final double colGrade;
-  final double colDate;
-  final double colActions;
+  final bool isExpanded;
+  final VoidCallback onToggleExpand;
   final VoidCallback onPublish;
   final VoidCallback onDelete;
   final VoidCallback onView;
-  final VoidCallback? onTap;
   final VoidCallback? onShareOnline;
 
   const ExamListItemWidget({
     super.key,
     required this.exam,
-    required this.colTitle,
-    required this.colStatus,
-    required this.colQuestions,
-    required this.colGrade,
-    required this.colDate,
-    required this.colActions,
+    required this.isExpanded,
+    required this.onToggleExpand,
     required this.onPublish,
     required this.onDelete,
     required this.onView,
-    this.onTap,
     this.onShareOnline,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap ?? onView,
-      child: Container(
-        height: 60,
-        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-        child: Row(
-          children: [
-            SizedBox(
-              width: colTitle,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          exam.title,
-                          style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (exam.kind == 'diagnostic') ...[
-                        horizontalSpace6,
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(color: ColorsManager.secondaryColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
-                          child: Text(appTranslation().get('diagnostic_tag'), style: TextStylesManager.bold10.copyWith(color: ColorsManager.secondaryColor)),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        color: ColorsManager.surfacePrimary,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isExpanded
+              ? ColorsManager.primaryColor.withValues(alpha: 0.45)
+              : ColorsManager.borderLightGray,
+          width: isExpanded ? 1.2 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onToggleExpand,
+              borderRadius: BorderRadius.vertical(
+                top: const Radius.circular(18),
+                bottom: Radius.circular(isExpanded ? 0 : 18),
               ),
-            ),
-            SizedBox(
-              width: colStatus,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Center(
-                  child: _buildStatusBadge(),
-                ),
-              ),
-            ),
-            SizedBox(
-              width: colQuestions,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Center(
-                  child: Text(
-                    '${exam.questionsCount}',
-                    style: TextStylesManager.medium14.copyWith(color: ColorsManager.mainText),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              width: colGrade,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Center(
-                  child: Text(
-                    '${exam.totalPoints}',
-                    style: TextStylesManager.medium14.copyWith(color: ColorsManager.mainText),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              width: colDate,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Center(
-                  child: Text(
-                    _formatDate(exam.updatedAt),
-                    style: TextStylesManager.medium14.copyWith(color: ColorsManager.secondaryText),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              width: colActions,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.all(14),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildActionButton(
-                      title: appTranslation().get('view'),
-                      icon: Icons.visibility_outlined,
-                      textColor: ColorsManager.primaryColor,
-                      iconColor: ColorsManager.primaryColor,
-                      backgroundColor: ColorsManager.primaryColor.withValues(alpha: 0.06),
-                      border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.35)),
-                      onTap: onView,
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.assignment_outlined,
+                        color: ColorsManager.primaryColor,
+                        size: 22,
+                      ),
                     ),
-                    if (exam.status == 'draft') ...[
-                      horizontalSpace6,
-                      _buildActionButton(
-                        title: appTranslation().get('publish'),
-                        icon: Icons.check_circle_outline,
-                        textColor: Colors.white,
-                        iconColor: Colors.white,
-                        backgroundColor: ColorsManager.primaryColor,
-                        onTap: onPublish,
+                    horizontalSpace12,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            exam.title,
+                            maxLines: isExpanded ? 3 : 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStylesManager.bold14.copyWith(
+                              color: ColorsManager.mainText,
+                            ),
+                          ),
+                          verticalSpace6,
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              _buildStatusBadge(),
+                              if (exam.kind == 'diagnostic') _buildDiagnosticBadge(),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                    if (onShareOnline != null) ...[
-                      horizontalSpace6,
-                      _buildActionButton(
-                        title: appTranslation().get('online_tests_share'),
-                        icon: Icons.qr_code_2,
-                        textColor: ColorsManager.primaryColor,
-                        iconColor: ColorsManager.primaryColor,
-                        backgroundColor: ColorsManager.primaryColor.withValues(alpha: 0.06),
-                        border: Border.all(color: ColorsManager.primaryColor.withValues(alpha: 0.35)),
-                        onTap: onShareOnline!,
+                    ),
+                    horizontalSpace8,
+                    AnimatedRotation(
+                      turns: isExpanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeInOut,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: isExpanded
+                              ? ColorsManager.primaryColor.withValues(alpha: 0.1)
+                              : ColorsManager.background,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 20,
+                          color: isExpanded
+                              ? ColorsManager.primaryColor
+                              : ColorsManager.secondaryText,
+                        ),
                       ),
-                    ],
-                    horizontalSpace6,
-                    _buildActionButton(
-                      title: appTranslation().get('delete'),
-                      icon: Icons.delete_outline,
-                      textColor: Colors.red,
-                      iconColor: Colors.red,
-                      backgroundColor: Colors.red.withValues(alpha: 0.08),
-                      onTap: onDelete,
                     ),
                   ],
                 ),
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: isExpanded
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Divider(color: ColorsManager.borderLightGray, height: 1),
+                      Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                _buildDetailItem(
+                                  icon: Icons.help_outline_rounded,
+                                  label: appTranslation().get('questions_count'),
+                                  value: '${exam.questionsCount}',
+                                ),
+                                horizontalSpace8,
+                                _buildDetailItem(
+                                  icon: Icons.workspace_premium_outlined,
+                                  label: appTranslation().get('grade'),
+                                  value: '${exam.totalPoints}',
+                                ),
+                                horizontalSpace8,
+                                _buildDetailItem(
+                                  icon: Icons.calendar_today_outlined,
+                                  label: appTranslation().get('last_update'),
+                                  value: _formatDate(exam.updatedAt),
+                                ),
+                              ],
+                            ),
+                            verticalSpace14,
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                _buildActionButton(
+                                  title: appTranslation().get('view'),
+                                  icon: Icons.visibility_outlined,
+                                  textColor: ColorsManager.primaryColor,
+                                  iconColor: ColorsManager.primaryColor,
+                                  backgroundColor:
+                                      ColorsManager.primaryColor.withValues(alpha: 0.08),
+                                  border: Border.all(
+                                    color: ColorsManager.primaryColor.withValues(alpha: 0.35),
+                                  ),
+                                  onTap: onView,
+                                ),
+                                if (exam.status == 'draft')
+                                  _buildActionButton(
+                                    title: appTranslation().get('publish'),
+                                    icon: Icons.check_circle_outline,
+                                    textColor: Colors.white,
+                                    iconColor: Colors.white,
+                                    backgroundColor: ColorsManager.primaryColor,
+                                    onTap: onPublish,
+                                  ),
+                                if (onShareOnline != null)
+                                  _buildActionButton(
+                                    title: appTranslation().get('online_tests_share'),
+                                    icon: Icons.qr_code_2,
+                                    textColor: ColorsManager.primaryColor,
+                                    iconColor: ColorsManager.primaryColor,
+                                    backgroundColor:
+                                        ColorsManager.primaryColor.withValues(alpha: 0.08),
+                                    border: Border.all(
+                                      color: ColorsManager.primaryColor.withValues(alpha: 0.35),
+                                    ),
+                                    onTap: onShareOnline!,
+                                  ),
+                                _buildActionButton(
+                                  title: appTranslation().get('delete'),
+                                  icon: Icons.delete_outline,
+                                  textColor: Colors.red,
+                                  iconColor: Colors.red,
+                                  backgroundColor: Colors.red.withValues(alpha: 0.08),
+                                  border: Border.all(
+                                    color: Colors.red.withValues(alpha: 0.25),
+                                  ),
+                                  onTap: onDelete,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : const SizedBox(width: double.infinity, height: 0),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailItem({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        decoration: BoxDecoration(
+          color: ColorsManager.background,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: ColorsManager.borderLightGray),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18, color: ColorsManager.primaryColor),
+            verticalSpace4,
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStylesManager.regular12.copyWith(
+                color: ColorsManager.secondaryText,
+              ),
+            ),
+            verticalSpace4,
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStylesManager.bold13.copyWith(
+                color: ColorsManager.mainText,
               ),
             ),
           ],
@@ -179,9 +266,9 @@ class ExamListItemWidget extends StatelessWidget {
     final isPublished = exam.status == 'published';
     final color = isPublished ? ColorsManager.primaryColor : ColorsManager.secondaryText;
     final text = appTranslation().get(isPublished ? 'published' : 'draft');
-    
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
@@ -189,6 +276,23 @@ class ExamListItemWidget extends StatelessWidget {
       child: Text(
         text,
         style: TextStylesManager.medium12.copyWith(color: color),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  Widget _buildDiagnosticBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: ColorsManager.secondaryColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        appTranslation().get('diagnostic_tag'),
+        style: TextStylesManager.medium12.copyWith(
+          color: ColorsManager.secondaryColor,
+        ),
         textAlign: TextAlign.center,
       ),
     );
@@ -203,29 +307,36 @@ class ExamListItemWidget extends StatelessWidget {
     Border? border,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(20),
-          border: border,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(title, style: TextStylesManager.bold12.copyWith(color: textColor)),
-            horizontalSpace4,
-            Icon(icon, size: 16, color: iconColor),
-          ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(12),
+            border: border,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: iconColor),
+              horizontalSpace6,
+              Text(
+                title,
+                style: TextStylesManager.bold12.copyWith(color: textColor),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   String _formatDate(String dateStr) {
-    if (dateStr.isEmpty) return '';
+    if (dateStr.isEmpty) return '-';
     try {
       final date = DateTime.parse(dateStr);
       return '${date.year}/${date.month}/${date.day}';

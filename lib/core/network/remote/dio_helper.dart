@@ -45,10 +45,12 @@ class DioHelper {
     }
   }
 
+  /// [keepFieldErrors] passes a `422`'s field keys on (see [fieldErrors]).
   static Future<Either<String, Response>> postData({
     required String url,
     dynamic data,
     Map<String, dynamic>? query,
+    bool keepFieldErrors = false,
   }) async {
     try {
       debugPrint('🚀 POST Request: $url');
@@ -68,6 +70,8 @@ class DioHelper {
       );
       return Right(response);
     } on DioException catch (error) {
+      final fields = keepFieldErrors ? fieldErrors(error) : null;
+      if (fields != null) return Left(fields);
       final msg = parseError(error);
       if (error.response?.statusCode == 401 && (msg == 'Error 401' || msg == 'Unauthenticated')) {
         return const Left('Unauthenticated');
@@ -107,10 +111,12 @@ class DioHelper {
     }
   }
 
+  /// [keepFieldErrors] passes a `422`'s field keys on (see [fieldErrors]).
   static Future<Either<String, Response>> patchData({
     required String url,
     dynamic data,
     Map<String, dynamic>? query,
+    bool keepFieldErrors = false,
   }) async {
     try {
       debugPrint('🚀 PATCH Request: $url');
@@ -129,6 +135,8 @@ class DioHelper {
       );
       return Right(response);
     } on DioException catch (error) {
+      final fields = keepFieldErrors ? fieldErrors(error) : null;
+      if (fields != null) return Left(fields);
       final msg = parseError(error);
       return Left(msg);
     } catch (e) {
@@ -162,6 +170,16 @@ class DioHelper {
     } catch (e) {
       return const Left('something went wrong');
     }
+  }
+
+  /// A `422` with `errors` as `__422__:{"message": …, "errors": {…}}`, so
+  /// [failureFromApiError] can say which fields failed (e.g. `blocks.3.url`).
+  /// The message is what [parseError] shows today. Null for anything else.
+  static String? fieldErrors(DioException error) {
+    final response = error.response;
+    final data = response?.data;
+    if (response?.statusCode != 422 || data is! Map || data['errors'] is! Map) return null;
+    return '__422__:${jsonEncode({'message': parseError(error), 'errors': data['errors']})}';
   }
 
   static String parseError(DioException error) {

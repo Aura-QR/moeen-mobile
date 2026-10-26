@@ -295,6 +295,14 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                       ),
                       horizontalSpace12,
                       HomeActionChipWidget(
+                        icon: Icons.summarize_outlined,
+                        title: appTranslation().get('document_type_report'),
+                        onTap: () => context.push(
+                          token?.isNotEmpty == true ? Routes.reportTools : Routes.login,
+                        ),
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
                         icon: Icons.groups_2_outlined,
                         title: appTranslation().get('classes_title'),
                         onTap: () => context.push(
@@ -351,6 +359,17 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget> w
                           } else {
                             context.push(Routes.login);
                           }
+                        },
+                      ),
+                      horizontalSpace12,
+                      HomeActionChipWidget(
+                        icon: Icons.qr_code_scanner_rounded,
+                        title: appTranslation().get('qr_title'),
+                        onTap: () {
+                          context.push(
+                            Routes.qrCodes,
+                            arguments: token != null && token!.isNotEmpty,
+                          );
                         },
                       ),
                       horizontalSpace12,

@@ -7,6 +7,9 @@ import 'package:moean/core/network/remote/api_endpoints.dart';
 import 'package:moean/core/network/remote/api_response_handler.dart';
 import 'package:moean/core/network/remote/dio_helper.dart';
 import 'package:moean/core/services/storage_client.dart';
+import 'package:moean/features/documents/data/models/document_model.dart';
+import 'package:moean/features/portfolio/data/models/performance_model.dart';
+import 'package:moean/features/portfolio/data/models/portfolio_element_model.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_model.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_roles_model.dart';
 
@@ -107,6 +110,41 @@ class PortfolioRepository {
           'included': ?included,
         }),
         (_) => unit,
+      );
+
+  /// The performance elements and rating scale; they sit beside `data`.
+  Future<Either<Failure, PortfolioElementsModel>> getElements() => handleApiResponse(
+        DioHelper.getData(url: portfolioRolesApi),
+        PortfolioElementsModel.fromJson,
+        unwrapData: false,
+      );
+
+  Future<Either<Failure, PerformanceModel>> getPerformance(int id) => handleApiResponse(
+        DioHelper.getData(url: portfolioPerformanceApi(id)),
+        (data) => PerformanceModel.fromJson(data as Map<String, dynamic>),
+      );
+
+  /// Null clears it, so the key is always sent.
+  Future<Either<Failure, Unit>> setSelfRating(int id, int itemId, int? rating) => handleApiResponse(
+        DioHelper.patchData(url: portfolioItemApi(id, itemId), data: {'self_rating': rating}),
+        (_) => unit,
+      );
+
+  /// The CV fields only: the server merges them into the profile, so phone,
+  /// email and signatures stay as they are.
+  Future<Either<Failure, Unit>> updateCv(int id, Map<String, String?> cv) => handleApiResponse(
+        DioHelper.patchData(url: portfolioApi(id), data: {'profile': cv}),
+        (_) => unit,
+      );
+
+  /// Builds or refreshes the portfolio's `performance_file` document.
+  Future<Either<Failure, int>> exportPerformanceFile(int id, {required bool includeRatings, required String theme}) =>
+      handleApiResponse(
+        DioHelper.postData(
+          url: portfolioPerformanceFileApi(id),
+          data: {'include_ratings': includeRatings, 'theme': theme},
+        ),
+        (data) => DocumentModel.fromJson(data as Map<String, dynamic>).id,
       );
 
   Future<Either<Failure, Unit>> deleteItem(int id, int itemId) => handleApiResponse(

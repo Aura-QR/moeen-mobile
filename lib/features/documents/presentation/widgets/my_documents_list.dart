@@ -6,6 +6,7 @@ import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/documents/data/models/document_model.dart';
 import 'package:moean/features/documents/presentation/cubit/my_documents_cubit.dart';
 import 'package:moean/features/documents/presentation/widgets/document_card_widget.dart';
+import 'package:moean/features/documents/presentation/widgets/document_element_sheet.dart';
 
 /// The documents, loading the next page near the end. Swipe to delete.
 class MyDocumentsList extends StatelessWidget {
@@ -29,7 +30,14 @@ class MyDocumentsList extends StatelessWidget {
 
   Future<void> _onAction(BuildContext context, DocumentModel document, DocumentCardAction action) async {
     final cubit = MyDocumentsCubit.get(context);
-    if (action == DocumentCardAction.duplicate) {
+    if (action == DocumentCardAction.element) {
+      final changed = await DocumentElementSheet.showForDocument(
+        context,
+        documentId: document.id,
+        element: document.element,
+      );
+      if (changed) await cubit.load();
+    } else if (action == DocumentCardAction.duplicate) {
       await cubit.duplicate(document);
     } else if (await _confirmDelete(context)) {
       await cubit.delete(document);

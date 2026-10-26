@@ -63,6 +63,15 @@ String examDetailsApi(int id) => '/exams/$id';
 String examPointsApi(int id) => '/exams/$id/questions/points';
 String examPublishApi(int id) => '/exams/$id/publish';
 
+// Exam Extraction API
+const String examExtractionsApi = '/exam-extractions';
+const String examsFromQuestionsApi = '/exams/from-questions';
+
+// Shared Files & QR Codes API (SHARED_FILES_API.md)
+const String sharedFilesApi = '/shared-files';
+const String sharedFileUploadsApi = '/shared-files/uploads';
+String sharedFileApi(int id) => '/shared-files/$id';
+
 // Search API
 const String searchApi = '/search';
 
@@ -112,6 +121,8 @@ String portfolioItemFileApi(int id, int itemId, int fileId) =>
     '/portfolios/$id/items/$itemId/files/$fileId';
 String portfolioItemDocumentsApi(int id, int itemId) =>
     '/portfolios/$id/items/$itemId/documents';
+String portfolioPerformanceApi(int id) => '/portfolios/$id/performance';
+String portfolioPerformanceFileApi(int id) => '/portfolios/$id/performance-file';
 
 // Teacher Documents API (DOCUMENTS_API.md)
 const String documentDefaultsApi = '/me/document-defaults';
@@ -126,6 +137,8 @@ String documentExportsApi(int id) => '/documents/$id/exports';
 String documentExportApi(int id, int exportId) => '/documents/$id/exports/$exportId';
 
 // Tool catalogues
+const String reportsToolApi = '/tools/reports';
+String reportTemplateApi(String key) => '/tools/reports/$key';
 const String strategiesApi = '/tools/strategies';
 String strategyApi(String key) => '/tools/strategies/$key';
 const String remedialToolApi = '/tools/remedial';

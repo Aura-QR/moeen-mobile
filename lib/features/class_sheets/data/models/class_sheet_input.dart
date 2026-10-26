@@ -79,6 +79,7 @@ class ClassSheetInput {
       );
 
   static const _ownKeys = {
+    'sheet',
     'kind',
     'title',
     'class_name',
@@ -87,6 +88,7 @@ class ClassSheetInput {
     'grade',
     'term',
     'students',
+    'blank_rows',
     'empty_rows',
     'columns',
     'start_date',
@@ -99,13 +101,14 @@ class ClassSheetInput {
     final studentsRaw = json['students'];
     final columnsRaw = json['columns'];
     final headerRaw = json['header'];
-    final emptyRows = int.tryParse('${json['empty_rows']}') ?? 30;
+    final emptyRowsRaw = json['blank_rows'] ?? json['empty_rows'];
+    final emptyRows = int.tryParse('$emptyRowsRaw') ?? 30;
     final studentsList = studentsRaw is List
         ? studentsRaw.map((s) => s.toString().trim()).where((s) => s.isNotEmpty).toList()
         : <String>[];
 
     return ClassSheetInput(
-      kind: json['kind']?.toString() ?? 'grades',
+      kind: (json['sheet'] ?? json['kind'])?.toString() ?? 'grades',
       title: json['title']?.toString() ?? '',
       className: json['class_name']?.toString() ?? '',
       classId: int.tryParse('${json['class_id']}'),
@@ -114,7 +117,7 @@ class ClassSheetInput {
       term: json['term']?.toString() ?? '',
       students: studentsList,
       emptyRows: emptyRows,
-      useEmptyRows: studentsList.isEmpty && json['empty_rows'] != null,
+      useEmptyRows: studentsList.isEmpty && emptyRowsRaw != null,
       columns: columnsRaw is List
           ? columnsRaw.whereType<Map<String, dynamic>>().map(ClassSheetColumn.fromJson).toList()
           : const [],
@@ -136,7 +139,7 @@ class ClassSheetInput {
 
   Map<String, dynamic> toJson() => {
         ...extra,
-        'kind': kind,
+        'sheet': kind,
         if (title.isNotEmpty) 'title': title,
         if (className.isNotEmpty) 'class_name': className,
         if (classId != null) 'class_id': classId,
@@ -144,10 +147,10 @@ class ClassSheetInput {
         if (grade.isNotEmpty) 'grade': grade,
         if (term.isNotEmpty) 'term': term,
         if (useEmptyRows)
-          'empty_rows': emptyRows
+          'blank_rows': emptyRows
         else ...{
           'students': students,
-          if (students.isEmpty) 'empty_rows': emptyRows,
+          if (students.isEmpty) 'blank_rows': emptyRows,
         },
         if (columns.isNotEmpty) 'columns': columns.map((col) => col.toJson()).toList(),
         if (startDate != null) 'start_date': isoDate(startDate!),

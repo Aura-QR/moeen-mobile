@@ -6,7 +6,10 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/documents/data/repositories/documents_repository.dart';
 import 'package:moean/features/documents/data/services/document_file_service.dart';
+import 'package:moean/features/documents/presentation/cubit/document_element_cubit.dart';
 import 'package:moean/features/documents/presentation/cubit/document_export_cubit.dart';
+import 'package:moean/features/documents/presentation/widgets/document_element_tile.dart';
+import 'package:moean/features/portfolio/data/repositories/portfolio_repository.dart';
 import 'package:moean/features/documents/presentation/widgets/document_export_error_widget.dart';
 import 'package:moean/features/documents/presentation/widgets/document_export_option.dart';
 
@@ -14,21 +17,45 @@ import 'package:moean/features/documents/presentation/widgets/document_export_op
 class DocumentExportSheet extends StatelessWidget {
   final bool withExcel;
 
-  const DocumentExportSheet({super.key, this.withExcel = false});
+  /// «يُحسب شاهدًا لـ» at the top; off for the performance file itself.
+  final bool withElement;
 
-  static Future<void> show(BuildContext context, {required int documentId, bool withExcel = false}) {
+  /// A note under the title, e.g. where the file's content comes from.
+  final String? noteKey;
+
+  const DocumentExportSheet({super.key, this.withExcel = false, this.withElement = true, this.noteKey});
+
+  static Future<void> show(
+    BuildContext context, {
+    required int documentId,
+    bool withExcel = false,
+    bool withElement = true,
+    String? noteKey,
+  }) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: ColorsManager.background,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => BlocProvider(
-        create: (_) => DocumentExportCubit(
-          documentId: documentId,
-          repository: DocumentsRepository(),
-          fileService: DocumentFileService(),
-        ),
-        child: DocumentExportSheet(withExcel: withExcel),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => DocumentExportCubit(
+              documentId: documentId,
+              repository: DocumentsRepository(),
+              fileService: DocumentFileService(),
+            ),
+          ),
+          if (withElement)
+            BlocProvider(
+              create: (_) => DocumentElementCubit(
+                documentId: documentId,
+                documents: DocumentsRepository(),
+                portfolios: PortfolioRepository(),
+              )..load(),
+            ),
+        ],
+        child: DocumentExportSheet(withExcel: withExcel, withElement: withElement, noteKey: noteKey),
       ),
     );
   }
@@ -59,6 +86,17 @@ class DocumentExportSheet extends StatelessWidget {
                   appTranslation().get('document_export_title'),
                   style: TextStylesManager.bold18.copyWith(color: ColorsManager.mainText),
                 ),
+                if (noteKey != null) ...[
+                  verticalSpace4,
+                  Text(
+                    appTranslation().get(noteKey!),
+                    style: TextStylesManager.regular13.copyWith(color: ColorsManager.secondaryText),
+                  ),
+                ],
+                if (withElement) ...[
+                  verticalSpace12,
+                  const DocumentElementTile(),
+                ],
                 verticalSpace16,
                 GridView.count(
                   crossAxisCount: 2,
@@ -66,7 +104,7 @@ class DocumentExportSheet extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,
-                  childAspectRatio: 1.35,
+                  childAspectRatio: 1.15,
                   children: [
                     for (final (action, icon, color, key) in _options)
                       if (withExcel || action != DocumentExportAction.excel)

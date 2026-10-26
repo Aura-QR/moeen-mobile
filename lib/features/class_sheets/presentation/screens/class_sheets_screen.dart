@@ -186,23 +186,58 @@ class ClassSheetsScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: ColorsManager.surfacePrimary,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: ColorsManager.borderLightGray),
+                      border: Border.all(color: ColorsManager.borderColor, width: 1.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.remove_red_eye_outlined, color: ColorsManager.primaryColor, size: 20),
-                            horizontalSpace8,
-                            Text(
-                              appTranslation().get('sheets_preview'),
-                              style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
+                            Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: ColorsManager.primaryColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(9),
+                              ),
+                              child: Icon(
+                                Icons.remove_red_eye_outlined,
+                                color: ColorsManager.primaryColor,
+                                size: 18,
+                              ),
                             ),
-                            const Spacer(),
-                            TextButton(
+                            horizontalSpace10,
+                            Expanded(
+                              child: Text(
+                                appTranslation().get('sheets_preview'),
+                                style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
+                              ),
+                            ),
+                            TextButton.icon(
                               onPressed: () => _showPreview(context, state),
-                              child: const Text('تكبير المعاينة'),
+                              style: TextButton.styleFrom(
+                                backgroundColor: ColorsManager.primaryColor.withValues(alpha: 0.08),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              icon: Icon(
+                                Icons.zoom_out_map_rounded,
+                                size: 15,
+                                color: ColorsManager.primaryColor,
+                              ),
+                              label: Text(
+                                'تكبير المعاينة',
+                                style: TextStylesManager.bold12.copyWith(color: ColorsManager.primaryColor),
+                              ),
                             ),
                           ],
                         ),

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:moean/core/models/upload_models.dart';
@@ -48,6 +50,36 @@ class DeviceFilePicker {
       bytes: file.bytes!,
       name: file.name,
       mime: DevicePickedFile.mimeFromName(file.name),
+    );
+  }
+
+  Future<DevicePickedPath?> pickFilePath(List<String> extensions) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: extensions,
+      withData: false,
+    );
+    final file = result?.files.single;
+    if (file == null || file.path == null) return null;
+
+    return DevicePickedPath(
+      path: file.path!,
+      name: file.name,
+      byteSize: file.size,
+    );
+  }
+
+  Future<DevicePickedPath?> pickMediaPath() async {
+    final media = await _imagePicker.pickMedia();
+    if (media == null) return null;
+
+    final ioFile = File(media.path);
+    final size = await ioFile.length();
+
+    return DevicePickedPath(
+      path: media.path,
+      name: media.name,
+      byteSize: size,
     );
   }
 }

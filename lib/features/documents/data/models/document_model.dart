@@ -18,6 +18,10 @@ abstract final class DocumentTypes {
   static const String certificates = 'certificates';
   static const String classSheet = 'class_sheet';
   static const String lessonPreparation = 'lesson_preparation';
+  static const String report = 'report';
+
+  /// Made by the server from a portfolio (T9); it has no form.
+  static const String performanceFile = 'performance_file';
 
   static const List<String> all = [
     strategyDocumentation,
@@ -28,6 +32,8 @@ abstract final class DocumentTypes {
     certificates,
     classSheet,
     lessonPreparation,
+    report,
+    performanceFile,
   ];
 
   static String labelKey(String type) => 'document_type_$type';
@@ -35,6 +41,9 @@ abstract final class DocumentTypes {
   /// Tools whose tables matter, so their export offers Excel.
   static bool hasExcel(String type) => type == classSheet || type == gradeAnalysis;
 }
+
+/// The `element` value that keeps a document out of the performance file.
+const String noDocumentElement = 'none';
 
 /// A photo in `input.images`, with its signed URL once saved.
 class DocumentImageModel {
@@ -61,6 +70,9 @@ class DocumentModel {
   final String type;
   final String title;
   final String status;
+
+  /// The portfolio element this document is evidence for (T9), or null.
+  final String? element;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -77,6 +89,7 @@ class DocumentModel {
     required this.type,
     required this.title,
     required this.status,
+    this.element,
     this.createdAt,
     this.updatedAt,
     this.input = const {},
@@ -96,6 +109,7 @@ class DocumentModel {
       type: json['type']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
       status: json['status']?.toString() ?? DocumentStatus.draft,
+      element: json['element']?.toString(),
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
       updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? ''),
       input: input is Map<String, dynamic> ? input : const {},

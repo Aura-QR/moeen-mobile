@@ -41,6 +41,24 @@ class DevicePickedFile {
   }
 }
 
+/// A picked file read from disk when uploaded, for files too big to hold in memory.
+class DevicePickedPath {
+  final String path;
+  final String name;
+  final int byteSize;
+
+  const DevicePickedPath({
+    required this.path,
+    required this.name,
+    required this.byteSize,
+  });
+
+  String get extension {
+    final dot = name.lastIndexOf('.');
+    return dot >= 0 ? name.substring(dot + 1).toLowerCase() : '';
+  }
+}
+
 /// Step 1 of an upload: a signed R2 URL to PUT the bytes to.
 class StorageUploadTicketModel {
   final String uploadUrl;

@@ -29,79 +29,101 @@ class SheetKindModel {
   });
 
   factory SheetKindModel.fromJson(Map<String, dynamic> json) {
-    final key = json['key']?.toString() ?? '';
+    final key = (json['key'] ?? json['sheet'] ?? json['id'])?.toString() ?? '';
+    final rawLabel = json['label']?.toString().trim() ?? '';
+    final rawDesc = json['description']?.toString().trim() ?? '';
+    final kindType = _typeFor(key, rawLabel);
     final defaultCols = (json['default_columns'] as List<dynamic>?)
             ?.whereType<Map<String, dynamic>>()
             .map(ClassSheetColumn.fromJson)
             .toList() ??
-        _defaultColumnsFor(key);
+        _defaultColumnsFor(kindType);
 
     return SheetKindModel(
       key: key,
-      label: json['label']?.toString() ?? _defaultLabelFor(key),
-      description: json['description']?.toString() ?? _defaultDescFor(key),
-      icon: _iconFor(key),
-      kindType: _typeFor(key),
-      isLandscape: json['is_landscape'] as bool? ?? (key == 'attendance'),
+      label: rawLabel.isNotEmpty ? rawLabel : _defaultLabelFor(kindType),
+      description: rawDesc.isNotEmpty ? rawDesc : _defaultDescFor(kindType),
+      icon: _iconFor(kindType),
+      kindType: kindType,
+      isLandscape: json['is_landscape'] as bool? ?? (kindType == SheetKindType.attendance),
       defaultColumns: defaultCols,
     );
   }
 
-  static SheetKindType _typeFor(String key) => switch (key) {
-        'attendance' => SheetKindType.attendance,
-        'daily_follow_up' || 'follow_up' => SheetKindType.dailyFollowUp,
-        'skills' => SheetKindType.skills,
-        'blank' || 'custom' => SheetKindType.blank,
-        _ => SheetKindType.grades,
+  static SheetKindType _typeFor(String key, [String label = '']) {
+    final k = key.toLowerCase().replaceAll('-', '_').trim();
+    if (k.contains('attend') || label.contains('حضور') || label.contains('غياب')) {
+      return SheetKindType.attendance;
+    }
+    if (k.contains('follow') ||
+        k.contains('daily') ||
+        k.contains('monitor') ||
+        k.contains('track') ||
+        label.contains('متابع')) {
+      return SheetKindType.dailyFollowUp;
+    }
+    if (k.contains('skill') || k.contains('standard') || label.contains('مهار')) {
+      return SheetKindType.skills;
+    }
+    if (k.contains('blank') ||
+        k.contains('custom') ||
+        k.contains('empty') ||
+        k.contains('general') ||
+        label.contains('مخصص') ||
+        label.contains('فارغ') ||
+        label.contains('عام')) {
+      return SheetKindType.blank;
+    }
+    return SheetKindType.grades;
+  }
+
+  static IconData _iconFor(SheetKindType type) => switch (type) {
+        SheetKindType.attendance => Icons.event_available_outlined,
+        SheetKindType.dailyFollowUp => Icons.fact_check_outlined,
+        SheetKindType.skills => Icons.checklist_rtl_rounded,
+        SheetKindType.blank => Icons.grid_on_rounded,
+        SheetKindType.grades => Icons.format_list_numbered_rounded,
       };
 
-  static IconData _iconFor(String key) => switch (key) {
-        'attendance' => Icons.event_available_outlined,
-        'daily_follow_up' || 'follow_up' => Icons.fact_check_outlined,
-        'skills' => Icons.checklist_rtl_rounded,
-        'blank' || 'custom' => Icons.grid_on_rounded,
-        _ => Icons.format_list_numbered_rounded,
+  static String _defaultLabelFor(SheetKindType type) => switch (type) {
+        SheetKindType.attendance => 'sheets_kind_attendance',
+        SheetKindType.dailyFollowUp => 'sheets_kind_daily_follow_up',
+        SheetKindType.skills => 'sheets_kind_skills',
+        SheetKindType.blank => 'sheets_kind_blank',
+        SheetKindType.grades => 'sheets_kind_grades',
       };
 
-  static String _defaultLabelFor(String key) => switch (key) {
-        'attendance' => 'sheets_kind_attendance',
-        'daily_follow_up' || 'follow_up' => 'sheets_kind_daily_follow_up',
-        'skills' => 'sheets_kind_skills',
-        'blank' || 'custom' => 'sheets_kind_blank',
-        _ => 'sheets_kind_grades',
+  static String _defaultDescFor(SheetKindType type) => switch (type) {
+        SheetKindType.attendance => 'sheets_kind_attendance_desc',
+        SheetKindType.dailyFollowUp => 'sheets_kind_daily_follow_up_desc',
+        SheetKindType.skills => 'sheets_kind_skills_desc',
+        SheetKindType.blank => 'sheets_kind_blank_desc',
+        SheetKindType.grades => 'sheets_kind_grades_desc',
       };
 
-  static String _defaultDescFor(String key) => switch (key) {
-        'attendance' => 'sheets_kind_attendance_desc',
-        'daily_follow_up' || 'follow_up' => 'sheets_kind_daily_follow_up_desc',
-        'skills' => 'sheets_kind_skills_desc',
-        'blank' || 'custom' => 'sheets_kind_blank_desc',
-        _ => 'sheets_kind_grades_desc',
-      };
-
-  static List<ClassSheetColumn> _defaultColumnsFor(String key) => switch (key) {
-        'attendance' => const [],
-        'daily_follow_up' || 'follow_up' => const [
+  static List<ClassSheetColumn> _defaultColumnsFor(SheetKindType type) => switch (type) {
+        SheetKindType.attendance => const [],
+        SheetKindType.dailyFollowUp => const [
             ClassSheetColumn(label: 'المشاركة'),
             ClassSheetColumn(label: 'الواجبات'),
             ClassSheetColumn(label: 'المهام الأدائية'),
             ClassSheetColumn(label: 'ملاحظات'),
           ],
-        'skills' => const [
+        SheetKindType.skills => const [
             ClassSheetColumn(label: 'المهارة 1'),
             ClassSheetColumn(label: 'المهارة 2'),
             ClassSheetColumn(label: 'المهارة 3'),
             ClassSheetColumn(label: 'المهارة 4'),
             ClassSheetColumn(label: 'التقييم العام'),
           ],
-        'blank' || 'custom' => const [
+        SheetKindType.blank => const [
             ClassSheetColumn(label: 'عمود 1'),
             ClassSheetColumn(label: 'عمود 2'),
             ClassSheetColumn(label: 'عمود 3'),
             ClassSheetColumn(label: 'عمود 4'),
             ClassSheetColumn(label: 'عمود 5'),
           ],
-        _ => const [
+        SheetKindType.grades => const [
             ClassSheetColumn(label: 'المشاركة', max: 10),
             ClassSheetColumn(label: 'الواجبات', max: 10),
             ClassSheetColumn(label: 'المهام الأدائية', max: 10),

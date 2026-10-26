@@ -10,12 +10,13 @@ import 'package:moean/features/documents/presentation/widgets/document_add_image
 import 'package:moean/features/documents/presentation/widgets/document_image_tile.dart';
 import 'package:moean/core/utils/constants/primary/primary_section_card.dart';
 
-/// «الشواهد»: up to six photos from the camera or the gallery.
+/// «الشواهد»: up to [maxImages] photos from the camera or the gallery.
 class DocumentImagesSection extends StatelessWidget {
   final List<DocumentImageModel> images;
   final bool isUploading;
   final ValueChanged<DeviceFileSource> onPick;
   final ValueChanged<int> onRemove;
+  final int maxImages;
 
   const DocumentImagesSection({
     super.key,
@@ -23,6 +24,7 @@ class DocumentImagesSection extends StatelessWidget {
     required this.isUploading,
     required this.onPick,
     required this.onRemove,
+    this.maxImages = DocumentUploadRules.maxImagesPerDocument,
   });
 
   Future<void> _add(BuildContext context) async {
@@ -36,12 +38,12 @@ class DocumentImagesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canAdd = images.length < DocumentUploadRules.maxImagesPerDocument;
+    final canAdd = images.length < maxImages;
     return PrimarySectionCard(
       icon: Icons.photo_library_outlined,
       title: appTranslation().get('document_section_images'),
       trailing: Text(
-        '${images.length}/${DocumentUploadRules.maxImagesPerDocument}',
+        '${images.length}/$maxImages',
         style: TextStylesManager.medium12.copyWith(color: ColorsManager.secondaryText),
       ),
       child: GridView.count(

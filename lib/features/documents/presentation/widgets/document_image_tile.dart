@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/features/documents/data/models/document_model.dart';
+import 'package:moean/features/documents/presentation/widgets/document_image_preview.dart';
 
 /// A photo in «الشواهد», with a remove button.
 class DocumentImageTile extends StatelessWidget {
@@ -11,23 +12,12 @@ class DocumentImageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bytes = image.bytes;
-    final url = image.url;
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          ColoredBox(color: ColorsManager.primaryColor.withValues(alpha: 0.06)),
-          if (bytes != null)
-            Image.memory(bytes, fit: BoxFit.cover, cacheWidth: 400)
-          else if (url != null && url.isNotEmpty)
-            Image.network(
-              url,
-              fit: BoxFit.cover,
-              cacheWidth: 400,
-              errorBuilder: (_, _, _) => Icon(Icons.broken_image_outlined, color: ColorsManager.secondaryText),
-            ),
+          DocumentImagePreview(image: image),
           PositionedDirectional(
             top: 6,
             end: 6,

@@ -3,6 +3,7 @@ import 'package:moean/core/models/upload_models.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/documents/data/models/document_model.dart';
 import 'package:moean/features/documents/data/models/document_theme.dart';
+import 'package:moean/features/documents/data/models/document_upload_rules.dart';
 import 'package:moean/features/documents/presentation/widgets/document_images_section.dart';
 import 'package:moean/features/documents/presentation/widgets/document_status_dropdown.dart';
 import 'package:moean/features/documents/presentation/widgets/document_theme_picker.dart';
@@ -17,6 +18,7 @@ class DocumentMediaAndDesignSections extends StatelessWidget {
   final ValueChanged<String> onStatusChanged;
   final DocumentTheme theme;
   final ValueChanged<DocumentTheme> onThemeChanged;
+  final int maxImages;
 
   const DocumentMediaAndDesignSections({
     super.key,
@@ -28,6 +30,7 @@ class DocumentMediaAndDesignSections extends StatelessWidget {
     required this.onStatusChanged,
     required this.theme,
     required this.onThemeChanged,
+    this.maxImages = DocumentUploadRules.maxImagesPerDocument,
   });
 
   @override
@@ -40,6 +43,7 @@ class DocumentMediaAndDesignSections extends StatelessWidget {
           isUploading: isUploading,
           onPick: onPickImage,
           onRemove: onRemoveImage,
+          maxImages: maxImages,
         ),
         verticalSpace14,
         DocumentStatusDropdown(

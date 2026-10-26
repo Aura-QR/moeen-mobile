@@ -204,7 +204,6 @@ class ClassSheetsCubit extends Cubit<ClassSheetsState> {
 
   void reorderColumns(int oldIndex, int newIndex) {
     final cols = List<ClassSheetColumn>.from(state.input.columns);
-    if (oldIndex < newIndex) newIndex -= 1;
     final item = cols.removeAt(oldIndex);
     cols.insert(newIndex, item);
 

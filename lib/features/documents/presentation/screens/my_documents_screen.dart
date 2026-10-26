@@ -13,6 +13,7 @@ import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/documents/data/models/document_model.dart';
 import 'package:moean/features/documents/presentation/cubit/my_documents_cubit.dart';
 import 'package:moean/features/documents/presentation/document_tools.dart';
+import 'package:moean/features/documents/presentation/widgets/document_export_sheet.dart';
 import 'package:moean/features/documents/presentation/widgets/document_type_filter_bar.dart';
 import 'package:moean/features/documents/presentation/widgets/my_documents_list.dart';
 import 'package:moean/features/documents/presentation/widgets/new_document_sheet.dart';
@@ -29,6 +30,16 @@ class MyDocumentsScreen extends StatelessWidget {
   }
 
   void _open(BuildContext context, DocumentModel document) {
+    // Built from the portfolio, so there's no form: only its files.
+    if (document.type == DocumentTypes.performanceFile) {
+      DocumentExportSheet.show(
+        context,
+        documentId: document.id,
+        withElement: false,
+        noteKey: 'performance_file_note',
+      );
+      return;
+    }
     final tool = documentToolFor(document.type);
     if (tool == null) {
       showPrimarySnackBar(context, 'document_type_unsupported');

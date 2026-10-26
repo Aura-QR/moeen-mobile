@@ -15,8 +15,9 @@ import 'package:moean/features/portfolio/presentation/widgets/portfolio_files_st
 
 class PortfolioItemCardWidget extends StatelessWidget {
   final PortfolioItemModel item;
+  final bool initiallyExpanded;
 
-  const PortfolioItemCardWidget({super.key, required this.item});
+  const PortfolioItemCardWidget({super.key, required this.item, this.initiallyExpanded = false});
 
   /// Standard items only allow editing the description.
   Future<void> _edit(BuildContext context) async {
@@ -58,6 +59,7 @@ class PortfolioItemCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final muted = item.included ? ColorsManager.mainText : ColorsManager.secondaryText;
     return PortfolioExpandableCardWidget(
+      initiallyExpanded: initiallyExpanded,
       leading: Checkbox(
         value: item.included,
         activeColor: ColorsManager.primaryColor,

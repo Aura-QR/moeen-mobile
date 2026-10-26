@@ -57,6 +57,11 @@ const List<DocumentTool> documentTools = [
     icon: Icons.print_outlined,
     route: Routes.preparationPrint,
   ),
+  DocumentTool(
+    type: DocumentTypes.report,
+    icon: Icons.summarize_outlined,
+    route: Routes.reportEditor,
+  ),
 ];
 
 DocumentTool? documentToolFor(String type) => documentTools.where((tool) => tool.type == type).firstOrNull;

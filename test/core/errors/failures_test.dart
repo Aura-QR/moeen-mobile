@@ -26,6 +26,19 @@ void main() {
       expect((failure as PaymentRequiredFailure).code, 'subscription_required');
     });
 
+    test('turns a kept 422 into ValidationFailure with its field keys', () {
+      final failure = failureFromApiError(
+        '__422__:{"message":"الرابط غير صالح","errors":{"input.blocks.2.url":["الرابط غير صالح"]}}',
+      );
+      expect(failure, isA<ValidationFailure>());
+      expect(failure.message, 'الرابط غير صالح');
+      expect((failure as ValidationFailure).errors.keys, ['input.blocks.2.url']);
+    });
+
+    test('a broken kept 422 falls back to the generic key', () {
+      expect(failureFromApiError('__422__:{oops').message, 'generic_error');
+    });
+
     test('marks Unauthenticated as UnauthorizedFailure', () {
       expect(failureFromApiError('Unauthenticated'), isA<UnauthorizedFailure>());
     });
