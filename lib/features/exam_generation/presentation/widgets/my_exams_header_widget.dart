@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
-import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
-import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/features/exam_generation/presentation/widgets/my_exams_entry_tile.dart';
+import 'package:moean/features/exam_generation/presentation/widgets/my_exams_filter_tab.dart';
+import 'package:moean/features/exam_generation/presentation/widgets/my_exams_search_field.dart';
 
 class MyExamsHeaderWidget extends StatelessWidget {
   final String selectedTab;
-  final Function(String) onTabChanged;
-  final Function(String) onSearchChanged;
+  final ValueChanged<String> onTabChanged;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onExtractExamTap;
+  final VoidCallback onDiagnosticTestTap;
 
   const MyExamsHeaderWidget({
     super.key,
     required this.selectedTab,
     required this.onTabChanged,
     required this.onSearchChanged,
+    required this.onExtractExamTap,
+    required this.onDiagnosticTestTap,
   });
 
   @override
@@ -29,100 +34,46 @@ class MyExamsHeaderWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
-            onTap: () => Navigator.pushNamed(context, Routes.examExtraction),
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: ColorsManager.primaryColor.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: ColorsManager.primaryColor.withValues(alpha: 0.25),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.document_scanner_outlined,
-                    color: ColorsManager.primaryColor,
-                    size: 20,
-                  ),
-                  horizontalSpace10,
-                  Expanded(
-                    child: Text(
-                      appTranslation().get('exam_extract_entry'),
-                      style: TextStylesManager.bold13.copyWith(
-                        color: ColorsManager.primaryColor,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: ColorsManager.primaryColor,
-                  ),
-                ],
-              ),
-            ),
+          MyExamsEntryTile(
+            icon: Icons.document_scanner_outlined,
+            title: appTranslation().get('exam_extract_entry'),
+            onTap: onExtractExamTap,
+          ),
+          verticalSpace8,
+          MyExamsEntryTile(
+            icon: Icons.track_changes_rounded,
+            title: appTranslation().get('diagnostic_title'),
+            onTap: onDiagnosticTestTap,
           ),
           verticalSpace12,
-          Container(
-            height: 48,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: TextField(
-              onChanged: onSearchChanged,
-              style: TextStylesManager.bold14.copyWith(color: ColorsManager.mainText),
-              decoration: InputDecoration(
-                hintText: appTranslation().get('search_exam_title'),
-                hintStyle: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
-                prefixIcon: Icon(Icons.search, color: ColorsManager.secondaryText),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-            ),
-          ),
-          verticalSpace16,
+          MyExamsSearchField(onChanged: onSearchChanged),
+          verticalSpace12,
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildTab('all', appTranslation().get('all')),
+                MyExamsFilterTab(
+                  label: appTranslation().get('all'),
+                  isSelected: selectedTab == 'all',
+                  onTap: () => onTabChanged('all'),
+                ),
                 horizontalSpace8,
-                _buildTab('draft', appTranslation().get('draft')),
+                MyExamsFilterTab(
+                  label: appTranslation().get('draft'),
+                  isSelected: selectedTab == 'draft',
+                  onTap: () => onTabChanged('draft'),
+                ),
                 horizontalSpace8,
-                _buildTab('published', appTranslation().get('published')),
+                MyExamsFilterTab(
+                  label: appTranslation().get('published'),
+                  isSelected: selectedTab == 'published',
+                  onTap: () => onTabChanged('published'),
+                ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTab(String tabKey, String label) {
-    final isSelected = selectedTab == tabKey;
-    return GestureDetector(
-      onTap: () => onTabChanged(tabKey),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? ColorsManager.primaryColor : ColorsManager.surfacePrimary,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? ColorsManager.primaryColor : ColorsManager.borderLightGray,
-          ),
-        ),
-        child: Text(
-          label,
-          style: isSelected
-              ? TextStylesManager.bold14.copyWith(color: Colors.white)
-              : TextStylesManager.medium14.copyWith(color: ColorsManager.mainText),
-        ),
       ),
     );
   }

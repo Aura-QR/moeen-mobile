@@ -330,7 +330,7 @@ class Routes {
       child: const QuestionCountsScreen(),
     ),
     myExams: (context) => BlocProvider(
-      create: (_) => sl<MyExamsCubit>(),
+      create: (_) => sl<MyExamsCubit>()..fetchExams(isRefresh: true),
       child: const MyExamsScreen(),
     ),
     customQuestions: (context) => BlocProvider(

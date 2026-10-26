@@ -4,16 +4,30 @@ import 'package:moean/core/network/remote/api_endpoints.dart';
 import 'package:moean/core/network/remote/api_response_handler.dart';
 import 'package:moean/core/network/remote/dio_helper.dart';
 import 'package:moean/features/diagnostic_test/data/models/diagnostic_models.dart';
+import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
 
 class DiagnosticRepository {
   Map<String, dynamic> _map(dynamic data) => Map<String, dynamic>.from(data as Map);
+
+  Future<Either<Failure, List<CurriculumStageModel>>> getStages() => handleApiResponse(
+        DioHelper.getData(url: subjectsApi),
+        (data) => (data is List ? data : const [])
+            .whereType<Map>()
+            .map((e) => CurriculumStageModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList(),
+      );
 
   Future<Either<Failure, DiagnosticSource>> getSource(int subjectId) => handleApiResponse(
         DioHelper.getData(url: '$diagnosticTestsApi/source', query: {'subject_id': subjectId}),
         (data) => DiagnosticSource.fromJson(_map(data)),
       );
 
-  Future<Either<Failure, DiagnosticJob>> start({required int subjectId, required int skills, required int perSkill, String notes = ''}) =>
+  Future<Either<Failure, DiagnosticJob>> start({
+    required int subjectId,
+    required int skills,
+    required int perSkill,
+    String notes = '',
+  }) =>
       handleApiResponse(
         DioHelper.postData(url: diagnosticTestsApi, data: {
           'subject_id': subjectId,
@@ -30,7 +44,12 @@ class DiagnosticRepository {
       );
 
   /// Returns the new exam's id.
-  Future<Either<Failure, int>> save({required int subjectId, required String title, required List<DiagnosticSkill> skills}) => handleApiResponse(
+  Future<Either<Failure, int>> save({
+    required int subjectId,
+    required String title,
+    required List<DiagnosticSkill> skills,
+  }) =>
+      handleApiResponse(
         DioHelper.postData(url: '$diagnosticTestsApi/save', data: {
           'subject_id': subjectId,
           'title': title,

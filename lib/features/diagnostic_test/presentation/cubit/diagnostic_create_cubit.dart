@@ -2,72 +2,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/features/diagnostic_test/data/models/diagnostic_models.dart';
 import 'package:moean/features/diagnostic_test/data/repositories/diagnostic_repository.dart';
+import 'package:moean/features/diagnostic_test/presentation/cubit/diagnostic_create_state.dart';
+import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
 
-enum DiagnosticStep { pick, writing, review }
+export 'package:moean/features/diagnostic_test/presentation/cubit/diagnostic_create_state.dart';
 
-class DiagnosticCreateState {
-  final DiagnosticStep step;
-  final int? subjectId;
-  final String subjectLabel;
-  final DiagnosticSource? source;
-  final int skillsCount;
-  final int perSkill;
-  final List<DiagnosticSkill> skills;
-  final String title;
-  final bool isSaving;
-  final String? error;
-
-  /// Set once saved; the screen leaves.
-  final int? savedExamId;
-
-  const DiagnosticCreateState({
-    this.step = DiagnosticStep.pick,
-    this.subjectId,
-    this.subjectLabel = '',
-    this.source,
-    this.skillsCount = 5,
-    this.perSkill = 3,
-    this.skills = const [],
-    this.title = '',
-    this.isSaving = false,
-    this.error,
-    this.savedExamId,
-  });
-
-  int get questionsCount => skills.fold(0, (n, s) => n + s.questions.length);
-  bool get allComplete => skills.every((s) => s.name.trim().isNotEmpty && s.questions.every((q) => q.isComplete));
-
-  DiagnosticCreateState copyWith({
-    DiagnosticStep? step,
-    int? subjectId,
-    String? subjectLabel,
-    DiagnosticSource? source,
-    bool clearSource = false,
-    int? skillsCount,
-    int? perSkill,
-    List<DiagnosticSkill>? skills,
-    String? title,
-    bool? isSaving,
-    String? error,
-    bool clearError = false,
-    int? savedExamId,
-  }) =>
-      DiagnosticCreateState(
-        step: step ?? this.step,
-        subjectId: subjectId ?? this.subjectId,
-        subjectLabel: subjectLabel ?? this.subjectLabel,
-        source: clearSource ? null : source ?? this.source,
-        skillsCount: skillsCount ?? this.skillsCount,
-        perSkill: perSkill ?? this.perSkill,
-        skills: skills ?? this.skills,
-        title: title ?? this.title,
-        isSaving: isSaving ?? this.isSaving,
-        error: clearError ? null : error ?? this.error,
-        savedExamId: savedExamId ?? this.savedExamId,
-      );
-}
-
-/// Subject → the AI writes skills and questions → the teacher reviews → a diagnostic exam.
+/// Stage → Grade → Subject → AI writes skills and questions → teacher reviews → diagnostic exam.
 class DiagnosticCreateCubit extends Cubit<DiagnosticCreateState> {
   final DiagnosticRepository _repository;
   final Duration pollEvery;
@@ -76,21 +16,99 @@ class DiagnosticCreateCubit extends Cubit<DiagnosticCreateState> {
 
   static DiagnosticCreateCubit get(BuildContext context) => BlocProvider.of(context);
 
-  Future<void> pickSubject(int id, String label) async {
-    emit(state.copyWith(subjectId: id, subjectLabel: label, clearSource: true, clearError: true));
+  static int _stageWeight(String name) {
+    if (name.contains('الابتدائية')) return 1;
+    if (name.contains('المتوسطة')) return 2;
+    if (name.contains('الثانوية')) return 3;
+    return 4;
+  }
+
+  static List<CurriculumStageModel> _sortStages(List<CurriculumStageModel> items) =>
+      [...items]..sort((a, b) => _stageWeight(a.name).compareTo(_stageWeight(b.name)));
+
+  Future<void> loadStages() async {
+    emit(state.copyWith(isStagesLoading: true, clearStagesError: true));
+    final result = await _repository.getStages();
+    if (isClosed) return;
+    result.fold(
+      (failure) => emit(state.copyWith(isStagesLoading: false, stagesError: failure.message)),
+      (stages) => emit(state.copyWith(isStagesLoading: false, stages: _sortStages(stages))),
+    );
+  }
+
+  void selectStage(CurriculumStageModel stage) {
+    if (state.selectedStage?.id == stage.id) return;
+    emit(state.copyWith(
+      selectedStage: stage,
+      clearTrack: true,
+      clearGrade: true,
+      clearSubject: true,
+      isSourceLoading: false,
+      clearSource: true,
+      clearError: true,
+    ));
+  }
+
+  void selectTrack(String track) {
+    if (state.selectedTrack == track) return;
+    emit(state.copyWith(
+      selectedTrack: track,
+      clearGrade: true,
+      clearSubject: true,
+      isSourceLoading: false,
+      clearSource: true,
+      clearError: true,
+    ));
+  }
+
+  void selectGrade(CurriculumGradeModel grade) {
+    if (state.selectedGrade?.id == grade.id) return;
+    emit(state.copyWith(
+      selectedGrade: grade,
+      clearSubject: true,
+      isSourceLoading: false,
+      clearSource: true,
+      clearError: true,
+    ));
+  }
+
+  Future<void> selectSubject(CurriculumSubjectModel subject) {
+    final gradeName = state.selectedGrade?.name ?? '';
+    final label = gradeName.isNotEmpty ? '${subject.name} — $gradeName' : subject.name;
+    return pickSubject(subject.id, label, subject: subject);
+  }
+
+  Future<void> pickSubject(int id, String label, {CurriculumSubjectModel? subject}) async {
+    emit(state.copyWith(
+      selectedSubject: subject,
+      subjectId: id,
+      subjectLabel: label,
+      isSourceLoading: true,
+      clearSource: true,
+      clearError: true,
+    ));
     final result = await _repository.getSource(id);
     if (isClosed || state.subjectId != id) return;
-    result.fold((_) {}, (source) => emit(state.copyWith(source: source)));
+    result.fold(
+      (_) => emit(state.copyWith(isSourceLoading: false)),
+      (source) => emit(state.copyWith(isSourceLoading: false, source: source)),
+    );
   }
 
   void setSkillsCount(int v) => emit(state.copyWith(skillsCount: v));
   void setPerSkill(int v) => emit(state.copyWith(perSkill: v));
+  void setNotes(String v) => emit(state.copyWith(notes: v));
 
-  Future<void> generate({String notes = ''}) async {
+  Future<void> generate({String? notes}) async {
     final subjectId = state.subjectId;
     if (subjectId == null || state.step == DiagnosticStep.writing) return;
     emit(state.copyWith(step: DiagnosticStep.writing, clearError: true));
-    final started = await _repository.start(subjectId: subjectId, skills: state.skillsCount, perSkill: state.perSkill, notes: notes);
+    final started = await _repository.start(
+      subjectId: subjectId,
+      skills: state.skillsCount,
+      perSkill: state.perSkill,
+      notes: notes ?? state.notes,
+    );
     if (isClosed) return;
     var job = started.fold((f) {
       emit(state.copyWith(step: DiagnosticStep.pick, error: f.message));
@@ -142,7 +160,11 @@ class DiagnosticCreateCubit extends Cubit<DiagnosticCreateState> {
     if (kept.isEmpty) return emit(state.copyWith(error: 'diagnostic_no_skills'));
     if (!kept.every((s) => s.questions.every((q) => q.isComplete))) return emit(state.copyWith(error: 'diagnostic_missing_answers'));
     emit(state.copyWith(isSaving: true, clearError: true));
-    final result = await _repository.save(subjectId: subjectId, title: state.title.trim().isEmpty ? 'اختبار تشخيصي' : state.title.trim(), skills: kept);
+    final result = await _repository.save(
+      subjectId: subjectId,
+      title: state.title.trim().isEmpty ? 'اختبار تشخيصي' : state.title.trim(),
+      skills: kept,
+    );
     if (isClosed) return;
     result.fold(
       (f) => emit(state.copyWith(isSaving: false, error: f.message)),

@@ -8,6 +8,7 @@ import 'package:moean/features/diagnostic_test/presentation/cubit/diagnosis_cubi
 import 'package:moean/features/diagnostic_test/presentation/cubit/diagnostic_create_cubit.dart';
 import 'package:moean/features/documents/data/models/document_model.dart';
 import 'package:moean/features/documents/data/repositories/documents_repository.dart';
+import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
 
 class MockDiagnosticRepository extends Mock implements DiagnosticRepository {}
 
@@ -25,7 +26,17 @@ const _skill = DiagnosticSkill(name: 'جدول الضرب', lessonIds: [3], ques
 Diagnosis _diagnosis() => Diagnosis.fromJson({
       'thresholds': {'weak_below': 60, 'strong_from': 90},
       'skills': [
-        {'name': 'الجمع', 'mastery': 80, 'groups': [{'id': 1, 'name': 'رابع 1', 'mastery': 100}, {'id': 2, 'name': 'رابع 2', 'mastery': 50}], 'weak_students': [{'submission_id': 9, 'name': 'سالم', 'mastery': 50}]},
+        {
+          'name': 'الجمع',
+          'mastery': 80,
+          'groups': [
+            {'id': 1, 'name': 'رابع 1', 'mastery': 100},
+            {'id': 2, 'name': 'رابع 2', 'mastery': 50},
+          ],
+          'weak_students': [
+            {'submission_id': 9, 'name': 'سالم', 'mastery': 50},
+          ],
+        },
         {'name': 'الضرب', 'mastery': 33.3, 'groups': [], 'weak_students': []},
       ],
       'students': [
@@ -46,6 +57,74 @@ void main() {
       expect(_skill.toJson()['questions'][1]['options'], isEmpty);
     });
 
+    test('AI-generated questions normalize mcq options/answers and true_false variants so they are immediately complete', () {
+      final job = DiagnosticJob.fromJson({
+        'id': 10,
+        'status': 'done',
+        'result': {
+          'skills': [
+            {
+              'name': 'حساب المساحة',
+              'lesson_ids': [1, 2],
+              'questions': [
+                {
+                  'type': 'mcq',
+                  'question_text': 'مستطيل طوله 6 سم وعرضه 2 سم، ما مساحته؟',
+                  'options': ['12 سم مربع ', '8 سم مربع', '16 سم مربع', '4 سم مربع'],
+                  'correct_answer': 'أ) 12 سم مربع',
+                },
+                {
+                  'type': 'mcq',
+                  'question_text': 'مربع طول ضلعه 3 سم، مساحته:',
+                  'options': ['6 سم مربع', '9 سم مربع', '12 سم مربع'],
+                  'correct_answer': 'ب',
+                },
+                {
+                  'type': 'mcq',
+                  'question_text': 'سؤال بخيار صحيح خارج القائمة:',
+                  'options': ['خاطئ 1', 'خاطئ 2', 'خاطئ 3'],
+                  'correct_answer': 'الإجابة الصحيحة',
+                },
+                {
+                  'type': 'mcq',
+                  'question_text': 'سؤال بدون إجابة محددة من الذكاء:',
+                  'options': ['الخيار الأول', 'الخيار الثاني'],
+                  'correct_answer': '',
+                },
+                {
+                  'type': 'true_false',
+                  'question_text': 'مساحة المستطيل = الطول × العرض',
+                  'correct_answer': true,
+                },
+                {
+                  'type': 'true_false',
+                  'question_text': 'مساحة المربع = الطول + العرض',
+                  'correct_answer': 'خطا',
+                },
+                {
+                  'type': 'true_false',
+                  'question_text': 'الوحدة المربعة تقيس المساحة',
+                  'correct_answer': '',
+                },
+              ],
+            },
+          ],
+        },
+      });
+
+      final questions = job.skills.single.questions;
+      expect(questions.length, 7);
+      expect(questions[0].answer, '12 سم مربع');
+      expect(questions[1].answer, '9 سم مربع');
+      expect(questions[2].options.first, 'الإجابة الصحيحة');
+      expect(questions[2].answer, 'الإجابة الصحيحة');
+      expect(questions[3].answer, 'الخيار الأول');
+      expect(questions[4].answer, 'صح');
+      expect(questions[5].answer, 'خطأ');
+      expect(questions[6].answer, 'صح');
+      expect(questions.every((q) => q.isComplete), isTrue);
+    });
+
     test('a diagnosis is read with plan counts and null masteries', () {
       final d = _diagnosis();
       expect(d.remedialCount, 1);
@@ -61,10 +140,51 @@ void main() {
     setUp(() {
       repo = MockDiagnosticRepository();
       cubit = DiagnosticCreateCubit(repo, pollEvery: Duration.zero);
-      when(() => repo.getSource(12)).thenAnswer((_) async => const Right(DiagnosticSource(mode: 'previous_grade', subject: 'الرياضيات', grade: 'الرابع', sourceGrade: 'الثالث', lessonsCount: 30)));
+      when(() => repo.getSource(12)).thenAnswer(
+        (_) async => const Right(
+          DiagnosticSource(mode: 'previous_grade', subject: 'الرياضيات', grade: 'الرابع', sourceGrade: 'الثالث', lessonsCount: 30),
+        ),
+      );
     });
 
-    test('the AI result opens for review with a title, and is saved', () async {
+    test('cascading stage -> track -> grade -> subject selection sorts stages, resets downstream, and loads source', () async {
+      final mathSubject = CurriculumSubjectModel(id: 12, name: 'الرياضيات');
+      final grade4 = CurriculumGradeModel(id: 4, name: 'الرابع', subjects: [mathSubject]);
+      final hsGeneralGrade = CurriculumGradeModel(id: 10, name: 'الأول الثانوي', track: 'المسار العام', subjects: [mathSubject]);
+      final hsCsGrade = CurriculumGradeModel(id: 11, name: 'الثاني الثانوي', track: 'مسار الحاسب', subjects: []);
+
+      final secondaryStage = CurriculumStageModel(id: 3, name: 'المرحلة الثانوية', grades: [hsGeneralGrade, hsCsGrade]);
+      final primaryStage = CurriculumStageModel(id: 1, name: 'المرحلة الابتدائية', grades: [grade4]);
+
+      when(() => repo.getStages()).thenAnswer((_) async => Right([secondaryStage, primaryStage]));
+
+      await cubit.loadStages();
+      expect(cubit.state.stages.map((s) => s.name).toList(), ['المرحلة الابتدائية', 'المرحلة الثانوية']);
+
+      cubit.selectStage(primaryStage);
+      expect(cubit.state.availableTracks, isEmpty);
+      expect(cubit.state.availableGrades, [grade4]);
+
+      cubit.selectGrade(grade4);
+      await cubit.selectSubject(mathSubject);
+      expect(cubit.state.subjectId, 12);
+      expect(cubit.state.subjectLabel, 'الرياضيات — الرابع');
+      expect(cubit.state.source?.sourceGrade, 'الثالث');
+
+      // Changing stage clears grade, subject, and source; secondary stage requires track first.
+      cubit.selectStage(secondaryStage);
+      expect(cubit.state.selectedGrade, isNull);
+      expect(cubit.state.selectedSubject, isNull);
+      expect(cubit.state.subjectId, isNull);
+      expect(cubit.state.source, isNull);
+      expect(cubit.state.availableTracks, ['المسار العام', 'مسار الحاسب']);
+      expect(cubit.state.availableGrades, isEmpty);
+
+      cubit.selectTrack('المسار العام');
+      expect(cubit.state.availableGrades, [hsGeneralGrade]);
+    });
+
+    test('the AI result opens for review with a title, and is saved immediately without manual answer selection', () async {
       await cubit.pickSubject(12, 'الرياضيات — الرابع');
       when(() => repo.start(subjectId: 12, skills: 5, perSkill: 3)).thenAnswer((_) async => const Right(DiagnosticJob(id: 4, status: 'pending')));
       when(() => repo.getJob(4)).thenAnswer((_) async => const Right(DiagnosticJob(id: 4, status: 'done', skills: [_skill])));
@@ -72,6 +192,7 @@ void main() {
       expect(cubit.state.step, DiagnosticStep.review);
       expect(cubit.state.title, 'اختبار تشخيصي — الرياضيات — الرابع');
       expect(cubit.state.questionsCount, 2);
+      expect(cubit.state.allComplete, isTrue);
 
       when(() => repo.save(subjectId: 12, title: any(named: 'title'), skills: any(named: 'skills'))).thenAnswer((_) async => const Right(55));
       await cubit.save();
