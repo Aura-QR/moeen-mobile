@@ -24,12 +24,33 @@ String _pct(double? v) => v == null ? '—' : '${v.round()}%';
 
 /// «التشخيص»: mastery per skill, the students who need support, and plans in one tap.
 class DiagnosisScreen extends StatelessWidget {
-  const DiagnosisScreen({super.key});
+  final String? title;
 
-  static Widget create(int onlineTestId) => BlocProvider(
-        create: (_) => DiagnosisCubit(testId: onlineTestId, repository: DiagnosticRepository(), documents: DocumentsRepository())..load(),
-        child: const DiagnosisScreen(),
-      );
+  const DiagnosisScreen({super.key, this.title});
+
+  static Widget create(dynamic arg) {
+    final int onlineTestId;
+    final String? customTitle;
+    if (arg is Map) {
+      onlineTestId = (arg['test_id'] as num?)?.toInt() ?? 0;
+      customTitle = arg['title']?.toString();
+    } else if (arg is num) {
+      onlineTestId = arg.toInt();
+      customTitle = null;
+    } else {
+      onlineTestId = int.tryParse('$arg') ?? 0;
+      customTitle = null;
+    }
+
+    return BlocProvider(
+      create: (_) => DiagnosisCubit(
+        testId: onlineTestId,
+        repository: DiagnosticRepository(),
+        documents: DocumentsRepository(),
+      )..load(),
+      child: DiagnosisScreen(title: customTitle),
+    );
+  }
 
   Future<void> _plan(BuildContext context, DiagnosisState state, String type) async {
     final d = state.diagnosis!;
@@ -58,7 +79,7 @@ class DiagnosisScreen extends StatelessWidget {
         backgroundColor: ColorsManager.background,
         elevation: 0,
         centerTitle: true,
-        title: Text(appTranslation().get('diagnostic_diagnosis'), style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
+        title: Text(title ?? appTranslation().get('diagnostic_diagnosis'), style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText)),
       ),
       body: BlocConsumer<DiagnosisCubit, DiagnosisState>(
         listenWhen: (a, b) => a.createdPlan != b.createdPlan || (a.error != b.error && b.diagnosis != null),

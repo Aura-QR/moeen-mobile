@@ -12,6 +12,7 @@ class MyExamsHeaderWidget extends StatelessWidget {
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onExtractExamTap;
   final VoidCallback onDiagnosticTestTap;
+  final VoidCallback onNafsTestTap;
 
   const MyExamsHeaderWidget({
     super.key,
@@ -20,6 +21,7 @@ class MyExamsHeaderWidget extends StatelessWidget {
     required this.onSearchChanged,
     required this.onExtractExamTap,
     required this.onDiagnosticTestTap,
+    required this.onNafsTestTap,
   });
 
   @override
@@ -44,6 +46,12 @@ class MyExamsHeaderWidget extends StatelessWidget {
             icon: Icons.track_changes_rounded,
             title: appTranslation().get('diagnostic_title'),
             onTap: onDiagnosticTestTap,
+          ),
+          verticalSpace8,
+          MyExamsEntryTile(
+            icon: Icons.track_changes_outlined,
+            title: appTranslation().get('nafs_entry_title'),
+            onTap: onNafsTestTap,
           ),
           verticalSpace12,
           MyExamsSearchField(onChanged: onSearchChanged),

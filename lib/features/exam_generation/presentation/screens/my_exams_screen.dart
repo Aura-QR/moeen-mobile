@@ -33,6 +33,13 @@ class MyExamsScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _openNafsTest(BuildContext context) async {
+    final saved = await Navigator.pushNamed(context, Routes.nafsTest);
+    if (saved == true && context.mounted) {
+      MyExamsCubit.get(context).fetchExams(isRefresh: true);
+    }
+  }
+
   Future<void> _confirmDelete(BuildContext context, int examId) async {
     final confirmed = await showPrimaryConfirmDialog(
       context,
@@ -112,6 +119,7 @@ class MyExamsScreen extends StatelessWidget {
                   onSearchChanged: cubit.searchExams,
                   onExtractExamTap: () => _openExamExtraction(context),
                   onDiagnosticTestTap: () => _openDiagnosticTest(context),
+                  onNafsTestTap: () => _openNafsTest(context),
                 ),
                 verticalSpace16,
                 Expanded(

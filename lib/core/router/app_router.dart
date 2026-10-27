@@ -20,6 +20,7 @@ abstract final class AppRouter {
   static const String readingComprehension = '/reading-comprehension';
   static const String readingComprehensionNew = '/reading-comprehension/new';
   static const String readingComprehensionEditor = '/reading-comprehension/editor';
+  static const String nafsTest = '/exams/nafs';
 
   static String roleDocumentsPath(String roleKey) => '$roleSuites/$roleKey';
 

@@ -1,3 +1,4 @@
+import 'package:moean/features/nafs/presentation/widgets/nafs_badge_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
@@ -88,6 +89,7 @@ class ExamListItemWidget extends StatelessWidget {
                             children: [
                               _buildStatusBadge(),
                               if (exam.kind == 'diagnostic') _buildDiagnosticBadge(),
+                              if (exam.kind == 'nafs') const NafsBadgeWidget(),
                             ],
                           ),
                         ],

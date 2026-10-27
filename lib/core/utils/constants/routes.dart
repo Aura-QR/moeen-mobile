@@ -172,6 +172,7 @@ import 'package:moean/features/online_tests/presentation/screens/online_tests_sc
 import 'package:moean/features/online_tests/presentation/screens/submission_review_screen.dart';
 import 'package:moean/features/diagnostic_test/presentation/screens/diagnostic_create_screen.dart';
 import 'package:moean/features/diagnostic_test/presentation/screens/diagnosis_screen.dart';
+import 'package:moean/features/nafs/presentation/screens/nafs_create_screen.dart';
 import 'package:moean/features/preparation_print/presentation/screens/preparation_print_screen.dart';
 import 'package:moean/core/router/app_router.dart';
 import 'package:moean/features/reports/data/models/role_report_editor_args.dart';
@@ -263,6 +264,7 @@ class Routes {
   static const String onlineTest = '/online-tests/test';
   static const String onlineTestReview = '/online-tests/review';
   static const String diagnosticTest = '/exams/diagnostic';
+  static const String nafsTest = AppRouter.nafsTest;
   static const String diagnosis = '/online-tests/diagnosis';
   static const String classes = '/classes';
   static const String classEditor = '/classes/editor';
@@ -715,8 +717,9 @@ class Routes {
       context.getArg<Map<String, dynamic>>() ?? const {},
     ),
     diagnosticTest: (context) => DiagnosticCreateScreen.create(),
-    // Argument: the online test id.
-    diagnosis: (context) => DiagnosisScreen.create(context.getArg<int>() ?? 0),
+    nafsTest: (context) => NafsCreateScreen.create(),
+    // Argument: the online test id or {'test_id': int, 'title': String}.
+    diagnosis: (context) => DiagnosisScreen.create(context.getArg<dynamic>() ?? 0),
     // Argument: the `lesson_preparation` document id. Without one, Â«ØªØ­Ø¶ÙŠØ±Ø§ØªÙŠÂ» opens to pick lessons.
     preparationPrint: (context) {
       final id = context.getArg<int>();

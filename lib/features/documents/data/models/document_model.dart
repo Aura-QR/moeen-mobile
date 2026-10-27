@@ -20,6 +20,7 @@ abstract final class DocumentTypes {
   static const String lessonPreparation = 'lesson_preparation';
   static const String report = 'report';
   static const String conceptMap = 'concept_map';
+  static const String outcomesMap = 'outcomes_map';
   static const String readingComprehension = 'reading_comprehension';
 
   /// Made by the server from a portfolio (T9); it has no form.
@@ -37,6 +38,7 @@ abstract final class DocumentTypes {
     report,
     performanceFile,
     conceptMap,
+    outcomesMap,
     readingComprehension,
   ];
 

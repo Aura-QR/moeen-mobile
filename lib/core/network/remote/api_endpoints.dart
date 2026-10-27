@@ -22,6 +22,10 @@ const String preparationDocumentApi = '/preparations/document';
 const String onlineTestsApi = '/online-tests';
 // L2 «الاختبار التشخيصي» (DIAGNOSTIC_TEST_API.md).
 const String diagnosticTestsApi = '/diagnostic-tests';
+// L11 «نافس» (NAFS_API.md).
+const String nafsApi = '/nafs';
+const String nafsOptionsApi = '/nafs/options';
+const String nafsSaveApi = '/nafs/save';
 
 // Admin API
 const String adminTeachersApi = '/admin/teachers';

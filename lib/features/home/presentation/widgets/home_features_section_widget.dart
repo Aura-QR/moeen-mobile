@@ -261,6 +261,13 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget>
                           onTap: () => _openAuthed(context, Routes.conceptMaps),
                         ),
                           horizontalSpace12,
+                          // Nafs practice tests feature chip (L11)
+                          HomeActionChipWidget(
+                            icon: Icons.track_changes_outlined,
+                            title: appTranslation().get('nafs_title'),
+                            onTap: () => _openAuthed(context, Routes.nafsTest),
+                          ),
+                          horizontalSpace12,
                           // Reading comprehension feature chip (L12)
                           HomeActionChipWidget(
                             icon: Icons.chrome_reader_mode_outlined,

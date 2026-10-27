@@ -3,6 +3,8 @@ class ExamEntity {
   final int teacherId;
   final String title;
   final String status;
+  final String kind;
+  final String? passage;
   final int totalPoints;
   final String createdAt;
   final String updatedAt;
@@ -13,6 +15,8 @@ class ExamEntity {
     required this.teacherId,
     required this.title,
     required this.status,
+    this.kind = 'regular',
+    this.passage,
     required this.totalPoints,
     required this.createdAt,
     required this.updatedAt,

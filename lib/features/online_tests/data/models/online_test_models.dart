@@ -54,6 +54,7 @@ class OnlineTest {
 
   /// Made from a diagnostic exam: its results can be read per skill.
   final bool isDiagnostic;
+  final bool isNafs;
 
   /// L12 «الفهم القرائي»: the reading passage students answer about, or null
   /// for an ordinary test. Paragraphs are split on blank lines.
@@ -72,6 +73,7 @@ class OnlineTest {
     this.submissions = 0,
     this.timeLimitMinutes,
     this.isDiagnostic = false,
+    this.isNafs = false,
     this.passage,
     this.groups = const [],
     this.createdAt,
@@ -101,6 +103,7 @@ class OnlineTest {
       submissions: _int(json['submissions']),
       timeLimitMinutes: settings['time_limit_minutes'] == null ? null : _int(settings['time_limit_minutes']),
       isDiagnostic: json['is_diagnostic'] == true,
+      isNafs: json['kind'] == 'nafs' || json['is_nafs'] == true,
       passage: json['passage']?.toString(),
       groups: _maps(json['groups']).map(OnlineTestGroup.fromJson).toList(),
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),

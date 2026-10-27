@@ -86,7 +86,12 @@ class ExamPdfService {
     final questions = List<QuestionEntity>.from(exam.questions)
       ..sort((a, b) => a.questionOrder.compareTo(b.questionOrder));
 
-    final displayTitle = isWorksheet ? '$_worksheetTitlePrefix${exam.title}' : exam.title;
+    final bool isNafs = exam.kind == 'nafs';
+    final String nafsPrefix = 'اختبار تدريبي بأسلوب نافس — ';
+    final String baseTitle = (isNafs && !exam.title.startsWith('اختبار تدريبي بأسلوب نافس'))
+        ? '$nafsPrefix${exam.title}'
+        : exam.title;
+    final displayTitle = isWorksheet ? '$_worksheetTitlePrefix$baseTitle' : baseTitle;
     final isExamTitleEnglish = isEnglishText(displayTitle);
 
     pdf.addPage(
@@ -218,7 +223,7 @@ class ExamPdfService {
 
   static pw.Widget _buildQuestion(
       QuestionEntity q, pw.TextStyle regular, pw.TextStyle bold, bool showAnswers,
-      [bool isWorksheet = false]) {
+      [bool isWorksheet = false, bool isNafs = false]) {
     final isEnglish = isEnglishText(q.questionText);
     final textDir = isEnglish ? pw.TextDirection.ltr : pw.TextDirection.rtl;
 
@@ -249,7 +254,7 @@ class ExamPdfService {
               ],
             ),
             pw.SizedBox(height: 10),
-            _buildQuestionOptions(q, regular, bold, showAnswers, isEnglish, isWorksheet),
+            _buildQuestionOptions(q, regular, bold, showAnswers, isEnglish, isWorksheet, isNafs),
             if (showAnswers && q.type != 'matching' && q.type != 'mcq') ...[
               pw.SizedBox(height: 10),
               pw.Text(
@@ -266,29 +271,61 @@ class ExamPdfService {
 
   static pw.Widget _buildQuestionOptions(
       QuestionEntity q, pw.TextStyle regular, pw.TextStyle bold, bool showAnswers, bool isEnglish,
-      [bool isWorksheet = false]) {
+      [bool isWorksheet = false, bool isNafs = false]) {
     final textDir = isEnglish ? pw.TextDirection.ltr : pw.TextDirection.rtl;
 
     if (q.type == 'mcq') {
       final options = List<String>.from(q.options ?? []);
+      const arabicLetters = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز', 'ح'];
+      const englishLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
       return pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: options.map((opt) {
+        children: options.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final opt = entry.value;
           final isCorrect = opt == q.correctAnswer;
+          final letter = isEnglish
+              ? (idx < englishLetters.length ? englishLetters[idx] : '')
+              : (idx < arabicLetters.length ? arabicLetters[idx] : '');
+
           return pw.Padding(
             padding: const pw.EdgeInsets.only(bottom: 4),
             child: pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                pw.Container(
-                  width: 12,
-                  height: 12,
-                  decoration: pw.BoxDecoration(
-                    shape: pw.BoxShape.circle,
-                    border: pw.Border.all(color: PdfColors.grey),
-                    color: (showAnswers && isCorrect) ? PdfColors.green700 : null,
+                if (isNafs) ...[
+                  pw.Container(
+                    width: 18,
+                    height: 18,
+                    alignment: pw.Alignment.center,
+                    decoration: pw.BoxDecoration(
+                      shape: pw.BoxShape.circle,
+                      border: pw.Border.all(
+                        color: (showAnswers && isCorrect) ? PdfColors.green700 : PdfColors.grey700,
+                        width: 1,
+                      ),
+                      color: (showAnswers && isCorrect) ? PdfColors.green700 : null,
+                    ),
+                    child: pw.Text(
+                      letter,
+                      style: bold.copyWith(
+                        color: (showAnswers && isCorrect) ? PdfColors.white : PdfColors.grey800,
+                        fontSize: 9,
+                      ),
+                    ),
                   ),
-                ),
+                ] else ...[
+                  pw.Container(
+                    width: 12,
+                    height: 12,
+                    decoration: pw.BoxDecoration(
+                      shape: pw.BoxShape.circle,
+                      border: pw.Border.all(color: PdfColors.grey),
+                      color: (showAnswers && isCorrect) ? PdfColors.green700 : null,
+                    ),
+                  ),
+                ],
                 pw.SizedBox(width: 8),
                 pw.Expanded(
                   child: pw.Text(
