@@ -147,6 +147,15 @@ class DocumentsRepository {
         _export,
       );
 
+  /// L12 «الفهم القرائي»: copies a `reading_comprehension` document into a new
+  /// exam the teacher can share online. `201` returns the exam's id and title;
+  /// `422` comes back as a [ValidationFailure] on `lesson_id`, `questions.N…`
+  /// or `passage`.
+  Future<Either<Failure, DocumentExamRef>> toExam(int id) => handleApiResponse(
+        DioHelper.postData(url: documentToExamApi(id), data: const {}, keepFieldErrors: true),
+        _examRef,
+      );
+
   Future<Either<Failure, Uint8List>> downloadFile(String url) => _storage.download(url);
 
   static DocumentDefaultsModel _resolvedDefaults(dynamic data) {
@@ -158,4 +167,7 @@ class DocumentsRepository {
 
   static DocumentExportModel _export(dynamic data) =>
       DocumentExportModel.fromJson(data as Map<String, dynamic>);
+
+  static DocumentExamRef _examRef(dynamic data) =>
+      DocumentExamRef.fromJson(data as Map<String, dynamic>);
 }

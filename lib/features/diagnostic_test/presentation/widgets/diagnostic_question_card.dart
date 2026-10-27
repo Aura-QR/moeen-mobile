@@ -185,7 +185,7 @@ class _DiagnosticQuestionCardState extends State<DiagnosticQuestionCard> {
           else
             PrimaryTextField(
               controller: _answer,
-              label: appTranslation().get('online_tests_right_answer'),
+              label: appTranslation().get('diagnostic_answer_optional'),
               hint: appTranslation().get('online_tests_right_answer'),
               onChanged: (v) => widget.onChanged(q.copyWith(answer: v)),
             ),

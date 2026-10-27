@@ -15,6 +15,7 @@ import 'package:moean/features/exam_generation/data/services/exam_pdf_service.da
 import 'package:moean/features/exam_generation/data/services/exam_word_service.dart';
 import 'package:moean/core/network/local/cache_helper.dart';
 import 'package:moean/features/exam_generation/presentation/widgets/add_manual_question_dialog.dart';
+import 'package:moean/features/exam_generation/presentation/widgets/export_type_selector.dart';
 import 'package:moean/core/utils/constants/primary/upgrade_prompt_bottom_sheet.dart';
 
 class ExamPreviewScreen extends StatefulWidget {
@@ -43,9 +44,12 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (ctx) => Directionality(
+      builder: (ctx) {
+        bool isWorksheet = false;
+        return Directionality(
         textDirection: TextDirection.rtl,
-        child: Container(
+        child: StatefulBuilder(
+          builder: (ctx, setSheetState) => Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           decoration: BoxDecoration(
             color: ColorsManager.surfacePrimary,
@@ -77,6 +81,13 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                 textAlign: TextAlign.center,
                 style: TextStylesManager.regular14.copyWith(color: ColorsManager.secondaryText),
               ),
+              verticalSpace16,
+
+              // Export type: exam (graded) vs worksheet (practice)
+              ExportTypeSelector(
+                isWorksheet: isWorksheet,
+                onChanged: (val) => setSheetState(() => isWorksheet = val),
+              ),
               verticalSpace24,
 
               // Option 1: PDF
@@ -94,6 +105,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                           teacherName: teacherName,
                           schoolName: schoolName,
                           educationOffice: educationOffice,
+                          isWorksheet: isWorksheet,
                         ),
                       ),
                     ),
@@ -159,11 +171,12 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                       teacherName: teacherName,
                       schoolName: schoolName,
                       educationOffice: educationOffice,
+                      isWorksheet: isWorksheet,
                     );
                     final saved = await ExamWordService.saveWordToDevice(filePath);
                     if (!saved) {
                       // User dismissed the save dialog; fall back to the share sheet.
-                      await ExamWordService.shareWordFile(filePath, exam.title);
+                      await ExamWordService.shareWordFile(filePath, exam.title, isWorksheet: isWorksheet);
                     } else if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -172,7 +185,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
                           action: SnackBarAction(
                             label: 'مشاركة',
                             textColor: Colors.white,
-                            onPressed: () => ExamWordService.shareWordFile(filePath, exam.title),
+                            onPressed: () => ExamWordService.shareWordFile(filePath, exam.title, isWorksheet: isWorksheet),
                           ),
                         ),
                       );
@@ -234,6 +247,8 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
           ),
         ),
       ),
+        );
+      },
     );
   }
 

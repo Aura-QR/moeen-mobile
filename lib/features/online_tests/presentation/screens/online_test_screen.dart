@@ -16,6 +16,7 @@ import 'package:moean/features/online_tests/data/models/online_test_models.dart'
 import 'package:moean/features/online_tests/data/repositories/online_tests_repository.dart';
 import 'package:moean/features/online_tests/presentation/cubit/online_test_cubit.dart';
 import 'package:moean/features/online_tests/presentation/widgets/online_test_links_tab.dart';
+import 'package:moean/features/online_tests/presentation/widgets/online_test_passage_box.dart';
 import 'package:moean/features/online_tests/presentation/widgets/online_test_results_tab.dart';
 import 'package:moean/features/online_tests/presentation/widgets/online_test_state_badge.dart';
 
@@ -126,6 +127,8 @@ class OnlineTestScreen extends StatelessWidget {
                               ],
                             ),
                           ),
+                          if (test.passageParagraphs.isNotEmpty)
+                            OnlineTestPassageBox(paragraphs: test.passageParagraphs),
                           verticalSpace8,
                           const Expanded(child: TabBarView(children: [OnlineTestLinksTab(), OnlineTestResultsTab()])),
                         ],

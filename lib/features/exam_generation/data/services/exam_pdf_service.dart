@@ -11,6 +11,12 @@ class ExamPdfService {
   static final PdfColor _headerBg = PdfColor.fromHex('0B4A45');
   static final PdfColor _textDark = PdfColor.fromHex('1E293B');
 
+  /// Prefix prepended to the exam title when exporting a worksheet.
+  static const String _worksheetTitlePrefix = 'ورقة عمل: ';
+
+  /// Footer text printed on every worksheet page.
+  static const String _worksheetFooter = 'ورقة عمل من منصة حضّر';
+
   static bool isEnglishText(String text) {
     if (text.trim().isEmpty) return false;
 
@@ -34,7 +40,10 @@ class ExamPdfService {
     required String teacherName,
     required String schoolName,
     required String educationOffice,
+    bool isWorksheet = false,
   }) async {
+    // Worksheets are for practice/homework, so answers are hidden by default.
+    final bool effectiveShowAnswers = isWorksheet ? false : showAnswers;
     final ByteData fontData = await rootBundle.load('assets/fonts/Tajawal-Regular.ttf');
     final pw.Font ttf = pw.Font.ttf(fontData);
 
@@ -77,13 +86,25 @@ class ExamPdfService {
     final questions = List<QuestionEntity>.from(exam.questions)
       ..sort((a, b) => a.questionOrder.compareTo(b.questionOrder));
 
-    final isExamTitleEnglish = isEnglishText(exam.title);
+    final displayTitle = isWorksheet ? '$_worksheetTitlePrefix${exam.title}' : exam.title;
+    final isExamTitleEnglish = isEnglishText(displayTitle);
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         textDirection: pw.TextDirection.rtl,
         margin: const pw.EdgeInsets.all(24),
+        footer: isWorksheet
+            ? (pw.Context context) => pw.Container(
+                  alignment: pw.Alignment.center,
+                  margin: const pw.EdgeInsets.only(top: 8),
+                  child: pw.Text(
+                    _worksheetFooter,
+                    style: arabicRegular.copyWith(color: PdfColors.grey600, fontSize: 9),
+                    textDirection: pw.TextDirection.rtl,
+                  ),
+                )
+            : null,
         build: (pw.Context context) {
           return [
             // Header
@@ -103,7 +124,7 @@ class ExamPdfService {
             
             pw.Center(
               child: pw.Text(
-                exam.title,
+                displayTitle,
                 style: titleStyle,
                 textDirection: isExamTitleEnglish ? pw.TextDirection.ltr : pw.TextDirection.rtl,
               ),
@@ -111,7 +132,7 @@ class ExamPdfService {
             pw.SizedBox(height: 20),
 
             // Questions
-            ...questions.map((q) => _buildQuestion(q, arabicRegular, arabicBold, showAnswers)),
+            ...questions.map((q) => _buildQuestion(q, arabicRegular, arabicBold, effectiveShowAnswers, isWorksheet)),
           ];
         },
       ),
@@ -196,7 +217,8 @@ class ExamPdfService {
   }
 
   static pw.Widget _buildQuestion(
-      QuestionEntity q, pw.TextStyle regular, pw.TextStyle bold, bool showAnswers) {
+      QuestionEntity q, pw.TextStyle regular, pw.TextStyle bold, bool showAnswers,
+      [bool isWorksheet = false]) {
     final isEnglish = isEnglishText(q.questionText);
     final textDir = isEnglish ? pw.TextDirection.ltr : pw.TextDirection.rtl;
 
@@ -215,16 +237,19 @@ class ExamPdfService {
                 pw.Expanded(
                   child: pw.Text(q.questionText, style: bold, textDirection: textDir),
                 ),
-                pw.SizedBox(width: 8),
-                pw.Text(
-                  isEnglish ? '[${q.points} point${q.points > 1 ? "s" : ""}]' : '[${q.points} درجة]',
-                  style: regular.copyWith(color: PdfColors.grey700, fontSize: 10),
-                  textDirection: textDir,
-                ),
+                // Worksheets carry no marks, so the per-question points are hidden.
+                if (!isWorksheet) ...[
+                  pw.SizedBox(width: 8),
+                  pw.Text(
+                    isEnglish ? '[${q.points} point${q.points > 1 ? "s" : ""}]' : '[${q.points} درجة]',
+                    style: regular.copyWith(color: PdfColors.grey700, fontSize: 10),
+                    textDirection: textDir,
+                  ),
+                ],
               ],
             ),
             pw.SizedBox(height: 10),
-            _buildQuestionOptions(q, regular, bold, showAnswers, isEnglish),
+            _buildQuestionOptions(q, regular, bold, showAnswers, isEnglish, isWorksheet),
             if (showAnswers && q.type != 'matching' && q.type != 'mcq') ...[
               pw.SizedBox(height: 10),
               pw.Text(
@@ -240,7 +265,8 @@ class ExamPdfService {
   }
 
   static pw.Widget _buildQuestionOptions(
-      QuestionEntity q, pw.TextStyle regular, pw.TextStyle bold, bool showAnswers, bool isEnglish) {
+      QuestionEntity q, pw.TextStyle regular, pw.TextStyle bold, bool showAnswers, bool isEnglish,
+      [bool isWorksheet = false]) {
     final textDir = isEnglish ? pw.TextDirection.ltr : pw.TextDirection.rtl;
 
     if (q.type == 'mcq') {
@@ -354,6 +380,24 @@ class ExamPdfService {
         ],
       );
     } else if (q.type == 'essay') {
+      // Worksheets give students empty ruled lines to write on instead of a box.
+      if (isWorksheet) {
+        return pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+          children: List.generate(
+            4,
+            (_) => pw.Container(
+              height: 22,
+              margin: const pw.EdgeInsets.only(bottom: 6),
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(
+                  bottom: pw.BorderSide(color: PdfColors.grey400, width: 0.8),
+                ),
+              ),
+            ),
+          ),
+        );
+      }
       return pw.Container(
         height: 60,
         width: double.infinity,

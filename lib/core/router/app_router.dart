@@ -14,6 +14,12 @@ abstract final class AppRouter {
   static const String reportEditor = '/tools/reports/editor';
   static const String roleSuites = '/tools/roles';
   static const String roleDocuments = '/tools/roles/documents';
+  static const String conceptMaps = '/concept-maps';
+  static const String conceptMapsNew = '/concept-maps/new';
+  static const String conceptMapsEditor = '/concept-maps/editor';
+  static const String readingComprehension = '/reading-comprehension';
+  static const String readingComprehensionNew = '/reading-comprehension/new';
+  static const String readingComprehensionEditor = '/reading-comprehension/editor';
 
   static String roleDocumentsPath(String roleKey) => '$roleSuites/$roleKey';
 
@@ -21,14 +27,19 @@ abstract final class AppRouter {
     String routeName, {
     Object? arguments,
     BuildContext? context,
-  }) {
-    final nav = navigatorKey.currentState ?? (context == null ? null : Navigator.maybeOf(context));
-    if (nav == null) return Future<T?>.value(null);
-    return nav.pushNamed<T>(routeName, arguments: arguments);
+  }) async {
+    final nav =
+        navigatorKey.currentState ??
+        (context == null ? null : Navigator.maybeOf(context));
+    if (nav == null) return null;
+    final result = await nav.pushNamed(routeName, arguments: arguments);
+    return result is T ? result : null;
   }
 
   static void pop<T extends Object?>([T? result, BuildContext? context]) {
-    final nav = navigatorKey.currentState ?? (context == null ? null : Navigator.maybeOf(context));
+    final nav =
+        navigatorKey.currentState ??
+        (context == null ? null : Navigator.maybeOf(context));
     nav?.pop<T>(result);
   }
 }

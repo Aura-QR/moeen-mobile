@@ -50,10 +50,12 @@ Diagnosis _diagnosis() => Diagnosis.fromJson({
 
 void main() {
   group('models', () {
-    test('a question is complete only with an answer, and for mcq one of its options', () {
+    test('mcq/true_false need a valid answer; fill_blank only needs text (answer is optional)', () {
       expect(_skill.questions[0].isComplete, isTrue);
       expect(_skill.questions[0].copyWith(answer: '40').isComplete, isFalse);
-      expect(const DiagnosticQuestion(type: 'fill_blank', text: 'س', answer: ' ').isComplete, isFalse);
+      // fill_blank: a blank answer is allowed — the teacher may fill it later.
+      expect(const DiagnosticQuestion(type: 'fill_blank', text: 'س', answer: ' ').isComplete, isTrue);
+      expect(const DiagnosticQuestion(type: 'fill_blank', text: ' ').isComplete, isFalse);
       expect(_skill.toJson()['questions'][1]['options'], isEmpty);
     });
 

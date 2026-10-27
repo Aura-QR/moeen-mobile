@@ -54,6 +54,10 @@ class OnlineTest {
 
   /// Made from a diagnostic exam: its results can be read per skill.
   final bool isDiagnostic;
+
+  /// L12 «الفهم القرائي»: the reading passage students answer about, or null
+  /// for an ordinary test. Paragraphs are split on blank lines.
+  final String? passage;
   final List<OnlineTestGroup> groups;
   final DateTime? createdAt;
 
@@ -68,9 +72,21 @@ class OnlineTest {
     this.submissions = 0,
     this.timeLimitMinutes,
     this.isDiagnostic = false,
+    this.passage,
     this.groups = const [],
     this.createdAt,
   });
+
+  /// The passage split into numbered paragraphs on blank lines.
+  List<String> get passageParagraphs {
+    final raw = passage?.trim() ?? '';
+    if (raw.isEmpty) return const [];
+    return raw
+        .split(RegExp(r'\n[ \t]*\n'))
+        .map((p) => p.trim())
+        .where((p) => p.isNotEmpty)
+        .toList();
+  }
 
   factory OnlineTest.fromJson(Map<String, dynamic> json) {
     final settings = json['settings'] is Map ? Map<String, dynamic>.from(json['settings'] as Map) : const <String, dynamic>{};
@@ -85,6 +101,7 @@ class OnlineTest {
       submissions: _int(json['submissions']),
       timeLimitMinutes: settings['time_limit_minutes'] == null ? null : _int(settings['time_limit_minutes']),
       isDiagnostic: json['is_diagnostic'] == true,
+      passage: json['passage']?.toString(),
       groups: _maps(json['groups']).map(OnlineTestGroup.fromJson).toList(),
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
     );

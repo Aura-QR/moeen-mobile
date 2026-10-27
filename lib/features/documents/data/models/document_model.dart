@@ -19,6 +19,8 @@ abstract final class DocumentTypes {
   static const String classSheet = 'class_sheet';
   static const String lessonPreparation = 'lesson_preparation';
   static const String report = 'report';
+  static const String conceptMap = 'concept_map';
+  static const String readingComprehension = 'reading_comprehension';
 
   /// Made by the server from a portfolio (T9); it has no form.
   static const String performanceFile = 'performance_file';
@@ -34,16 +36,36 @@ abstract final class DocumentTypes {
     lessonPreparation,
     report,
     performanceFile,
+    conceptMap,
+    readingComprehension,
   ];
 
   static String labelKey(String type) => 'document_type_$type';
 
   /// Tools whose tables matter, so their export offers Excel.
-  static bool hasExcel(String type) => type == classSheet || type == gradeAnalysis;
+  static bool hasExcel(String type) =>
+      type == classSheet || type == gradeAnalysis;
 }
 
 /// The `element` value that keeps a document out of the performance file.
 const String noDocumentElement = 'none';
+
+/// The exam a document was copied into by `POST /documents/{id}/to-exam`
+/// (L12 «الفهم القرائي»). The share flow continues with [examId].
+class DocumentExamRef {
+  final int examId;
+  final String title;
+
+  const DocumentExamRef({required this.examId, this.title = ''});
+
+  factory DocumentExamRef.fromJson(Map<String, dynamic> json) {
+    final exam = json['exam'] is Map ? Map<String, dynamic>.from(json['exam'] as Map) : json;
+    return DocumentExamRef(
+      examId: exam['id'] is int ? exam['id'] as int : int.tryParse('${exam['id']}') ?? 0,
+      title: exam['title']?.toString() ?? '',
+    );
+  }
+}
 
 /// A photo in `input.images`, with its signed URL once saved.
 class DocumentImageModel {
@@ -105,7 +127,9 @@ class DocumentModel {
     final definition = json['definition'];
     final meta = definition is Map ? definition['meta'] : null;
     return DocumentModel(
-      id: json['id'] is int ? json['id'] as int : int.tryParse('${json['id']}') ?? 0,
+      id: json['id'] is int
+          ? json['id'] as int
+          : int.tryParse('${json['id']}') ?? 0,
       type: json['type']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
       status: json['status']?.toString() ?? DocumentStatus.draft,
@@ -114,12 +138,16 @@ class DocumentModel {
       updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? ''),
       input: input is Map<String, dynamic> ? input : const {},
       images: images is List
-          ? images.whereType<Map<String, dynamic>>().map(DocumentImageModel.fromJson).toList()
+          ? images
+                .whereType<Map<String, dynamic>>()
+                .map(DocumentImageModel.fromJson)
+                .toList()
           : const [],
       meta: meta is List
           ? {
               for (final row in meta.whereType<Map>())
-                if (row['label'] != null) row['label'].toString(): row['value']?.toString() ?? '',
+                if (row['label'] != null)
+                  row['label'].toString(): row['value']?.toString() ?? '',
             }
           : const {},
     );
@@ -144,10 +172,15 @@ class DocumentsPageModel {
 
   factory DocumentsPageModel.fromJson(Map<String, dynamic> json) {
     final data = json['data'];
-    final meta = json['meta'] is Map<String, dynamic> ? json['meta'] as Map<String, dynamic> : const {};
+    final meta = json['meta'] is Map<String, dynamic>
+        ? json['meta'] as Map<String, dynamic>
+        : const {};
     return DocumentsPageModel(
       items: data is List
-          ? data.whereType<Map<String, dynamic>>().map(DocumentModel.fromJson).toList()
+          ? data
+                .whereType<Map<String, dynamic>>()
+                .map(DocumentModel.fromJson)
+                .toList()
           : const [],
       currentPage: _asInt(meta['current_page'], 1),
       lastPage: _asInt(meta['last_page'], 1),

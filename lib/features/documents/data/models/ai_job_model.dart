@@ -6,6 +6,8 @@ abstract final class AiJobKinds {
   static const String enrichmentSuggestions = 'enrichment_suggestions';
   static const String gradeRecommendations = 'grade_recommendations';
   static const String roleDocument = 'role_document';
+  static const String conceptMap = 'concept_map';
+  static const String readingPassage = 'reading_passage';
 }
 
 abstract final class AiJobStatus {
@@ -38,20 +40,26 @@ class AiJobModel {
     this.error,
   });
 
-  bool get isPending => status == AiJobStatus.pending || status == AiJobStatus.running;
+  bool get isPending =>
+      status == AiJobStatus.pending || status == AiJobStatus.running;
   bool get isDone => status == AiJobStatus.done;
   bool get isFailed => status == AiJobStatus.failed;
 
   factory AiJobModel.fromJson(Map<String, dynamic> json) {
     final result = json['result'];
     return AiJobModel(
-      id: json['id'] is int ? json['id'] as int : int.tryParse('${json['id']}') ?? 0,
+      id: json['id'] is int
+          ? json['id'] as int
+          : int.tryParse('${json['id']}') ?? 0,
       kind: json['kind']?.toString() ?? '',
       status: json['status']?.toString() ?? AiJobStatus.pending,
       result: result is Map
           ? {
               for (final entry in result.entries)
-                if (entry.value is List) entry.key.toString(): (entry.value as List).map((e) => e.toString()).toList(),
+                if (entry.value is List)
+                  entry.key.toString(): (entry.value as List)
+                      .map((e) => e.toString())
+                      .toList(),
             }
           : const {},
       rawResult: result is Map ? Map<String, dynamic>.from(result) : const {},

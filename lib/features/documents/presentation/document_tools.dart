@@ -9,7 +9,11 @@ class DocumentTool {
   final IconData icon;
   final String route;
 
-  const DocumentTool({required this.type, required this.icon, required this.route});
+  const DocumentTool({
+    required this.type,
+    required this.icon,
+    required this.route,
+  });
 
   String get titleKey => DocumentTypes.labelKey(type);
   String get subtitleKey => '${titleKey}_subtitle';
@@ -66,10 +70,21 @@ const List<DocumentTool> documentTools = [
     route: Routes.reportEditor,
   ),
   DocumentTool(
+    type: DocumentTypes.conceptMap,
+    icon: Icons.account_tree_outlined,
+    route: Routes.conceptMapsEditor,
+  ),
+  DocumentTool(
+    type: DocumentTypes.readingComprehension,
+    icon: Icons.chrome_reader_mode_outlined,
+    route: Routes.readingComprehensionEditor,
+  ),
+  DocumentTool(
     type: roleSuitesToolType,
     icon: Icons.work_outline_rounded,
     route: Routes.roleSuites,
   ),
 ];
 
-DocumentTool? documentToolFor(String type) => documentTools.where((tool) => tool.type == type).firstOrNull;
+DocumentTool? documentToolFor(String type) =>
+    documentTools.where((tool) => tool.type == type).firstOrNull;

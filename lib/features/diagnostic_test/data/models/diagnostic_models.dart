@@ -156,10 +156,11 @@ class DiagnosticQuestion {
     this.points = 1,
   });
 
-  /// Ready to save: has text and a valid answer (for mcq, one of its >=2 options).
+  /// Ready to save: has text, plus a valid answer for mcq / true_false.
+  /// For fill_blank the answer is optional — the teacher may edit it later.
   bool get isComplete {
+    if (text.trim().isEmpty) return false;
     final trimmedAnswer = answer.trim();
-    if (text.trim().isEmpty || trimmedAnswer.isEmpty) return false;
     if (type == DiagnosticQuestionTypes.mcq) {
       final trimmedOptions = options.map((o) => o.trim()).where((o) => eNotEmpty(o)).toList();
       return trimmedOptions.length >= 2 && trimmedOptions.contains(trimmedAnswer);

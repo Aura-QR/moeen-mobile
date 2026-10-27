@@ -249,9 +249,23 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget>
                           ),
                           horizontalSpace12,
                           HomeActionChipWidget(
-                            icon: Icons.table_chart_outlined,
-                            title: appTranslation().get('document_type_class_sheet'),
-                            onTap: () => _openAuthed(context, Routes.classSheets),
+                          icon: Icons.table_chart_outlined,
+                          title: appTranslation().get('document_type_class_sheet'),
+                          onTap: () => _openAuthed(context, Routes.classSheets),
+                        ),
+                        horizontalSpace12,
+                        // Concept Maps feature chip
+                        HomeActionChipWidget(
+                          icon: Icons.map_outlined,
+                          title: appTranslation().get('concept_maps_title'),
+                          onTap: () => _openAuthed(context, Routes.conceptMaps),
+                        ),
+                          horizontalSpace12,
+                          // Reading comprehension feature chip (L12)
+                          HomeActionChipWidget(
+                            icon: Icons.chrome_reader_mode_outlined,
+                            title: appTranslation().get('reading_title'),
+                            onTap: () => _openAuthed(context, Routes.readingComprehension),
                           ),
                           horizontalSpace12,
                           HomeActionChipWidget(

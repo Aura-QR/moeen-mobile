@@ -135,6 +135,8 @@ String documentDuplicateApi(int id) => '/documents/$id/duplicate';
 String documentPrintApi(int id) => '/documents/$id/print';
 String documentExportsApi(int id) => '/documents/$id/exports';
 String documentExportApi(int id, int exportId) => '/documents/$id/exports/$exportId';
+// L12 «الفهم القرائي»: turns a reading_comprehension document into an exam (DOCUMENTS_API.md § 15).
+String documentToExamApi(int id) => '/documents/$id/to-exam';
 
 // Tool catalogues
 const String reportsToolApi = '/tools/reports';

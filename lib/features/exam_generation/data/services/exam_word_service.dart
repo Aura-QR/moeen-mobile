@@ -10,6 +10,12 @@ import 'package:moean/features/exam_generation/domain/entities/exam_entities.dar
 import 'package:moean/features/exam_generation/data/models/exam_models.dart';
 
 class ExamWordService {
+  /// Prefix prepended to the exam title when exporting a worksheet.
+  static const String _worksheetTitlePrefix = 'ورقة عمل: ';
+
+  /// Footer text printed on every worksheet page.
+  static const String _worksheetFooter = 'ورقة عمل من منصة حضّر';
+
   /// Detects if text is primarily English (LTR).
   static bool isEnglishText(String text) {
     final trimmed = text.trim();
@@ -150,7 +156,10 @@ class ExamWordService {
     required String teacherName,
     required String schoolName,
     required String educationOffice,
+    bool isWorksheet = false,
   }) async {
+    // Worksheets are for practice/homework, so answers are hidden by default.
+    final bool effectiveShowAnswers = isWorksheet ? false : showAnswers;
     final questions = List<QuestionEntity>.from(exam.questions)
       ..sort((a, b) => a.questionOrder.compareTo(b.questionOrder));
 
@@ -174,18 +183,19 @@ class ExamWordService {
     final documentXml = _buildDocumentXml(
       exam: exam,
       questions: questions,
-      showAnswers: showAnswers,
+      showAnswers: effectiveShowAnswers,
       teacherName: teacherName,
       schoolName: schoolName,
       educationOffice: educationOffice,
       date: dateStr,
       hasImages: hasImages,
+      isWorksheet: isWorksheet,
     );
 
     final archive = Archive();
 
     // 1. [Content_Types].xml
-    const contentTypesXml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    final contentTypesXml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
   <Default Extension="xml" ContentType="application/xml"/>
@@ -196,6 +206,7 @@ class ExamWordService {
   <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
   <Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>
   <Override PartName="/word/fontTable.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml"/>
+  ${isWorksheet ? '<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>' : ''}
 </Types>''';
     archive.addFile(ArchiveFile('[Content_Types].xml', utf8.encode(contentTypesXml).length, utf8.encode(contentTypesXml)));
 
@@ -214,6 +225,7 @@ class ExamWordService {
   <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>
   ${hasImages ? '<Relationship Id="rIdLogo" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/>' : ''}
   ${hasImages ? '<Relationship Id="rIdMinistry" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/ministry.jpg"/>' : ''}
+  ${isWorksheet ? '<Relationship Id="rIdFooter1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>' : ''}
 </Relationships>''';
     archive.addFile(ArchiveFile('word/_rels/document.xml.rels', utf8.encode(docRelsXml).length, utf8.encode(docRelsXml)));
 
@@ -301,6 +313,18 @@ class ExamWordService {
 </w:styles>''';
     archive.addFile(ArchiveFile('word/styles.xml', utf8.encode(stylesXml).length, utf8.encode(stylesXml)));
 
+    // 6b. word/footer1.xml (worksheet only)
+    if (isWorksheet) {
+      final footerXml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:p>
+    ${_pPrXml(_worksheetFooter, align: 'center', isEnglish: false)}
+    ${_buildRun(_worksheetFooter, color: '64748B', size: 18, isEnglish: false)}
+  </w:p>
+</w:ftr>''';
+      archive.addFile(ArchiveFile('word/footer1.xml', utf8.encode(footerXml).length, utf8.encode(footerXml)));
+    }
+
     // 7. word/document.xml
     final docBytes = utf8.encode(documentXml);
     archive.addFile(ArchiveFile('word/document.xml', docBytes.length, docBytes));
@@ -318,6 +342,7 @@ class ExamWordService {
     required String educationOffice,
     required String date,
     required bool hasImages,
+    bool isWorksheet = false,
   }) {
     final sb = StringBuffer();
     sb.write('''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -476,11 +501,12 @@ class ExamWordService {
 ''');
 
     // Exam Title
-    final isTitleEng = isEnglishText(exam.title);
+    final displayTitle = isWorksheet ? '$_worksheetTitlePrefix${exam.title}' : exam.title;
+    final isTitleEng = isEnglishText(displayTitle);
     sb.write('''
     <w:p>
-      ${_pPrXml(exam.title, align: 'center', isEnglish: isTitleEng, spacing: '<w:spacing w:before="360" w:after="360"/>')}
-      ${_buildRun(exam.title, bold: true, color: '073F49', size: 32, isEnglish: isTitleEng)}
+      ${_pPrXml(displayTitle, align: 'center', isEnglish: isTitleEng, spacing: '<w:spacing w:before="360" w:after="360"/>')}
+      ${_buildRun(displayTitle, bold: true, color: '073F49', size: 32, isEnglish: isTitleEng)}
     </w:p>
 ''');
 
@@ -493,7 +519,11 @@ class ExamWordService {
           : '[${q.points} درجة]';
 
       final tabVal = isQEng ? 'right' : 'left';
-      final tabsXml = '<w:tabs><w:tab w:val="$tabVal" w:pos="9500"/></w:tabs>';
+      // Worksheets carry no marks, so no tab stop / points run is emitted.
+      final tabsXml = isWorksheet ? '' : '<w:tabs><w:tab w:val="$tabVal" w:pos="9500"/></w:tabs>';
+      final pointsRunXml = isWorksheet
+          ? ''
+          : '<w:r><w:tab/></w:r>${_buildRun(pointsText, color: '64748B', size: 20, isEnglish: isQEng)}';
 
       // Question Title Row
       sb.write('''
@@ -506,8 +536,7 @@ class ExamWordService {
       )}
       ${_buildRun('${q.questionOrder}. ', bold: true, color: '1E293B', size: 24, preserveSpace: true, isEnglish: isQEng)}
       ${_buildRun(q.questionText, bold: true, color: '1E293B', size: 24, isEnglish: isQEng)}
-      <w:r><w:tab/></w:r>
-      ${_buildRun(pointsText, color: '64748B', size: 20, isEnglish: isQEng)}
+      $pointsRunXml
     </w:p>
 ''');
 
@@ -631,7 +660,22 @@ class ExamWordService {
         }
         sb.write('    </w:tbl>\n');
       } else if (q.type == 'essay') {
-        sb.write('''
+        if (isWorksheet) {
+          // Worksheets give students empty ruled lines to write on.
+          final bidiLine = isQEng ? '' : '<w:bidi w:val="1"/>';
+          for (int line = 0; line < 4; line++) {
+            sb.write('''
+    <w:p>
+      <w:pPr>
+        $bidiLine
+        <w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="94A3B8"/></w:pBdr>
+        <w:spacing w:before="160" w:after="160"/>
+      </w:pPr>
+    </w:p>
+''');
+          }
+        } else {
+          sb.write('''
     <w:tbl>
       <w:tblPr>
         <w:tblW w:w="10466" w:type="dxa"/>
@@ -656,6 +700,7 @@ class ExamWordService {
       </w:tr>
     </w:tbl>
 ''');
+        }
       }
 
       // Show Correct Answer for non-MCQ / non-matching
@@ -687,6 +732,7 @@ class ExamWordService {
     final bool isExamRtl = !isEnglishText(exam.title);
     sb.write('''
     <w:sectPr>
+      ${isWorksheet ? '<w:footerReference w:type="default" r:id="rIdFooter1"/>' : ''}
       <w:pgSz w:w="11906" w:h="16838"/>
       <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="720" w:footer="720" w:gutter="0"/>
       ${isExamRtl ? '<w:bidi w:val="1"/>' : ''}
@@ -704,6 +750,7 @@ class ExamWordService {
     required String teacherName,
     required String schoolName,
     required String educationOffice,
+    bool isWorksheet = false,
   }) async {
     final bytes = await generateWordBytes(
       exam: exam,
@@ -711,10 +758,12 @@ class ExamWordService {
       teacherName: teacherName,
       schoolName: schoolName,
       educationOffice: educationOffice,
+      isWorksheet: isWorksheet,
     );
 
     final tempDir = await getTemporaryDirectory();
-    final sanitizedTitle = exam.title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+    final titleForFile = isWorksheet ? '$_worksheetTitlePrefix${exam.title}' : exam.title;
+    final sanitizedTitle = titleForFile.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
     final filePath = '${tempDir.path}/$sanitizedTitle.docx';
     final file = File(filePath);
     await file.writeAsBytes(bytes);
@@ -727,6 +776,7 @@ class ExamWordService {
     required String teacherName,
     required String schoolName,
     required String educationOffice,
+    bool isWorksheet = false,
   }) async {
     final filePath = await generateWordFile(
       exam: exam,
@@ -734,21 +784,23 @@ class ExamWordService {
       teacherName: teacherName,
       schoolName: schoolName,
       educationOffice: educationOffice,
+      isWorksheet: isWorksheet,
     );
 
-    await shareWordFile(filePath, exam.title);
+    await shareWordFile(filePath, exam.title, isWorksheet: isWorksheet);
   }
 
-  static Future<void> shareWordFile(String filePath, String title) async {
+  static Future<void> shareWordFile(String filePath, String title, {bool isWorksheet = false}) async {
+    final displayTitle = isWorksheet ? '$_worksheetTitlePrefix$title' : title;
     await Share.shareXFiles(
       [
         XFile(
           filePath,
           mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          name: '$title.docx',
+          name: '$displayTitle.docx',
         )
       ],
-      text: 'اختبار: $title',
+      text: isWorksheet ? displayTitle : 'اختبار: $title',
     );
   }
 

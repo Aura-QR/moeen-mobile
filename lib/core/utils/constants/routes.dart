@@ -1,3 +1,18 @@
+import 'package:moean/features/concept_maps/data/models/concept_map_editor_args.dart';
+import 'package:moean/features/concept_maps/presentation/cubit/concept_map_editor_cubit.dart';
+import 'package:moean/features/concept_maps/presentation/cubit/concept_maps_cubit.dart';
+import 'package:moean/features/concept_maps/presentation/cubit/new_concept_map_cubit.dart';
+import 'package:moean/features/concept_maps/presentation/screens/concept_map_editor_screen.dart';
+import 'package:moean/features/concept_maps/presentation/screens/concept_maps_screen.dart';
+import 'package:moean/features/concept_maps/presentation/screens/new_concept_map_screen.dart';
+import 'package:moean/features/reading_comprehension/data/models/reading_editor_args.dart';
+import 'package:moean/features/reading_comprehension/presentation/cubit/reading_editor_cubit.dart';
+import 'package:moean/features/reading_comprehension/presentation/cubit/reading_list_cubit.dart';
+import 'package:moean/features/reading_comprehension/presentation/cubit/new_reading_cubit.dart';
+import 'package:moean/features/reading_comprehension/presentation/screens/reading_editor_screen.dart';
+import 'package:moean/features/reading_comprehension/presentation/screens/reading_list_screen.dart';
+import 'package:moean/features/reading_comprehension/presentation/screens/new_reading_screen.dart';
+import 'package:moean/features/documents/data/repositories/curriculum_lessons_repository.dart';
 import 'package:moean/features/exam_extraction/data/models/extraction_page_model.dart';
 import 'package:moean/features/exam_extraction/data/models/extraction_job_model.dart';
 import 'package:moean/features/exam_extraction/data/repositories/exam_extraction_repository.dart';
@@ -202,7 +217,7 @@ class Routes {
   static const String myfatoorahPayment = '/myfatoorah-payment';
   static const String paymentResult = '/payment-result';
   static const String paymentHistory = '/payment-history';
-  
+
   // Exam Generation
   static const String examGenerationInfo = '/exam-generation/info';
   static const String examGenerationLessons = '/exam-generation/lessons';
@@ -227,6 +242,12 @@ class Routes {
   static const String achievementReport = '/achievement-report';
   static const String supportChat = '/support-chat';
   static const String myDocuments = '/documents';
+  static const String conceptMaps = AppRouter.conceptMaps;
+  static const String conceptMapsNew = AppRouter.conceptMapsNew;
+  static const String conceptMapsEditor = AppRouter.conceptMapsEditor;
+  static const String readingComprehension = AppRouter.readingComprehension;
+  static const String readingComprehensionNew = AppRouter.readingComprehensionNew;
+  static const String readingComprehensionEditor = AppRouter.readingComprehensionEditor;
   static const String documentDefaults = '/documents/defaults';
   static const String strategyDocumentation = '/tools/strategy-documentation';
   static const String remedialPlan = '/tools/remedial-plan';
@@ -255,8 +276,6 @@ class Routes {
   static const String reportEditor = '/tools/reports/editor';
   static const String roleSuites = AppRouter.roleSuites;
   static const String roleDocuments = AppRouter.roleDocuments;
-
-
 
   static Map<String, WidgetBuilder> get routes => {
     home: (context) => const MainLayoutScreen(),
@@ -305,25 +324,60 @@ class Routes {
     haderWebView: (context) => HaderWebViewScreen(
       initialUrl: ModalRoute.of(context)?.settings.arguments as String?,
     ),
+
     haderPrep: (context) => const HaderNativePrepScreen(),
     supportChat: (context) => const SupportChatScreen(),
     extensionUsage: (context) => const ExtensionUsageSlider(),
     adminTeachers: (context) => const AdminTeachersScreen(),
     adminContact: (context) => const AdminContactScreen(),
-    adminTicketDetails: (context) => BlocProvider(create: (context) => AdminContactCubit(), child: const AdminTicketDetailsScreen()),
+    adminTicketDetails: (context) => BlocProvider(
+      create: (context) => AdminContactCubit(),
+      child: const AdminTicketDetailsScreen(),
+    ),
     adminPayments: (context) => const AdminPaymentsScreen(),
-    adminExams: (context) => BlocProvider(create: (_) => sl<AdminExamsCubit>()..fetchPendingQuestions(), child: const AdminExamsScreen()),
-    contact: (context) => BlocProvider(create: (context) => ContactCubit(), child: const ContactSupportScreen()),
-    createTicket: (context) => BlocProvider(create: (context) => ContactCubit(), child: const CreateTicketScreen()),
-    myTickets: (context) => BlocProvider(create: (context) => ContactCubit(), child: const MyTicketsScreen()),
-    ticketDetails: (context) => BlocProvider(create: (context) => ContactCubit(), child: const TicketDetailsScreen()),
-    reports: (context) => BlocProvider(create: (_) => ReportCubit(), child: const ReportScreen()),
-    checkout: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const CheckoutScreen()),
-    bankTransfer: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const BankTransferScreen()),
-    myfatoorahPayment: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const MyfatoorahPaymentScreen()),
+    adminExams: (context) => BlocProvider(
+      create: (_) => sl<AdminExamsCubit>()..fetchPendingQuestions(),
+      child: const AdminExamsScreen(),
+    ),
+    contact: (context) => BlocProvider(
+      create: (context) => ContactCubit(),
+      child: const ContactSupportScreen(),
+    ),
+    createTicket: (context) => BlocProvider(
+      create: (context) => ContactCubit(),
+      child: const CreateTicketScreen(),
+    ),
+    myTickets: (context) => BlocProvider(
+      create: (context) => ContactCubit(),
+      child: const MyTicketsScreen(),
+    ),
+    ticketDetails: (context) => BlocProvider(
+      create: (context) => ContactCubit(),
+      child: const TicketDetailsScreen(),
+    ),
+    reports: (context) =>
+        BlocProvider(create: (_) => ReportCubit(), child: const ReportScreen()),
+    checkout: (context) => BlocProvider(
+      create: (_) => PaymentCubit(),
+      child: const CheckoutScreen(),
+    ),
+    bankTransfer: (context) => BlocProvider(
+      create: (_) => PaymentCubit(),
+      child: const BankTransferScreen(),
+    ),
+    myfatoorahPayment: (context) => BlocProvider(
+      create: (_) => PaymentCubit(),
+      child: const MyfatoorahPaymentScreen(),
+    ),
     paymentResult: (context) => const PaymentResultScreen(),
-    paymentHistory: (context) => BlocProvider(create: (_) => PaymentCubit(), child: const PaymentHistoryScreen()),
-    examGenerationInfo: (context) => BlocProvider.value(value: sl<ExamInfoCubit>(), child: const ExamInfoScreen()),
+    paymentHistory: (context) => BlocProvider(
+      create: (_) => PaymentCubit(),
+      child: const PaymentHistoryScreen(),
+    ),
+    examGenerationInfo: (context) => BlocProvider.value(
+      value: sl<ExamInfoCubit>(),
+      child: const ExamInfoScreen(),
+    ),
     examGenerationLessons: (context) => MultiBlocProvider(
       providers: [
         BlocProvider.value(value: sl<LessonSelectionCubit>()),
@@ -331,6 +385,7 @@ class Routes {
       ],
       child: const LessonSelectionScreen(),
     ),
+
     examGenerationCounts: (context) => MultiBlocProvider(
       providers: [
         BlocProvider.value(value: sl<QuestionCountCubit>()),
@@ -340,30 +395,34 @@ class Routes {
       ],
       child: const QuestionCountsScreen(),
     ),
+
     myExams: (context) => BlocProvider(
       create: (_) => sl<MyExamsCubit>()..fetchExams(isRefresh: true),
       child: const MyExamsScreen(),
     ),
+
     customQuestions: (context) => BlocProvider(
       create: (_) => sl<CustomQuestionsCubit>(),
       child: const CustomQuestionsScreen(),
     ),
+
     examGenerationPreview: (context) {
-      final initialExam = ModalRoute.of(context)!.settings.arguments as ExamEntity;
+      final initialExam =
+          ModalRoute.of(context)!.settings.arguments as ExamEntity;
       return BlocProvider(
         create: (_) => sl<ExamPreviewCubit>(),
         child: ExamPreviewScreen(initialExam: initialExam),
       );
     },
     manualExam: (context) => const ManualExamScreen(),
-    search: (context) => BlocProvider(
-      create: (_) => SearchCubit(),
-      child: const SearchScreen(),
-    ),
+    search: (context) =>
+        BlocProvider(create: (_) => SearchCubit(), child: const SearchScreen()),
+
     certificates: (context) => BlocProvider(
       create: (_) => CertificateCubit(),
       child: const CertificateScreen(),
     ),
+
     examBankQuestions: (context) => MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<BankQuestionsCubit>()),
@@ -372,22 +431,27 @@ class Routes {
       ],
       child: const BankQuestionsScreen(),
     ),
+
     presentations: (context) => BlocProvider(
       create: (_) => PresentationsCubit(PresentationsRepository()),
       child: const PresentationsScreen(),
     ),
+
     referral: (context) => BlocProvider(
       create: (_) => ReferralCubit(),
       child: const ReferralScreen(),
     ),
+
     adminPromo: (context) => BlocProvider(
       create: (_) => AdminPromoCubit(),
       child: const AdminPromoScreen(),
     ),
+
     privacyPolicy: (context) => BlocProvider(
       create: (_) => PrivacyPolicyCubit(),
       child: const PrivacyPolicyScreen(),
     ),
+
     curriculumDistribution: (context) => MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => CurriculumDistributionCubit()),
@@ -395,6 +459,7 @@ class Routes {
       ],
       child: const CurriculumDistributionScreen(),
     ),
+
     curriculumBooks: (context) => MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => CurriculumDistributionCubit()),
@@ -402,10 +467,13 @@ class Routes {
       ],
       child: const CurriculumBooksScreen(),
     ),
+
     portfolio: (context) => BlocProvider(
-      create: (_) => PortfolioListCubit(PortfolioRepository())..loadPortfolios(),
+      create: (_) =>
+          PortfolioListCubit(PortfolioRepository())..loadPortfolios(),
       child: const PortfolioListScreen(),
     ),
+
     // Argument: the portfolio id (int).
     portfolioEditor: (context) => BlocProvider(
       create: (_) => PortfolioEditorCubit(
@@ -417,6 +485,7 @@ class Routes {
       )..load(),
       child: const PortfolioEditorScreen(),
     ),
+
     portfolioPerformance: (context) => BlocProvider(
       create: (_) => PerformanceCubit(
         portfolioId: context.getArg<int>() ?? 0,
@@ -424,18 +493,27 @@ class Routes {
       )..load(),
       child: const PerformanceScreen(),
     ),
+
     portfolioPerformanceItem: (context) {
       final args = context.getArg<({int portfolioId, int itemId})>();
       final portfolioId = args?.portfolioId ?? 0;
       return MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => PerformanceCubit(portfolioId: portfolioId, repository: PortfolioRepository())..load()),
+          BlocProvider(
+            create: (_) => PerformanceCubit(
+              portfolioId: portfolioId,
+              repository: PortfolioRepository(),
+            )..load(),
+          ),
           BlocProvider(
             create: (_) => PortfolioEditorCubit(
               portfolioId: portfolioId,
               repository: PortfolioRepository(),
               filePicker: DeviceFilePicker(),
-              pdfBuilder: (portfolio, images) => PortfolioPdfService.build(portfolio: portfolio, images: images),
+              pdfBuilder: (portfolio, images) => PortfolioPdfService.build(
+                portfolio: portfolio,
+                images: images,
+              ),
             )..load(),
           ),
         ],
@@ -452,10 +530,67 @@ class Routes {
       )..load(),
       child: const AchievementReportScreen(),
     ),
+
+    conceptMaps: (context) => BlocProvider(
+      create: (_) =>
+          ConceptMapsCubit(documentsRepository: DocumentsRepository())..load(),
+      child: const ConceptMapsScreen(),
+    ),
+
+    conceptMapsNew: (context) => BlocProvider(
+      create: (_) => NewConceptMapCubit(
+        curriculumRepository: CurriculumLessonsRepository(),
+        aiJobsRepository: AiJobsRepository(),
+      )..loadStages(),
+      child: const NewConceptMapScreen(),
+    ),
+
+    conceptMapsEditor: (context) {
+      final rawArg = ModalRoute.of(context)?.settings.arguments;
+      final args = rawArg is ConceptMapEditorArgs ? rawArg : null;
+      final documentId = rawArg is int ? rawArg : args?.documentId;
+      return BlocProvider(
+        create: (_) => ConceptMapEditorCubit(
+          documentsRepository: DocumentsRepository(),
+          documentId: documentId,
+          initialInput: args?.initialInput,
+        )..load(),
+        child: const ConceptMapEditorScreen(),
+      );
+    },
+
+    readingComprehension: (context) => BlocProvider(
+      create: (_) => ReadingListCubit(documentsRepository: DocumentsRepository())..load(),
+      child: const ReadingListScreen(),
+    ),
+
+    readingComprehensionNew: (context) => BlocProvider(
+      create: (_) => NewReadingCubit(
+        curriculumRepository: CurriculumLessonsRepository(),
+        aiJobsRepository: AiJobsRepository(),
+      )..loadStages(),
+      child: const NewReadingScreen(),
+    ),
+
+    readingComprehensionEditor: (context) {
+      final rawArg = ModalRoute.of(context)?.settings.arguments;
+      final args = rawArg is ReadingEditorArgs ? rawArg : null;
+      final documentId = rawArg is int ? rawArg : args?.documentId;
+      return BlocProvider(
+        create: (_) => ReadingEditorCubit(
+          documentsRepository: DocumentsRepository(),
+          documentId: documentId,
+          initialInput: args?.initialInput,
+        )..load(),
+        child: const ReadingEditorScreen(),
+      );
+    },
+
     myDocuments: (context) => BlocProvider(
       create: (_) => MyDocumentsCubit(DocumentsRepository())..load(),
       child: const MyDocumentsScreen(),
     ),
+
     // Pops with true after a save.
     documentDefaults: (context) => BlocProvider(
       create: (_) => DocumentDefaultsCubit(
@@ -464,6 +599,7 @@ class Routes {
       )..load(),
       child: const DocumentDefaultsScreen(),
     ),
+
     // Argument: the document id (int) to reopen, or none for a new one.
     strategyDocumentation: (context) => BlocProvider(
       create: (_) => StrategyDocumentationCubit(
@@ -474,17 +610,20 @@ class Routes {
       )..load(),
       child: const StrategyDocumentationScreen(),
     ),
+
     // Argument: the document id (int) to reopen, or none for a new one.
     remedialPlan: (context) => PlanFormProviders(
       tool: remedialPlanTool,
       documentId: context.getArg<int>(),
       child: const RemedialPlanScreen(),
     ),
+
     enrichmentPlan: (context) => PlanFormProviders(
       tool: enrichmentPlanTool,
       documentId: context.getArg<int>(),
       child: const EnrichmentPlanScreen(),
     ),
+
     // Argument: the document id (int) to reopen, or none for a new one.
     activitiesPlan: (context) => BlocProvider(
       create: (_) => ActivitiesPlanCubit(
@@ -495,6 +634,7 @@ class Routes {
       )..load(),
       child: const ActivitiesPlanScreen(),
     ),
+
     // Argument: the document id (int) to reopen, or none for a new one.
     gradeAnalysis: (context) => MultiBlocProvider(
       providers: [
@@ -506,13 +646,20 @@ class Routes {
             filePicker: DeviceFilePicker(),
           )..load(),
         ),
-        BlocProvider(create: (_) => GradeResultsCubit(GradeAnalysisRepository())),
+
         BlocProvider(
-          create: (_) => AiSuggestionsCubit(kind: AiJobKinds.gradeRecommendations, repository: AiJobsRepository()),
+          create: (_) => GradeResultsCubit(GradeAnalysisRepository()),
+        ),
+        BlocProvider(
+          create: (_) => AiSuggestionsCubit(
+            kind: AiJobKinds.gradeRecommendations,
+            repository: AiJobsRepository(),
+          ),
         ),
       ],
       child: const GradeAnalysisScreen(),
     ),
+
     // Argument: the document id (int) to reopen, or none for a new one.
     thankYouCertificates: (context) => MultiBlocProvider(
       providers: [
@@ -526,6 +673,7 @@ class Routes {
             filePicker: DeviceFilePicker(),
           )..load(),
         ),
+
         BlocProvider(
           create: (_) => DocumentPreviewCubit(
             type: DocumentTypes.certificates,
@@ -537,10 +685,12 @@ class Routes {
       ],
       child: const CertificatesScreen(),
     ),
+
     classes: (context) => BlocProvider(
       create: (_) => ClassesCubit(ClassesRepository())..load(),
       child: const ClassesScreen(),
     ),
+
     // Argument: the class id (int) to edit, or none for a new one. Pops with true after a save.
     classEditor: (context) => BlocProvider(
       create: (_) => ClassEditorCubit(
@@ -550,21 +700,29 @@ class Routes {
       )..load(),
       child: const ClassEditorScreen(),
     ),
+
     preparationHistory: (context) => PreparationHistoryScreen.create(),
     onlineTests: (context) => OnlineTestsScreen.create(),
     // Argument: {'exam_id': int, 'title': String}.
-    createOnlineTest: (context) => CreateOnlineTestScreen.create(context.getArg<Map<String, dynamic>>() ?? const {}),
+    createOnlineTest: (context) => CreateOnlineTestScreen.create(
+      context.getArg<Map<String, dynamic>>() ?? const {},
+    ),
     // Argument: the online test id.
-    onlineTest: (context) => OnlineTestScreen.create(context.getArg<int>() ?? 0),
+    onlineTest: (context) =>
+        OnlineTestScreen.create(context.getArg<int>() ?? 0),
     // Argument: {'test_id': int, 'submission_id': int, 'next': List<int>}.
-    onlineTestReview: (context) => SubmissionReviewScreen.create(context.getArg<Map<String, dynamic>>() ?? const {}),
+    onlineTestReview: (context) => SubmissionReviewScreen.create(
+      context.getArg<Map<String, dynamic>>() ?? const {},
+    ),
     diagnosticTest: (context) => DiagnosticCreateScreen.create(),
     // Argument: the online test id.
     diagnosis: (context) => DiagnosisScreen.create(context.getArg<int>() ?? 0),
-    // Argument: the `lesson_preparation` document id. Without one, «تحضيراتي» opens to pick lessons.
+    // Argument: the `lesson_preparation` document id. Without one, Â«ØªØ­Ø¶ÙŠØ±Ø§ØªÙŠÂ» opens to pick lessons.
     preparationPrint: (context) {
       final id = context.getArg<int>();
-      return id == null ? PreparationHistoryScreen.create() : PreparationPrintScreen.create(id);
+      return id == null
+          ? PreparationHistoryScreen.create()
+          : PreparationPrintScreen.create(id);
     },
     // Argument: int documentId to reopen, or SchoolClassModel or Map with 'class' / 'document_id'.
     classSheets: (context) {
@@ -588,17 +746,17 @@ class Routes {
       create: (_) => ExtractionPagesCubit(),
       child: const ExtractionPagesScreen(),
     ),
+
     examExtractionReading: (context) {
       final args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      final pages =
-          args?['pages'] as List<ExtractionPageModel>? ?? const [];
+      final pages = args?['pages'] as List<ExtractionPageModel>? ?? const [];
       final count = args?['count'] as int? ?? 10;
       final notes = args?['notes'] as String?;
       return BlocProvider(
-        create: (_) => ExtractionJobCubit(
-          repository: ExamExtractionRepository(),
-        )..start(pages: pages, count: count, notes: notes),
+        create: (_) =>
+            ExtractionJobCubit(repository: ExamExtractionRepository())
+              ..start(pages: pages, count: count, notes: notes),
         child: const ExtractionReadingScreen(),
       );
     },
@@ -611,6 +769,7 @@ class Routes {
           initialQuestions: job?.questions ?? const [],
           source: job?.source,
         ),
+
         child: const ExtractionReviewScreen(),
       );
     },
@@ -621,10 +780,10 @@ class Routes {
         providers: [
           BlocProvider(create: (_) => LinkQrCubit()),
           BlocProvider(
-            create: (_) => SharedFileUploadCubit(
-              repository: SharedFilesRepository(),
-            ),
+            create: (_) =>
+                SharedFileUploadCubit(repository: SharedFilesRepository()),
           ),
+
           BlocProvider(create: (_) => QrExportCubit()),
         ],
         child: QrCodesScreen(isLoggedIn: isLoggedIn),
@@ -641,15 +800,19 @@ class Routes {
       );
     },
     sharedFiles: (context) => BlocProvider(
-      create: (_) => SharedFilesListCubit(
-        repository: SharedFilesRepository(),
-      ),
+      create: (_) => SharedFilesListCubit(repository: SharedFilesRepository()),
+
       child: const SharedFilesScreen(),
     ),
+
     reportTools: (context) => BlocProvider(
-      create: (_) => ReportTemplatesCubit(reports: ReportsRepository(), documents: DocumentsRepository())..load(),
+      create: (_) => ReportTemplatesCubit(
+        reports: ReportsRepository(),
+        documents: DocumentsRepository(),
+      )..load(),
       child: const ReportTemplatesScreen(),
     ),
+
     // Argument: a saved report's id (int), a template key (String), or none for a blank report.
     reportEditor: (context) {
       final argument = ModalRoute.of(context)?.settings.arguments;
@@ -674,6 +837,7 @@ class Routes {
       )..load(),
       child: const RoleSuitesScreen(),
     ),
+
     roleDocuments: (context) {
       final args = ModalRoute.of(context)?.settings.arguments;
       return _buildRoleDocumentsScreen(args: args);
@@ -689,7 +853,9 @@ class Routes {
     } else if (args is String && roleKey.isEmpty) {
       roleKey = args;
     } else if (args is Map<String, dynamic>) {
-      if (roleKey.isEmpty) roleKey = args['key']?.toString() ?? args['role']?.toString() ?? '';
+      if (roleKey.isEmpty) {
+        roleKey = args['key']?.toString() ?? args['role']?.toString() ?? '';
+      }
       initialLabel = args['label']?.toString() ?? '';
     }
     return BlocProvider(
@@ -707,14 +873,23 @@ class Routes {
     if (uri == null) return null;
     final segments = uri.pathSegments;
     // Dynamic route `/tools/roles/{role}`
-    if (segments.length == 3 && segments[0] == 'tools' && segments[1] == 'roles' && segments[2] != 'documents') {
+    if (segments.length == 3 &&
+        segments[0] == 'tools' &&
+        segments[1] == 'roles' &&
+        segments[2] != 'documents') {
       return MaterialPageRoute<dynamic>(
         settings: settings,
-        builder: (_) => _buildRoleDocumentsScreen(pathRoleKey: segments[2], args: settings.arguments),
+        builder: (_) => _buildRoleDocumentsScreen(
+          pathRoleKey: segments[2],
+          args: settings.arguments,
+        ),
       );
     }
     // Deep-link `/reports/evidence/new?role={role}&doc={doc}`
-    if (segments.length == 3 && segments[0] == 'reports' && segments[1] == 'evidence' && segments[2] == 'new') {
+    if (segments.length == 3 &&
+        segments[0] == 'reports' &&
+        segments[1] == 'evidence' &&
+        segments[2] == 'new') {
       final role = uri.queryParameters['role'] ?? '';
       final doc = uri.queryParameters['doc'] ?? '';
       return MaterialPageRoute<dynamic>(
@@ -726,7 +901,9 @@ class Routes {
             picker: DeviceFilePicker(),
             roleSuites: RoleSuitesRepository(),
             aiJobs: AiJobsRepository(),
-            roleArgs: role.isNotEmpty && doc.isNotEmpty ? RoleReportEditorArgs(role: role, doc: doc) : null,
+            roleArgs: role.isNotEmpty && doc.isNotEmpty
+                ? RoleReportEditorArgs(role: role, doc: doc)
+                : null,
           )..load(),
           child: const ReportEditorScreen(),
         ),
