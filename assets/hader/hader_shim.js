@@ -417,6 +417,15 @@
       });
     }
 
+    // The lesson's AI text through Hader (content.js requestLessonAI).
+    if (action === 'LESSON_AI') {
+      return bridge('haderApi', {
+        method: 'POST',
+        path: '/extension/lesson-ai',
+        body: msg.payload || {}
+      });
+    }
+
     // The «حضر» button runs the same server operation as the extension:
     // authorize → claim → prepare in this page → complete. Each step is an
     // API call, proxied through Dart for the same CORS reason as above.
