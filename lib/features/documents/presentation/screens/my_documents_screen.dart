@@ -40,6 +40,15 @@ class MyDocumentsScreen extends StatelessWidget {
       );
       return;
     }
+    // L3 «أنماط التعلم»: server-built report, no editor; only its files.
+    if (document.type == DocumentTypes.learningStyles) {
+      DocumentExportSheet.show(
+        context,
+        documentId: document.id,
+        noteKey: 'learning_styles_report_note',
+      );
+      return;
+    }
     final tool = documentToolFor(document.type);
     if (tool == null) {
       showPrimarySnackBar(context, 'document_type_unsupported');

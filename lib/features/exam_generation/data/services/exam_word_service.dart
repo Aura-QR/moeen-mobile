@@ -501,7 +501,18 @@ class ExamWordService {
 ''');
 
     // Exam Title
-    final displayTitle = isWorksheet ? '$_worksheetTitlePrefix${exam.title}' : exam.title;
+    final bool isNafs = exam.kind == 'nafs';
+    final bool isTahsili = exam.kind == 'tahsili';
+    final String nafsPrefix = 'اختبار تدريبي بأسلوب نافس — ';
+    final String tahsiliPrefix = 'اختبار تدريبي بأسلوب التحصيلي — ';
+    final String baseTitle = isTahsili
+        ? (!exam.title.startsWith('اختبار تدريبي بأسلوب التحصيلي')
+            ? '$tahsiliPrefix${exam.title}'
+            : exam.title)
+        : (isNafs && !exam.title.startsWith('اختبار تدريبي بأسلوب نافس'))
+            ? '$nafsPrefix${exam.title}'
+            : exam.title;
+    final displayTitle = isWorksheet ? '$_worksheetTitlePrefix$baseTitle' : baseTitle;
     final isTitleEng = isEnglishText(displayTitle);
     sb.write('''
     <w:p>

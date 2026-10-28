@@ -80,17 +80,21 @@ class NafsRepository {
     required List<NafsDomain> domains,
   }) =>
       handleApiResponse(
-        DioHelper.postData(url: nafsSaveApi, data: {
-          'grade': grade,
-          'subject': subject,
-          'subject_ids': subjectIds,
-          'subject_id': subjectIds.isNotEmpty ? subjectIds.first : 0,
-          'title': title.trim(),
-          'passage': (passage != null && passage.trim().isNotEmpty) ? passage.trim() : null,
-          'kind': 'nafs',
-          'skills': domains.map((d) => d.toJson()).toList(),
-          'domains': domains.map((d) => d.toJson()).toList(),
-        }),
+        DioHelper.postData(
+          url: nafsSaveApi,
+          data: {
+            'grade': grade,
+            'subject': subject,
+            'subject_ids': subjectIds,
+            'subject_id': subjectIds.isNotEmpty ? subjectIds.first : null,
+            'title': title.trim(),
+            'passage': (passage != null && passage.trim().isNotEmpty) ? passage.trim() : null,
+            'kind': 'nafs',
+            'skills': domains.map((d) => d.toJson()).toList(),
+            'domains': domains.map((d) => d.toJson()).toList(),
+          },
+          keepFieldErrors: true,
+        ),
         (body) {
           final m = _map(body);
           if (m['exam'] is Map) {

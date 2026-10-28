@@ -22,10 +22,21 @@ const String preparationDocumentApi = '/preparations/document';
 const String onlineTestsApi = '/online-tests';
 // L2 «الاختبار التشخيصي» (DIAGNOSTIC_TEST_API.md).
 const String diagnosticTestsApi = '/diagnostic-tests';
+// L3 «أنماط التعلم» (LEARNING_STYLES_API.md).
+const String learningStylesApi = '/learning-styles';
+const String learningStylesOptionsApi = '/learning-styles/options';
+String learningStyleApi(int id) => '/learning-styles/$id';
+String learningStyleResultsApi(int id) => '/learning-styles/$id/results';
+String learningStyleResponseApi(int id, int responseId) => '/learning-styles/$id/responses/$responseId';
+String learningStyleReportApi(int id) => '/learning-styles/$id/report';
 // L11 «نافس» (NAFS_API.md).
 const String nafsApi = '/nafs';
 const String nafsOptionsApi = '/nafs/options';
 const String nafsSaveApi = '/nafs/save';
+// L11b «التحصيلي» (TAHSILI_API.md).
+const String tahsiliApi = '/tahsili';
+const String tahsiliOptionsApi = '/tahsili/options';
+const String tahsiliSaveApi = '/tahsili/save';
 
 // Admin API
 const String adminTeachersApi = '/admin/teachers';

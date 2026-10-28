@@ -50,7 +50,7 @@ class MyExamsHeaderWidget extends StatelessWidget {
           verticalSpace8,
           MyExamsEntryTile(
             icon: Icons.track_changes_outlined,
-            title: appTranslation().get('nafs_entry_title'),
+            title: appTranslation().get('national_exams_title'),
             onTap: onNafsTestTap,
           ),
           verticalSpace12,

@@ -268,11 +268,11 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget>
                           onTap: () => _openAuthed(context, Routes.outcomesMap),
                         ),
                           horizontalSpace12,
-                          // Nafs practice tests feature chip (L11)
+                          // National exams feature chip (L11 / L11b)
                           HomeActionChipWidget(
                             icon: Icons.track_changes_outlined,
-                            title: appTranslation().get('nafs_title'),
-                            onTap: () => _openAuthed(context, Routes.nafsTest),
+                            title: appTranslation().get('national_exams_title'),
+                            onTap: () => _openAuthed(context, Routes.nationalExams),
                           ),
                           horizontalSpace12,
                           // Reading comprehension feature chip (L12)
@@ -342,6 +342,13 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget>
                             icon: Icons.qr_code_2_outlined,
                             title: appTranslation().get('online_tests_title'),
                             onTap: () => _openAuthed(context, Routes.onlineTests),
+                          ),
+                          horizontalSpace12,
+                          // Learning styles survey feature chip (L3)
+                          HomeActionChipWidget(
+                            icon: Icons.psychology_outlined,
+                            title: appTranslation().get('learning_styles_title'),
+                            onTap: () => _openAuthed(context, Routes.learningStyles),
                           ),
                           horizontalSpace12,
                           HomeActionChipWidget(

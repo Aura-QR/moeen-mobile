@@ -68,12 +68,28 @@ class _OnlineTestResultsTabState extends State<OnlineTestResultsTab> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (test.isDiagnostic) ...[
+          if (test.isDiagnostic || test.isNafs || test.isTahsili) ...[
             FilledButton.icon(
               style: FilledButton.styleFrom(backgroundColor: ColorsManager.secondaryColor, minimumSize: const Size.fromHeight(48)),
               icon: const Icon(Icons.track_changes),
-              label: Text(appTranslation().get('diagnostic_diagnosis')),
-              onPressed: () => Navigator.pushNamed(context, Routes.diagnosis, arguments: test.id),
+              label: Text(
+                test.isTahsili
+                    ? appTranslation().get('tahsili_results_domains_title')
+                    : test.isNafs
+                        ? appTranslation().get('nafs_results_domains_title')
+                        : appTranslation().get('diagnostic_diagnosis'),
+              ),
+              onPressed: () {
+                final diagTitle = test.isTahsili
+                    ? appTranslation().get('tahsili_results_domains_title')
+                    : test.isNafs
+                        ? appTranslation().get('nafs_results_domains_title')
+                        : appTranslation().get('diagnostic_diagnosis');
+                Navigator.pushNamed(context, Routes.diagnosis, arguments: {
+                  'test_id': test.id,
+                  'title': diagTitle,
+                });
+              },
             ),
             verticalSpace8,
           ],

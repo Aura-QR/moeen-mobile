@@ -23,7 +23,12 @@ abstract final class AppRouter {
   static const String readingComprehension = '/reading-comprehension';
   static const String readingComprehensionNew = '/reading-comprehension/new';
   static const String readingComprehensionEditor = '/reading-comprehension/editor';
+  static const String learningStyles = '/learning-styles';
+  static const String learningStyleNew = '/learning-styles/new';
+  static const String learningStyle = '/learning-styles/survey';
+  static const String nationalExams = '/exams/national';
   static const String nafsTest = '/exams/nafs';
+  static const String tahsiliTest = '/exams/tahsili';
 
   static String roleDocumentsPath(String roleKey) => '$roleSuites/$roleKey';
 

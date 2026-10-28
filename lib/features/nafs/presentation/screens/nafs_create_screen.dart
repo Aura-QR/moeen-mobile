@@ -16,11 +16,13 @@ import 'package:moean/features/nafs/presentation/widgets/nafs_generating_view.da
 import 'package:moean/features/nafs/presentation/widgets/nafs_review_view.dart';
 
 class NafsCreateScreen extends StatelessWidget {
-  const NafsCreateScreen({super.key});
+  final bool isEmbedded;
 
-  static Widget create() => BlocProvider(
+  const NafsCreateScreen({super.key, this.isEmbedded = false});
+
+  static Widget create({bool isEmbedded = false}) => BlocProvider(
         create: (_) => NafsCubit(NafsRepository())..loadOptions(),
-        child: const NafsCreateScreen(),
+        child: NafsCreateScreen(isEmbedded: isEmbedded),
       );
 
   Future<void> _handleSavedExam(BuildContext context, int examId) async {
@@ -43,15 +45,17 @@ class NafsCreateScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: ColorsManager.background,
-      appBar: AppBar(
-        backgroundColor: ColorsManager.background,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          appTranslation().get('nafs_entry_title'),
-          style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
-        ),
-      ),
+      appBar: isEmbedded
+          ? null
+          : AppBar(
+              backgroundColor: ColorsManager.background,
+              elevation: 0,
+              centerTitle: true,
+              title: Text(
+                appTranslation().get('nafs_entry_title'),
+                style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
+              ),
+            ),
       body: BlocConsumer<NafsCubit, NafsState>(
         listenWhen: (prev, curr) =>
             prev.error != curr.error || prev.savedExamId != curr.savedExamId,

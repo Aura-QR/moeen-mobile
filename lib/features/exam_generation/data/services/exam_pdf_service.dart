@@ -87,10 +87,16 @@ class ExamPdfService {
       ..sort((a, b) => a.questionOrder.compareTo(b.questionOrder));
 
     final bool isNafs = exam.kind == 'nafs';
+    final bool isTahsili = exam.kind == 'tahsili';
     final String nafsPrefix = 'اختبار تدريبي بأسلوب نافس — ';
-    final String baseTitle = (isNafs && !exam.title.startsWith('اختبار تدريبي بأسلوب نافس'))
-        ? '$nafsPrefix${exam.title}'
-        : exam.title;
+    final String tahsiliPrefix = 'اختبار تدريبي بأسلوب التحصيلي — ';
+    final String baseTitle = isTahsili
+        ? (!exam.title.startsWith('اختبار تدريبي بأسلوب التحصيلي')
+            ? '$tahsiliPrefix${exam.title}'
+            : exam.title)
+        : (isNafs && !exam.title.startsWith('اختبار تدريبي بأسلوب نافس'))
+            ? '$nafsPrefix${exam.title}'
+            : exam.title;
     final displayTitle = isWorksheet ? '$_worksheetTitlePrefix$baseTitle' : baseTitle;
     final isExamTitleEnglish = isEnglishText(displayTitle);
 
@@ -137,7 +143,9 @@ class ExamPdfService {
             pw.SizedBox(height: 20),
 
             // Questions
-            ...questions.map((q) => _buildQuestion(q, arabicRegular, arabicBold, effectiveShowAnswers, isWorksheet)),
+            ...questions.map((q) => _buildQuestion(q, arabicRegular, arabicBold, effectiveShowAnswers, isWorksheet, isNafs || isTahsili)),
+            if ((isNafs || isTahsili) && effectiveShowAnswers)
+              _buildAnswerKeyTable(questions, arabicRegular, arabicBold),
           ];
         },
       ),
@@ -445,6 +453,53 @@ class ExamPdfService {
       );
     }
     return pw.SizedBox();
+  }
+
+  static pw.Widget _buildAnswerKeyTable(
+    List<QuestionEntity> questions,
+    pw.TextStyle regular,
+    pw.TextStyle bold,
+  ) {
+    const arabicLetters = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز', 'ح'];
+    final mcqQuestions = questions.where((q) => q.type == 'mcq').toList();
+    if (mcqQuestions.isEmpty) return pw.SizedBox();
+
+    return pw.Container(
+      margin: const pw.EdgeInsets.only(top: 24, bottom: 12),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            'مفتاح الإجابات',
+            style: bold.copyWith(fontSize: 13, color: PdfColors.blueGrey800),
+            textDirection: pw.TextDirection.rtl,
+          ),
+          pw.SizedBox(height: 8),
+          pw.TableHelper.fromTextArray(
+            headers: ['رقم السؤال', 'رمز الإجابة', 'الإجابة الصحيحة'],
+            data: mcqQuestions.asMap().entries.map((entry) {
+              final idx = entry.key + 1;
+              final q = entry.value;
+              final opts = List<String>.from(q.options ?? []);
+              final optIndex = opts.indexOf(q.correctAnswer);
+              final letter = (optIndex >= 0 && optIndex < arabicLetters.length)
+                  ? arabicLetters[optIndex]
+                  : '—';
+              return ['$idx', letter, q.correctAnswer];
+            }).toList(),
+            headerStyle: bold.copyWith(fontSize: 10, color: PdfColors.white),
+            headerDecoration: const pw.BoxDecoration(color: PdfColors.blueGrey700),
+            cellStyle: regular.copyWith(fontSize: 9),
+            cellAlignment: pw.Alignment.center,
+            columnWidths: {
+              0: const pw.FixedColumnWidth(80),
+              1: const pw.FixedColumnWidth(80),
+              2: const pw.FlexColumnWidth(),
+            },
+          ),
+        ],
+      ),
+    );
   }
 }
 

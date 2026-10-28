@@ -34,7 +34,7 @@ class MyExamsScreen extends StatelessWidget {
   }
 
   Future<void> _openNafsTest(BuildContext context) async {
-    final saved = await Navigator.pushNamed(context, Routes.nafsTest);
+    final saved = await Navigator.pushNamed(context, Routes.nationalExams);
     if (saved == true && context.mounted) {
       MyExamsCubit.get(context).fetchExams(isRefresh: true);
     }

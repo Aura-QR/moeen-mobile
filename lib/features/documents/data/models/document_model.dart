@@ -23,6 +23,9 @@ abstract final class DocumentTypes {
   static const String outcomesMap = 'outcomes_map';
   static const String readingComprehension = 'reading_comprehension';
 
+  /// L3 «أنماط التعلم»: server-built from a survey's results; it has no form.
+  static const String learningStyles = 'learning_styles';
+
   /// Made by the server from a portfolio (T9); it has no form.
   static const String performanceFile = 'performance_file';
 
@@ -40,6 +43,7 @@ abstract final class DocumentTypes {
     conceptMap,
     outcomesMap,
     readingComprehension,
+    learningStyles,
   ];
 
   static String labelKey(String type) => 'document_type_$type';

@@ -19,6 +19,9 @@ import 'package:moean/features/reading_comprehension/presentation/cubit/new_read
 import 'package:moean/features/reading_comprehension/presentation/screens/reading_editor_screen.dart';
 import 'package:moean/features/reading_comprehension/presentation/screens/reading_list_screen.dart';
 import 'package:moean/features/reading_comprehension/presentation/screens/new_reading_screen.dart';
+import 'package:moean/features/learning_styles/presentation/screens/learning_styles_screen.dart';
+import 'package:moean/features/learning_styles/presentation/screens/new_learning_style_screen.dart';
+import 'package:moean/features/learning_styles/presentation/screens/learning_style_survey_screen.dart';
 import 'package:moean/features/documents/data/repositories/curriculum_lessons_repository.dart';
 import 'package:moean/features/exam_extraction/data/models/extraction_page_model.dart';
 import 'package:moean/features/exam_extraction/data/models/extraction_job_model.dart';
@@ -179,7 +182,7 @@ import 'package:moean/features/online_tests/presentation/screens/online_tests_sc
 import 'package:moean/features/online_tests/presentation/screens/submission_review_screen.dart';
 import 'package:moean/features/diagnostic_test/presentation/screens/diagnostic_create_screen.dart';
 import 'package:moean/features/diagnostic_test/presentation/screens/diagnosis_screen.dart';
-import 'package:moean/features/nafs/presentation/screens/nafs_create_screen.dart';
+import 'package:moean/features/nafs/presentation/screens/national_exams_screen.dart';
 import 'package:moean/features/preparation_print/presentation/screens/preparation_print_screen.dart';
 import 'package:moean/core/router/app_router.dart';
 import 'package:moean/features/reports/data/models/role_report_editor_args.dart';
@@ -259,6 +262,9 @@ class Routes {
   static const String readingComprehension = AppRouter.readingComprehension;
   static const String readingComprehensionNew = AppRouter.readingComprehensionNew;
   static const String readingComprehensionEditor = AppRouter.readingComprehensionEditor;
+  static const String learningStyles = AppRouter.learningStyles;
+  static const String learningStyleNew = AppRouter.learningStyleNew;
+  static const String learningStyle = AppRouter.learningStyle;
   static const String documentDefaults = '/documents/defaults';
   static const String strategyDocumentation = '/tools/strategy-documentation';
   static const String remedialPlan = '/tools/remedial-plan';
@@ -274,7 +280,9 @@ class Routes {
   static const String onlineTest = '/online-tests/test';
   static const String onlineTestReview = '/online-tests/review';
   static const String diagnosticTest = '/exams/diagnostic';
+  static const String nationalExams = AppRouter.nationalExams;
   static const String nafsTest = AppRouter.nafsTest;
+  static const String tahsiliTest = AppRouter.tahsiliTest;
   static const String diagnosis = '/online-tests/diagnosis';
   static const String classes = '/classes';
   static const String classEditor = '/classes/editor';
@@ -625,6 +633,11 @@ class Routes {
       );
     },
 
+    learningStyles: (context) => LearningStylesScreen.create(),
+    learningStyleNew: (context) => NewLearningStyleScreen.create(),
+    // Argument: the survey id (int).
+    learningStyle: (context) => LearningStyleSurveyScreen.create(context.getArg<int>() ?? 0),
+
     myDocuments: (context) => BlocProvider(
       create: (_) => MyDocumentsCubit(DocumentsRepository())..load(),
       child: const MyDocumentsScreen(),
@@ -754,7 +767,13 @@ class Routes {
       context.getArg<Map<String, dynamic>>() ?? const {},
     ),
     diagnosticTest: (context) => DiagnosticCreateScreen.create(),
-    nafsTest: (context) => NafsCreateScreen.create(),
+    nationalExams: (context) {
+      final arg = context.getArg<dynamic>();
+      final initialIndex = (arg is int) ? arg : ((arg is Map && arg['index'] is int) ? arg['index'] as int : 0);
+      return NationalExamsScreen.create(initialIndex: initialIndex);
+    },
+    nafsTest: (context) => NationalExamsScreen.create(initialIndex: 0),
+    tahsiliTest: (context) => NationalExamsScreen.create(initialIndex: 1),
     // Argument: the online test id or {'test_id': int, 'title': String}.
     diagnosis: (context) => DiagnosisScreen.create(context.getArg<dynamic>() ?? 0),
     // Argument: the `lesson_preparation` document id. Without one, Â«ØªØ­Ø¶ÙŠØ±Ø§ØªÙŠÂ» opens to pick lessons.
