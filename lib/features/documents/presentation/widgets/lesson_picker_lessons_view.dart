@@ -7,8 +7,9 @@ import 'package:moean/core/utils/constants/primary/conditional_builder.dart';
 import 'package:moean/core/utils/constants/primary/no_data_widget.dart';
 import 'package:moean/core/utils/constants/primary/primary_error_view.dart';
 import 'package:moean/features/documents/presentation/cubit/lesson_picker_cubit.dart';
+import 'package:moean/features/documents/presentation/widgets/lesson_picker_step_header.dart';
 
-/// Step 2: the subject's lessons, grouped by chapter.
+/// Step 4: the subject's lessons, grouped by chapter.
 class LessonPickerLessonsView extends StatelessWidget {
   const LessonPickerLessonsView({super.key});
 
@@ -22,20 +23,10 @@ class LessonPickerLessonsView extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ListTile(
-              contentPadding: const EdgeInsets.fromLTRB(8, 8, 20, 0),
-              leading: IconButton(
-                onPressed: cubit.backToSubjects,
-                icon: Icon(Icons.arrow_back_rounded, color: ColorsManager.mainText),
-              ),
-              title: Text(
-                state.subject?.subjectName ?? '',
-                style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
-              ),
-              subtitle: Text(
-                state.subject?.gradeName ?? '',
-                style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryText),
-              ),
+            LessonPickerStepHeader(
+              title: state.subject?.name ?? '',
+              subtitle: state.grade?.name,
+              onBack: cubit.backToSubjects,
             ),
             Expanded(
               child: ConditionalBuilder(

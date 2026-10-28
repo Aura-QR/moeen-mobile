@@ -24,11 +24,16 @@ class LearningStyleResultsTab extends StatefulWidget {
 class _LearningStyleResultsTabState extends State<LearningStyleResultsTab> {
   int? _groupId;
 
+  /// Responses already swiped away, hidden until the refresh catches up.
+  final Set<int> _removing = {};
+
   List<StudentResponse> _responsesFor(LearningStylesResults results, int? groupId) {
     final list = groupId == null
         ? [for (final g in results.groups) ...g.responses]
         : [...results.groups.where((g) => g.id == groupId).expand((g) => g.responses)];
-    list.sort((a, b) => a.studentName.compareTo(b.studentName));
+    list
+      ..removeWhere((r) => _removing.contains(r.id))
+      ..sort((a, b) => a.studentName.compareTo(b.studentName));
     return list;
   }
 
@@ -100,7 +105,10 @@ class _LearningStyleResultsTabState extends State<LearningStyleResultsTab> {
                     key: ValueKey(response.id),
                     direction: DismissDirection.endToStart,
                     confirmDismiss: (_) => _confirmDelete(context),
-                    onDismissed: (_) => cubit.deleteResponse(response.id),
+                    onDismissed: (_) {
+                      setState(() => _removing.add(response.id));
+                      cubit.deleteResponse(response.id);
+                    },
                     background: Container(
                       alignment: AlignmentDirectional.centerEnd,
                       padding: const EdgeInsets.only(right: 20),

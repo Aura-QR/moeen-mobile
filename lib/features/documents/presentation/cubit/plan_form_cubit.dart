@@ -44,6 +44,7 @@ class PlanFormCubit extends Cubit<PlanFormState> {
   final DocumentsRepository _documents;
   final DeviceFilePicker _picker;
 
+  final TextEditingController stageController = TextEditingController();
   final TextEditingController subjectController = TextEditingController();
   final TextEditingController gradeController = TextEditingController();
   final TextEditingController classController = TextEditingController();
@@ -256,6 +257,7 @@ class PlanFormCubit extends Cubit<PlanFormState> {
   PlanFormInput _buildInput() => PlanFormInput(
         planType: state.planType,
         lessonIds: state.aiLessonIds,
+        stage: stageController.text.trim(),
         subject: subjectController.text.trim(),
         grade: gradeController.text.trim(),
         className: classController.text.trim(),
@@ -275,6 +277,7 @@ class PlanFormCubit extends Cubit<PlanFormState> {
 
   void _applyDocument(DocumentModel document, PlanFormInput input) {
     _extra = input.extra;
+    stageController.text = input.stage;
     subjectController.text = input.subject;
     gradeController.text = input.grade;
     classController.text = input.className;
@@ -336,6 +339,7 @@ class PlanFormCubit extends Cubit<PlanFormState> {
   @override
   Future<void> close() {
     for (final controller in [
+      stageController,
       subjectController,
       gradeController,
       classController,

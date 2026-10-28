@@ -8,6 +8,7 @@ class PlanFormInput {
   /// plan, whose type follows from [lessonIds].
   final String? planType;
   final List<int> lessonIds;
+  final String stage;
   final String subject;
   final String grade;
   final String className;
@@ -37,6 +38,7 @@ class PlanFormInput {
   const PlanFormInput({
     this.planType,
     this.lessonIds = const [],
+    this.stage = '',
     this.subject = '',
     this.grade = '',
     this.className = '',
@@ -55,7 +57,7 @@ class PlanFormInput {
   });
 
   static const _ownKeys = {
-    'plan_type', 'lesson_ids', 'subject', 'grade', 'class_name', 'date', 'period', 'class_id', 'students',
+    'plan_type', 'lesson_ids', 'stage', 'subject', 'grade', 'class_name', 'date', 'period', 'class_id', 'students',
     'improvement', 'target_groups', 'notes', 'theme', 'header', 'images',
   };
 
@@ -69,6 +71,7 @@ class PlanFormInput {
         for (final id in _list(json['lesson_ids']))
           if (int.tryParse(id.toString()) case final int value) value,
       ],
+      stage: _text(json['stage']),
       subject: _text(json['subject']),
       grade: _text(json['grade']),
       className: _text(json['class_name']),
@@ -102,6 +105,7 @@ class PlanFormInput {
       ...extra,
       'plan_type': ?planType,
       if (lessonIds.isNotEmpty) 'lesson_ids': lessonIds,
+      if (stage.isNotEmpty) 'stage': stage,
       if (subject.isNotEmpty) 'subject': subject,
       if (grade.isNotEmpty) 'grade': grade,
       if (className.isNotEmpty) 'class_name': className,
