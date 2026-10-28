@@ -54,6 +54,9 @@ class MadrasatiSessionInterceptor extends QueuedInterceptor {
     debugPrint('🛡️  [MadrasatiSessionInterceptor] onError() triggered');
     debugPrint('   failed request : ${err.requestOptions.method} ${err.requestOptions.path}');
     debugPrint('   statusCode     : ${response?.statusCode}');
+    debugPrint('   err.type       : ${err.type}');
+    debugPrint('   err.message    : ${err.message}');
+    debugPrint('   err.error      : ${err.error}');
     debugPrint('   isMadrasatiErr : $isMadrasatiSessionError');
     if (response?.data != null) {
       debugPrint('   error body     : ${response?.data}');

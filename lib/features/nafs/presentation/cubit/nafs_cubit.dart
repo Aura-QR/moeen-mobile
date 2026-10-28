@@ -146,17 +146,14 @@ class NafsCubit extends Cubit<NafsState> {
 
     emit(state.copyWith(step: NafsStep.generating, clearError: true));
 
-    final selectedDomains = subject.domains
-        .where((d) => state.selectedDomainIds.contains(d.id))
-        .map((d) => d.name)
-        .toList();
+    final selectedDomainKeys = state.selectedDomainIds.toList();
 
     final started = await _repository.generate(
       grade: grade.id,
       subject: subject.id,
       subjectIds: subject.subjectIds,
-      domainIds: state.selectedDomainIds.toList(),
-      domains: selectedDomains,
+      domainIds: selectedDomainKeys,
+      domains: selectedDomainKeys,
       questionsCount: state.questionsCount,
       isRealExam: state.isRealExam,
     );

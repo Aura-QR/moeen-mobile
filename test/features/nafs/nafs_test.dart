@@ -100,6 +100,39 @@ void main() {
       expect(p6Visible.any((s) => s.id == 'science'), isTrue);
     });
 
+    test('Nafs models parse backend keys (key, label, real_test) correctly', () {
+      final backendJson = {
+        'key': 'p3',
+        'label': 'الثالث الابتدائي',
+        'subjects': [
+          {
+            'key': 'reading',
+            'label': 'القراءة',
+            'real_test': {'questions': 20, 'minutes': 40},
+            'domains': [
+              {
+                'key': 'vocabulary',
+                'name': 'دلالات الألفاظ',
+                'outcome': 'استنتاج معاني المفردات',
+              }
+            ],
+            'subject_ids': [58],
+          }
+        ],
+      };
+      final grade = NafsGradeOption.fromJson(backendJson);
+      expect(grade.id, 'p3');
+      expect(grade.name, 'الثالث الابتدائي');
+      expect(grade.subjects.length, 1);
+      final subj = grade.subjects.first;
+      expect(subj.id, 'reading');
+      expect(subj.name, 'القراءة');
+      expect(subj.realExamQuestions, 20);
+      expect(subj.domains.length, 1);
+      expect(subj.domains.first.id, 'vocabulary');
+      expect(subj.domains.first.name, 'دلالات الألفاظ');
+    });
+
     test('NafsQuestion requires non-empty text, at least 2 options, and valid answer in options', () {
       expect(sampleQuestion.isComplete, isTrue);
 

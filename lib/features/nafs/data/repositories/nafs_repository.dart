@@ -84,12 +84,12 @@ class NafsRepository {
           'grade': grade,
           'subject': subject,
           'subject_ids': subjectIds,
-          if (subjectIds.isNotEmpty) 'subject_id': subjectIds.first,
+          'subject_id': subjectIds.isNotEmpty ? subjectIds.first : 0,
           'title': title.trim(),
-          if (passage != null && passage.trim().isNotEmpty) 'passage': passage.trim(),
+          'passage': (passage != null && passage.trim().isNotEmpty) ? passage.trim() : null,
           'kind': 'nafs',
-          'domains': domains.map((d) => d.toJson()).toList(),
           'skills': domains.map((d) => d.toJson()).toList(),
+          'domains': domains.map((d) => d.toJson()).toList(),
         }),
         (body) {
           final m = _map(body);

@@ -236,11 +236,11 @@ class OutcomesMapEditorCubit extends Cubit<OutcomesMapEditorState> {
       final result = await _runUnit(index);
       if (isClosed) return;
       if (result == _UnitRunResult.stop) {
-        emit(state.copyWith(isSuggestingAll: false));
+        _finishRun();
         return;
       }
     }
-    emit(state.copyWith(isSuggestingAll: false));
+    _finishRun();
   }
 
   /// Retries a single unit from its card's «إعادة».
@@ -250,7 +250,19 @@ class OutcomesMapEditorCubit extends Cubit<OutcomesMapEditorState> {
     emit(state.copyWith(isSuggestingAll: true, aiTotalUnits: 1, aiCurrentUnit: 1));
     await _runUnit(unitIndex);
     if (isClosed) return;
-    emit(state.copyWith(isSuggestingAll: false));
+    _finishRun();
+  }
+
+  /// Clears the running flag while keeping any error surfaced by the last unit,
+  /// since [copyWith] drops the transient feedback/payment fields otherwise.
+  void _finishRun() {
+    emit(
+      state.copyWith(
+        isSuggestingAll: false,
+        feedback: state.feedback,
+        paymentRequired: state.paymentRequired,
+      ),
+    );
   }
 
   /// Runs «✨ اقترح لهذا الدرس» for one lesson.

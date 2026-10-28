@@ -260,6 +260,13 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget>
                           title: appTranslation().get('concept_maps_title'),
                           onTap: () => _openAuthed(context, Routes.conceptMaps),
                         ),
+                        horizontalSpace12,
+                        // Learning-outcomes map feature chip (L9)
+                        HomeActionChipWidget(
+                          icon: Icons.checklist_rtl_outlined,
+                          title: appTranslation().get('outcomes_map_title'),
+                          onTap: () => _openAuthed(context, Routes.outcomesMap),
+                        ),
                           horizontalSpace12,
                           // Nafs practice tests feature chip (L11)
                           HomeActionChipWidget(

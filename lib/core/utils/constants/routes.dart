@@ -5,6 +5,13 @@ import 'package:moean/features/concept_maps/presentation/cubit/new_concept_map_c
 import 'package:moean/features/concept_maps/presentation/screens/concept_map_editor_screen.dart';
 import 'package:moean/features/concept_maps/presentation/screens/concept_maps_screen.dart';
 import 'package:moean/features/concept_maps/presentation/screens/new_concept_map_screen.dart';
+import 'package:moean/features/outcomes_map/data/models/outcomes_map_editor_args.dart';
+import 'package:moean/features/outcomes_map/presentation/cubit/outcomes_map_editor_cubit.dart';
+import 'package:moean/features/outcomes_map/presentation/cubit/outcomes_maps_cubit.dart';
+import 'package:moean/features/outcomes_map/presentation/cubit/new_outcomes_map_cubit.dart';
+import 'package:moean/features/outcomes_map/presentation/screens/outcomes_map_editor_screen.dart';
+import 'package:moean/features/outcomes_map/presentation/screens/outcomes_maps_screen.dart';
+import 'package:moean/features/outcomes_map/presentation/screens/new_outcomes_map_screen.dart';
 import 'package:moean/features/reading_comprehension/data/models/reading_editor_args.dart';
 import 'package:moean/features/reading_comprehension/presentation/cubit/reading_editor_cubit.dart';
 import 'package:moean/features/reading_comprehension/presentation/cubit/reading_list_cubit.dart';
@@ -246,6 +253,9 @@ class Routes {
   static const String conceptMaps = AppRouter.conceptMaps;
   static const String conceptMapsNew = AppRouter.conceptMapsNew;
   static const String conceptMapsEditor = AppRouter.conceptMapsEditor;
+  static const String outcomesMap = AppRouter.outcomesMap;
+  static const String outcomesMapNew = AppRouter.outcomesMapNew;
+  static const String outcomesMapEditor = AppRouter.outcomesMapEditor;
   static const String readingComprehension = AppRouter.readingComprehension;
   static const String readingComprehensionNew = AppRouter.readingComprehensionNew;
   static const String readingComprehensionEditor = AppRouter.readingComprehensionEditor;
@@ -558,6 +568,33 @@ class Routes {
           initialInput: args?.initialInput,
         )..load(),
         child: const ConceptMapEditorScreen(),
+      );
+    },
+
+    outcomesMap: (context) => BlocProvider(
+      create: (_) =>
+          OutcomesMapsCubit(documentsRepository: DocumentsRepository())..load(),
+      child: const OutcomesMapsScreen(),
+    ),
+
+    outcomesMapNew: (context) => BlocProvider(
+      create: (_) =>
+          NewOutcomesMapCubit(curriculumRepository: CurriculumLessonsRepository())..loadStages(),
+      child: const NewOutcomesMapScreen(),
+    ),
+
+    outcomesMapEditor: (context) {
+      final rawArg = ModalRoute.of(context)?.settings.arguments;
+      final args = rawArg is OutcomesMapEditorArgs ? rawArg : null;
+      final documentId = rawArg is int ? rawArg : args?.documentId;
+      return BlocProvider(
+        create: (_) => OutcomesMapEditorCubit(
+          documentsRepository: DocumentsRepository(),
+          aiJobsRepository: AiJobsRepository(),
+          documentId: documentId,
+          initialInput: args?.initialInput,
+        )..load(),
+        child: const OutcomesMapEditorScreen(),
       );
     },
 

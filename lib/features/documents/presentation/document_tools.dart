@@ -75,6 +75,11 @@ const List<DocumentTool> documentTools = [
     route: Routes.conceptMapsEditor,
   ),
   DocumentTool(
+    type: DocumentTypes.outcomesMap,
+    icon: Icons.checklist_rtl_outlined,
+    route: Routes.outcomesMapEditor,
+  ),
+  DocumentTool(
     type: DocumentTypes.readingComprehension,
     icon: Icons.chrome_reader_mode_outlined,
     route: Routes.readingComprehensionEditor,

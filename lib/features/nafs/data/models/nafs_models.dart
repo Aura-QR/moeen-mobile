@@ -104,8 +104,8 @@ class NafsDomainOption {
   });
 
   factory NafsDomainOption.fromJson(Map<String, dynamic> json) => NafsDomainOption(
-        id: (json['id'] ?? json['key'] ?? json['code'] ?? '').toString(),
-        name: (json['name'] ?? json['title'] ?? json['label'] ?? '').toString().trim(),
+        id: (json['key'] ?? json['id'] ?? json['code'] ?? '').toString(),
+        name: (json['name'] ?? json['label'] ?? json['title'] ?? '').toString().trim(),
         outcome: (json['outcome'] ?? json['learning_outcome'] ?? json['description'] ?? json['name'] ?? '').toString().trim(),
       );
 
@@ -153,11 +153,16 @@ class NafsSubjectOption {
       parsedSubjectIds = const [];
     }
 
+    final realTest = json['real_test'];
+    final realQuestions = realTest is Map ? _int(realTest['questions']) : 0;
+
     return NafsSubjectOption(
-      id: (json['id'] ?? json['key'] ?? json['code'] ?? '').toString(),
-      name: (json['name'] ?? json['title'] ?? '').toString().trim(),
+      id: (json['key'] ?? json['id'] ?? json['code'] ?? '').toString(),
+      name: (json['label'] ?? json['name'] ?? json['title'] ?? '').toString().trim(),
       subjectIds: parsedSubjectIds,
-      realExamQuestions: _int(json['real_exam_questions'] ?? json['standard_questions'] ?? 20),
+      realExamQuestions: realQuestions > 0
+          ? realQuestions
+          : _int(json['real_exam_questions'] ?? json['standard_questions'] ?? 20),
       domains: _maps(json['domains']).map(NafsDomainOption.fromJson).toList(),
     );
   }
@@ -188,8 +193,8 @@ class NafsGradeOption {
       subjects.where((s) => s.isVisible).toList();
 
   factory NafsGradeOption.fromJson(Map<String, dynamic> json) => NafsGradeOption(
-        id: (json['id'] ?? json['key'] ?? json['grade_id'] ?? '').toString(),
-        name: (json['name'] ?? json['title'] ?? '').toString().trim(),
+        id: (json['key'] ?? json['id'] ?? json['grade_id'] ?? '').toString(),
+        name: (json['label'] ?? json['name'] ?? json['title'] ?? '').toString().trim(),
         subjects: _maps(json['subjects']).map(NafsSubjectOption.fromJson).toList(),
       );
 
@@ -262,7 +267,7 @@ class NafsQuestion {
         'options': options.map((o) => o.trim()).where((o) => o.isNotEmpty).toList(),
         'correct_answer': answer.trim(),
         'difficulty': difficulty,
-        'points': points,
+        'points': points.roundToDouble() == points ? points.toInt() : points,
       };
 }
 

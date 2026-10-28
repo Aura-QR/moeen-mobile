@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/features/documents/data/repositories/curriculum_lessons_repository.dart';
 import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
 import 'package:moean/features/outcomes_map/data/models/outcomes_map_models.dart';
@@ -122,13 +121,11 @@ class NewOutcomesMapCubit extends Cubit<NewOutcomesMapState> {
     emit(state.copyWith(semester: semester));
   }
 
-  /// Builds the skeleton and signals the screen to open the editor.
-  void start() {
+  /// Builds the skeleton and signals the screen to open the editor. [title] is
+  /// composed by the UI layer so the cubit stays free of localization.
+  void start(String title) {
     final subject = state.selectedSubject;
     if (subject == null || !state.canStart) return;
-    final semesterName = appTranslation().get(OutcomesMapSemester.labelKey(state.semester));
-    final title =
-        '${appTranslation().get('outcomes_map_title')} — ${subject.name} — $semesterName';
     final input = OutcomesMapInput.fromSkeleton(
       subjectId: subject.id,
       semester: state.semester,

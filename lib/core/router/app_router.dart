@@ -17,6 +17,9 @@ abstract final class AppRouter {
   static const String conceptMaps = '/concept-maps';
   static const String conceptMapsNew = '/concept-maps/new';
   static const String conceptMapsEditor = '/concept-maps/editor';
+  static const String outcomesMap = '/outcomes-map';
+  static const String outcomesMapNew = '/outcomes-map/new';
+  static const String outcomesMapEditor = '/outcomes-map/editor';
   static const String readingComprehension = '/reading-comprehension';
   static const String readingComprehensionNew = '/reading-comprehension/new';
   static const String readingComprehensionEditor = '/reading-comprehension/editor';
