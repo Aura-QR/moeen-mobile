@@ -109,7 +109,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     }
                   } else if (state is OrderCreated) {
                     final cubit = PaymentCubit.get(context);
-                    if (cubit.selectedMethodIndex == 0) {
+                    // A 100% code: the server already activated the plan, so
+                    // there is nothing to pay and no card page to show.
+                    if (state.order.status == 'paid') {
+                      sl<ProfileCubit>().fetchProfile(forceRefresh: true);
+                      sl<SubscriptionCubit>().fetchCurrentSubscription(forceRefresh: true);
+                      Navigator.pushReplacementNamed(
+                        context,
+                        Routes.paymentResult,
+                        arguments: {'status': 'paid', 'from': 'myfatoorah'},
+                      );
+                    } else if (cubit.selectedMethodIndex == 0) {
                       context.push<Map<String, dynamic>>(
                         Routes.myfatoorahPayment,
                         arguments: {
