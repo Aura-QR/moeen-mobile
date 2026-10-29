@@ -154,13 +154,17 @@ class UsageLimitPeriod {
   final int? limit;
   final int used;
 
-  const UsageLimitPeriod({this.limit, this.used = 0});
+  /// Null when this period has no limit.
+  final int? remaining;
+
+  const UsageLimitPeriod({this.limit, this.used = 0, this.remaining});
 
   factory UsageLimitPeriod.fromJson(dynamic json) {
     if (json is! Map) return const UsageLimitPeriod();
     return UsageLimitPeriod(
       limit: int.tryParse('${json['limit']}'),
       used: int.tryParse('${json['used']}') ?? 0,
+      remaining: int.tryParse('${json['remaining']}'),
     );
   }
 

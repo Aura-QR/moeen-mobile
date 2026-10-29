@@ -6,6 +6,7 @@ import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_state.dart';
+import 'package:moean/features/payment/presentation/widgets/usage_limits_sheet.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 
 class SubscriptionStatusDialog extends StatefulWidget {
@@ -208,15 +209,13 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
               }
 
               // Usage statistics
-              final int lessonsRemaining = current?.usage.lessonsRemainingToday ??
+              final limits = current?.usage.limits ?? const [];
+              final prepToday = limits.where((t) => t.tool == 'lesson_prep').map((t) => t.daily.remaining).firstOrNull;
+              final int lessonsRemaining = prepToday ??
+                  current?.usage.lessonsRemainingToday ??
                   current?.plan?.lessonLimitPerDay ??
                   teacher?.subscription?.lessonLimitPerDay ??
                   15;
-              final int aiRemaining = current?.usage.aiRemaining ??
-                  teacher?.aiQuotaRemaining ??
-                  current?.plan?.aiQuotaPerMonth ??
-                  teacher?.subscription?.aiQuotaPerMonth ??
-                  200;
 
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -428,29 +427,28 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                               ),
                             ],
                           ),
-                          // const SizedBox(height: 10),
-                          // Row(
-                          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          //   children: [
-                          //     Expanded(
-                          //       child: Text(
-                          //         'رصيد الذكاء الاصطناعي المتبقي:',
-                          //         style: TextStylesManager.bold13.copyWith(
-                          //           color: ColorsManager.isDark
-                          //               ? ColorsManager.textPrimaryDark
-                          //               : const Color(0xFF475569),
-                          //         ),
-                          //       ),
-                          //     ),
-                          //     const SizedBox(width: 6),
-                          //     Text(
-                          //       '$aiRemaining',
-                          //       style: TextStylesManager.bold13.copyWith(
-                          //         color: const Color(0xFF0E7A5E),
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ),
+                          if (limits.isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            InkWell(
+                              onTap: () {
+                                Navigator.pop(context);
+                                UsageLimitsSheet.show(context, limits);
+                              },
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.speed_outlined, size: 16, color: Color(0xFF0E7A5E)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      'حدود الاستخدام',
+                                      style: TextStylesManager.bold13.copyWith(color: const Color(0xFF0E7A5E)),
+                                    ),
+                                  ),
+                                  const Icon(Icons.chevron_left, size: 18, color: Color(0xFF0E7A5E)),
+                                ],
+                              ),
+                            ),
+                          ],
                         
                         ],
                       ),
