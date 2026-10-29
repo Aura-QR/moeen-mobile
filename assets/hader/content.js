@@ -1162,6 +1162,9 @@
     var dashboardInjected = false;
     var dashboardLessonCount = 0;
     var dashboardScanRunning = false;
+    // A result (error, warning, success) stays until the teacher acts again:
+    // the 1.5s scan used to replace it with its hint at once.
+    var dashboardStatusSticky = false;
     var dashboardPollTimer = null;
     var scheduleRouteWatcher = null;
     var presenceBadgeState = "active";
@@ -1334,6 +1337,7 @@
       });
       select.addEventListener("change", function (event) {
         event.stopPropagation();
+        dashboardStatusSticky = false;
         if (select.value) {
           select.style.borderColor = "#1a9448";
           select.style.background = "rgba(26,148,72,0.04)";
@@ -1850,9 +1854,11 @@
       renderStudentReportModal(data);
     };
 
-    function updateDashboardStatus(message, tone) {
+    function updateDashboardStatus(message, tone, isHint) {
       var status = document.getElementById("Moeen-2-dashboard-status");
       if (!status) return;
+      if (isHint && dashboardStatusSticky) return;
+      dashboardStatusSticky = !isHint && (tone === "error" || tone === "warning" || tone === "success");
       status.textContent = message;
       var toneColors = {
         info: "#6b7c93",
@@ -1941,7 +1947,7 @@
         var cards = findScheduleCards();
         dashboardLessonCount = cards.length;
         if (!cards.length) {
-          updateDashboardStatus("تم تشغيل حضر، لكن لم يتم العثور على بطاقات الحصص بعد. سيتم الفحص تلقائياً.", "warning");
+          updateDashboardStatus("تم تشغيل حضر، لكن لم يتم العثور على بطاقات الحصص بعد. سيتم الفحص تلقائياً.", "warning", true);
           updateDashboardCounter();
           return;
         }
@@ -1968,11 +1974,11 @@
         if (haderRemotePreparationRunning) return;
         var total = document.querySelectorAll('.Moeen-2-dashboard-select').length;
         if (total) {
-          updateDashboardStatus("اختر درساً لكل حصة ثم اضغط «حضر» — " + total + " حصة متاحة", "info");
+          updateDashboardStatus("اختر درساً لكل حصة ثم اضغط «حضر» — " + total + " حصة متاحة", "info", true);
         } else if (missingSubject === cards.length) {
-          updateDashboardStatus("ظهرت لوحة حضر، لكن بنية بطاقات الجدول الجديدة لا تعرض معرّف المادة بعد.", "warning");
+          updateDashboardStatus("ظهرت لوحة حضر، لكن بنية بطاقات الجدول الجديدة لا تعرض معرّف المادة بعد.", "warning", true);
         } else if (!added) {
-          updateDashboardStatus("تم العثور على الحصص، لكن تعذّر تحميل قائمة الدروس.", "warning");
+          updateDashboardStatus("تم العثور على الحصص، لكن تعذّر تحميل قائمة الدروس.", "warning", true);
         }
       } finally {
         dashboardScanRunning = false;
@@ -5066,6 +5072,32 @@
         || fallback;
     }
 
+    // Madrasati accepts a preparation at most 7 days before the lesson and
+    // silently drops a later one (the card turned green, then back to blue).
+    var MADRASATI_PREPARATION_WINDOW_DAYS = 7;
+
+    function haderCardDay(div) {
+      try {
+        var holder = div && ((div.closest && div.closest('[data-day]')) || (div.querySelector && div.querySelector('[data-day]')));
+        var day = Number(holder ? holder.getAttribute('data-day') : NaN);
+        return Number.isInteger(day) && day >= 0 && day <= 6 ? day : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    // «الأحد، 1 نوفمبر» when the lesson is too far ahead to prepare today, else ''.
+    function haderOpensForPreparationOn(weekDate, day) {
+      if (!weekDate) return '';
+      var parts = String(weekDate).split('-').map(Number);
+      if (parts.length !== 3 || parts.some(isNaN)) return '';
+      var opens = Date.UTC(parts[0], parts[1] - 1, parts[2] + (day || 0) - MADRASATI_PREPARATION_WINDOW_DAYS);
+      var riyadhNow = new Date(Date.now() + 3 * 3600000);
+      var today = Date.UTC(riyadhNow.getUTCFullYear(), riyadhNow.getUTCMonth(), riyadhNow.getUTCDate());
+      if (opens <= today) return '';
+      return new Date(opens).toLocaleDateString('ar-SA-u-ca-gregory-nu-latn', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+    }
+
     async function prepareDashboardThroughServer(tokensToPrepare) {
       var outcome = { done: 0, failed: 0, stopped: '' };
       if (isHaderPreparationBusy()) {
@@ -5096,7 +5128,25 @@
           selected_modules: modules
         };
         if (weekDate) lesson.week_date = weekDate;
+        var day = haderCardDay(item.div);
+        if (day !== null) lesson.day_of_week = day;
         return lesson;
+      });
+
+      // Lessons Madrasati won't take yet are left out (not sent, not counted).
+      var tooEarly = '';
+      lessons = lessons.filter(function (lesson) {
+        var opensOn = haderOpensForPreparationOn(lesson.week_date, lesson.day_of_week);
+        if (!opensOn) return true;
+        var item = itemsByToken[lesson.lesson_token];
+        if (item && item.select) {
+          item.select.style.borderColor = '#c0392b';
+          item.select.style.background = 'rgba(192,57,43,0.08)';
+        }
+        outcome.failed++;
+        tooEarly = tooEarly || ('مدرستي تسمح بتحضير الحصة قبل موعدها بـ ' + MADRASATI_PREPARATION_WINDOW_DAYS
+          + ' أيام فقط. أقرب حصة مختارة تُفتح للتحضير يوم ' + opensOn + '.');
+        return false;
       });
 
       for (var start = 0; start < lessons.length && !outcome.stopped; start += HADER_OPERATION_MAX_LESSONS) {
@@ -5158,6 +5208,7 @@
           item.select.style.background = ok ? 'rgba(26,148,72,0.04)' : 'rgba(192,57,43,0.08)';
         });
       }
+      if (tooEarly && !outcome.stopped) outcome.stopped = tooEarly;
       return outcome;
     }
     // src/content/dashboard-storage-helpers.js
