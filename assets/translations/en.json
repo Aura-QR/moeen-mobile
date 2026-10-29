@@ -2098,5 +2098,22 @@
   "answer_key_table_title": "Answer Key Table",
   "question_number_col": "Q#",
   "correct_answer_col": "Correct Answer",
-  "No response from server": "No response from server, please check your internet connection and try again"
+  "No response from server": "No response from server, please check your internet connection and try again",
+  "pay_sub_details_title": "Subscription Duration Details",
+  "pay_term_sub_title": "Semester Subscription",
+  "pay_term_sub_desc": "Starts from subscription day and ends at the end of the semester.",
+  "pay_term_sub_before_dec": "If you subscribe before December 20, your subscription continues until the end of the first semester (January 16, 2027).",
+  "pay_term_sub_after_dec": "If you subscribe on or after December 20, your subscription includes the full second semester until June 24, 2027.",
+  "pay_year_sub_title": "Annual Subscription",
+  "pay_year_sub_desc": "Continues until the end of the academic year (June 24, 2027).",
+  "pay_early_renewal_title": "Early renewal never wastes a day",
+  "pay_early_renewal_desc": "If you renew before your subscription expires, the new duration starts from your current subscription's expiration date.",
+  "pay_usage_limits_title": "Usage Limits & Fair Use",
+  "pay_usage_limits_desc": "Each tool has daily and monthly fair usage limits easily sufficient for a teacher's daily use.",
+  "pay_usage_limits_reset": "Daily limits renew every day at 3:00 AM KSA time, and monthly limits on the 1st of each month.",
+  "pay_usage_saved_content": "Saved content is not counted against you: if you request a previously prepared concept map, learning outcomes, or presentation, you receive it immediately without deducting from your limit.",
+  "pay_usage_failed_attempt": "Failed attempts are not counted against your limit.",
+  "pay_subscription_active_already": "Your subscription is already active",
+  "pay_active_sub_already_msg": "You already have an active subscription and do not need to pay again.",
+  "pay_in_progress_msg": "You have a payment in progress."
 }

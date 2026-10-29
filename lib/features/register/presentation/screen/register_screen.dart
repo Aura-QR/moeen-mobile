@@ -84,9 +84,9 @@ class RegisterScreen extends StatelessWidget {
                             RegisterFormWidget(),
                             verticalSpace20,
                             // ignore: prefer_const_constructors
-                            RegisterAccountTypeWidget(),
-                            verticalSpace16,
-                            // ignore: prefer_const_constructors
+                         //   RegisterAccountTypeWidget(),
+                          //  verticalSpace16,
+                          //  // ignore: prefer_const_constructors
                             RegisterTermsWidget(),
                             verticalSpace28,
                             // ignore: prefer_const_constructors
