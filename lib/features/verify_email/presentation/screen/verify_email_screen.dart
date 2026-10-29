@@ -10,6 +10,7 @@ import 'package:moean/features/verify_email/presentation/widgets/verify_email_ac
 import 'package:moean/features/verify_email/presentation/widgets/verify_email_badge_widget.dart';
 import 'package:moean/features/verify_email/presentation/widgets/verify_email_header_widget.dart';
 import 'package:moean/features/verify_email/presentation/widgets/verify_email_steps_widget.dart';
+import 'package:moean/features/verify_email/presentation/widgets/verify_email_bounced_widget.dart';
 import 'package:moean/features/verify_email/presentation/widgets/verify_email_success_widget.dart';
 
 class VerifyEmailScreen extends StatelessWidget {
@@ -60,10 +61,15 @@ class VerifyEmailScreen extends StatelessWidget {
                 child: BlocBuilder<VerifyEmailCubit, VerifyEmailState>(
                   buildWhen: (previous, current) =>
                       current is VerifyEmailSuccessState ||
+                      current is VerifyEmailBouncedState ||
                       current is VerifyEmailInitialState,
                   builder: (context, state) {
                     if (state is VerifyEmailSuccessState) {
                       return const VerifyEmailSuccessWidget();
+                    }
+
+                    if (state is VerifyEmailBouncedState) {
+                      return const VerifyEmailBouncedWidget();
                     }
 
                     return Column(
@@ -71,7 +77,7 @@ class VerifyEmailScreen extends StatelessWidget {
                       children: [
                         const VerifyEmailBadgeWidget(),
                         verticalSpace20,
-                        VerifyEmailHeaderWidget(email: email),
+                        const VerifyEmailHeaderWidget(),
                         verticalSpace24,
                         const VerifyEmailStepsWidget(),
                         verticalSpace28,

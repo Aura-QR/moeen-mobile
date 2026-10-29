@@ -114,6 +114,42 @@ class ApiService {
     );
   }
 
+  /// `GET /auth/email/status` → `{ data: { email, verified, bounced } }`.
+  /// Used by the verify-email screen to catch a bounced address within a minute.
+  static Future<Either<String, Map<String, dynamic>>> getEmailStatus() async {
+    final response = await DioHelper.getData(url: emailStatusApi);
+
+    return response.fold(
+      (error) => Left(error),
+      (res) {
+        final decoded = _decodeData(res.data);
+        final data = decoded is Map && decoded['data'] is Map ? decoded['data'] : decoded;
+        return Right(Map<String, dynamic>.from(data as Map));
+      },
+    );
+  }
+
+  /// `PATCH /auth/email { email }` — the teacher corrects a mistyped address.
+  /// Field errors (422) are kept so the UI can show `errors.email[0]`.
+  static Future<Either<String, Map<String, dynamic>>> updateEmail({
+    required String email,
+  }) async {
+    final response = await DioHelper.patchData(
+      url: updateEmailApi,
+      data: {'email': email},
+      keepFieldErrors: true,
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) {
+        final decoded = _decodeData(res.data);
+        final data = decoded is Map && decoded['data'] is Map ? decoded['data'] : decoded;
+        return Right(Map<String, dynamic>.from(data as Map));
+      },
+    );
+  }
+
   static Future<Either<String, UserModel>> verifyEmailToken({
     required String id,
     required String hash,

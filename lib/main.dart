@@ -18,6 +18,7 @@ import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/core/widgets/app_update_gate.dart';
 import 'package:moean/core/widgets/session_monitor_wrapper.dart';
+import 'package:moean/core/widgets/email_block_monitor_wrapper.dart';
 import 'dart:developer' as developer;
 import 'package:moean/core/services/referral_service.dart';
 import 'package:moean/core/utils/constants/secrets.dart';
@@ -176,11 +177,14 @@ class MyApp extends StatelessWidget {
                     ? TextDirection.rtl
                     : TextDirection.ltr,
                 // SessionMonitorWrapper listens to session expiry globally;
+                // EmailBlockMonitorWrapper surfaces paused-trial email refusals;
                 // AppUpdateGate prompts once per launch when a newer build
-                // is on the store. Both sit here so they work on whatever
+                // is on the store. All sit here so they work on whatever
                 // screen the app opened on.
                 child: AppUpdateGate(
-                  child: SessionMonitorWrapper(child: child!),
+                  child: SessionMonitorWrapper(
+                    child: EmailBlockMonitorWrapper(child: child!),
+                  ),
                 ),
               );
             },

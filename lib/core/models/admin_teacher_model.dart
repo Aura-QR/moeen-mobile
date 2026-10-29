@@ -5,6 +5,7 @@ class AdminTeacherUserModel {
   final String? phone;
   final String role;
   final bool active;
+  final bool isEmailVerified;
   final String? createdAt;
 
   const AdminTeacherUserModel({
@@ -14,6 +15,7 @@ class AdminTeacherUserModel {
     this.phone,
     required this.role,
     required this.active,
+    this.isEmailVerified = false,
     this.createdAt,
   });
 
@@ -25,6 +27,9 @@ class AdminTeacherUserModel {
       phone: json['phone'] as String?,
       role: json['role'] as String? ?? 'teacher',
       active: json['active'] == true || json['active'] == 1,
+      isEmailVerified: json['is_email_verified'] == true ||
+          json['is_email_verified'] == 1 ||
+          json['email_verified_at'] != null,
       createdAt: json['created_at'] as String?,
     );
   }

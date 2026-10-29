@@ -2,6 +2,7 @@ import 'package:moean/core/network/local/secure_storage_helper.dart';
 import 'package:moean/core/network/remote/api_endpoints.dart';
 import 'package:moean/core/network/remote/madrasati_session_interceptor.dart';
 import 'package:moean/core/services/madrasati_session_service.dart';
+import 'package:moean/core/services/email_block_service.dart';
 import 'package:moean/core/utils/cubit/theme/theme_cubit.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -57,6 +58,11 @@ Future<void> initInjections() async {
   // ─── Session Service ──────────────────────────────────────────
   sl.registerLazySingleton<MadrasatiSessionService>(
     () => MadrasatiSessionService(),
+  );
+
+  // ─── Email Block Service ──────────────────────────────────────
+  sl.registerLazySingleton<EmailBlockService>(
+    () => EmailBlockService(),
   );
 
   // ─── Dio ──────────────────────────────────────────────────────

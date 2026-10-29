@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:moean/core/services/madrasati_session_service.dart';
+import 'package:moean/core/services/email_block_service.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 
 class DioHelper {
@@ -232,6 +233,28 @@ class DioHelper {
           (response.statusCode == 403 && (errorCode == 'account_suspended' || fullMapStr.contains('تعليق') || fullMapStr.contains('موقوف')))) {
         final message = map['message']?.toString() ?? 'account_suspended';
         return '__403__:account_suspended:$message';
+      }
+
+      // ── A paused free trial: the email bounced or is still unverified ──
+      // Surfaced globally by [EmailBlockMonitorWrapper]; the plain message is
+      // still returned so any caller's own error state stays readable.
+      if (response.statusCode == 403 &&
+          (errorCode == 'email_bounced' || errorCode == 'email_unverified')) {
+        final message = map['message']?.toString() ?? '';
+        final details = map['details'];
+        final email = details is Map ? details['email']?.toString() : null;
+        try {
+          sl<EmailBlockService>().notify(
+            EmailBlockEvent(
+              kind: errorCode == 'email_bounced'
+                  ? EmailBlockKind.bounced
+                  : EmailBlockKind.unverified,
+              message: message,
+              email: email,
+            ),
+          );
+        } catch (_) {}
+        return message.isNotEmpty ? message : 'generic_error';
       }
 
       final errors = map['errors'];

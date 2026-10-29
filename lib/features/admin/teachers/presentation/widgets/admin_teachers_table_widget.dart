@@ -4,6 +4,7 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/features/admin/teachers/presentation/cubit/admin_teachers_cubit.dart';
 import 'package:moean/features/admin/teachers/presentation/widgets/admin_teacher_action_dialogs.dart';
 
 class AdminTeachersTableWidget extends StatefulWidget {
@@ -71,7 +72,7 @@ class _AdminTeachersTableWidgetState extends State<AdminTeachersTableWidget> {
     const double colPlan = 175;
     const double colStatus = 95;
     const double colDate = 100;
-    const double colActions = 140;
+    const double colActions = 175;
     const double totalWidth = colTeacher + colPhone + colPlan + colStatus + colDate + colActions;
 
     return Scrollbar(
@@ -303,6 +304,18 @@ class _AdminTeachersTableWidgetState extends State<AdminTeachersTableWidget> {
               color: Colors.orange,
               onTap: () => showResetPasswordDialog(context, teacher),
               tooltip: appTranslation().get('admin_reset_password'),
+            ),
+            const SizedBox(width: 2),
+            _buildActionBtn(
+              icon: teacher.user.isEmailVerified
+                  ? Icons.mark_email_read_outlined
+                  : Icons.unsubscribe_outlined,
+              color: teacher.user.isEmailVerified ? Colors.green : Colors.red,
+              onTap: () => AdminTeachersCubit.get(context)
+                  .toggleEmailVerification(teacher: teacher),
+              tooltip: teacher.user.isEmailVerified
+                  ? appTranslation().get('admin_email_unverify')
+                  : appTranslation().get('admin_email_verify'),
             ),
             const SizedBox(width: 2),
             _buildActionBtn(

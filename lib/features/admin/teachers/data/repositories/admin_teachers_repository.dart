@@ -157,6 +157,42 @@ class AdminTeachersRepository {
     );
   }
 
+  static Future<Either<String, String>> verifyEmail({
+    required int id,
+  }) async {
+    final response = await DioHelper.postData(
+      url: '$adminTeachersApi/$id/verify-email',
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) {
+        final data = _decodeData(res.data);
+        return Right(data is Map && data['message'] != null
+            ? data['message'].toString()
+            : 'تم توثيق البريد الإلكتروني للمعلم بنجاح.');
+      },
+    );
+  }
+
+  static Future<Either<String, String>> unverifyEmail({
+    required int id,
+  }) async {
+    final response = await DioHelper.postData(
+      url: '$adminTeachersApi/$id/unverify-email',
+    );
+
+    return response.fold(
+      (error) => Left(error),
+      (res) {
+        final data = _decodeData(res.data);
+        return Right(data is Map && data['message'] != null
+            ? data['message'].toString()
+            : 'تم إلغاء توثيق البريد الإلكتروني للمعلم بنجاح.');
+      },
+    );
+  }
+
   static Future<Either<String, bool>> deleteTeacher({
     required int id,
   }) async {

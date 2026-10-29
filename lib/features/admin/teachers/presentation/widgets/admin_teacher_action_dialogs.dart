@@ -76,6 +76,7 @@ void showAddTeacherDialog(BuildContext context) {
 void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
   final cubit = AdminTeachersCubit.get(context);
   final nameController = TextEditingController(text: teacher.user.name);
+  final emailController = TextEditingController(text: teacher.user.email);
   final phoneController = TextEditingController(text: teacher.user.phone ?? '');
   final endDateController = TextEditingController(text: teacher.subscriptionEndsAt ?? '');
   
@@ -142,7 +143,22 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                       ),
                     ),
                     verticalSpace16,
-                    
+
+                    // Email (any format; changing it re-sends a confirmation)
+                    Text(appTranslation().get('admin_email'), style: TextStylesManager.bold14.copyWith(color: ColorsManager.primaryColor)),
+                    verticalSpace8,
+                    TextField(
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textDirection: TextDirection.ltr,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderColor)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: ColorsManager.borderColor)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                    verticalSpace16,
+
                     // Row for Plan and Phone
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -333,9 +349,11 @@ void showEditTeacherDialog(BuildContext context, AdminTeacherModel teacher) {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
+                              final newEmail = emailController.text.trim();
                               cubit.updateTeacher(
                                 id: teacher.id,
                                 name: nameController.text.isNotEmpty ? nameController.text : null,
+                                email: newEmail.isNotEmpty && newEmail != teacher.user.email ? newEmail : null,
                                 phone: phoneController.text.isNotEmpty ? phoneController.text : null,
                                 subscriptionId: selectedPlanId,
                                 active: isActive,

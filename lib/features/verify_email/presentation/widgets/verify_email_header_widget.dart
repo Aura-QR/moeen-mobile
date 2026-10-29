@@ -3,17 +3,14 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
+import 'package:moean/features/verify_email/presentation/cubit/verify_email_cubit.dart';
 
 class VerifyEmailHeaderWidget extends StatelessWidget {
-  final String email;
-
-  const VerifyEmailHeaderWidget({
-    super.key,
-    required this.email,
-  });
+  const VerifyEmailHeaderWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final email = VerifyEmailCubit.get(context).currentEmail;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,

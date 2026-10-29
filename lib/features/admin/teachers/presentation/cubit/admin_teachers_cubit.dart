@@ -220,4 +220,25 @@ class AdminTeachersCubit extends Cubit<AdminTeachersState> {
   Future<void> toggleTeacherStatus({required AdminTeacherModel teacher}) async {
     await updateTeacher(id: teacher.id, active: !teacher.active);
   }
+
+  /// Flips the teacher's email verification from the actions row. Verified →
+  /// unverify, unverified → verify. Uses the admin verify/unverify endpoints.
+  Future<void> toggleEmailVerification({required AdminTeacherModel teacher}) async {
+    if (!isClosed) emit(AdminTeacherActionLoadingState());
+    final wasVerified = teacher.user.isEmailVerified;
+    final result = wasVerified
+        ? await AdminTeachersRepository.unverifyEmail(id: teacher.id)
+        : await AdminTeachersRepository.verifyEmail(id: teacher.id);
+    if (isClosed) return;
+
+    result.fold(
+      (error) {
+        if (!isClosed) emit(AdminTeacherActionErrorState(error));
+      },
+      (message) {
+        if (!isClosed) emit(AdminTeacherActionSuccessState(message));
+        getTeachers();
+      },
+    );
+  }
 }

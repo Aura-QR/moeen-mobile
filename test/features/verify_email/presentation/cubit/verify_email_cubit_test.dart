@@ -31,9 +31,37 @@ void main() {
       expect(tickState.cooldownSeconds, 5);
     });
 
+    test('currentEmail should initialize from the constructor email', () {
+      expect(cubit.currentEmail, 'test@example.com');
+    });
+
+    test('correctEmail does nothing when not in a bounced state', () async {
+      await cubit.correctEmail('new@example.com');
+      expect(cubit.state, isA<VerifyEmailInitialState>());
+    });
+
     test('close should dispose properly without throwing', () async {
       await cubit.close();
       expect(cubit.isClosed, isTrue);
+    });
+  });
+
+  group('VerifyEmailBouncedState', () {
+    test('copyWith overrides only the given fields', () {
+      final state = VerifyEmailBouncedState(email: 'a@b.com');
+      final submitting = state.copyWith(isSubmitting: true, fieldError: 'err');
+
+      expect(submitting.email, 'a@b.com');
+      expect(submitting.isSubmitting, isTrue);
+      expect(submitting.fieldError, 'err');
+    });
+
+    test('clearFieldError removes the field error', () {
+      final state = VerifyEmailBouncedState(email: 'a@b.com', fieldError: 'err');
+      final cleared = state.copyWith(clearFieldError: true);
+
+      expect(cleared.fieldError, isNull);
+      expect(cleared.email, 'a@b.com');
     });
   });
 }
