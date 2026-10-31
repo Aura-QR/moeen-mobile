@@ -5,7 +5,7 @@ import 'package:moean/features/payment/data/models/subscription_current_model.da
 
 /// What is left of each tool's daily and monthly limit
 /// (`usage.limits` from /subscription/current), as a bottom sheet.
-class UsageLimitsSheet extends StatelessWidget {
+class UsageLimitsSheet extends StatefulWidget {
   final List<UsageLimitModel> limits;
 
   const UsageLimitsSheet({super.key, required this.limits});
@@ -20,9 +20,19 @@ class UsageLimitsSheet extends StatelessWidget {
   }
 
   @override
+  State<UsageLimitsSheet> createState() => _UsageLimitsSheetState();
+}
+
+class _UsageLimitsSheetState extends State<UsageLimitsSheet> {
+  bool _showOthers = false;
+
+  @override
   Widget build(BuildContext context) {
     // A tool with no limit in either period (a team account) is left out.
-    final tools = limits.where((t) => t.daily.limit != null || t.monthly.limit != null).toList();
+    final tools = widget.limits.where((t) => t.daily.limit != null || t.monthly.limit != null).toList();
+    // Tools the teacher used this month come first; the rest wait behind a toggle.
+    final used = tools.where((t) => t.daily.used > 0 || t.monthly.used > 0).toList();
+    final others = tools.where((t) => t.daily.used == 0 && t.monthly.used == 0).toList();
     final secondary = ColorsManager.isDark ? ColorsManager.textPrimaryDark : const Color(0xFF475569);
 
     return Directionality(
@@ -69,11 +79,54 @@ class UsageLimitsSheet extends StatelessWidget {
                           style: TextStylesManager.bold13.copyWith(color: const Color(0xFF0E7A5E)),
                         ),
                       )
-                    : ListView.separated(
+                    : ListView(
                         shrinkWrap: true,
-                        itemCount: tools.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 10),
-                        itemBuilder: (_, i) => _ToolCard(tool: tools[i], secondary: secondary),
+                        children: [
+                          if (used.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text(
+                                'لم تستخدم أي أداة بعد.\nستظهر هنا حدود كل أداة عند استخدامها.',
+                                textAlign: TextAlign.center,
+                                style: TextStylesManager.bold12.copyWith(color: secondary),
+                              ),
+                            ),
+                          for (final tool in used) ...[
+                            _ToolCard(tool: tool, secondary: secondary),
+                            const SizedBox(height: 10),
+                          ],
+                          if (others.isNotEmpty)
+                            InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () => setState(() => _showOthers = !_showOthers),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: ColorsManager.borderColor),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '${used.isEmpty ? 'عرض كل الحدود' : 'أدوات أخرى'} (${others.length})',
+                                        style: TextStylesManager.bold13.copyWith(color: const Color(0xFF0E7A5E)),
+                                      ),
+                                    ),
+                                    Icon(
+                                      _showOthers ? Icons.expand_less : Icons.expand_more,
+                                      color: const Color(0xFF0E7A5E),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          if (_showOthers)
+                            for (final tool in others) ...[
+                              const SizedBox(height: 10),
+                              _ToolCard(tool: tool, secondary: secondary),
+                            ],
+                        ],
                       ),
               ),
               const SizedBox(height: 12),
