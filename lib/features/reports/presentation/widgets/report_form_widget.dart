@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
@@ -7,12 +9,14 @@ import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/network/remote/api_service.dart';
 import 'package:moean/features/exam_generation/data/models/curriculum_models.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
 import 'package:moean/features/reports/presentation/widgets/report_lessons_widget.dart';
 import 'package:moean/features/reports/presentation/widgets/report_type_selector_widget.dart';
 import 'package:moean/features/reports/presentation/widgets/selection_bottom_sheet.dart';
 
 class ReportFormWidget extends StatefulWidget {
-  final String teacherName;
+  final String? teacherName;
   final void Function({
     required String reportType,
     required String grade,
@@ -28,7 +32,7 @@ class ReportFormWidget extends StatefulWidget {
 
   const ReportFormWidget({
     super.key,
-    required this.teacherName,
+    this.teacherName,
     required this.onSubmit,
     required this.isLoading,
   });
@@ -65,6 +69,9 @@ class _ReportFormWidgetState extends State<ReportFormWidget> {
   void initState() {
     super.initState();
     _fetchSubjects();
+    if (sl<ProfileCubit>().profileModel == null) {
+      sl<ProfileCubit>().fetchProfile();
+    }
   }
 
   Future<void> _fetchSubjects() async {
@@ -583,70 +590,82 @@ class _FormLabel extends StatelessWidget {
 }
 
 class _ReportInfoCard extends StatelessWidget {
-  final String teacherName;
-  const _ReportInfoCard({required this.teacherName});
+  final String? teacherName;
+  const _ReportInfoCard({this.teacherName});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            ColorsManager.primaryColor.withValues(alpha: 0.12),
-            ColorsManager.primaryColor.withValues(alpha: 0.04),
-          ],
-          begin: Alignment.topRight,
-          end: Alignment.bottomLeft,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: ColorsManager.primaryColor.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: ColorsManager.primaryColor.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.person_rounded,
-              color: ColorsManager.primaryColor,
-              size: 22,
-            ),
-          ),
-          horizontalSpace12,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  appTranslation().get('report_teacher_label'),
-                  style: TextStylesManager.regular12.copyWith(
-                    color: ColorsManager.secondaryText,
-                  ),
-                ),
-                verticalSpace2,
-                Text(
-                  teacherName,
-                  style: TextStylesManager.bold14.copyWith(
-                    color: ColorsManager.primaryColor,
-                  ),
-                ),
+    return BlocBuilder<ProfileCubit, ProfileState>(
+      bloc: sl<ProfileCubit>(),
+      builder: (context, state) {
+        final profileUser = sl<ProfileCubit>().profileModel?.user;
+        final String displayName = (profileUser != null && profileUser.name.isNotEmpty)
+            ? profileUser.name
+            : (teacherName != null && teacherName!.isNotEmpty
+                ? teacherName!
+                : (state is ProfileLoadingState ? '...' : ''));
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                ColorsManager.primaryColor.withValues(alpha: 0.12),
+                ColorsManager.primaryColor.withValues(alpha: 0.04),
               ],
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: ColorsManager.primaryColor.withValues(alpha: 0.3),
             ),
           ),
-          Icon(
-            Icons.verified_rounded,
-            color: ColorsManager.primaryColor,
-            size: 20,
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: ColorsManager.primaryColor.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.person_rounded,
+                  color: ColorsManager.primaryColor,
+                  size: 22,
+                ),
+              ),
+              horizontalSpace12,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      appTranslation().get('report_teacher_label'),
+                      style: TextStylesManager.regular12.copyWith(
+                        color: ColorsManager.secondaryText,
+                      ),
+                    ),
+                    verticalSpace2,
+                    Text(
+                      displayName,
+                      style: TextStylesManager.bold14.copyWith(
+                        color: ColorsManager.primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.verified_rounded,
+                color: ColorsManager.primaryColor,
+                size: 20,
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

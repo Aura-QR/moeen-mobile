@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:moean/core/network/local/cache_helper.dart';
-import 'package:moean/core/network/remote/api_service.dart';
+import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/core/utils/extensions/context_extension.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
+import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
 import 'package:moean/features/reports/data/report_pdf_service.dart';
 import 'package:moean/features/reports/presentation/cubit/report_cubit.dart';
 import 'package:moean/features/reports/presentation/cubit/report_state.dart';
@@ -46,29 +47,26 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   Future<void> _loadTeacherName() async {
-    final cached = CacheHelper.getData(key: 'teacher_name');
-    if (cached is String && cached.isNotEmpty) {
-      setState(() => _teacherName = cached);
+    final profileCubit = sl<ProfileCubit>();
+    if (profileCubit.profileModel != null) {
+      if (mounted) {
+        setState(() => _teacherName = profileCubit.profileModel!.user.name);
+      }
       return;
     }
-    final result = await ApiService.getProfile();
-    result.fold(
-      (_) {},
-      (profile) {
-        final name = profile.user.name;
-        CacheHelper.saveData(key: 'teacher_name', value: name);
-        if (mounted) setState(() => _teacherName = name);
-      },
-    );
+    await profileCubit.fetchProfile();
+    if (mounted && profileCubit.profileModel != null) {
+      setState(() => _teacherName = profileCubit.profileModel!.user.name);
+    }
   }
 
-  void _handlePrint(Map<String, dynamic> reportData) {
+  void _handlePrint(Map<String, dynamic> reportData, String teacherName) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => PdfPreviewScreen(
           buildPdf: () => ReportPdfService.generatePdf(
             reportData: reportData,
-            teacherName: _teacherName,
+            teacherName: teacherName,
             grade: _lastGrade,
             subject: _lastSubject,
             unit: _lastUnit,
@@ -86,7 +84,14 @@ class _ReportScreenState extends State<ReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ReportCubit, ReportState>(
+    return BlocBuilder<ProfileCubit, ProfileState>(
+      bloc: sl<ProfileCubit>(),
+      builder: (context, profileState) {
+        final currentTeacherName = sl<ProfileCubit>().profileModel?.user.name.isNotEmpty == true
+            ? sl<ProfileCubit>().profileModel!.user.name
+            : _teacherName;
+
+        return BlocConsumer<ReportCubit, ReportState>(
       listener: (context, state) {
         if (state is ReportError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -141,7 +146,7 @@ class _ReportScreenState extends State<ReportScreen> {
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => SavedReportsScreen(teacherName: _teacherName),
+                        builder: (context) => SavedReportsScreen(teacherName: currentTeacherName),
                       ),
                     );
                   },
@@ -171,7 +176,7 @@ class _ReportScreenState extends State<ReportScreen> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => SavedReportsScreen(teacherName: _teacherName),
+                            builder: (context) => SavedReportsScreen(teacherName: currentTeacherName),
                           ),
                         );
                       },
@@ -234,11 +239,11 @@ class _ReportScreenState extends State<ReportScreen> {
                     state is ReportSuccess
                         ? _ReportResultView(
                             data: state.data,
-                            teacherName: _teacherName,
-                            onPrint: () => _handlePrint(state.data),
+                            teacherName: currentTeacherName,
+                            onPrint: () => _handlePrint(state.data, currentTeacherName),
                           )
                         : ReportFormWidget(
-                            teacherName: _teacherName,
+                            teacherName: currentTeacherName,
                             isLoading: state is ReportLoading,
                             onSubmit: ({
                               required reportType,
@@ -285,6 +290,8 @@ class _ReportScreenState extends State<ReportScreen> {
         );
       },
     );
+  },
+);
   }
 }
 
