@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:moean/core/errors/failures.dart';
+import 'package:moean/features/lab/data/models/lab_experiment_model.dart';
 import 'package:moean/features/lab/data/repositories/lab_repository.dart';
 import 'package:moean/features/lab/presentation/cubit/lab_experiment_cubit.dart';
 
@@ -24,24 +25,44 @@ void main() {
   });
 
   group('LabExperimentCubit', () {
-    test('initial state has loading webViewStatus', () {
+    test('initial state has loading webViewStatus and empty linkedLessons', () {
       expect(cubit.state.webViewStatus, LabWebViewStatus.loading);
       expect(cubit.state.isReporting, isFalse);
       expect(cubit.state.reportSuccess, isFalse);
+      expect(cubit.state.linkedLessons, isEmpty);
     });
 
-    test('onWebViewReady triggers playExperiment only once', () async {
-      when(() => mockRepo.playExperiment('ohm')).thenAnswer(
-        (_) async => const Right(unit),
+    test('loadDetails populates experiment and linkedLessons on success', () async {
+      const model = LabExperimentModel(
+        key: 'ohm',
+        name: 'قانون أوم',
+        lessonsCount: 1,
+        lessons: [
+          LabLinkedLessonModel(
+            id: 3601,
+            title: 'التيار الكهربائي والدوائر الكهربائية',
+            subject: 'الفيزياء 3',
+            grade: 'الثالث الثانوي',
+          ),
+        ],
       );
+      when(() => mockRepo.getExperimentDetails('ohm'))
+          .thenAnswer((_) async => const Right(model));
 
+      await cubit.loadDetails();
+
+      expect(cubit.state.isLoadingDetails, isFalse);
+      expect(cubit.state.experiment?.key, 'ohm');
+      expect(cubit.state.linkedLessons.length, 1);
+      expect(cubit.state.linkedLessons.first.id, 3601);
+      verify(() => mockRepo.getExperimentDetails('ohm')).called(1);
+    });
+
+    test('onWebViewReady sets ready status without recording a play', () {
       cubit.onWebViewReady();
+
       expect(cubit.state.webViewStatus, LabWebViewStatus.ready);
-
-      // Calling onWebViewReady again should not call playExperiment again
-      cubit.onWebViewReady();
-
-      verify(() => mockRepo.playExperiment('ohm')).called(1);
+      verifyNoMoreInteractions(mockRepo);
     });
 
     test('onWebViewError sets error status, retryLoad resets to loading', () {

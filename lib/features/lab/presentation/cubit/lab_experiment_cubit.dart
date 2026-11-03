@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/models/ui_feedback.dart';
+import 'package:moean/features/lab/data/models/lab_experiment_model.dart';
 import 'package:moean/features/lab/data/repositories/lab_repository.dart';
 
 part 'lab_experiment_state.dart';
 
-/// L8 «معمل حضر الافتراضي»: Experiment WebView and reporting cubit.
+/// L8 «معمل حضر الافتراضي»: Experiment WebView, details, and reporting cubit.
 class LabExperimentCubit extends Cubit<LabExperimentState> {
-  static LabExperimentCubit get(BuildContext context) => BlocProvider.of(context);
+  static LabExperimentCubit get(BuildContext context) =>
+      BlocProvider.of(context);
 
   LabExperimentCubit({
     required LabRepository labRepository,
@@ -18,7 +20,25 @@ class LabExperimentCubit extends Cubit<LabExperimentState> {
 
   final LabRepository _labRepository;
   final String _experimentKey;
-  bool _hasPlayed = false;
+
+  Future<void> loadDetails() async {
+    final key = _experimentKey.trim();
+    if (key.isEmpty) return;
+
+    emit(state.copyWith(isLoadingDetails: true));
+    final result = await _labRepository.getExperimentDetails(key);
+    if (isClosed) return;
+
+    result.fold(
+      (_) => emit(state.copyWith(isLoadingDetails: false)),
+      (experiment) => emit(
+        state.copyWith(
+          experiment: experiment,
+          isLoadingDetails: false,
+        ),
+      ),
+    );
+  }
 
   void onWebViewStarted() {
     emit(state.copyWith(webViewStatus: LabWebViewStatus.loading));
@@ -26,7 +46,6 @@ class LabExperimentCubit extends Cubit<LabExperimentState> {
 
   void onWebViewReady() {
     emit(state.copyWith(webViewStatus: LabWebViewStatus.ready));
-    _recordPlayOnce();
   }
 
   void onWebViewError() {
@@ -35,12 +54,6 @@ class LabExperimentCubit extends Cubit<LabExperimentState> {
 
   void retryLoad() {
     emit(state.copyWith(webViewStatus: LabWebViewStatus.loading));
-  }
-
-  void _recordPlayOnce() {
-    if (_hasPlayed) return;
-    _hasPlayed = true;
-    _labRepository.playExperiment(_experimentKey);
   }
 
   Future<bool> reportMistake(String message) async {

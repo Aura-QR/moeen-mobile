@@ -5,7 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/models/ui_feedback.dart';
 import 'package:moean/features/lab/data/models/lab_experiment_model.dart';
 import 'package:moean/features/lab/data/models/lab_filters_model.dart';
+import 'package:moean/features/lab/data/models/lab_site_page.dart';
 import 'package:moean/features/lab/data/repositories/lab_repository.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 part 'lab_library_state.dart';
 
@@ -16,10 +18,12 @@ class LabLibraryCubit extends Cubit<LabLibraryState> {
   LabLibraryCubit({
     required LabRepository labRepository,
     Duration searchDebounce = const Duration(milliseconds: 400),
+    Future<bool> Function(Uri uri)? urlLauncher,
     int? initialLessonId,
     String? initialLessonTitle,
   })  : _labRepository = labRepository,
         _searchDebounce = searchDebounce,
+        _urlLauncher = urlLauncher ?? _launchExternally,
         super(LabLibraryState(
           lessonId: initialLessonId,
           lessonTitle: initialLessonTitle,
@@ -27,6 +31,10 @@ class LabLibraryCubit extends Cubit<LabLibraryState> {
 
   final LabRepository _labRepository;
   final Duration _searchDebounce;
+  final Future<bool> Function(Uri uri) _urlLauncher;
+
+  static Future<bool> _launchExternally(Uri uri) =>
+      launchUrl(uri, mode: LaunchMode.externalApplication);
 
   final TextEditingController searchController = TextEditingController();
   Timer? _debounce;
@@ -130,6 +138,21 @@ class LabLibraryCubit extends Cubit<LabLibraryState> {
     _debounce = Timer(_searchDebounce, () {
       if (!isClosed) load();
     });
+  }
+
+  /// Opens a site-only page (create / request an experiment) in the phone's
+  /// browser, since the teacher's login cannot be passed to the site.
+  Future<void> openSitePage(LabSitePage page) async {
+    bool opened;
+    try {
+      opened = await _urlLauncher(page.uri);
+    } catch (_) {
+      opened = false;
+    }
+    if (opened || isClosed) return;
+    emit(state.copyWith(
+      feedback: const UiFeedback('lab_open_link_error', isError: true),
+    ));
   }
 
   void setSort(String sort) {

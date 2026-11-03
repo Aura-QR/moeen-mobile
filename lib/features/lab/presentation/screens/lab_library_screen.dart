@@ -14,6 +14,7 @@ import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/features/lab/presentation/cubit/lab_library_cubit.dart';
 import 'package:moean/features/lab/presentation/widgets/lab_experiments_list_view.dart';
 import 'package:moean/features/lab/presentation/widgets/lab_lesson_filter_banner.dart';
+import 'package:moean/features/lab/presentation/widgets/lab_library_app_bar_actions.dart';
 import 'package:moean/features/lab/presentation/widgets/lab_library_filters_bar.dart';
 import 'package:moean/features/lab/presentation/widgets/lab_sort_selector.dart';
 
@@ -40,6 +41,7 @@ class LabLibraryScreen extends StatelessWidget {
                 color: ColorsManager.mainText,
               ),
             ),
+            actions: const [LabLibraryAppBarActions()],
           ),
           body: BlocListener<LabLibraryCubit, LabLibraryState>(
             listenWhen: (_, current) => current.feedback != null,

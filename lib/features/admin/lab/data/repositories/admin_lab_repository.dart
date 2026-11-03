@@ -9,6 +9,9 @@ class AdminLabRepository {
   Map<String, dynamic> _map(dynamic data) =>
       Map<String, dynamic>.from(data as Map);
 
+  /// The server's maximum page size, enough for the whole catalogue.
+  static const int _experimentsPerPage = 200;
+
   /// Fetch experiments for admin with status, reports count, and approval status.
   Future<Either<Failure, List<AdminLabExperimentModel>>> getExperiments({
     String? status,
@@ -18,7 +21,7 @@ class AdminLabRepository {
     String? search,
   }) {
     final query = <String, dynamic>{
-      'per_page': 100,
+      'per_page': _experimentsPerPage,
       if (status != null && status.isNotEmpty) 'status': status,
       if (source != null && source.isNotEmpty) 'source': source,
       if (featured != null) 'featured': featured ? 1 : 0,

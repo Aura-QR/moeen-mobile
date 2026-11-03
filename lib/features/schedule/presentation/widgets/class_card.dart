@@ -6,6 +6,7 @@ import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/schedule/data/models/schedule_models.dart';
 import 'package:moean/features/schedule/presentation/widgets/status_strip.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moean/features/lab/presentation/widgets/lesson_experiments_loader_chip.dart';
 import 'package:moean/features/schedule/presentation/cubit/schedule_cubit.dart';
 import 'package:moean/features/schedule/presentation/cubit/schedule_state.dart';
 import 'package:moean/features/schedule/presentation/widgets/schedule_bottom_sheet.dart';
@@ -43,6 +44,26 @@ class _ClassCardState extends State<ClassCard> {
     if (_isExpanded) {
       ScheduleCubit.get(context).fetchAvailableLessonsIfNeeded();
     }
+  }
+
+  int? _activeLessonId() {
+    if (_selectedLessonMap != null) {
+      return int.tryParse(_selectedLessonMap!['lesson_id']?.toString() ?? '') ??
+          int.tryParse(_selectedLessonMap!['id']?.toString() ?? '') ??
+          widget.classModel.lessonId;
+    }
+    return widget.classModel.lessonId;
+  }
+
+  String? _activeLessonTitle() {
+    if (_selectedLessonMap != null) {
+      return _selectedLessonMap!['title']?.toString() ??
+          _selectedLessonMap!['lesson_title']?.toString() ??
+          _selectedLessonMap!['name']?.toString() ??
+          _selectedLessonMap!['value']?.toString() ??
+          widget.classModel.lessonTitle;
+    }
+    return widget.classModel.lessonTitle;
   }
 
   void _showActions(BuildContext context) {
@@ -496,6 +517,11 @@ class _ClassCardState extends State<ClassCard> {
                     );
                   }
                 ),
+              ),
+              LessonExperimentsLoaderChip(
+                lessonId: _activeLessonId(),
+                lessonTitle: _activeLessonTitle(),
+                padding: const EdgeInsets.only(top: 10),
               ),
             ],
           ],

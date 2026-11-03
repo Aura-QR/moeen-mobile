@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/models/ui_feedback.dart';
@@ -9,11 +11,18 @@ part 'admin_lab_state.dart';
 class AdminLabCubit extends Cubit<AdminLabState> {
   static AdminLabCubit get(BuildContext context) => BlocProvider.of(context);
 
-  AdminLabCubit({required AdminLabRepository adminLabRepository})
-      : _repository = adminLabRepository,
+  AdminLabCubit({
+    required AdminLabRepository adminLabRepository,
+    Duration searchDebounce = const Duration(milliseconds: 400),
+  })  : _repository = adminLabRepository,
+        _searchDebounce = searchDebounce,
         super(const AdminLabState());
 
   final AdminLabRepository _repository;
+  final Duration _searchDebounce;
+
+  final TextEditingController searchController = TextEditingController();
+  Timer? _debounce;
 
   Future<void> init() async {
     await Future.wait([
@@ -21,6 +30,13 @@ class AdminLabCubit extends Cubit<AdminLabState> {
       fetchReports(),
       fetchRequests(),
     ]);
+  }
+
+  void onSearchChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(_searchDebounce, () {
+      if (!isClosed) fetchExperiments();
+    });
   }
 
   void setTab(int tab) {
@@ -47,6 +63,7 @@ class AdminLabCubit extends Cubit<AdminLabState> {
       status: status,
       source: source,
       hasReports: hasReports,
+      search: searchController.text.trim(),
     );
 
     if (isClosed) return;
@@ -272,5 +289,12 @@ class AdminLabCubit extends Cubit<AdminLabState> {
       emit(state.copyWith(requestFilter: filter));
     }
     fetchRequests();
+  }
+
+  @override
+  Future<void> close() {
+    _debounce?.cancel();
+    searchController.dispose();
+    return super.close();
   }
 }

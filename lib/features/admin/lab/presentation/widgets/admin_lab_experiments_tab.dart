@@ -4,6 +4,7 @@ import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/conditional_builder.dart';
+import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/admin/lab/presentation/cubit/admin_lab_cubit.dart';
 import 'package:moean/features/admin/lab/presentation/widgets/admin_experiment_card.dart';
@@ -24,6 +25,19 @@ class AdminLabExperimentsTab extends StatelessWidget {
       builder: (context, state) {
         return Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              child: PrimaryTextField(
+                controller: cubit.searchController,
+                hint: appTranslation().get('admin_lab_search_hint'),
+                textInputAction: TextInputAction.search,
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: ColorsManager.secondaryText,
+                ),
+                onChanged: cubit.onSearchChanged,
+              ),
+            ),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

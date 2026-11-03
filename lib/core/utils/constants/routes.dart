@@ -830,7 +830,7 @@ class Routes {
         create: (_) => LabExperimentCubit(
           labRepository: LabRepository(),
           experimentKey: effectiveArgs.key,
-        ),
+        )..loadDetails(),
         child: LabExperimentScreen(args: effectiveArgs),
       );
     },

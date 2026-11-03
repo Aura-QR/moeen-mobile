@@ -10,6 +10,8 @@ import 'package:moean/core/utils/cubit/theme/theme_state.dart';
 import 'package:moean/features/lab/data/models/lab_experiment_model.dart';
 import 'package:moean/features/lab/presentation/cubit/lab_experiment_cubit.dart';
 import 'package:moean/features/lab/presentation/widgets/lab_inapp_webview_widget.dart';
+import 'package:moean/features/lab/presentation/widgets/lab_linked_lessons_bar.dart';
+import 'package:moean/features/lab/presentation/widgets/lab_linked_lessons_bottom_sheet.dart';
 import 'package:moean/features/lab/presentation/widgets/lab_report_bottom_sheet.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -27,7 +29,6 @@ class _LabExperimentScreenState extends State<LabExperimentScreen> {
   @override
   void initState() {
     super.initState();
-    // Allow landscape on this screen only, for the interactive board
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -38,7 +39,6 @@ class _LabExperimentScreenState extends State<LabExperimentScreen> {
 
   @override
   void dispose() {
-    // Restore default portrait orientation
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
   }
@@ -59,50 +59,73 @@ class _LabExperimentScreenState extends State<LabExperimentScreen> {
     return BlocBuilder<ThemeCubit, ThemeState>(
       buildWhen: (previous, current) => previous != current,
       builder: (context, _) {
-        return Scaffold(
-          backgroundColor: ColorsManager.background,
-          appBar: AppBar(
-            backgroundColor: ColorsManager.background,
-            elevation: 0,
-            title: Text(
-              widget.args.name,
-              style: TextStylesManager.bold16.copyWith(
-                color: ColorsManager.mainText,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            actions: [
-              IconButton(
-                tooltip: appTranslation().get('lab_share'),
-                icon: const Icon(Icons.share_outlined),
-                color: ColorsManager.mainText,
-                onPressed: _shareExperiment,
-              ),
-              IconButton(
-                tooltip: appTranslation().get('lab_report_mistake'),
-                icon: const Icon(Icons.report_problem_outlined),
-                color: ColorsManager.mainText,
-                onPressed: () => _openReportSheet(context, cubit),
-              ),
-            ],
+        return BlocConsumer<LabExperimentCubit, LabExperimentState>(
+          listenWhen: (prev, curr) =>
+              prev.feedback != curr.feedback && curr.feedback != null,
+          listener: (context, state) => showPrimarySnackBar(
+            context,
+            appTranslation().get(state.feedback!.message),
+            isError: state.feedback!.isError,
           ),
-          body: BlocListener<LabExperimentCubit, LabExperimentState>(
-            listenWhen: (_, current) => current.feedback != null,
-            listener: (context, state) => showPrimarySnackBar(
-              context,
-              appTranslation().get(state.feedback!.message),
-              isError: state.feedback!.isError,
-            ),
-            child: BlocBuilder<LabExperimentCubit, LabExperimentState>(
-              builder: (context, state) {
-                return LabInAppWebViewWidget(
-                  experimentKey: widget.args.key,
-                  cubit: cubit,
-                );
-              },
-            ),
-          ),
+          buildWhen: (prev, curr) =>
+              prev.webViewStatus != curr.webViewStatus ||
+              prev.experiment != curr.experiment,
+          builder: (context, state) {
+            final lessons = state.linkedLessons;
+
+            return Scaffold(
+              backgroundColor: ColorsManager.background,
+              appBar: AppBar(
+                backgroundColor: ColorsManager.background,
+                elevation: 0,
+                title: Text(
+                  widget.args.name.isNotEmpty
+                      ? widget.args.name
+                      : (state.experiment?.name ?? ''),
+                  style: TextStylesManager.bold16.copyWith(
+                    color: ColorsManager.mainText,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                actions: [
+                  if (lessons.isNotEmpty)
+                    IconButton(
+                      tooltip: appTranslation().get('lab_linked_lessons'),
+                      icon: const Icon(Icons.menu_book_rounded),
+                      color: ColorsManager.primaryColor,
+                      onPressed: () => LabLinkedLessonsBottomSheet.show(
+                        context,
+                        lessons: lessons,
+                      ),
+                    ),
+                  IconButton(
+                    tooltip: appTranslation().get('lab_share'),
+                    icon: const Icon(Icons.share_outlined),
+                    color: ColorsManager.mainText,
+                    onPressed: _shareExperiment,
+                  ),
+                  IconButton(
+                    tooltip: appTranslation().get('lab_report_mistake'),
+                    icon: const Icon(Icons.report_problem_outlined),
+                    color: ColorsManager.mainText,
+                    onPressed: () => _openReportSheet(context, cubit),
+                  ),
+                ],
+              ),
+              body: Column(
+                children: [
+                  Expanded(
+                    child: LabInAppWebViewWidget(
+                      experimentKey: widget.args.key,
+                      cubit: cubit,
+                    ),
+                  ),
+                  LabLinkedLessonsBar(lessons: lessons),
+                ],
+              ),
+            );
+          },
         );
       },
     );

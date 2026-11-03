@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:moean/core/errors/failures.dart';
 import 'package:moean/features/lab/data/models/lab_experiment_model.dart';
 import 'package:moean/features/lab/data/models/lab_filters_model.dart';
+import 'package:moean/features/lab/data/models/lab_site_page.dart';
 import 'package:moean/features/lab/data/repositories/lab_repository.dart';
 import 'package:moean/features/lab/presentation/cubit/lab_library_cubit.dart';
 
@@ -205,6 +206,26 @@ void main() {
       expect(cubit.state.selectedGradeId, isNull);
       expect(cubit.state.selectedSubjectId, isNull);
       expect(cubit.state.hasActiveFilters, isFalse);
+    });
+
+    test('openSitePage launches create and request URLs', () async {
+      final launched = <Uri>[];
+      final localCubit = LabLibraryCubit(
+        labRepository: mockRepo,
+        urlLauncher: (uri) async {
+          launched.add(uri);
+          return true;
+        },
+      );
+
+      await localCubit.openSitePage(LabSitePage.create);
+      await localCubit.openSitePage(LabSitePage.request);
+
+      expect(launched, [
+        Uri.parse('https://haderedu.com/lab/create'),
+        Uri.parse('https://haderedu.com/lab/request'),
+      ]);
+      await localCubit.close();
     });
   });
 }

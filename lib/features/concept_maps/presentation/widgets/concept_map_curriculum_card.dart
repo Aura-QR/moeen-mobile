@@ -4,6 +4,7 @@ import 'package:moean/core/utils/constants/primary/primary_section_card.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/concept_maps/presentation/cubit/new_concept_map_cubit.dart';
 import 'package:moean/features/concept_maps/presentation/widgets/concept_map_dropdown_field.dart';
+import 'package:moean/features/lab/presentation/widgets/lesson_experiments_loader_chip.dart';
 
 /// Cascading curriculum dropdowns: Stage → (Track) → Grade → Subject → Lesson.
 class ConceptMapCurriculumCard extends StatelessWidget {
@@ -120,6 +121,14 @@ class ConceptMapCurriculumCard extends StatelessWidget {
                           lessons.firstWhere((l) => l.id == id),
                         )
                 : null,
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: LessonExperimentsLoaderChip(
+              lessonId: state.selectedLesson?.id,
+              lessonTitle: state.selectedLesson?.title,
+              padding: const EdgeInsets.only(top: 10),
+            ),
           ),
         ],
       ),

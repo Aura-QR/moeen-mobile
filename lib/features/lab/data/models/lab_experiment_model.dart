@@ -1,4 +1,7 @@
 import 'package:flutter/foundation.dart';
+import 'package:moean/features/lab/data/models/lab_linked_lesson_model.dart';
+
+export 'package:moean/features/lab/data/models/lab_linked_lesson_model.dart';
 
 /// Argument passed to [LabExperimentScreen].
 @immutable
@@ -6,18 +9,12 @@ class LabExperimentArgs {
   final String key;
   final String name;
 
-  const LabExperimentArgs({
-    required this.key,
-    required this.name,
-  });
+  const LabExperimentArgs({required this.key, required this.name});
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is LabExperimentArgs &&
-          runtimeType == other.runtimeType &&
-          key == other.key &&
-          name == other.name;
+      other is LabExperimentArgs && key == other.key && name == other.name;
 
   @override
   int get hashCode => key.hashCode ^ name.hashCode;
@@ -29,16 +26,12 @@ class LabLibraryArgs {
   final int? lessonId;
   final String? lessonTitle;
 
-  const LabLibraryArgs({
-    this.lessonId,
-    this.lessonTitle,
-  });
+  const LabLibraryArgs({this.lessonId, this.lessonTitle});
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is LabLibraryArgs &&
-          runtimeType == other.runtimeType &&
           lessonId == other.lessonId &&
           lessonTitle == other.lessonTitle;
 
@@ -63,6 +56,8 @@ class LabExperimentModel {
   final int lessonsCount;
   final String? url;
   final String? about;
+  final LabLinkedLessonModel? firstLesson;
+  final List<LabLinkedLessonModel> lessons;
 
   const LabExperimentModel({
     required this.key,
@@ -79,9 +74,23 @@ class LabExperimentModel {
     this.lessonsCount = 0,
     this.url,
     this.about,
+    this.firstLesson,
+    this.lessons = const [],
   });
 
   factory LabExperimentModel.fromJson(Map<String, dynamic> json) {
+    final rawLessons = json['lessons'];
+    final parsedLessons = rawLessons is List
+        ? rawLessons
+            .whereType<Map>()
+            .map((e) => LabLinkedLessonModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList()
+        : const <LabLinkedLessonModel>[];
+    final rawFirst = json['first_lesson'];
+    final parsedFirst = rawFirst is Map
+        ? LabLinkedLessonModel.fromJson(Map<String, dynamic>.from(rawFirst))
+        : (parsedLessons.isNotEmpty ? parsedLessons.first : null);
+
     return LabExperimentModel(
       key: json['key']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
@@ -94,35 +103,19 @@ class LabExperimentModel {
       source: json['source']?.toString() ?? 'hader',
       authorName: json['author_name']?.toString(),
       plays: int.tryParse(json['plays']?.toString() ?? '') ?? 0,
-      lessonsCount: int.tryParse(json['lessons_count']?.toString() ?? '') ?? 0,
+      lessonsCount: int.tryParse(json['lessons_count']?.toString() ?? '') ??
+          parsedLessons.length,
       url: json['url']?.toString(),
       about: json['about']?.toString(),
+      firstLesson: parsedFirst,
+      lessons: parsedLessons,
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        'key': key,
-        'name': name,
-        'area': area,
-        'kind': kind,
-        'display': display,
-        'observe': observe,
-        'approximate': approximate,
-        'featured': featured,
-        'source': source,
-        'author_name': authorName,
-        'plays': plays,
-        'lessons_count': lessonsCount,
-        'url': url,
-        'about': about,
-      };
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is LabExperimentModel &&
-          runtimeType == other.runtimeType &&
-          key == other.key;
+      other is LabExperimentModel && key == other.key;
 
   @override
   int get hashCode => key.hashCode;
@@ -154,20 +147,13 @@ class LabExperimentsPage {
             .map((e) => LabExperimentModel.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList()
         : <LabExperimentModel>[];
-
     final meta = json['meta'] is Map ? Map<String, dynamic>.from(json['meta'] as Map) : null;
-
-    final currentPage = int.tryParse(meta?['current_page']?.toString() ?? '') ?? 1;
-    final lastPage = int.tryParse(meta?['last_page']?.toString() ?? '') ?? 1;
-    final total = int.tryParse(meta?['total']?.toString() ?? '') ?? items.length;
-    final perPage = int.tryParse(meta?['per_page']?.toString() ?? '') ?? 24;
-
     return LabExperimentsPage(
       items: items,
-      currentPage: currentPage,
-      lastPage: lastPage,
-      total: total,
-      perPage: perPage,
+      currentPage: int.tryParse(meta?['current_page']?.toString() ?? '') ?? 1,
+      lastPage: int.tryParse(meta?['last_page']?.toString() ?? '') ?? 1,
+      total: int.tryParse(meta?['total']?.toString() ?? '') ?? items.length,
+      perPage: int.tryParse(meta?['per_page']?.toString() ?? '') ?? 24,
     );
   }
 }

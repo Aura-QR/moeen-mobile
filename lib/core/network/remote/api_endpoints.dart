@@ -198,7 +198,8 @@ const String publicLabExperimentsApi = '/public/lab/experiments';
 const String publicLabFiltersApi = '/public/lab/filters';
 const String publicLabHomeApi = '/public/lab/home';
 String publicLabExperimentApi(String key) => '/public/lab/experiments/$key';
-String publicLabExperimentPlayApi(String key) => '/public/lab/experiments/$key/play';
+const String labCreateExperimentApi = '/lab/experiments';
+const String labRequestExperimentApi = '/lab/requests';
 String labExperimentReportsApi(String key) => '/lab/experiments/$key/reports';
 String lessonExperimentsApi(int lessonId) => '/lessons/$lessonId/experiments';
 

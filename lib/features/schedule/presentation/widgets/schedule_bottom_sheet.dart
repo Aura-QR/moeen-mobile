@@ -6,6 +6,7 @@ import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/schedule/data/models/schedule_models.dart';
 import 'package:moean/features/schedule/presentation/widgets/status_strip.dart';
 import 'package:moean/features/schedule/presentation/widgets/action_button_widget.dart';
+import 'package:moean/features/lab/presentation/widgets/lesson_experiments_loader_chip.dart';
 import 'package:moean/features/schedule/presentation/cubit/schedule_cubit.dart';
 
 class ScheduleBottomSheet extends StatefulWidget {
@@ -86,6 +87,11 @@ class _ScheduleBottomSheetState extends State<ScheduleBottomSheet> {
                         const Spacer(),
                         StatusIcon(status: widget.classModel.status, size: 24),
                       ],
+                    ),
+                    LessonExperimentsLoaderChip(
+                      lessonId: widget.classModel.lessonId,
+                      lessonTitle: widget.classModel.lessonTitle,
+                      padding: const EdgeInsets.only(top: 8),
                     ),
                   ],
                 ),

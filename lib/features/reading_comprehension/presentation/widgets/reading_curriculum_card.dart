@@ -3,6 +3,7 @@ import 'package:moean/core/utils/constants/constants.dart';
 import 'package:moean/core/utils/constants/primary/primary_section_card.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/concept_maps/presentation/widgets/concept_map_dropdown_field.dart';
+import 'package:moean/features/lab/presentation/widgets/lesson_experiments_loader_chip.dart';
 import 'package:moean/features/reading_comprehension/presentation/cubit/new_reading_cubit.dart';
 
 /// Cascading curriculum dropdowns: Stage → (Track) → Grade → Subject → Lesson.
@@ -91,6 +92,14 @@ class ReadingCurriculumCard extends StatelessWidget {
             onChanged: canPickLesson
                 ? (id) => id == null ? null : cubit.selectLesson(lessons.firstWhere((l) => l.id == id))
                 : null,
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: LessonExperimentsLoaderChip(
+              lessonId: state.selectedLesson?.id,
+              lessonTitle: state.selectedLesson?.title,
+              padding: const EdgeInsets.only(top: 10),
+            ),
           ),
         ],
       ),

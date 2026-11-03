@@ -8,6 +8,7 @@ import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/documents/presentation/cubit/plan_form_cubit.dart';
 import 'package:moean/features/documents/presentation/cubit/plan_tool_config.dart';
 import 'package:moean/features/documents/presentation/widgets/lesson_picker_sheet.dart';
+import 'package:moean/features/lab/presentation/widgets/lesson_experiments_loader_chip.dart';
 
 /// «الدروس»: up to five lessons from the curriculum, picked one at a time.
 /// Hidden for a general remedial plan.
@@ -64,6 +65,14 @@ class PlanLessonsSection extends StatelessWidget {
                           onDeleted: () => cubit.removeLesson(i),
                         ),
                     ],
+                  ),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: LessonExperimentsLoaderChip(
+                      lessonId: state.lessons.last.lessonId,
+                      lessonTitle: state.lessons.last.lessonTitle,
+                      padding: const EdgeInsets.only(top: 10),
+                    ),
                   ),
                 ],
                 if (state.lessons.length < PlanToolConfig.maxLessons)

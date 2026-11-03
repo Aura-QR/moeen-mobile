@@ -175,5 +175,27 @@ void main() {
 
       expect(cubit.state.requests.first.isOpen, isFalse);
     });
+
+    test('onSearchChanged passes search query to getExperiments', () async {
+      final fastCubit = AdminLabCubit(
+        adminLabRepository: mockRepo,
+        searchDebounce: Duration.zero,
+      );
+      when(() => mockRepo.getExperiments(
+            status: any(named: 'status'),
+            source: any(named: 'source'),
+            featured: any(named: 'featured'),
+            hasReports: any(named: 'hasReports'),
+            search: 'أوم',
+          )).thenAnswer((_) async => const Right([testExperiment]));
+
+      fastCubit.searchController.text = 'أوم';
+      fastCubit.onSearchChanged('أوم');
+      await pumpEventQueue();
+
+      expect(fastCubit.state.experiments, [testExperiment]);
+      verify(() => mockRepo.getExperiments(search: 'أوم')).called(1);
+      await fastCubit.close();
+    });
   });
 }
