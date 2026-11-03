@@ -42,6 +42,15 @@ import 'package:moean/features/qr_codes/presentation/screens/qr_codes_screen.dar
 import 'package:moean/features/qr_codes/presentation/screens/shared_file_result_screen.dart';
 import 'package:moean/features/qr_codes/presentation/screens/shared_files_screen.dart';
 import 'package:moean/features/support_chat/presentation/support_chat_screen.dart';
+import 'package:moean/features/lab/data/models/lab_experiment_model.dart';
+import 'package:moean/features/lab/data/repositories/lab_repository.dart';
+import 'package:moean/features/lab/presentation/cubit/lab_experiment_cubit.dart';
+import 'package:moean/features/lab/presentation/cubit/lab_library_cubit.dart';
+import 'package:moean/features/lab/presentation/screens/lab_experiment_screen.dart';
+import 'package:moean/features/lab/presentation/screens/lab_library_screen.dart';
+import 'package:moean/features/admin/lab/data/repositories/admin_lab_repository.dart';
+import 'package:moean/features/admin/lab/presentation/cubit/admin_lab_cubit.dart';
+import 'package:moean/features/admin/lab/presentation/screens/admin_lab_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/features/home/presentation/widgets/download_extention.dart';
@@ -218,6 +227,7 @@ class Routes {
   static const String adminContact = '/admin/contact';
   static const String adminTicketDetails = '/admin/contact/details';
   static const String adminPayments = '/admin/payments';
+  static const String adminLab = AppRouter.adminLab;
   static const String contact = '/contact';
   static const String createTicket = '/contact/create-ticket';
   static const String myTickets = '/contact/my-tickets';
@@ -283,6 +293,8 @@ class Routes {
   static const String nationalExams = AppRouter.nationalExams;
   static const String nafsTest = AppRouter.nafsTest;
   static const String tahsiliTest = AppRouter.tahsiliTest;
+  static const String labLibrary = AppRouter.labLibrary;
+  static const String labExperiment = AppRouter.labExperiment;
   static const String diagnosis = '/online-tests/diagnosis';
   static const String classes = '/classes';
   static const String classEditor = '/classes/editor';
@@ -355,6 +367,10 @@ class Routes {
       child: const AdminTicketDetailsScreen(),
     ),
     adminPayments: (context) => const AdminPaymentsScreen(),
+    adminLab: (context) => BlocProvider(
+      create: (_) => AdminLabCubit(adminLabRepository: AdminLabRepository())..init(),
+      child: const AdminLabScreen(),
+    ),
     adminExams: (context) => BlocProvider(
       create: (_) => sl<AdminExamsCubit>()..fetchPendingQuestions(),
       child: const AdminExamsScreen(),
@@ -774,6 +790,50 @@ class Routes {
     },
     nafsTest: (context) => NationalExamsScreen.create(initialIndex: 0),
     tahsiliTest: (context) => NationalExamsScreen.create(initialIndex: 1),
+    labLibrary: (context) {
+      final arg = ModalRoute.of(context)?.settings.arguments;
+      int? lessonId;
+      String? lessonTitle;
+      if (arg is LabLibraryArgs) {
+        lessonId = arg.lessonId;
+        lessonTitle = arg.lessonTitle;
+      } else if (arg is int) {
+        lessonId = arg;
+      } else if (arg is Map) {
+        lessonId = int.tryParse(arg['lesson_id']?.toString() ?? arg['lessonId']?.toString() ?? '');
+        lessonTitle = arg['lesson_title']?.toString() ?? arg['title']?.toString();
+      }
+      return BlocProvider(
+        create: (_) => LabLibraryCubit(
+          labRepository: LabRepository(),
+          initialLessonId: lessonId,
+          initialLessonTitle: lessonTitle,
+        )..init(),
+        child: const LabLibraryScreen(),
+      );
+    },
+    labExperiment: (context) {
+      final arg = ModalRoute.of(context)?.settings.arguments;
+      LabExperimentArgs? args;
+      if (arg is LabExperimentArgs) {
+        args = arg;
+      } else if (arg is LabExperimentModel) {
+        args = LabExperimentArgs(key: arg.key, name: arg.name);
+      } else if (arg is Map) {
+        args = LabExperimentArgs(
+          key: arg['key']?.toString() ?? '',
+          name: arg['name']?.toString() ?? '',
+        );
+      }
+      final effectiveArgs = args ?? const LabExperimentArgs(key: '', name: '');
+      return BlocProvider(
+        create: (_) => LabExperimentCubit(
+          labRepository: LabRepository(),
+          experimentKey: effectiveArgs.key,
+        ),
+        child: LabExperimentScreen(args: effectiveArgs),
+      );
+    },
     // Argument: the online test id or {'test_id': int, 'title': String}.
     diagnosis: (context) => DiagnosisScreen.create(context.getArg<dynamic>() ?? 0),
     // Argument: the `lesson_preparation` document id. Without one, Â«ØªØ­Ø¶ÙŠØ±Ø§ØªÙŠÂ» opens to pick lessons.

@@ -193,6 +193,13 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget>
                             onTap: () => _openAuthed(context, Routes.reports),
                           ),
                           horizontalSpace12,
+                          // Virtual Lab (L8)
+                          HomeActionChipWidget(
+                            icon: Icons.science_outlined,
+                            title: appTranslation().get('virtual_lab_title'),
+                            onTap: () => AppRouter.push(Routes.labLibrary, context: context),
+                          ),
+                          horizontalSpace12,
                         ],
                         HomeActionChipWidget(
                           icon: isAdmin ? Icons.assignment_turned_in_outlined : Icons.verified_outlined,
@@ -301,6 +308,12 @@ class _HomeFeaturesSectionWidgetState extends State<HomeFeaturesSectionWidget>
                           ),
                         ],
                         if (isAdmin) ...[
+                          horizontalSpace12,
+                          HomeActionChipWidget(
+                            icon: Icons.science_outlined,
+                            title: appTranslation().get('home_admin_lab'),
+                            onTap: () => _openAuthed(context, Routes.adminLab),
+                          ),
                           horizontalSpace12,
                           HomeActionChipWidget(
                             icon: Icons.check_circle_outline,

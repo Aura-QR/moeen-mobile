@@ -192,3 +192,20 @@ String aiJobApi(int id) => '/ai-jobs/$id';
 
 // Achievement Report API
 const String achievementReportApi = '/reports/achievements';
+
+// L8 «معمل حضر الافتراضي» (LAB_API.md)
+const String publicLabExperimentsApi = '/public/lab/experiments';
+const String publicLabFiltersApi = '/public/lab/filters';
+const String publicLabHomeApi = '/public/lab/home';
+String publicLabExperimentApi(String key) => '/public/lab/experiments/$key';
+String publicLabExperimentPlayApi(String key) => '/public/lab/experiments/$key/play';
+String labExperimentReportsApi(String key) => '/lab/experiments/$key/reports';
+String lessonExperimentsApi(int lessonId) => '/lessons/$lessonId/experiments';
+
+// Admin Lab API
+const String adminLabExperimentsApi = '/admin/lab/experiments';
+String adminLabExperimentApi(String key) => '/admin/lab/experiments/$key';
+const String adminLabRequestsApi = '/admin/lab/requests';
+String adminLabRequestApi(int id) => '/admin/lab/requests/$id';
+const String adminLabReportsApi = '/admin/lab/reports';
+String adminLabReportApi(int id) => '/admin/lab/reports/$id';

@@ -29,6 +29,9 @@ abstract final class AppRouter {
   static const String nationalExams = '/exams/national';
   static const String nafsTest = '/exams/nafs';
   static const String tahsiliTest = '/exams/tahsili';
+  static const String labLibrary = '/lab';
+  static const String labExperiment = '/lab/experiment';
+  static const String adminLab = '/admin/lab';
 
   static String roleDocumentsPath(String roleKey) => '$roleSuites/$roleKey';
 
