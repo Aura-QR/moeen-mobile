@@ -2231,5 +2231,18 @@
   "lab_create_close": "إغلاق",
   "lab_create_invalid_error": "يرجى إكمال جميع الحقول المطلوبة",
   "lab_create_minmax_error": "يجب أن تكون القيمة الأدنى أصغر من الأعلى",
-  "lab_create_formula_error": "المعادلة يجب أن تكون عملية رياضية بدلالة رموز المتغيرات المعرفة فقط"
+  "lab_create_formula_error": "المعادلة يجب أن تكون عملية رياضية بدلالة رموز المتغيرات المعرفة فقط",
+  "lab_create_err_name_empty": "• يرجى إدخال عنوان التجربة",
+  "lab_create_err_no_variables": "• يجب إضافة متغير واحد على الأقل",
+  "lab_create_err_var_label_empty": "• يرجى إدخال اسم المتغير ({symbol})",
+  "lab_create_err_var_minmax": "• في المتغير ({symbol}): القيمة الأدنى ({min}) يجب أن تكون أصغر من القيمة الأعلى ({max})",
+  "lab_create_err_no_readings": "• يجب إضافة قراءة واحدة على الأقل",
+  "lab_create_err_reading_label_empty": "• يرجى إدخال اسم القراءة ({index})",
+  "lab_create_err_formula_empty": "• يرجى إدخال المعادلة في القراءة ({index})",
+  "lab_create_err_formula_too_long": "• المعادلة في القراءة ({index}) تتجاوز الحد الأقصى (300 حرف)",
+  "lab_create_err_formula_chars": "• المعادلة في القراءة ({index}) تحتوي على حروف أو رموز غير مدعومة (استخدم الرموز {symbols} والعمليات + - * / ^ فقط بدون علامة =)",
+  "lab_create_err_formula_parens": "• المعادلة في القراءة ({index}) تحتوي على أقواس غير مكتملة الإغلاق ()",
+  "lab_create_err_formula_unknown_symbol": "• في القراءة ({index}): الرمز ({unknown}) غير معرّف — الرموز المتاحة هي ({symbols})",
+  "lab_create_err_formula_incomplete": "• المعادلة في القراءة ({index}) غير مكتملة رياضياً",
+  "lab_create_err_login_required": "يرجى تسجيل الدخول أولاً لإنشاء تجربة"
 }

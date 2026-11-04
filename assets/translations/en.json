@@ -2231,5 +2231,18 @@
   "lab_create_close": "Close",
   "lab_create_invalid_error": "Please complete all required fields",
   "lab_create_minmax_error": "Min value must be less than max value",
-  "lab_create_formula_error": "Formula must be a math expression using defined variable symbols only"
+  "lab_create_formula_error": "Formula must be a math expression using defined variable symbols only",
+  "lab_create_err_name_empty": "• Please enter the experiment title",
+  "lab_create_err_no_variables": "• At least one variable is required",
+  "lab_create_err_var_label_empty": "• Please enter a label for variable ({symbol})",
+  "lab_create_err_var_minmax": "• Variable ({symbol}): min ({min}) must be less than max ({max})",
+  "lab_create_err_no_readings": "• At least one reading is required",
+  "lab_create_err_reading_label_empty": "• Please enter a label for reading ({index})",
+  "lab_create_err_formula_empty": "• Please enter a formula for reading ({index})",
+  "lab_create_err_formula_too_long": "• Formula in reading ({index}) exceeds 300 characters",
+  "lab_create_err_formula_chars": "• Formula in reading ({index}) contains unsupported characters (use {symbols} and + - * / ^ without =)",
+  "lab_create_err_formula_parens": "• Formula in reading ({index}) has unbalanced parentheses ()",
+  "lab_create_err_formula_unknown_symbol": "• Reading ({index}): symbol ({unknown}) is undefined — available symbols: ({symbols})",
+  "lab_create_err_formula_incomplete": "• Formula in reading ({index}) is incomplete",
+  "lab_create_err_login_required": "Please log in first to create an experiment"
 }

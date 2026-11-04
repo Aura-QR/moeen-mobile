@@ -83,77 +83,107 @@ class _LabCreateExperimentSheetState extends State<LabCreateExperimentSheet> {
   @override
   Widget build(BuildContext context) {
     final title = widget.lessonTitle?.trim() ?? '';
-    return BlocConsumer<LabLessonActionsCubit, LabLessonActionsState>(
-      listenWhen: (p, c) => p.feedback != c.feedback && c.feedback != null && c.feedback!.isError,
-      listener: (context, state) => showPrimarySnackBar(
-        context,
-        appTranslation().get(state.feedback!.message),
-        isError: true,
-      ),
-      buildWhen: (p, c) =>
-          p.isSubmitting != c.isSubmitting ||
-          p.displayMode != c.displayMode ||
-          p.variablesCount != c.variablesCount ||
-          p.readingsCount != c.readingsCount ||
-          p.createdExperiment != c.createdExperiment,
-      builder: (context, state) {
-        final cubit = LabLessonActionsCubit.get(context);
-        final created = state.createdExperiment;
-        return ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.88),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 20),
-            child: created != null
-                ? LabCreateExperimentSuccessView(experiment: created)
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.add_circle_outline_rounded, color: ColorsManager.primaryColor),
-                          horizontalSpace8,
-                          Expanded(
-                            child: Text(
-                              appTranslation().get('lab_create_experiment'),
-                              style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.88),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        child: ScaffoldMessenger(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: BlocConsumer<LabLessonActionsCubit, LabLessonActionsState>(
+              listenWhen: (p, c) =>
+                  p.feedback != c.feedback && c.feedback != null && c.feedback!.isError,
+              listener: (context, state) {
+                final msg = state.validationErrors.isNotEmpty
+                    ? state.validationErrors.join('\n')
+                    : appTranslation().get(state.feedback!.message);
+                showPrimarySnackBar(context, msg, isError: true);
+              },
+              buildWhen: (p, c) =>
+                  p.isSubmitting != c.isSubmitting ||
+                  p.displayMode != c.displayMode ||
+                  p.variablesCount != c.variablesCount ||
+                  p.readingsCount != c.readingsCount ||
+                  p.createdExperiment != c.createdExperiment ||
+                  p.validationErrors != c.validationErrors,
+              builder: (context, state) {
+                final cubit = LabLessonActionsCubit.get(context);
+                final created = state.createdExperiment;
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: created != null
+                      ? LabCreateExperimentSuccessView(experiment: created)
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.add_circle_outline_rounded, color: ColorsManager.primaryColor),
+                                horizontalSpace8,
+                                Expanded(
+                                  child: Text(
+                                    appTranslation().get('lab_create_experiment'),
+                                    style: TextStylesManager.bold16.copyWith(color: ColorsManager.mainText),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.close_rounded),
+                                  color: ColorsManager.secondaryText,
+                                  onPressed: () => AppRouter.pop(null, context),
+                                ),
+                              ],
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close_rounded),
-                            color: ColorsManager.secondaryText,
-                            onPressed: () => AppRouter.pop(null, context),
-                          ),
-                        ],
-                      ),
-                      if (title.isNotEmpty) ...[
-                        verticalSpace4,
-                        Text(title, style: TextStylesManager.medium13.copyWith(color: ColorsManager.primaryColor)),
-                      ],
-                      verticalSpace12,
-                      LabCreateExperimentFormFields(
-                        nameController: _nameCtrl,
-                        observeController: _observeCtrl,
-                        variables: _variables,
-                        readings: _readings,
-                        displayMode: state.displayMode,
-                        onDisplayModeChanged: cubit.selectDisplayMode,
-                        onAddVariable: () => cubit.setVariablesCount((_variables..add(LabVariableFormControllers())).length),
-                        onRemoveVariable: (i) => cubit.setVariablesCount((_variables..removeAt(i).dispose()).length),
-                        onAddReading: () => cubit.setReadingsCount((_readings..add(LabReadingFormControllers())).length),
-                        onRemoveReading: (i) => cubit.setReadingsCount((_readings..removeAt(i).dispose()).length),
-                      ),
-                      verticalSpace16,
-                      PrimaryElevatedButton(
-                        text: appTranslation().get('lab_create_submit'),
-                        isLoading: state.isSubmitting,
-                        onPressed: state.isSubmitting ? null : () => _submit(context, state.displayMode),
-                      ),
-                    ],
-                  ),
+                            if (title.isNotEmpty) ...[
+                              verticalSpace4,
+                              Text(title, style: TextStylesManager.medium13.copyWith(color: ColorsManager.primaryColor)),
+                            ],
+                            verticalSpace12,
+                            LabCreateExperimentFormFields(
+                              nameController: _nameCtrl,
+                              observeController: _observeCtrl,
+                              variables: _variables,
+                              readings: _readings,
+                              displayMode: state.displayMode,
+                              onDisplayModeChanged: cubit.selectDisplayMode,
+                              onAddVariable: () => cubit.setVariablesCount((_variables..add(LabVariableFormControllers())).length),
+                              onRemoveVariable: (i) => cubit.setVariablesCount((_variables..removeAt(i).dispose()).length),
+                              onAddReading: () => cubit.setReadingsCount((_readings..add(LabReadingFormControllers())).length),
+                              onRemoveReading: (i) => cubit.setReadingsCount((_readings..removeAt(i).dispose()).length),
+                            ),
+                            if (state.validationErrors.isNotEmpty) ...[
+                              verticalSpace12,
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: ColorsManager.errorColor.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: ColorsManager.errorColor.withValues(alpha: 0.35),
+                                  ),
+                                ),
+                                child: Text(
+                                  state.validationErrors.join('\n'),
+                                  style: TextStylesManager.medium13.copyWith(
+                                    color: ColorsManager.errorColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            verticalSpace16,
+                            PrimaryElevatedButton(
+                              text: appTranslation().get('lab_create_submit'),
+                              isLoading: state.isSubmitting,
+                              onPressed: state.isSubmitting ? null : () => _submit(context, state.displayMode),
+                            ),
+                          ],
+                        ),
+                );
+              },
+            ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

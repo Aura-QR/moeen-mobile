@@ -101,6 +101,26 @@ void main() {
       final created = await cubit.submitCreateExperiment(invalidFormula);
       expect(created, isNull);
       expect(cubit.state.feedback?.message, 'lab_create_formula_error');
+      expect(cubit.state.validationErrors, isNotEmpty);
+      expect(cubit.state.validationErrors.first, contains('k'));
+      verifyNever(() => mockRepo.createExperiment(any()));
+    });
+
+    test('submitCreateExperiment populates detailed validationErrors for missing fields and unbalanced parens', () async {
+      const invalidMultiple = LabCreateExperimentInput(
+        name: '',
+        variables: [
+          LabVariableInput(symbol: 'a', label: '', min: 100, max: 10),
+        ],
+        readings: [
+          LabReadingInput(label: '', formula: 'sqrt(a'),
+        ],
+      );
+
+      final created = await cubit.submitCreateExperiment(invalidMultiple);
+      expect(created, isNull);
+      expect(cubit.state.feedback?.message, 'lab_create_invalid_error');
+      expect(cubit.state.validationErrors.length, 5);
       verifyNever(() => mockRepo.createExperiment(any()));
     });
 

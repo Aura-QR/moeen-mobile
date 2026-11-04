@@ -31,6 +31,7 @@ class LabCreateExperimentSuccessView extends StatelessWidget {
       showPrimarySnackBar(
         context,
         appTranslation().get('lab_create_link_copied'),
+        isError: false,
       );
     }
   }

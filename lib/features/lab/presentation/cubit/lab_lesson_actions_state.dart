@@ -8,6 +8,7 @@ class LabLessonActionsState {
   final int readingsCount;
   final LabExperimentModel? createdExperiment;
   final UiFeedback? feedback;
+  final List<String> validationErrors;
 
   const LabLessonActionsState({
     this.isSubmitting = false,
@@ -16,6 +17,7 @@ class LabLessonActionsState {
     this.readingsCount = 1,
     this.createdExperiment,
     this.feedback,
+    this.validationErrors = const [],
   });
 
   LabLessonActionsState copyWith({
@@ -25,6 +27,7 @@ class LabLessonActionsState {
     int? readingsCount,
     LabExperimentModel? createdExperiment,
     UiFeedback? feedback,
+    List<String>? validationErrors,
   }) {
     return LabLessonActionsState(
       isSubmitting: isSubmitting ?? this.isSubmitting,
@@ -33,6 +36,7 @@ class LabLessonActionsState {
       readingsCount: readingsCount ?? this.readingsCount,
       createdExperiment: createdExperiment ?? this.createdExperiment,
       feedback: feedback,
+      validationErrors: validationErrors ?? this.validationErrors,
     );
   }
 }
