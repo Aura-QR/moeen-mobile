@@ -76,21 +76,34 @@ class _LabExperimentScreenState extends State<LabExperimentScreen> {
             return Scaffold(
               backgroundColor: ColorsManager.background,
               appBar: AppBar(
+                automaticallyImplyLeading: false,
                 backgroundColor: ColorsManager.background,
                 elevation: 0,
+                titleSpacing: 0,
+                toolbarHeight: 64,
                 title: Text(
                   widget.args.name.isNotEmpty
                       ? widget.args.name
                       : (state.experiment?.name ?? ''),
                   style: TextStylesManager.bold16.copyWith(
                     color: ColorsManager.mainText,
+                    height: 1.3,
                   ),
-                  maxLines: 1,
+                  maxLines: 2,
+                  softWrap: true,
                   overflow: TextOverflow.ellipsis,
+                ),
+                leading: IconButton(
+                  visualDensity: VisualDensity.compact,
+                  tooltip: appTranslation().get('lab_back'),
+                  icon: const Icon(Icons.arrow_back_ios_rounded),
+                  color: ColorsManager.mainText,
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
                 actions: [
                   if (lessons.isNotEmpty)
                     IconButton(
+                      visualDensity: VisualDensity.compact,
                       tooltip: appTranslation().get('lab_linked_lessons'),
                       icon: const Icon(Icons.menu_book_rounded),
                       color: ColorsManager.primaryColor,
@@ -100,12 +113,14 @@ class _LabExperimentScreenState extends State<LabExperimentScreen> {
                       ),
                     ),
                   IconButton(
+                    visualDensity: VisualDensity.compact,
                     tooltip: appTranslation().get('lab_share'),
                     icon: const Icon(Icons.share_outlined),
                     color: ColorsManager.mainText,
                     onPressed: _shareExperiment,
                   ),
                   IconButton(
+                    visualDensity: VisualDensity.compact,
                     tooltip: appTranslation().get('lab_report_mistake'),
                     icon: const Icon(Icons.report_problem_outlined),
                     color: ColorsManager.mainText,

@@ -32,15 +32,22 @@ class LabLibraryScreen extends StatelessWidget {
         return Scaffold(
           backgroundColor: ColorsManager.background,
           appBar: AppBar(
+            automaticallyImplyLeading: false,
             backgroundColor: ColorsManager.background,
+            leading: IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.arrow_back_ios_rounded),
+                  color: ColorsManager.mainText,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
             elevation: 0,
-            centerTitle: true,
             title: Text(
               appTranslation().get('lab_library_title'),
               style: TextStylesManager.bold16.copyWith(
                 color: ColorsManager.mainText,
               ),
             ),
+             
             actions: const [LabLibraryAppBarActions()],
           ),
           body: BlocListener<LabLibraryCubit, LabLibraryState>(
