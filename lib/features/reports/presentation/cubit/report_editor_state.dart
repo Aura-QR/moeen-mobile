@@ -15,6 +15,11 @@ class ReportEditorState {
   /// Role document metadata when opened from «حقائب الأدوار» (or reopened with `role`+`doc`).
   final RoleDocumentTemplateModel? roleTemplate;
 
+  /// Designer template key and its «✨ اكتب لي» flags (`GET /tools/reports/{key}`).
+  final String? templateKey;
+  final bool templateAi;
+  final String templateBriefHint;
+
   /// Teacher's document defaults (`gender_form` is sent to `POST /ai-jobs`).
   final DocumentDefaultsModel defaults;
 
@@ -53,6 +58,9 @@ class ReportEditorState {
     this.errorMessage,
     this.catalogue,
     this.roleTemplate,
+    this.templateKey,
+    this.templateAi = false,
+    this.templateBriefHint = '',
     this.defaults = const DocumentDefaultsModel(),
     this.input = const ReportInput(),
     this.images = const [],
@@ -80,11 +88,11 @@ class ReportEditorState {
 
   bool get isSensitive => roleTemplate?.sensitive == true;
 
-  bool get canUseAi => (roleTemplate?.ai == true) && !isSensitive;
+  bool get canUseAi => (roleTemplate?.ai == true || (roleTemplate == null && templateAi)) && !isSensitive;
 
   bool get isAiWriting => aiStatus == RoleAiStatus.writing;
 
-  String get briefHint => roleTemplate?.briefHint ?? '';
+  String get briefHint => roleTemplate?.briefHint ?? templateBriefHint;
 
   /// The «إضافة» menu: the server's order, or ours (without `images` on sensitive forms).
   List<String> get blockKinds {
@@ -116,6 +124,9 @@ class ReportEditorState {
     String? errorMessage,
     ReportCatalogueModel? catalogue,
     RoleDocumentTemplateModel? roleTemplate,
+    String? templateKey,
+    bool? templateAi,
+    String? templateBriefHint,
     DocumentDefaultsModel? defaults,
     ReportInput? input,
     List<DocumentImageModel>? images,
@@ -143,6 +154,9 @@ class ReportEditorState {
       errorMessage: errorMessage ?? this.errorMessage,
       catalogue: catalogue ?? this.catalogue,
       roleTemplate: roleTemplate ?? this.roleTemplate,
+      templateKey: templateKey ?? this.templateKey,
+      templateAi: templateAi ?? this.templateAi,
+      templateBriefHint: templateBriefHint ?? this.templateBriefHint,
       defaults: defaults ?? this.defaults,
       input: input ?? this.input,
       images: images ?? this.images,

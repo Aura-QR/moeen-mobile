@@ -556,6 +556,8 @@
   "no_saved_reports": "No saved reports found",
   "card_details": "Card Details",
   "pay_btn_prefix": "Pay",
+  "pay_failed": "Payment failed",
+  "pay_received_pending": "We received your payment and it is being confirmed. Your subscription will be activated automatically within minutes. Do not pay again.",
   "session_error": "Failed to load session: ",
   "electronic_payment": "Electronic Payment",
   "referral_chip_label": "Teachers' Network",

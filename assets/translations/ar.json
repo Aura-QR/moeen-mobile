@@ -556,6 +556,8 @@
   "no_saved_reports": "لا توجد تقارير محفوظة",
   "card_details": "بيانات البطاقة",
   "pay_btn_prefix": "دفع",
+  "pay_failed": "فشلت عملية الدفع",
+  "pay_received_pending": "استلمنا عملية الدفع ويجري تأكيدها، وسيُفعَّل اشتراكك تلقائيًا خلال دقائق. لا تُعِد الدفع.",
   "session_error": "فشل في تحميل الجلسة: ",
   "electronic_payment": "الدفع الإلكتروني",
   "referral_chip_label": "سفراء حضّر",

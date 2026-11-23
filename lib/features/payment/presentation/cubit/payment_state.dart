@@ -82,6 +82,9 @@ class PaymentVerifyError extends PaymentState {
   PaymentVerifyError(this.error);
 }
 
+/// Payment was charged but verify did not succeed; the webhook will activate.
+class PaymentVerifyPending extends PaymentState {}
+
 // History
 class HistoryLoading extends PaymentState {}
 class HistoryLoaded extends PaymentState {

@@ -11,6 +11,7 @@ import 'package:moean/features/documents/data/repositories/documents_repository.
 import 'package:moean/features/documents/presentation/document_follow_up.dart';
 import 'package:moean/features/reports/data/models/report_block.dart';
 import 'package:moean/features/reports/data/models/report_catalogue_model.dart';
+import 'package:moean/features/reports/data/models/report_template_details.dart';
 import 'package:moean/features/reports/data/repositories/reports_repository.dart';
 import 'package:moean/features/reports/presentation/cubit/report_editor_cubit.dart';
 
@@ -49,7 +50,7 @@ void main() {
     documents = MockDocumentsRepository();
     picker = MockDeviceFilePicker();
     when(() => reports.getCatalogue()).thenAnswer((_) async => const Right(_catalogue));
-    when(() => reports.getTemplate('blank')).thenAnswer((_) async => Right(_template()));
+    when(() => reports.getTemplate('blank')).thenAnswer((_) async => Right(ReportTemplateDetails(input: _template())));
   });
 
   test('a new report starts from the template', () async {

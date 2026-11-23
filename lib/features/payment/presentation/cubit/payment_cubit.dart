@@ -199,15 +199,28 @@ class PaymentCubit extends Cubit<PaymentState> {
     );
   }
 
-  Future<void> verifyMyfatoorahPayment(String paymentKey) async {
+  static const int _verifyMaxRetries = 3;
+
+  /// Called only after MyFatoorah reported the invoice as Paid. If verify
+  /// fails, it is retried [_verifyMaxRetries] times, [retryDelay] apart; the
+  /// webhook activates the plan if all attempts fail.
+  Future<void> verifyMyfatoorahPayment(
+    String paymentKey, {
+    Duration retryDelay = const Duration(seconds: 3),
+  }) async {
     if (!isClosed) emit(PaymentVerifying());
-    final result = await ApiService.verifyMyfatoorahPayment(
-      key: paymentKey,
-    );
+    var result = await ApiService.verifyMyfatoorahPayment(key: paymentKey);
+    for (var attempt = 0;
+        attempt < _verifyMaxRetries && result.isLeft();
+        attempt++) {
+      await Future<void>.delayed(retryDelay);
+      if (isClosed) return;
+      result = await ApiService.verifyMyfatoorahPayment(key: paymentKey);
+    }
     if (isClosed) return;
     result.fold(
       (error) {
-        if (!isClosed) emit(PaymentVerifyError(error));
+        if (!isClosed) emit(PaymentVerifyPending());
       },
       (data) {
         final payment = PaymentModel.fromJson(

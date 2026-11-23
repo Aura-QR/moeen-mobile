@@ -6,6 +6,7 @@ abstract final class AiJobKinds {
   static const String enrichmentSuggestions = 'enrichment_suggestions';
   static const String gradeRecommendations = 'grade_recommendations';
   static const String roleDocument = 'role_document';
+  static const String reportTemplate = 'report_template';
   static const String conceptMap = 'concept_map';
   static const String lessonOutcomes = 'lesson_outcomes';
   static const String readingPassage = 'reading_passage';

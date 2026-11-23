@@ -13,6 +13,7 @@ import 'package:moean/features/documents/data/repositories/ai_jobs_repository.da
 import 'package:moean/features/documents/data/repositories/documents_repository.dart';
 import 'package:moean/features/reports/data/models/report_block.dart';
 import 'package:moean/features/reports/data/models/report_catalogue_model.dart';
+import 'package:moean/features/reports/data/models/report_template_details.dart';
 import 'package:moean/features/reports/data/models/role_report_editor_args.dart';
 import 'package:moean/features/reports/data/repositories/reports_repository.dart';
 import 'package:moean/features/reports/presentation/cubit/report_editor_cubit.dart';
@@ -344,6 +345,58 @@ void main() {
       ['1', 'عبدالله', ''],
       ['', 'سلطان', ''],
     ]);
+    await cubit.close();
+  });
+
+  test('designer template with ai:true sends report_template with the template key', () async {
+    when(() => reports.getTemplate('parents_meeting')).thenAnswer(
+      (_) async => const Right(
+        ReportTemplateDetails(
+          input: {'title': 'تقرير لقاء أولياء الأمور', 'blocks': []},
+          ai: true,
+          briefHint: 'مثال',
+        ),
+      ),
+    );
+    Map<String, dynamic>? sentPayload;
+    when(() => aiJobs.start(AiJobKinds.reportTemplate, any())).thenAnswer((inv) async {
+      sentPayload = inv.positionalArguments[1] as Map<String, dynamic>;
+      return const Right(AiJobModel(id: 5, kind: AiJobKinds.reportTemplate, status: AiJobStatus.pending));
+    });
+    when(() => aiJobs.getJob(5)).thenAnswer(
+      (_) async => const Right(
+        AiJobModel(
+          id: 5,
+          kind: AiJobKinds.reportTemplate,
+          status: AiJobStatus.done,
+          rawResult: {'title': 'تقرير لقاء أولياء الأمور', 'meta': [], 'blocks': []},
+        ),
+      ),
+    );
+
+    final cubit = ReportEditorCubit(
+      reports: reports,
+      documents: documents,
+      picker: picker,
+      aiJobs: aiJobs,
+      templateKey: 'parents_meeting',
+      aiPollInterval: Duration.zero,
+    );
+    await cubit.load();
+    expect(cubit.state.canUseAi, isTrue);
+    expect(cubit.state.briefHint, 'مثال');
+
+    cubit.briefController.text = 'لقاء الفصل الأول';
+    cubit.gradeController.text = 'الخامس';
+    await cubit.writeWithAi();
+
+    expect(sentPayload, {
+      'template': 'parents_meeting',
+      'brief': 'لقاء الفصل الأول',
+      'grade': 'الخامس',
+      'gender': 'male',
+    });
+    expect(cubit.state.aiStatus, RoleAiStatus.done);
     await cubit.close();
   });
 }

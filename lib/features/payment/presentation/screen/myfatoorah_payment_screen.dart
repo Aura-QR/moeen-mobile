@@ -74,6 +74,17 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
     }
   }
 
+  /// Invoice carries the order id so the backend/webhook can link the payment
+  /// to the order even if the app is closed. The amount is the order's amount.
+  MFExecutePaymentRequest _buildExecuteRequest() {
+    return MFExecutePaymentRequest(
+      invoiceValue: double.tryParse(_amount) ?? 0.0,
+      sessionId: _sessionId,
+      userDefinedField: _orderId.toString(),
+      customerReference: _orderId.toString(),
+    );
+  }
+
   void _setupMyfatoorahSDK(String sessionId, String portalHost) {
     _sessionId = sessionId;
     final initiateSessionResponse = MFInitiateSessionResponse(
@@ -86,14 +97,9 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
         mfCardView.load(initiateSessionResponse, null);
         
         if (Platform.isIOS) {
-          final invoiceAmount = double.tryParse(_amount) ?? 0.0;
-          final executeRequest = MFExecutePaymentRequest(
-            invoiceValue: invoiceAmount,
-            sessionId: _sessionId,
-          );
           mfApplePayButton.load(
-            initiateSessionResponse, 
-            executeRequest, 
+            initiateSessionResponse,
+            _buildExecuteRequest(),
             MFLanguage.ARABIC,
           ).then((response) {
             if (!mounted) return;
@@ -104,7 +110,7 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
                PaymentCubit.get(context).verifyMyfatoorahPayment(paymentKey);
             } else {
                ScaffoldMessenger.of(context).showSnackBar(
-                 const SnackBar(content: Text("فشلت عملية الدفع")),
+                 SnackBar(content: Text(appTranslation().get('pay_failed'))),
                );
             }
           }).catchError((error) {
@@ -123,13 +129,7 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
   void _executePayment() {
     if (_sessionId != null) {
        setState(() { _isProcessing = true; });
-       final invoiceAmount = double.tryParse(_amount) ?? 0.0;
-       final executeRequest = MFExecutePaymentRequest(
-          invoiceValue: invoiceAmount,
-          sessionId: _sessionId,
-       );
-       
-       mfCardView.pay(executeRequest, MFLanguage.ARABIC, (String invoiceId) {
+       mfCardView.pay(_buildExecuteRequest(),MFLanguage.ARABIC, (String invoiceId) {
           // Callback
        }).then((response) {
           if (!mounted) return;
@@ -141,7 +141,7 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
              PaymentCubit.get(context).verifyMyfatoorahPayment(paymentKey);
           } else {
              ScaffoldMessenger.of(context).showSnackBar(
-               const SnackBar(content: Text("فشلت عملية الدفع")),
+               SnackBar(content: Text(appTranslation().get('pay_failed'))),
              );
           }
        }).catchError((error) {
@@ -165,7 +165,7 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
           s is MyfatoorahExecuteLoaded ||
           s is MyfatoorahExecuteError ||
           s is PaymentVerified ||
-          s is PaymentVerifyError ||
+          s is PaymentVerifyPending ||
           s is PaymentAlreadySubscribed ||
           s is PaymentCheckoutInProgress,
       listener: (context, state) {
@@ -173,9 +173,13 @@ class _MyfatoorahPaymentScreenState extends State<MyfatoorahPaymentScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.error), backgroundColor: ColorsManager.errorColor),
           );
-        } else if (state is PaymentVerifyError) {
+        } else if (state is PaymentVerifyPending) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.error), backgroundColor: ColorsManager.errorColor),
+            SnackBar(
+              content: Text(appTranslation().get('pay_received_pending')),
+              backgroundColor: ColorsManager.primaryColor,
+              duration: const Duration(seconds: 8),
+            ),
           );
         } else if (state is PaymentAlreadySubscribed) {
           ScaffoldMessenger.of(context).showSnackBar(

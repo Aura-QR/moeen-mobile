@@ -19,6 +19,7 @@ import 'package:moean/features/reports/data/models/report_block_edits.dart';
 import 'package:moean/features/reports/data/models/report_catalogue_model.dart';
 import 'package:moean/features/reports/data/models/report_field_error.dart';
 import 'package:moean/features/reports/data/models/report_input.dart';
+import 'package:moean/features/reports/data/models/report_template_details.dart';
 import 'package:moean/features/reports/data/models/role_ai_merge.dart';
 import 'package:moean/features/reports/data/models/role_report_editor_args.dart';
 import 'package:moean/features/reports/data/repositories/reports_repository.dart';
@@ -90,6 +91,7 @@ class ReportEditorCubit extends Cubit<ReportEditorState> {
   int _lastId = 0;
   _AiUndoSnapshot? _aiUndoSnapshot;
   Map<String, dynamic>? _lastAiInput;
+  String _lastAiKind = AiJobKinds.roleDocument;
 
   int _nextId() => ++_lastId;
 
@@ -144,10 +146,22 @@ class ReportEditorCubit extends Cubit<ReportEditorState> {
       }
     }
 
+    var templateDetails = template?.fold<ReportTemplateDetails?>((_) => null, (t) => t);
+    var templateKey = id == null && roleArgs == null ? _templateKey : null;
+
+    // Reopening a saved report built from a designer template: restore its AI flags.
+    if (saved != null && roleTemplate == null) {
+      final savedKey = saved.input['template']?.toString().trim() ?? '';
+      if (savedKey.isNotEmpty && savedKey != blankTemplate && !savedKey.startsWith('role:')) {
+        final reopened = await _reports.getTemplate(savedKey);
+        if (isClosed) return;
+        templateDetails = reopened.fold((_) => null, (t) => t);
+        templateKey = savedKey;
+      }
+    }
+
     final Map<String, dynamic> json =
-        saved?.input ??
-        roleTemplate?.input ??
-        template!.fold<Map<String, dynamic>>((_) => const {}, (input) => input);
+        saved?.input ?? roleTemplate?.input ?? templateDetails?.input ?? const <String, dynamic>{};
     final parsedInput = ReportInput.fromJson(json, _nextId);
     final resolvedTitle = parsedInput.title.trim().isNotEmpty
         ? parsedInput.title
@@ -161,6 +175,9 @@ class ReportEditorCubit extends Cubit<ReportEditorState> {
         status: ReportEditorStatus.success,
         catalogue: catalogue.fold((_) => null, (c) => c),
         roleTemplate: roleTemplate,
+        templateKey: templateKey,
+        templateAi: templateDetails?.ai ?? false,
+        templateBriefHint: templateDetails?.briefHint ?? '',
         defaults: defaults,
         input: input,
         images: saved?.images ?? [for (final path in input.images) DocumentImageModel(storagePath: path)],
@@ -193,25 +210,27 @@ class ReportEditorCubit extends Cubit<ReportEditorState> {
 
   Future<void> writeWithAi() async {
     final roleDoc = state.roleTemplate;
+    final templateKey = state.templateKey;
     final brief = briefController.text.trim();
-    if (roleDoc == null || !state.canUseAi || state.isAiWriting || brief.isEmpty) return;
+    if (!state.canUseAi || state.isAiWriting || brief.isEmpty) return;
+    if (roleDoc == null && (templateKey == null || templateKey.isEmpty)) return;
     final stage = stageController.text.trim();
     final grade = gradeController.text.trim();
     final date = dateController.text.trim();
     final occasion = occasionController.text.trim();
     final payload = <String, dynamic>{
-      'role': roleDoc.role,
-      'doc': roleDoc.doc,
+      if (roleDoc != null) ...{'role': roleDoc.role, 'doc': roleDoc.doc} else 'template': templateKey,
       'brief': brief,
       if (stage.isNotEmpty) 'stage': stage,
       if (grade.isNotEmpty) 'grade': grade,
       if (date.isNotEmpty) 'date': date,
       if (occasion.isNotEmpty) 'occasion': occasion,
       'gender': state.defaults.genderForm.name,
-      if (roleDoc.term != null && '${roleDoc.term}'.isNotEmpty) 'term': roleDoc.term,
-      if (roleDoc.region != null && '${roleDoc.region}'.isNotEmpty) 'region': roleDoc.region,
+      if (roleDoc != null && roleDoc.term != null && '${roleDoc.term}'.isNotEmpty) 'term': roleDoc.term,
+      if (roleDoc != null && roleDoc.region != null && '${roleDoc.region}'.isNotEmpty) 'region': roleDoc.region,
     };
     _lastAiInput = payload;
+    _lastAiKind = roleDoc != null ? AiJobKinds.roleDocument : AiJobKinds.reportTemplate;
     await _runAiJob(payload);
   }
 
@@ -269,7 +288,7 @@ class ReportEditorCubit extends Cubit<ReportEditorState> {
     AiJobsRepository aiRepo,
     Map<String, dynamic> payload,
   ) async {
-    final started = await aiRepo.start(AiJobKinds.roleDocument, payload);
+    final started = await aiRepo.start(_lastAiKind, payload);
     return started.fold(Left.new, (first) async {
       var job = first;
       for (var attempt = 0; job.isPending; attempt++) {
