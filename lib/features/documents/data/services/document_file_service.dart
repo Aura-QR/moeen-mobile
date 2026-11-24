@@ -63,8 +63,13 @@ class DocumentFileService {
         return unit;
       });
 
-  Future<Either<Failure, Unit>> printPdf(Uint8List bytes, {required String name}) => _guard(() async {
-        await Printing.layoutPdf(onLayout: (_) async => bytes, name: safeFileName(name));
+  Future<Either<Failure, Unit>> printPdf(Uint8List bytes, {required String name, bool landscape = false}) =>
+      _guard(() async {
+        await Printing.layoutPdf(
+          format: landscape ? PdfPageFormat.a4.landscape : PdfPageFormat.a4,
+          onLayout: (_) async => bytes,
+          name: safeFileName(name),
+        );
         return unit;
       });
 

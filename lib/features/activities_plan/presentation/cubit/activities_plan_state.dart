@@ -12,10 +12,20 @@ class ActivitiesPlanState {
   final int? documentId;
   final ActivitiesCatalogueModel catalogue;
   final DocumentDefaultsModel defaults;
+
+  /// True for a document saved before the official layout; it keeps the old
+  /// form (stage and domains). Every new plan is official.
+  final bool isLegacy;
+
+  /// The official layout's band, and its periods per week (null: the band's default).
+  final String? band;
+  final int? periodsPerWeek;
+
+  /// The old layout's stage.
   final String? stage;
   final int term;
 
-  /// Domain keys in column order.
+  /// The old layout's domain keys in column order.
   final List<String> domains;
 
   /// Null uses the teacher's `region_calendar`.
@@ -45,6 +55,9 @@ class ActivitiesPlanState {
     this.documentId,
     this.catalogue = const ActivitiesCatalogueModel(),
     this.defaults = const DocumentDefaultsModel(),
+    this.isLegacy = false,
+    this.band,
+    this.periodsPerWeek,
     this.stage,
     this.term = 1,
     this.domains = const [],
@@ -66,9 +79,35 @@ class ActivitiesPlanState {
   /// The calendar in use: the teacher's pick, else the grid's, else the defaults'.
   String get effectiveRegion => region ?? grid?.region ?? defaults.regionCalendar.name;
 
+  bool get isOfficial => !isLegacy;
+
+  /// The stepper's value: the teacher's pick, else the band's default.
+  int get effectivePeriodsPerWeek => periodsPerWeek ?? catalogue.bandOf(band)?.periodsPerWeek ?? 1;
+
+  /// Periods per domain over the teaching weeks, as the teacher has them now,
+  /// against the term's target. Null for the old layout.
+  ActivitiesSummaryModel? get officialSummary {
+    final grid = this.grid;
+    if (isLegacy || grid == null) return null;
+    final totals = <String, int>{};
+    for (final week in grid.weeks) {
+      if (week.type != ActivitiesWeekType.teaching || week.week == null) continue;
+      final domain = textOf(week, ActivitiesColumns.domain);
+      if (domain.isEmpty) continue;
+      totals[domain] = (totals[domain] ?? 0) + (int.tryParse(textOf(week, ActivitiesColumns.periods)) ?? 0);
+    }
+    return ActivitiesSummaryModel(
+      domains: [
+        for (final domain in catalogue.officialDomains)
+          ActivitiesSummaryDomainModel(key: domain.key, label: domain.label, periods: totals[domain.key] ?? 0),
+      ],
+      total: totals.values.fold(0, (sum, periods) => sum + periods),
+      target: grid.summary?.target ?? 0,
+    );
+  }
+
   /// The teacher's text when changed, else the suggestion.
-  String textOf(ActivitiesWeekModel week, String column) =>
-      cells[week.week]?[column] ?? week.cells[column] ?? '';
+  String textOf(ActivitiesWeekModel week, String column) => cells[week.week]?[column] ?? week.cells[column] ?? '';
 
   bool isEdited(ActivitiesWeekModel week, String column) => cells[week.week]?.containsKey(column) ?? false;
 
@@ -78,6 +117,9 @@ class ActivitiesPlanState {
     int? documentId,
     ActivitiesCatalogueModel? catalogue,
     DocumentDefaultsModel? defaults,
+    bool? isLegacy,
+    String? band,
+    int? periodsPerWeek,
     String? stage,
     int? term,
     List<String>? domains,
@@ -101,6 +143,9 @@ class ActivitiesPlanState {
       documentId: documentId ?? this.documentId,
       catalogue: catalogue ?? this.catalogue,
       defaults: defaults ?? this.defaults,
+      isLegacy: isLegacy ?? this.isLegacy,
+      band: band ?? this.band,
+      periodsPerWeek: periodsPerWeek ?? this.periodsPerWeek,
       stage: stage ?? this.stage,
       term: term ?? this.term,
       domains: domains ?? this.domains,

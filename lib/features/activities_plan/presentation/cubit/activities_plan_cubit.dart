@@ -1,5 +1,7 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moean/core/errors/failures.dart';
 import 'package:moean/core/models/ui_feedback.dart';
 import 'package:moean/core/models/upload_models.dart';
 import 'package:moean/core/services/device_file_picker.dart';
@@ -30,10 +32,10 @@ class ActivitiesPlanCubit extends Cubit<ActivitiesPlanState> {
     required ActivitiesRepository activitiesRepository,
     required DocumentsRepository documentsRepository,
     required DeviceFilePicker filePicker,
-  })  : _activities = activitiesRepository,
-        _documents = documentsRepository,
-        _picker = filePicker,
-        super(ActivitiesPlanState(documentId: documentId));
+  }) : _activities = activitiesRepository,
+       _documents = documentsRepository,
+       _picker = filePicker,
+       super(ActivitiesPlanState(documentId: documentId));
 
   final ActivitiesRepository _activities;
   final DocumentsRepository _documents;
@@ -63,7 +65,8 @@ class ActivitiesPlanCubit extends Cubit<ActivitiesPlanState> {
     final document = await documentRequest;
     if (isClosed) return;
 
-    final failure = catalogue.fold((f) => f, (_) => null) ??
+    final failure =
+        catalogue.fold((f) => f, (_) => null) ??
         defaults.fold((f) => f, (_) => null) ??
         document?.fold((f) => f, (_) => null);
     if (failure != null) {
@@ -71,11 +74,13 @@ class ActivitiesPlanCubit extends Cubit<ActivitiesPlanState> {
       return;
     }
 
-    emit(state.copyWith(
-      status: ActivitiesPlanStatus.success,
-      catalogue: catalogue.getOrElse(() => const ActivitiesCatalogueModel()),
-      defaults: defaults.getOrElse(() => const DocumentDefaultsModel()),
-    ));
+    emit(
+      state.copyWith(
+        status: ActivitiesPlanStatus.success,
+        catalogue: catalogue.getOrElse(() => const ActivitiesCatalogueModel()),
+        defaults: defaults.getOrElse(() => const DocumentDefaultsModel()),
+      ),
+    );
     final saved = document?.fold((_) => null, (doc) => doc);
     if (saved != null) _applyDocument(saved);
     await loadGrid();
@@ -87,6 +92,12 @@ class ActivitiesPlanCubit extends Cubit<ActivitiesPlanState> {
     if (isClosed) return;
     result.fold((_) {}, (defaults) => emit(state.copyWith(defaults: defaults)));
   }
+
+  /// Picking a band prefills the periods per week with its default.
+  void setBand(String band) =>
+      _changeChoice(state.copyWith(band: band, periodsPerWeek: state.catalogue.bandOf(band)?.periodsPerWeek));
+
+  void setPeriodsPerWeek(int periods) => _changeChoice(state.copyWith(periodsPerWeek: periods.clamp(1, 6)));
 
   void setStage(String stage) => _changeChoice(state.copyWith(stage: stage));
 
@@ -113,21 +124,46 @@ class ActivitiesPlanCubit extends Cubit<ActivitiesPlanState> {
   /// The suggested grid for the current choices. The teacher's changed
   /// cells stay; untouched cells follow the new suggestions.
   Future<void> loadGrid() async {
-    final stage = state.stage;
-    if (stage == null || state.domains.isEmpty) return;
+    final pending = _fetchGrid();
+    if (pending == null) return;
     final request = ++_gridRequest;
     emit(state.copyWith(gridStatus: ActivitiesGridStatus.loading));
-    final result = await _activities.getGrid(
-      stage: stage,
-      term: state.term,
-      domains: state.domains,
-      region: state.region,
-    );
+    final result = await pending;
     if (isClosed || request != _gridRequest) return;
     result.fold(
       (failure) => emit(state.copyWith(gridStatus: ActivitiesGridStatus.failure, gridError: failure.message)),
       (grid) => emit(state.copyWith(gridStatus: ActivitiesGridStatus.success, grid: grid)),
     );
+  }
+
+  /// Null until the choices are complete: a band, or a stage and a domain.
+  Future<Either<Failure, ActivitiesGridModel>>? _fetchGrid() {
+    if (state.isLegacy) {
+      final stage = state.stage;
+      if (stage == null || state.domains.isEmpty) return null;
+      return _activities.getGrid(stage: stage, term: state.term, domains: state.domains, region: state.region);
+    }
+    final band = state.band;
+    if (band == null) return null;
+    return _activities.getOfficialGrid(
+      band: band,
+      term: state.term,
+      periodsPerWeek: state.periodsPerWeek,
+      region: state.region,
+    );
+  }
+
+  /// Picking an approved program prefills the periods with its own; a local
+  /// program ([periods] null) leaves them as they are.
+  void setProgram(int week, String program, {int? periods}) {
+    setCell(week, ActivitiesColumns.program, program);
+    if (periods != null) setCell(week, ActivitiesColumns.periods, '$periods');
+  }
+
+  /// A whole number from 0 to 20; anything else empties the cell.
+  void setPeriods(int week, String text) {
+    final periods = int.tryParse(text.trim());
+    setCell(week, ActivitiesColumns.periods, periods == null ? '' : '${periods.clamp(0, 20)}');
   }
 
   /// Text equal to the suggestion clears the change; empty text empties the cell.
@@ -138,10 +174,14 @@ class ActivitiesPlanCubit extends Cubit<ActivitiesPlanState> {
       resetCell(week, column);
       return;
     }
-    emit(state.copyWith(cells: {
-      ...state.cells,
-      week: {...?state.cells[week], column: value},
-    }));
+    emit(
+      state.copyWith(
+        cells: {
+          ...state.cells,
+          week: {...?state.cells[week], column: value},
+        },
+      ),
+    );
   }
 
   /// «استعادة المقترح».
@@ -173,10 +213,15 @@ class ActivitiesPlanCubit extends Cubit<ActivitiesPlanState> {
     if (isClosed) return;
     result.fold(
       (failure) => emit(state.copyWith(isUploadingImage: false, feedback: UiFeedback(failure.message))),
-      (path) => emit(state.copyWith(
-        isUploadingImage: false,
-        images: [...state.images, DocumentImageModel(storagePath: path, bytes: file.bytes)],
-      )),
+      (path) => emit(
+        state.copyWith(
+          isUploadingImage: false,
+          images: [
+            ...state.images,
+            DocumentImageModel(storagePath: path, bytes: file.bytes),
+          ],
+        ),
+      ),
     );
   }
 
@@ -196,11 +241,7 @@ class ActivitiesPlanCubit extends Cubit<ActivitiesPlanState> {
 
   Future<void> _save(DocumentFollowUp? followUp) async {
     if (state.isSaving || state.isUploadingImage) return;
-    final error = state.stage == null
-        ? 'activities_plan_stage_required'
-        : state.domains.isEmpty
-            ? 'activities_plan_domains_required'
-            : null;
+    final error = _validate();
     if (error != null) {
       emit(state.copyWith(feedback: UiFeedback(error)));
       return;
@@ -219,21 +260,40 @@ class ActivitiesPlanCubit extends Cubit<ActivitiesPlanState> {
     if (isClosed) return;
     result.fold(
       (failure) => emit(state.copyWith(isSaving: false, feedback: UiFeedback(failure.message))),
-      (document) => emit(state.copyWith(
-        isSaving: false,
-        documentId: document.id,
-        followUp: followUp,
-        feedback: followUp == null ? const UiFeedback('document_saved', isError: false) : null,
-      )),
+      (document) => emit(
+        state.copyWith(
+          isSaving: false,
+          documentId: document.id,
+          followUp: followUp,
+          feedback: followUp == null ? const UiFeedback('document_saved', isError: false) : null,
+        ),
+      ),
     );
   }
 
-  /// Changes for removed domains are left out, so a domain added back starts
-  /// from its suggestions.
+  String? _validate() {
+    if (state.isOfficial) return state.band == null ? 'activities_plan_band_required' : null;
+    if (state.stage == null) return 'activities_plan_stage_required';
+    return state.domains.isEmpty ? 'activities_plan_domains_required' : null;
+  }
+
+  static const _officialColumns = {
+    ActivitiesColumns.domain,
+    ActivitiesColumns.program,
+    ActivitiesColumns.periods,
+    ActivitiesColumns.extracurricular,
+    ActivitiesColumns.occasion,
+  };
+
+  /// An old plan leaves out the changes of removed domains, so a domain added
+  /// back starts from its suggestions.
   ActivitiesPlanInput _buildInput() {
-    final columns = {...state.domains, ActivitiesColumns.occasion};
+    final columns = state.isOfficial ? _officialColumns : {...state.domains, ActivitiesColumns.occasion};
     return ActivitiesPlanInput(
-      stage: state.stage!,
+      layout: state.isOfficial ? ActivitiesPlanInput.official : null,
+      band: state.band,
+      periodsPerWeek: state.periodsPerWeek,
+      stage: state.stage ?? '',
       domains: state.domains,
       term: state.term,
       region: state.region,
@@ -264,17 +324,22 @@ class ActivitiesPlanCubit extends Cubit<ActivitiesPlanState> {
       header.fill(input.header);
       header.prefill(state.defaults);
     }
-    emit(state.copyWith(
-      stage: input.stage.isEmpty ? null : input.stage,
-      domains: input.domains,
-      term: input.term,
-      region: input.region,
-      cells: input.cells,
-      theme: input.theme,
-      documentStatus: document.status,
-      isOverridingHeader: input.header.isNotEmpty,
-      images: document.images,
-    ));
+    emit(
+      state.copyWith(
+        isLegacy: !input.isOfficial,
+        band: input.band,
+        periodsPerWeek: input.periodsPerWeek,
+        stage: input.stage.isEmpty ? null : input.stage,
+        domains: input.domains,
+        term: input.term,
+        region: input.region,
+        cells: input.cells,
+        theme: input.theme,
+        documentStatus: document.status,
+        isOverridingHeader: input.header.isNotEmpty,
+        images: document.images,
+      ),
+    );
   }
 
   void _changeChoice(ActivitiesPlanState next) {

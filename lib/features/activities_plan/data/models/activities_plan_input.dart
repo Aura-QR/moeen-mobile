@@ -3,9 +3,18 @@ import 'package:moean/features/documents/data/models/document_theme.dart';
 /// The form sent as `input` for `type: activities_plan` (DOCUMENTS_API.md § 6).
 /// `input` is the source of truth when reopening.
 class ActivitiesPlanInput {
+  /// `official` for every new plan. Null is a plan saved before the official
+  /// layout: it keeps its old shape (stage and domains) when saved again.
+  final String? layout;
+
+  /// The official layout's band, and its periods per week (null: the band's default).
+  final String? band;
+  final int? periodsPerWeek;
+
+  /// The old layout's stage.
   final String stage;
 
-  /// Domain keys in column order.
+  /// The old layout's domain keys in column order.
   final List<String> domains;
   final int term;
 
@@ -25,12 +34,16 @@ class ActivitiesPlanInput {
   /// Fields this app doesn't edit, kept so saving from the phone doesn't drop them.
   final Map<String, dynamic> extra;
 
+  static const String official = 'official';
   static const String general = 'general';
   static const String western = 'western';
 
   const ActivitiesPlanInput({
-    required this.stage,
-    required this.domains,
+    this.layout,
+    this.band,
+    this.periodsPerWeek,
+    this.stage = '',
+    this.domains = const [],
     required this.term,
     this.region,
     this.activityLeader = '',
@@ -44,7 +57,19 @@ class ActivitiesPlanInput {
   });
 
   static const _ownKeys = {
-    'stage', 'domains', 'term', 'region', 'activity_leader', 'academic_year', 'cells', 'notes', 'theme', 'header',
+    'layout',
+    'band',
+    'periods_per_week',
+    'stage',
+    'domains',
+    'term',
+    'region',
+    'activity_leader',
+    'academic_year',
+    'cells',
+    'notes',
+    'theme',
+    'header',
     'images',
   };
 
@@ -54,7 +79,12 @@ class ActivitiesPlanInput {
     final header = json['header'];
     final images = json['images'];
     final region = json['region']?.toString();
+    final layout = json['layout']?.toString();
+    final band = json['band']?.toString();
     return ActivitiesPlanInput(
+      layout: layout == null || layout.isEmpty ? null : layout,
+      band: band == null || band.isEmpty ? null : band,
+      periodsPerWeek: int.tryParse('${json['periods_per_week']}'),
       stage: json['stage']?.toString() ?? '',
       domains: domains is List ? domains.map((e) => e.toString()).toList() : const [],
       term: int.tryParse('${json['term']}') ?? 1,
@@ -88,23 +118,31 @@ class ActivitiesPlanInput {
 
   /// Empty fields are left out.
   Map<String, dynamic> toJson() => {
-        ...extra,
-        'stage': stage,
-        'domains': domains,
-        'term': term,
-        'region': ?region,
-        if (activityLeader.isNotEmpty) 'activity_leader': activityLeader,
-        if (academicYear.isNotEmpty) 'academic_year': academicYear,
-        if (cells.isNotEmpty)
-          'cells': {
-            for (final week in cells.entries)
-              if (week.value.isNotEmpty) '${week.key}': week.value,
-          },
-        if (notes.isNotEmpty) 'notes': notes,
-        'theme': theme.name,
-        if (header.isNotEmpty) 'header': header,
-        'images': images,
-      };
+    ...extra,
+    'layout': ?layout,
+    if (isOfficial) ...{
+      'band': ?band,
+      'periods_per_week': ?periodsPerWeek,
+    } else ...{
+      'stage': stage,
+      'domains': domains,
+    },
+    'term': term,
+    'region': ?region,
+    if (activityLeader.isNotEmpty) 'activity_leader': activityLeader,
+    if (academicYear.isNotEmpty) 'academic_year': academicYear,
+    if (cells.isNotEmpty)
+      'cells': {
+        for (final week in cells.entries)
+          if (week.value.isNotEmpty) '${week.key}': week.value,
+      },
+    if (notes.isNotEmpty) 'notes': notes,
+    'theme': theme.name,
+    if (header.isNotEmpty) 'header': header,
+    'images': images,
+  };
+
+  bool get isOfficial => layout == official;
 
   static String _text(dynamic value) => value?.toString().trim() ?? '';
 }

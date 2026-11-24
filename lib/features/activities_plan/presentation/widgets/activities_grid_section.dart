@@ -8,9 +8,10 @@ import 'package:moean/core/utils/constants/primary/primary_error_view.dart';
 import 'package:moean/core/utils/constants/primary/primary_section_card.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/activities_plan/presentation/cubit/activities_plan_cubit.dart';
-import 'package:moean/features/activities_plan/presentation/widgets/activities_cell_tile.dart';
 import 'package:moean/features/activities_plan/presentation/widgets/activities_holiday_tile.dart';
+import 'package:moean/features/activities_plan/presentation/widgets/activities_summary_section.dart';
 import 'package:moean/features/activities_plan/presentation/widgets/activities_week_card.dart';
+import 'package:moean/features/activities_plan/presentation/widgets/activities_week_cells.dart';
 
 /// «جدول الخطة»: the suggested activities week by week, each cell editable.
 class ActivitiesGridSection extends StatelessWidget {
@@ -26,7 +27,8 @@ class ActivitiesGridSection extends StatelessWidget {
         buildWhen: (previous, current) =>
             previous.gridStatus != current.gridStatus ||
             previous.grid != current.grid ||
-            previous.cells != current.cells,
+            previous.cells != current.cells ||
+            previous.isLegacy != current.isLegacy,
         builder: (context, state) => ConditionalBuilder(
           loadingState: state.gridStatus == ActivitiesGridStatus.loading,
           errorState: state.gridStatus == ActivitiesGridStatus.failure,
@@ -37,7 +39,7 @@ class ActivitiesGridSection extends StatelessWidget {
           ),
           errorBuilder: (_) => PrimaryErrorView(message: state.gridError ?? 'generic_error', onRetry: cubit.loadGrid),
           emptyBuilder: (_) => Text(
-            appTranslation().get('activities_plan_grid_hint'),
+            appTranslation().get(state.isLegacy ? 'activities_plan_grid_hint' : 'activities_plan_grid_hint_band'),
             style: TextStylesManager.regular13.copyWith(color: ColorsManager.secondaryText),
           ),
           successBuilder: (_) => Column(
@@ -54,17 +56,9 @@ class ActivitiesGridSection extends StatelessWidget {
                 else
                   ActivitiesWeekCard(
                     week: week,
-                    cells: [
-                      for (final column in state.grid!.columnsOf(week))
-                        ActivitiesCellTile(
-                          label: column.label,
-                          text: state.textOf(week, column.key),
-                          isEdited: state.isEdited(week, column.key),
-                          onChanged: (text) => cubit.setCell(week.week!, column.key, text),
-                          onReset: () => cubit.resetCell(week.week!, column.key),
-                        ),
-                    ],
+                    cells: [ActivitiesWeekCells(week: week, state: state)],
                   ),
+              if (state.isOfficial) ActivitiesSummarySection(state: state),
             ],
           ),
         ),

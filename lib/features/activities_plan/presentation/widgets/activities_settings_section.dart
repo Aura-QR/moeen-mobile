@@ -3,14 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
-import 'package:moean/core/utils/constants/primary/primary_choice_chips.dart';
 import 'package:moean/core/utils/constants/primary/primary_section_card.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/activities_plan/data/models/activities_plan_input.dart';
 import 'package:moean/features/activities_plan/presentation/cubit/activities_plan_cubit.dart';
+import 'package:moean/features/activities_plan/presentation/widgets/activities_band_fields.dart';
+import 'package:moean/features/activities_plan/presentation/widgets/activities_stage_field.dart';
 import 'package:moean/features/documents/presentation/widgets/document_option_selector.dart';
 
-/// «إعدادات الخطة»: المرحلة، الفصل الدراسي، التقويم.
+/// «إعدادات الخطة»: the band and periods per week (the stage for an old plan),
+/// the term and the calendar.
 class ActivitiesSettingsSection extends StatelessWidget {
   const ActivitiesSettingsSection({super.key});
 
@@ -22,24 +24,14 @@ class ActivitiesSettingsSection extends StatelessWidget {
       title: appTranslation().get('activities_plan_section_settings'),
       child: BlocBuilder<ActivitiesPlanCubit, ActivitiesPlanState>(
         buildWhen: (previous, current) =>
-            previous.stage != current.stage ||
+            previous.isLegacy != current.isLegacy ||
             previous.term != current.term ||
             previous.effectiveRegion != current.effectiveRegion ||
             previous.grid?.regionVerified != current.grid?.regionVerified,
         builder: (context, state) => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              appTranslation().get('activities_plan_field_stage'),
-              style: TextStylesManager.medium13.copyWith(color: ColorsManager.secondaryText),
-            ),
-            verticalSpace8,
-            PrimaryChoiceChips(
-              options: state.catalogue.stages,
-              labelOf: (stage) => stage.label,
-              isSelected: (stage) => stage.key == state.stage,
-              onTap: (stage) => cubit.setStage(stage.key),
-            ),
+            state.isLegacy ? const ActivitiesStageField() : const ActivitiesBandFields(),
             verticalSpace16,
             DocumentOptionSelector<int>(
               label: appTranslation().get('activities_plan_field_term'),

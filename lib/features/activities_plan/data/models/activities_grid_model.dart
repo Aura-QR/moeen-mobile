@@ -5,6 +5,48 @@ library;
 abstract final class ActivitiesColumns {
   /// The week's national and international days; every non-holiday week has it.
   static const String occasion = 'occasion';
+
+  /// The official layout's other cells of a teaching week.
+  static const String domain = 'domain';
+  static const String program = 'program';
+  static const String periods = 'periods';
+  static const String extracurricular = 'extracurricular';
+}
+
+/// The periods planned in one domain.
+class ActivitiesSummaryDomainModel {
+  final String key;
+  final String label;
+  final int periods;
+
+  const ActivitiesSummaryDomainModel({required this.key, required this.label, required this.periods});
+
+  factory ActivitiesSummaryDomainModel.fromJson(Map<String, dynamic> json) => ActivitiesSummaryDomainModel(
+    key: json['key']?.toString() ?? '',
+    label: json['label']?.toString() ?? '',
+    periods: int.tryParse('${json['periods']}') ?? 0,
+  );
+}
+
+/// The balance the guide asks for: periods per domain, and the total against
+/// the term's available periods.
+class ActivitiesSummaryModel {
+  final List<ActivitiesSummaryDomainModel> domains;
+  final int total;
+  final int target;
+
+  const ActivitiesSummaryModel({this.domains = const [], this.total = 0, this.target = 0});
+
+  factory ActivitiesSummaryModel.fromJson(Map<String, dynamic> json) {
+    final domains = json['domains'];
+    return ActivitiesSummaryModel(
+      domains: domains is List
+          ? domains.whereType<Map<String, dynamic>>().map(ActivitiesSummaryDomainModel.fromJson).toList()
+          : const [],
+      total: int.tryParse('${json['total']}') ?? 0,
+      target: int.tryParse('${json['target']}') ?? 0,
+    );
+  }
 }
 
 enum ActivitiesWeekType {
@@ -22,10 +64,8 @@ class ActivitiesColumnModel {
 
   const ActivitiesColumnModel({required this.key, required this.label});
 
-  factory ActivitiesColumnModel.fromJson(Map<String, dynamic> json) => ActivitiesColumnModel(
-        key: json['key']?.toString() ?? '',
-        label: json['label']?.toString() ?? '',
-      );
+  factory ActivitiesColumnModel.fromJson(Map<String, dynamic> json) =>
+      ActivitiesColumnModel(key: json['key']?.toString() ?? '', label: json['label']?.toString() ?? '');
 }
 
 /// One row: a teaching or exam week, or a holiday (no number, no cells).
@@ -85,9 +125,13 @@ class ActivitiesGridModel {
   /// False while the region's dates are still checked against the Ministry's calendar.
   final bool regionVerified;
 
-  /// The chosen domains in order, then [ActivitiesColumns.occasion].
+  /// The chosen domains in order then [ActivitiesColumns.occasion]; for the
+  /// official layout, domain, program, periods, extracurricular and occasion.
   final List<ActivitiesColumnModel> columns;
   final List<ActivitiesWeekModel> weeks;
+
+  /// Only the official layout has it.
+  final ActivitiesSummaryModel? summary;
 
   const ActivitiesGridModel({
     required this.term,
@@ -95,12 +139,15 @@ class ActivitiesGridModel {
     this.regionVerified = true,
     this.columns = const [],
     this.weeks = const [],
+    this.summary,
   });
 
   factory ActivitiesGridModel.fromJson(Map<String, dynamic> json) {
     final columns = json['columns'];
     final weeks = json['weeks'];
+    final summary = json['summary'];
     return ActivitiesGridModel(
+      summary: summary is Map<String, dynamic> ? ActivitiesSummaryModel.fromJson(summary) : null,
       term: int.tryParse('${json['term']}') ?? 1,
       region: json['region']?.toString() ?? '',
       regionVerified: json['region_verified'] != false,
@@ -116,10 +163,12 @@ class ActivitiesGridModel {
   /// The columns a week can edit: every column for a teaching week, only the
   /// occasions for an exam week, none for a holiday.
   List<ActivitiesColumnModel> columnsOf(ActivitiesWeekModel week) => switch (week.type) {
-        ActivitiesWeekType.teaching => columns,
-        ActivitiesWeekType.exam => columns.where((column) => column.key == ActivitiesColumns.occasion).toList(),
-        ActivitiesWeekType.holiday => const [],
-      };
+    ActivitiesWeekType.teaching => columns,
+    ActivitiesWeekType.exam => columns.where((column) => column.key == ActivitiesColumns.occasion).toList(),
+    ActivitiesWeekType.holiday => const [],
+  };
+
+  String columnLabel(String key) => columns.where((column) => column.key == key).firstOrNull?.label ?? key;
 
   ActivitiesWeekModel? weekNumber(int week) => weeks.where((row) => row.week == week).firstOrNull;
 }

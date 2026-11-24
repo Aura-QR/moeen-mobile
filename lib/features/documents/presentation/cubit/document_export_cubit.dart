@@ -36,7 +36,7 @@ class DocumentExportCubit extends Cubit<DocumentExportState> {
   final int _maxPollAttempts;
 
   /// The PDF is made once per sheet; the document can't change while it's open.
-  ({Uint8List bytes, String name})? _pdf;
+  ({Uint8List bytes, String name, bool landscape})? _pdf;
 
   Future<void> run(DocumentExportAction action) async {
     if (state.activeAction != null) return;
@@ -71,7 +71,10 @@ class DocumentExportCubit extends Cubit<DocumentExportState> {
 
   Future<Either<Failure, Unit>> _print() async {
     final pdf = await _loadPdf();
-    return pdf.fold(Left.new, (pdf) => _files.printPdf(pdf.bytes, name: '${pdf.name}.pdf'));
+    return pdf.fold(
+      Left.new,
+      (pdf) => _files.printPdf(pdf.bytes, name: '${pdf.name}.pdf', landscape: pdf.landscape),
+    );
   }
 
   Future<Either<Failure, Unit>> _shareImage() async {
@@ -85,14 +88,14 @@ class DocumentExportCubit extends Cubit<DocumentExportState> {
     });
   }
 
-  Future<Either<Failure, ({Uint8List bytes, String name})>> _loadPdf() async {
+  Future<Either<Failure, ({Uint8List bytes, String name, bool landscape})>> _loadPdf() async {
     final cached = _pdf;
     if (cached != null) return Right(cached);
 
     final printPage = await _repo.getPrint(documentId);
     return printPage.fold(Left.new, (page) async {
       final bytes = await _files.htmlToPdf(page.html, landscape: page.isLandscape);
-      return bytes.map((data) => _pdf = (bytes: data, name: page.fileName));
+      return bytes.map((data) => _pdf = (bytes: data, name: page.fileName, landscape: page.isLandscape));
     });
   }
 

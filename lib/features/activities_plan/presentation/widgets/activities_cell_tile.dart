@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
 import 'package:moean/core/utils/constants/constants.dart';
-import 'package:moean/core/utils/constants/primary/primary_input_dialog.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 
 /// One cell of a week: its column, the text, and «معدّل» once the teacher
-/// changed the suggestion. Tap to edit.
+/// changed the suggestion. Tapping it starts the edit, which the caller owns.
 class ActivitiesCellTile extends StatelessWidget {
   final String label;
   final String text;
   final bool isEdited;
-  final ValueChanged<String> onChanged;
+
+  /// A note under the text, e.g. that the program needs approval.
+  final String? hint;
+  final VoidCallback onTap;
   final VoidCallback onReset;
 
   const ActivitiesCellTile({
@@ -19,22 +21,10 @@ class ActivitiesCellTile extends StatelessWidget {
     required this.label,
     required this.text,
     required this.isEdited,
-    required this.onChanged,
+    this.hint,
+    required this.onTap,
     required this.onReset,
   });
-
-  Future<void> _edit(BuildContext context) async {
-    final values = await PrimaryInputDialog.show(context, titleKey: 'activities_plan_edit_cell', fields: [
-      PrimaryInputField(
-        hintKey: 'activities_plan_cell_hint',
-        initialValue: text,
-        maxLines: 4,
-        maxLength: 300,
-        keyboardType: TextInputType.multiline,
-      ),
-    ]);
-    if (values != null) onChanged(values.first);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +34,7 @@ class ActivitiesCellTile extends StatelessWidget {
         color: ColorsManager.background,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
-          onTap: () => _edit(context),
+          onTap: onTap,
           borderRadius: BorderRadius.circular(14),
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(12, 10, 4, 10),
@@ -86,6 +76,10 @@ class ActivitiesCellTile extends StatelessWidget {
                           color: text.isEmpty ? ColorsManager.secondaryText : ColorsManager.mainText,
                         ),
                       ),
+                      if (hint != null) ...[
+                        verticalSpace4,
+                        Text(hint!, style: TextStylesManager.regular12.copyWith(color: ColorsManager.secondaryColor)),
+                      ],
                     ],
                   ),
                 ),
