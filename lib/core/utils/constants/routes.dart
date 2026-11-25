@@ -88,12 +88,6 @@ import 'package:moean/features/reports/presentation/cubit/report_editor_cubit.da
 import 'package:moean/features/reports/presentation/cubit/report_templates_cubit.dart';
 import 'package:moean/features/reports/presentation/screen/report_editor_screen.dart';
 import 'package:moean/features/reports/presentation/screen/report_templates_screen.dart';
-import 'package:moean/features/payment/presentation/cubit/payment_cubit.dart';
-import 'package:moean/features/payment/presentation/screen/checkout_screen.dart';
-import 'package:moean/features/payment/presentation/screen/bank_transfer_screen.dart';
-import 'package:moean/features/payment/presentation/screen/myfatoorah_payment_screen.dart';
-import 'package:moean/features/payment/presentation/screen/payment_result_screen.dart';
-import 'package:moean/features/payment/presentation/screen/payment_history_screen.dart';
 
 // Exam Generation Imports
 import 'package:moean/features/exam_generation/presentation/screens/exam_info_screen.dart';
@@ -233,11 +227,6 @@ class Routes {
   static const String myTickets = '/contact/my-tickets';
   static const String ticketDetails = '/contact/my-tickets/details';
   static const String reports = '/reports';
-  static const String checkout = '/checkout';
-  static const String bankTransfer = '/bank-transfer';
-  static const String myfatoorahPayment = '/myfatoorah-payment';
-  static const String paymentResult = '/payment-result';
-  static const String paymentHistory = '/payment-history';
 
   // Exam Generation
   static const String examGenerationInfo = '/exam-generation/info';
@@ -393,23 +382,6 @@ class Routes {
     ),
     reports: (context) =>
         BlocProvider(create: (_) => ReportCubit(), child: const ReportScreen()),
-    checkout: (context) => BlocProvider(
-      create: (_) => PaymentCubit(),
-      child: const CheckoutScreen(),
-    ),
-    bankTransfer: (context) => BlocProvider(
-      create: (_) => PaymentCubit(),
-      child: const BankTransferScreen(),
-    ),
-    myfatoorahPayment: (context) => BlocProvider(
-      create: (_) => PaymentCubit(),
-      child: const MyfatoorahPaymentScreen(),
-    ),
-    paymentResult: (context) => const PaymentResultScreen(),
-    paymentHistory: (context) => BlocProvider(
-      create: (_) => PaymentCubit(),
-      child: const PaymentHistoryScreen(),
-    ),
     examGenerationInfo: (context) => BlocProvider.value(
       value: sl<ExamInfoCubit>(),
       child: const ExamInfoScreen(),

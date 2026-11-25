@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/update/app_update_service.dart';
+import 'package:moean/features/payment/presentation/cubit/web_checkout_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Prompts the teacher when a newer build is on the store.
@@ -33,7 +35,12 @@ class _AppUpdateGateState extends State<AppUpdateGate> {
     if (_handled) return;
     _handled = true;
 
-    final update = await AppUpdateService.check();
+    final info = await AppUpdateService.check();
+    // Read on every launch and kept in memory only, so the owner's switch on
+    // the server takes effect from the next start with no app update.
+    sl<WebCheckoutCubit>().setMode(info.checkout);
+
+    final update = info.update;
     if (update == null || !mounted) return;
 
     // A forced update ignores the skip: it exists precisely for releases the

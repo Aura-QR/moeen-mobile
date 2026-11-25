@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:moean/core/models/teacher_model.dart';
 import 'package:moean/core/theme/colors.dart';
+import 'package:moean/features/payment/presentation/widgets/web_checkout_button.dart';
 
 class SubscriptionInfoCard extends StatelessWidget {
   final TeacherModel teacher;
-  final VoidCallback onUpgradeTap;
 
   const SubscriptionInfoCard({
     super.key,
     required this.teacher,
-    required this.onUpgradeTap,
   });
 
   @override
@@ -100,27 +99,13 @@ class SubscriptionInfoCard extends StatelessWidget {
               ),
             ],
           ),
-          if (!isSubscribed) ...[
-            const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: onUpgradeTap,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ColorsManager.primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                ),
-                child: Text(
-                  isInTrial ? 'ترقية الخطة الآن ⚡' : 'اشترك لمتابعة الاستخدام ⚡',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
+          // Opens the website's checkout; hidden when paying is off.
+          if (!isSubscribed)
+            const WebCheckoutButton(
+              height: 44,
+              radius: 12,
+              padding: EdgeInsets.only(top: 14),
             ),
-          ],
         ],
       ),
     );

@@ -37,7 +37,10 @@ class _PortfolioCreateSheetState extends State<PortfolioCreateSheet> {
         if (state.created != null) {
           Navigator.pop(context, state.created);
         } else {
+          // The snackbar lands on the page behind this sheet, so close it to
+          // reveal messages such as portfolio_limit.
           showPrimarySnackBar(context, state.feedback!);
+          Navigator.pop(context);
         }
       },
       buildWhen: (previous, current) =>

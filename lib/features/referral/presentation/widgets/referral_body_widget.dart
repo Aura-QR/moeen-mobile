@@ -8,7 +8,6 @@ import 'package:moean/features/referral/data/models/referral_dashboard_model.dar
 import 'package:moean/features/referral/presentation/cubit/referral_cubit.dart';
 import 'package:moean/features/referral/presentation/cubit/referral_state.dart';
 import 'package:moean/features/referral/presentation/widgets/referral_empty_history_widget.dart';
-import 'package:moean/features/referral/presentation/widgets/referral_footer_widget.dart';
 import 'package:moean/features/referral/presentation/widgets/referral_hero_card_widget.dart';
 import 'package:moean/features/referral/presentation/widgets/referral_history_item_widget.dart';
 import 'package:moean/features/referral/presentation/widgets/referral_stat_card_widget.dart';
@@ -148,9 +147,6 @@ class ReferralBodyWidget extends StatelessWidget {
               ],
             ),
           ),
-          verticalSpace20,
-          // Footer CTA
-          const ReferralFooterWidget(),
           verticalSpace24,
         ],
       ),

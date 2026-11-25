@@ -160,8 +160,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           if (profile.teacher != null)
                             SubscriptionInfoCard(
-                              teacher: profile.teacher!,
-                              onUpgradeTap: () => Navigator.pushNamed(context, Routes.checkout),
+                              teacher: profile.teacher!,
                             )
                           else if (profile.subscriptionName != null)
                             ProfileInfoCard(

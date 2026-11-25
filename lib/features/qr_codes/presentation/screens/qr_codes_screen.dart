@@ -102,12 +102,7 @@ class _QrCodesScreenState extends State<QrCodesScreen> {
                         current.status == SharedFileUploadStatus.done,
                     listener: (context, state) {
                       if (state.paymentRequired != null) {
-                        UpgradePromptBottomSheet.show(
-                          context,
-                          message: appTranslation()
-                              .get(state.paymentRequired!.message),
-                          isQuotaExceeded: true,
-                        );
+                        UpgradePromptBottomSheet.show(context);
                         SharedFileUploadCubit.get(context).clearError();
                         return;
                       }

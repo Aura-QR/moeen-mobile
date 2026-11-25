@@ -63,18 +63,14 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     if (!isClosed) emit(SubscriptionInitial());
   }
 
-  Future<void> upgradeSubscription({required String planSlug, String? promoCode}) async {
-    if (!isClosed) emit(SubscriptionUpgradeLoading());
-    final result = await ApiService.upgradeSubscription(planSlug: planSlug, promoCode: promoCode);
-    if (isClosed) return;
-    result.fold(
-      (error) {
-        if (!isClosed) emit(SubscriptionUpgradeError(error));
-      },
-      (data) {
-        if (!isClosed) emit(SubscriptionUpgradeSuccess(data['message'] ?? 'تم الترقية بنجاح'));
-        fetchCurrentSubscription(forceRefresh: true); // Refresh after upgrade
-      },
-    );
+  /// Fetches the subscription fresh and completes once it has arrived, even
+  /// when another fetch was already in flight (which [fetchCurrentSubscription]
+  /// would otherwise skip and return from at once).
+  Future<void> refreshAndWait() async {
+    if (_isLoading) {
+      await stream.firstWhere((s) => s is! SubscriptionLoading);
+      return;
+    }
+    await fetchCurrentSubscription(forceRefresh: true);
   }
 }

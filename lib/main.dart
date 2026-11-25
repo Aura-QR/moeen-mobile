@@ -21,21 +21,13 @@ import 'package:moean/core/widgets/session_monitor_wrapper.dart';
 import 'package:moean/core/widgets/email_block_monitor_wrapper.dart';
 import 'dart:developer' as developer;
 import 'package:moean/core/services/referral_service.dart';
-import 'package:moean/core/utils/constants/secrets.dart';
-import 'package:myfatoorah_flutter/myfatoorah_flutter.dart';
+import 'package:moean/core/widgets/web_checkout_gate.dart';
 
 final RouteObserver<ModalRoute> routeObserver = RouteObserver<ModalRoute>();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize MyFatoorah SDK early to avoid delay issues during checkout
-  MFSDK.init(
-    Secrets.myfatoorahApiKey,
-    MFCountry.SAUDIARABIA,
-    MFEnvironment.LIVE,
-  );
 
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(
@@ -179,11 +171,14 @@ class MyApp extends StatelessWidget {
                 // SessionMonitorWrapper listens to session expiry globally;
                 // EmailBlockMonitorWrapper surfaces paused-trial email refusals;
                 // AppUpdateGate prompts once per launch when a newer build
-                // is on the store. All sit here so they work on whatever
+                // is on the store; WebCheckoutGate catches the return from the
+                // website's checkout. All sit here so they work on whatever
                 // screen the app opened on.
                 child: AppUpdateGate(
-                  child: SessionMonitorWrapper(
-                    child: EmailBlockMonitorWrapper(child: child!),
+                  child: WebCheckoutGate(
+                    child: SessionMonitorWrapper(
+                      child: EmailBlockMonitorWrapper(child: child!),
+                    ),
                   ),
                 ),
               );

@@ -3,10 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/theme/colors.dart';
 import 'package:moean/core/theme/text_styles.dart';
-import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_state.dart';
 import 'package:moean/features/payment/presentation/widgets/usage_limits_sheet.dart';
+import 'package:moean/features/payment/presentation/widgets/web_checkout_button.dart';
+import 'package:moean/features/payment/presentation/widgets/web_checkout_close_on_launch.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 
 class SubscriptionStatusDialog extends StatefulWidget {
@@ -20,7 +21,9 @@ class SubscriptionStatusDialog extends StatefulWidget {
     return showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (context) => const SubscriptionStatusDialog(),
+      builder: (context) => const WebCheckoutCloseOnLaunch(
+        child: SubscriptionStatusDialog(),
+      ),
     );
   }
 
@@ -169,7 +172,6 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
               final Color headerIconColor;
               final String dateLabel;
               final String remainingValue;
-              final String buttonText;
               final bool showUsage;
 
               if (isModeSubscribed) {
@@ -181,7 +183,6 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                 headerIconColor = const Color(0xFF0E7A5E);
                 dateLabel = 'تاريخ انتهاء الاشتراك:';
                 remainingValue = _formatRemainingDaysText(daysRemaining);
-                buttonText = 'ترقية أو تجديد الاشتراك';
                 showUsage = true;
               } else if (isModeExpired) {
                 badgeText = 'منتهي';
@@ -192,7 +193,6 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                 headerIconColor = const Color(0xFFDC2626);
                 dateLabel = isSubscribed ? 'تاريخ انتهاء الاشتراك:' : 'تاريخ انتهاء التجربة:';
                 remainingValue = 'انتهت الصلاحية';
-                buttonText = 'اشترك في باقة مدفوعة';
                 showUsage = false;
               } else {
                 // Trial Active
@@ -204,7 +204,6 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                 headerIconColor = const Color(0xFFD97706);
                 dateLabel = 'تاريخ انتهاء التجربة:';
                 remainingValue = _formatRemainingDaysText(daysRemaining);
-                buttonText = 'اشترك في باقة مدفوعة';
                 showUsage = true;
               }
 
@@ -455,48 +454,8 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                     ),
                   ],
 
-                  const SizedBox(height: 18),
-
-                  // Upgrade / Subscribe Action Button
-                  SizedBox(
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, Routes.checkout);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0E7A5E),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              buttonText,
-                              style: TextStylesManager.bold16.copyWith(
-                                color: Colors.white,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.bolt_rounded,
-                            size: 22,
-                            color: Colors.white,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  // Opens the website's checkout; hidden when paying is off.
+                  const WebCheckoutButton(padding: EdgeInsets.only(top: 18)),
                 ],
               );
             },

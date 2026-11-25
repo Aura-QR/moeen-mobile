@@ -35,11 +35,7 @@ class ExtractionReadingScreen extends StatelessWidget {
               previous.paymentRequired != current.paymentRequired,
           listener: (context, state) {
             if (state.paymentRequired) {
-              UpgradePromptBottomSheet.show(
-                context,
-                message: appTranslation().get(state.error ?? 'quota_exceeded'),
-                isQuotaExceeded: true,
-              ).then((_) {
+              UpgradePromptBottomSheet.show(context).then((_) {
                 if (context.mounted) {
                   Navigator.pop(context);
                 }

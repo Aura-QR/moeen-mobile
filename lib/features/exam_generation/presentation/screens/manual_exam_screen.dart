@@ -68,11 +68,7 @@ class ManualExamScreen extends StatelessWidget {
                 );
                 context.pop(true); // Return true to indicate success
               } else if (state is ManualExamPaymentRequired) {
-                UpgradePromptBottomSheet.show(
-                  context,
-                  message: state.message,
-                  isQuotaExceeded: state.code == 'quota_exceeded',
-                );
+                UpgradePromptBottomSheet.show(context);
               } else if (state is ManualExamError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

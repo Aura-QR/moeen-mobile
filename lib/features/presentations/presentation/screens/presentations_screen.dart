@@ -67,11 +67,7 @@ class _PresentationsScreenState extends State<PresentationsScreen> {
               ),
             );
           } else if (state is PresentationsPaymentRequired) {
-            UpgradePromptBottomSheet.show(
-              context,
-              message: state.message,
-              isQuotaExceeded: state.code == 'quota_exceeded',
-            );
+            UpgradePromptBottomSheet.show(context);
           } else if (state is PresentationsError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message), backgroundColor: Colors.red),

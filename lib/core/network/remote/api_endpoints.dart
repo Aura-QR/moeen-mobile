@@ -60,15 +60,7 @@ const String savedEducationalReportsApi = '/reports/educational';
 
 // Payment & Subscription API
 const String subscriptionCurrentApi = '/subscription/current';
-const String ordersApi = '/orders';
-const String paymentsVerifyApi = '/payments/verify';
-const String paymentsSaveReferenceApi = '/payments/save-reference';
-const String paymentsManualApi = '/payments/manual';
-const String paymentsBankTransferInfoApi = '/payments/bank-transfer-info';
-const String paymentsHistoryApi = '/payments/history';
-const String paymentsMyfatoorahSessionApi = '/payments/myfatoorah/session';
-const String paymentsMyfatoorahExecuteApi = '/payments/myfatoorah/execute';
-const String paymentsMyfatoorahVerifyApi = '/payments/myfatoorah/verify';
+const String webHandoffApi = '/auth/web-handoff';
 
 // Exam Generation API
 const String examsGenerateApi = '/exams/generate';
@@ -101,7 +93,6 @@ String lessonPresentationGenerateApi(int id) => '/lessons/$id/presentation/gener
 
 // Referral & Promo API
 const String referralsMeApi = '/referrals/me';
-const String promoValidateApi = '/promo-codes/validate';
 
 // Admin Promo & Referral API
 const String adminPromoCodesApi = '/admin/promo-codes';

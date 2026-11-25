@@ -26,11 +26,7 @@ class ConceptMapEditorScreen extends StatelessWidget {
   ) async {
     final payment = state.paymentRequired;
     if (payment != null) {
-      UpgradePromptBottomSheet.show(
-        context,
-        message: payment.message,
-        isQuotaExceeded: payment.code == 'quota_exceeded',
-      );
+      UpgradePromptBottomSheet.show(context);
       return;
     }
 

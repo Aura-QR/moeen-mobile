@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/di/injections.dart';
 import 'package:moean/core/theme/colors.dart';
-import 'package:moean/core/theme/text_styles.dart';
-import 'package:moean/core/utils/constants/routes.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
 import 'package:moean/features/payment/presentation/cubit/subscription_state.dart';
+import 'package:moean/features/payment/presentation/widgets/trial_banner_bar_widget.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:moean/features/profile/presentation/cubit/profile_state.dart';
 
@@ -68,13 +67,9 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
 
               if (current.isSubscribed && current.isSubscriptionExpired) {
                 // Subscribed but expired
-                return _buildBanner(
-                  context,
-                  icon: Icons.alarm,
-                  text: '⏰ انتهى اشتراكك المدفوع.',
-                  buttonText: 'جدد اشتراكك',
+                return TrialBannerBarWidget(
+                  text: '⏰ انتهى اشتراكك المدفوع.',
                   color: ColorsManager.errorColor,
-                  isExpired: true,
                 );
               }
 
@@ -82,44 +77,28 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
                 final days = current.dynamicDaysRemaining;
                 if (days <= 0) {
                   // Trial expired
-                  return _buildBanner(
-                    context,
-                    icon: Icons.alarm,
-                    text: '⏰ انتهت فترتك التجريبية المجانية.',
-                    buttonText: 'اشترك الآن',
+                  return TrialBannerBarWidget(
+                    text: '⏰ انتهت فترتك التجريبية المجانية.',
                     color: ColorsManager.errorColor,
-                    isExpired: true,
                   );
                 } else if (days == 1) {
-                  return _buildBanner(
-                    context,
-                    icon: Icons.warning_amber_rounded,
-                    text: '⚠️ آخر يوم في تجربتك المجانية!',
-                    buttonText: 'اشترك الآن',
+                  return TrialBannerBarWidget(
+                    text: '⚠️ آخر يوم في تجربتك المجانية!',
                     color: ColorsManager.errorColor,
-                    isExpired: false,
                   );
                 } else {
-                  return _buildBanner(
-                    context,
-                    icon: Icons.celebration,
-                    text: '🎉 متبقي $days أيام على التجربة المجانية',
-                    buttonText: 'اشترك الآن',
+                  return TrialBannerBarWidget(
+                    text: '🎉 متبقي $days أيام على التجربة المجانية',
                     color:const Color(0xFFD97706),
                     // ColorsManager.primaryColor,
-                    isExpired: false,
                   );
                 }
               }
 
               // Not in trial and not subscribed -> Trial Expired
-              return _buildBanner(
-                context,
-                icon: Icons.alarm,
-                text: '⏰ انتهت فترتك التجريبية المجانية.',
-                buttonText: 'اشترك الآن',
+              return TrialBannerBarWidget(
+                text: '⏰ انتهت فترتك التجريبية المجانية.',
                 color: ColorsManager.errorColor,
-                isExpired: true,
               );
             } else if (state is SubscriptionError) {
               // Fallback check on ProfileCubit state
@@ -131,13 +110,9 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
               if (state.error.contains('__402__') ||
                   state.error.contains('trial_expired') ||
                   state.error.contains('انتهت')) {
-                return _buildBanner(
-                  context,
-                  icon: Icons.alarm,
-                  text: '⏰ انتهت فترتك التجريبية المجانية.',
-                  buttonText: 'اشترك الآن',
+                return TrialBannerBarWidget(
+                  text: '⏰ انتهت فترتك التجريبية المجانية.',
                   color: ColorsManager.errorColor,
-                  isExpired: true,
                 );
               }
             } else {
@@ -154,52 +129,4 @@ class _TrialBannerWidgetState extends State<TrialBannerWidget> {
     );
   }
 
-  Widget _buildBanner(BuildContext context, {
-    required IconData icon,
-    required String text,
-    required String buttonText,
-    required Color color,
-    required bool isExpired,
-  }) {
-    return Container(
-      width: double.infinity,
-      color: color,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  text,
-                  style: TextStylesManager.bold13.copyWith(color: Colors.white),
-                ),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, Routes.checkout);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: color,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  minimumSize: const Size(0, 32),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: Text(
-                  buttonText,
-                  style: TextStylesManager.bold12,
-                ),
-              ),
-            ],
-          ),
-
-        ),
-      ),
-    );
-  }
 }

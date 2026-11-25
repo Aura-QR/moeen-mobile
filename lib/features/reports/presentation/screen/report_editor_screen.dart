@@ -21,11 +21,7 @@ class ReportEditorScreen extends StatelessWidget {
   Future<void> _onEvent(BuildContext context, ReportEditorState state) async {
     final payment = state.paymentRequired;
     if (payment != null) {
-      UpgradePromptBottomSheet.show(
-        context,
-        message: payment.message,
-        isQuotaExceeded: payment.code == 'quota_exceeded',
-      );
+      UpgradePromptBottomSheet.show(context);
       return;
     }
     final feedback = state.feedback;

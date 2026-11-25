@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:moean/core/update/checkout_mode.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// What the server decided about the running build.
@@ -28,6 +29,22 @@ class AppUpdateInfo {
   final String message;
 }
 
+/// Everything `GET /api/app/version` decided for the running build.
+class AppVersionInfo {
+  const AppVersionInfo({required this.checkout, this.update});
+
+  /// Used when the server cannot be reached: no update prompt and no way to
+  /// pay.
+  const AppVersionInfo.unknown()
+      : checkout = CheckoutMode.off,
+        update = null;
+
+  final CheckoutMode checkout;
+
+  /// Null when this build is current.
+  final AppUpdateInfo? update;
+}
+
 /// Asks the backend whether a newer build is out.
 ///
 /// The comparison itself lives on the server. That is deliberate: a
@@ -41,14 +58,14 @@ class AppUpdateService {
   /// teacher waits on — a slow or unreachable server just means no prompt.
   static const Duration _timeout = Duration(seconds: 6);
 
-  static Future<AppUpdateInfo?> check() async {
+  static Future<AppVersionInfo> check() async {
     try {
       final platform = Platform.isAndroid
           ? 'android'
           : Platform.isIOS
               ? 'ios'
               : null;
-      if (platform == null) return null;
+      if (platform == null) return const AppVersionInfo.unknown();
 
       final info = await PackageInfo.fromPlatform();
       // Sent as "1.0.2+8" so the server sees exactly what pubspec declares and
@@ -64,22 +81,26 @@ class AppUpdateService {
       );
 
       final data = response.data;
-      if (data is! Map) return null;
-      if (data['update_available'] != true) return null;
+      if (data is! Map) return const AppVersionInfo.unknown();
 
-      return AppUpdateInfo(
-        updateAvailable: true,
-        forceUpdate: data['force_update'] == true,
-        latestVersion: (data['latest_version'] ?? '').toString(),
-        storeUrl: (data['store_url'] ?? '').toString(),
-        title: (data['title'] ?? 'تحديث جديد').toString(),
-        message: (data['message'] ?? '').toString(),
+      return AppVersionInfo(
+        checkout: CheckoutMode.fromServer(data['checkout']),
+        update: data['update_available'] == true
+            ? AppUpdateInfo(
+                updateAvailable: true,
+                forceUpdate: data['force_update'] == true,
+                latestVersion: (data['latest_version'] ?? '').toString(),
+                storeUrl: (data['store_url'] ?? '').toString(),
+                title: (data['title'] ?? 'تحديث جديد').toString(),
+                message: (data['message'] ?? '').toString(),
+              )
+            : null,
       );
     } catch (error) {
       // Never surface this. A teacher who cannot reach our server has a real
       // problem already, and an update prompt is not the way to tell them.
       debugPrint('[AppUpdate] check failed: $error');
-      return null;
+      return const AppVersionInfo.unknown();
     }
   }
 

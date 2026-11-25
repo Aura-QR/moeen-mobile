@@ -14,6 +14,9 @@ import 'package:moean/features/exam_generation/data/repositories/exam_repository
 import 'package:moean/features/exam_generation/domain/usecases/generate_exam_usecase.dart' as moean_exam;
 import 'package:moean/features/exam_generation/domain/usecases/get_exam_usecase.dart' as moean_exam;
 import 'package:moean/features/payment/presentation/cubit/subscription_cubit.dart';
+import 'package:moean/features/payment/data/repositories/web_checkout_repository.dart';
+import 'package:moean/features/payment/presentation/cubit/web_checkout_cubit.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:moean/features/exam_generation/domain/usecases/update_question_points_usecase.dart' as moean_exam;
 import 'package:moean/features/exam_generation/domain/usecases/add_manual_question_usecase.dart' as moean_exam;
 import 'package:moean/features/exam_generation/presentation/cubit/exam_info_cubit.dart' as moean_exam;
@@ -142,6 +145,20 @@ Future<void> initInjections() async {
 
   // ─── Subscription ──────────────────────────────────────────────
   sl.registerLazySingleton(() => SubscriptionCubit());
+  sl.registerLazySingleton(() => WebCheckoutRepository());
+  sl.registerLazySingleton(
+    () => WebCheckoutCubit(
+      repository: sl(),
+      // The real browser, never a WebView: Apple Pay and the bank's OTP page
+      // only work properly there.
+      openUrl: (uri) => launchUrl(uri, mode: LaunchMode.externalApplication),
+      refreshAccount: () => Future.wait([
+        sl<ProfileCubit>().fetchProfile(forceRefresh: true),
+        sl<SubscriptionCubit>().refreshAndWait(),
+      ]),
+      readSubscription: () => sl<SubscriptionCubit>().currentSubscription,
+    ),
+  );
 
   // ─── Profile ──────────────────────────────────────────────────
   sl.registerLazySingleton(() => ProfileCubit());

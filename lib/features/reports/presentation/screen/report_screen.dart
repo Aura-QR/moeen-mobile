@@ -102,11 +102,7 @@ class _ReportScreenState extends State<ReportScreen> {
             ),
           );
         } else if (state is ReportPaymentRequired) {
-          UpgradePromptBottomSheet.show(
-            context,
-            message: state.message,
-            isQuotaExceeded: state.code == 'quota_exceeded',
-          );
+          UpgradePromptBottomSheet.show(context);
         }
       },
       builder: (context, state) {

@@ -29,11 +29,7 @@ class ScheduleScreen extends StatelessWidget {
           return BlocListener<ScheduleCubit, ScheduleState>(
             listener: (context, state) {
               if (state is SchedulePaymentRequired) {
-                UpgradePromptBottomSheet.show(
-                  context,
-                  message: state.message,
-                  isQuotaExceeded: state.code == 'quota_exceeded',
-                );
+                UpgradePromptBottomSheet.show(context);
               }
             },
             child: Scaffold(

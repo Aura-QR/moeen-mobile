@@ -27,7 +27,7 @@ class ReadingEditorScreen extends StatelessWidget {
     final cubit = ReadingEditorCubit.get(context);
     final payment = state.paymentRequired;
     if (payment != null) {
-      UpgradePromptBottomSheet.show(context, message: payment.message, isQuotaExceeded: payment.code == 'quota_exceeded');
+      UpgradePromptBottomSheet.show(context);
       return;
     }
     if (state.feedback != null) {

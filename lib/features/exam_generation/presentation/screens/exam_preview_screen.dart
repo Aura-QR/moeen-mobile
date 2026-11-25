@@ -257,11 +257,7 @@ class _ExamPreviewScreenState extends State<ExamPreviewScreen> {
     return BlocListener<ExamPreviewCubit, ExamPreviewState>(
       listener: (context, state) {
         if (state is ExamPreviewPaymentRequired) {
-          UpgradePromptBottomSheet.show(
-            context,
-            message: state.message,
-            isQuotaExceeded: state.code == 'quota_exceeded',
-          );
+          UpgradePromptBottomSheet.show(context);
         } else if (state is ExamPreviewError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message), backgroundColor: ColorsManager.errorColor),

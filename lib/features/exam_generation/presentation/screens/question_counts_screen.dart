@@ -67,11 +67,7 @@ class _QuestionCountsScreenState extends State<QuestionCountsScreen> {
             ),
           );
         } else if (state is GenerateExamPaymentRequired) {
-          UpgradePromptBottomSheet.show(
-            context,
-            message: state.message,
-            isQuotaExceeded: state.code == 'quota_exceeded',
-          );
+          UpgradePromptBottomSheet.show(context);
         } else if (state is GenerateExamSuccess) {
           // Success, navigate to preview screen passing the exam
           context.push(Routes.examGenerationPreview, arguments: state.exam);

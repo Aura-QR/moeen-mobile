@@ -74,12 +74,7 @@ class ExtractionReviewScreen extends StatelessWidget {
               }
 
               if (state.paymentRequired) {
-                UpgradePromptBottomSheet.show(
-                  context,
-                  message:
-                      appTranslation().get(state.error ?? 'quota_exceeded'),
-                  isQuotaExceeded: true,
-                );
+                UpgradePromptBottomSheet.show(context);
                 return;
               }
 

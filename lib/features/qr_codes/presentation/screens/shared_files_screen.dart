@@ -50,12 +50,7 @@ class _SharedFilesScreenState extends State<SharedFilesScreen> {
               current.paymentRequired != null,
           listener: (context, state) {
             if (state.paymentRequired != null) {
-              UpgradePromptBottomSheet.show(
-                context,
-                message:
-                    appTranslation().get(state.paymentRequired!.message),
-                isQuotaExceeded: true,
-              );
+              UpgradePromptBottomSheet.show(context);
               SharedFilesListCubit.get(context).clearError();
               return;
             }
