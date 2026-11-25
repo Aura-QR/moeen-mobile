@@ -1,3 +1,5 @@
+import 'package:moean/features/portfolio/data/models/portfolio_element_model.dart';
+
 /// `GET /portfolios/roles`: roles, their standard items, limits and types.
 class PortfolioRolesModel {
   static const List<String> defaultAllowedMimes = [
@@ -45,10 +47,15 @@ class PortfolioRoleModel {
   final String label;
   final List<String> itemTitles;
 
+  /// The role's evaluation form; empty when it has none yet, null when the
+  /// server doesn't send forms (before the T9 forms release).
+  final List<PortfolioElementModel>? form;
+
   const PortfolioRoleModel({
     required this.key,
     required this.label,
     required this.itemTitles,
+    this.form,
   });
 
   factory PortfolioRoleModel.fromJson(Map<String, dynamic> json) {
@@ -62,6 +69,7 @@ class PortfolioRoleModel {
               .where((title) => title.isNotEmpty)
               .toList()
           : const [],
+      form: json['form'] is List ? parsePortfolioElements(json['form']) : null,
     );
   }
 }

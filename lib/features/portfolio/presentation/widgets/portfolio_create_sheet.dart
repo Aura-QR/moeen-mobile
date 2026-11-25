@@ -8,6 +8,7 @@ import 'package:moean/core/utils/constants/primary/primary_snack_bar.dart';
 import 'package:moean/core/utils/constants/primary/primary_text_field.dart';
 import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/portfolio/presentation/cubit/portfolio_list_cubit.dart';
+import 'package:moean/features/portfolio/presentation/widgets/portfolio_role_form_preview.dart';
 import 'package:moean/features/portfolio/presentation/widgets/portfolio_role_option_widget.dart';
 
 /// Role picker and optional title. Pops with the created portfolio.
@@ -45,6 +46,7 @@ class _PortfolioCreateSheetState extends State<PortfolioCreateSheet> {
           previous.isCreating != current.isCreating,
       builder: (context, state) {
         final roles = state.roles?.roles ?? const [];
+        final form = roles.where((role) => role.key == _selectedRole).firstOrNull?.form;
         return Padding(
           padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
           child: SingleChildScrollView(
@@ -76,6 +78,11 @@ class _PortfolioCreateSheetState extends State<PortfolioCreateSheet> {
                       onTap: () => setState(() => _selectedRole = role.key),
                     ),
                   ),
+                if (form != null) ...[
+                  verticalSpace4,
+                  PortfolioRoleFormPreview(form: form),
+                  verticalSpace8,
+                ],
                 verticalSpace8,
                 PrimaryTextField(
                   controller: _titleController,

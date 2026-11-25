@@ -4,5 +4,5 @@ import 'package:moean/core/utils/constants/constants.dart';
 String elementNumberLabel(int number) =>
     appTranslation().get('performance_element_number').replaceAll('{n}', '$number');
 
-/// «العنصر 4: title», or the title alone when there's no number.
-String elementLabel(String title, int? number) => number == null ? title : '${elementNumberLabel(number)}: $title';
+/// «العنصر 4 – title», or the title alone when there's no number.
+String elementLabel(String title, int? number) => number == null ? title : '${elementNumberLabel(number)} – $title';

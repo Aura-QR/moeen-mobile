@@ -1670,7 +1670,7 @@
   "performance_self_rating": "Self rating",
   "performance_self_rating_hint": "Rate your performance on this element from 1 to 5, then save.",
   "performance_title": "Performance file",
-  "performance_weight": "Weight: {n}",
+  "performance_weight": "Weight: {n}%",
   "qr_add_logo": "Add logo",
   "qr_cancel": "Cancel",
   "qr_caption_label": "Link caption",
@@ -2268,5 +2268,13 @@
   "lab_create_err_formula_parens": "• Formula in reading ({index}) has unbalanced parentheses ()",
   "lab_create_err_formula_unknown_symbol": "• Reading ({index}): symbol ({unknown}) is undefined — available symbols: ({symbols})",
   "lab_create_err_formula_incomplete": "• Formula in reading ({index}) is incomplete",
-  "lab_create_err_login_required": "Please log in first to create an experiment"
+  "lab_create_err_login_required": "Please log in first to create an experiment",
+  "performance_extra_items": "Extra items (not in your role's evaluation form)",
+  "performance_state_none": "No evidence",
+  "performance_state_some": "Partial evidence",
+  "performance_state_complete": "Complete",
+  "portfolio_role_form_title": "The role's evaluation form",
+  "portfolio_role_form_empty": "This role has no evaluation form yet; add your own items",
+  "portfolio_role_change_title": "Change role",
+  "portfolio_role_change_confirm": "The new role's evaluation form will be added; your current items and their evidence stay"
 }

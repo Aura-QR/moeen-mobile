@@ -4,7 +4,9 @@ enum DocumentElementStatus { loading, ready, failure }
 
 class DocumentElementState {
   final DocumentElementStatus status;
-  final PortfolioElementsModel elements;
+
+  /// The elements the picker lists, in order.
+  final List<PortfolioElementModel> options;
 
   /// An element key, or null when the document isn't evidence.
   final String? element;
@@ -17,7 +19,7 @@ class DocumentElementState {
 
   const DocumentElementState({
     this.status = DocumentElementStatus.loading,
-    this.elements = const PortfolioElementsModel(elements: []),
+    this.options = const [],
     this.element,
     this.isSaving = false,
     this.errorMessage,
@@ -25,7 +27,7 @@ class DocumentElementState {
     this.feedback,
   });
 
-  PortfolioElementModel? get current => elements.byKey(element);
+  PortfolioElementModel? get current => options.where((option) => option.key == element).firstOrNull;
 
   DocumentElementState copyWith({
     DocumentElementStatus? status,
@@ -38,7 +40,7 @@ class DocumentElementState {
   }) {
     return DocumentElementState(
       status: status ?? this.status,
-      elements: elements,
+      options: options,
       element: clearElement ? null : (element ?? this.element),
       isSaving: isSaving ?? this.isSaving,
       errorMessage: errorMessage ?? this.errorMessage,

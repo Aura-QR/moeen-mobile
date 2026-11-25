@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_model.dart';
+import 'package:moean/features/portfolio/data/models/portfolio_roles_model.dart';
 
 void main() {
   test('PortfolioModel sorts items and files by sort_order', () {
@@ -48,5 +49,26 @@ void main() {
     expect(file.isImage, isFalse);
     expect(file.isLink, isFalse);
     expect(file.url, isEmpty);
+  });
+
+  test('each role carries its evaluation form, empty when it has none', () {
+    final roles = PortfolioRolesModel.fromJson({
+      'roles': [
+        {
+          'role': 'health_guide',
+          'label': 'معلم مسند له توجيه صحي',
+          'form': [
+            {'key': 'health_awareness', 'title': 'التوعية الصحية', 'number': 12, 'weight': 15},
+          ],
+        },
+        {'role': 'principal', 'label': 'مدير', 'form': []},
+        {'role': 'vice_principal', 'label': 'وكيل'},
+      ],
+    }).roles;
+
+    expect(roles[0].form!.single.weight, 15);
+    expect(roles[0].form!.single.number, 12);
+    expect(roles[1].form, isEmpty);
+    expect(roles[2].form, isNull, reason: 'an older server sends no form at all');
   });
 }

@@ -4,11 +4,13 @@ import 'package:moean/core/utils/constants/spacing.dart';
 import 'package:moean/features/performance/presentation/cubit/performance_cubit.dart';
 import 'package:moean/features/performance/presentation/widgets/performance_cv_section.dart';
 import 'package:moean/features/performance/presentation/widgets/performance_export_sheet.dart';
+import 'package:moean/features/performance/presentation/widgets/performance_extras_header.dart';
 import 'package:moean/features/performance/presentation/widgets/performance_header_card.dart';
 import 'package:moean/features/performance/presentation/widgets/performance_item_card.dart';
 import 'package:moean/features/portfolio/data/models/performance_model.dart';
 
-/// The summary, the CV and one card per element.
+/// The summary, the CV, one card per form element, then the items outside
+/// the role's form.
 class PerformanceBody extends StatelessWidget {
   final PerformanceModel performance;
 
@@ -33,6 +35,7 @@ class PerformanceBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = PerformanceCubit.get(context);
+    final extras = performance.extraItems;
     return RefreshIndicator(
       onRefresh: cubit.refresh,
       child: ListView(
@@ -43,7 +46,20 @@ class PerformanceBody extends StatelessWidget {
           verticalSpace12,
           PerformanceCvSection(cv: performance.cv),
           verticalSpace12,
-          for (final item in performance.items) ...[
+          for (final item in performance.officialItems) ...[
+            PerformanceItemCard(
+              item: item,
+              ratingMax: performance.ratingMax,
+              onTap: () => _openItem(context, item),
+            ),
+            verticalSpace10,
+          ],
+          if (extras.isNotEmpty) ...[
+            verticalSpace8,
+            const PerformanceExtrasHeader(),
+            verticalSpace10,
+          ],
+          for (final item in extras) ...[
             PerformanceItemCard(
               item: item,
               ratingMax: performance.ratingMax,

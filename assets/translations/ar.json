@@ -1670,7 +1670,7 @@
   "performance_self_rating": "تقييمي الذاتي",
   "performance_self_rating_hint": "قيّم أداءك في هذا العنصر من 1 إلى 5، ثم احفظ.",
   "performance_title": "ملف الأداء",
-  "performance_weight": "الوزن: {n}",
+  "performance_weight": "الوزن: {n}%",
   "qr_add_logo": "إضافة شعار",
   "qr_cancel": "إلغاء",
   "qr_caption_label": "وصف الرابط",
@@ -2268,5 +2268,13 @@
   "lab_create_err_formula_parens": "• المعادلة في القراءة ({index}) تحتوي على أقواس غير مكتملة الإغلاق ()",
   "lab_create_err_formula_unknown_symbol": "• في القراءة ({index}): الرمز ({unknown}) غير معرّف — الرموز المتاحة هي ({symbols})",
   "lab_create_err_formula_incomplete": "• المعادلة في القراءة ({index}) غير مكتملة رياضياً",
-  "lab_create_err_login_required": "يرجى تسجيل الدخول أولاً لإنشاء تجربة"
+  "lab_create_err_login_required": "يرجى تسجيل الدخول أولاً لإنشاء تجربة",
+  "performance_extra_items": "بنود إضافية (ليست من نموذج تقييم دورك)",
+  "performance_state_none": "لا توجد شواهد",
+  "performance_state_some": "شواهد جزئية",
+  "performance_state_complete": "مكتمل",
+  "portfolio_role_form_title": "نموذج تقييم الدور",
+  "portfolio_role_form_empty": "لا يوجد نموذج تقييم لهذا الدور بعد؛ أضف بنودك بنفسك",
+  "portfolio_role_change_title": "تغيير الدور",
+  "portfolio_role_change_confirm": "سيُضاف نموذج تقييم الدور الجديد، وتبقى بنودك الحالية وشواهدها"
 }

@@ -58,30 +58,98 @@ void main() {
     });
   });
 
-  group('PortfolioElementsModel', () {
-    test('reads elements and the scale beside data', () {
-      final model = PortfolioElementsModel.fromJson({
-        'data': [],
-        'elements': [
-          {'key': 'duties', 'title': 'أداء الواجبات الوظيفية', 'number': 1, 'weight': 10},
-          {'key': 'activity_plan', 'title': 'خطة النشاط', 'number': null, 'weight': null},
-        ],
-        'rating_scale': {'min': 1, 'max': 4},
+  group('official items', () {
+    Map<String, dynamic> item(int id, {bool? official}) => {
+          'id': id,
+          'number': 3,
+          'weight': 10,
+          'title': 'إعداد وتنفيذ خطة التعلم',
+          'official': ?official,
+        };
+
+    test('an item outside the role\'s form loses its number, weight and stars', () {
+      final performance = PerformanceModel.fromJson({
+        'items': [item(1, official: true), item(2, official: false)],
       });
 
-      expect(model.elements, hasLength(2));
-      expect(model.byKey('duties')!.number, 1);
-      expect(model.byKey('activity_plan')!.weight, isNull);
-      expect(model.byKey('missing'), isNull);
-      expect(model.ratingMax, 4);
+      expect(performance.officialItems.single.id, 1);
+      final extra = performance.extraItems.single;
+      expect(extra.official, isFalse);
+      expect(extra.number, isNull);
+      expect(extra.weight, isNull);
+      expect(extra.isRatable, isFalse);
     });
 
-    test('an old response without elements', () {
-      final model = PortfolioElementsModel.fromJson({'data': []});
+    test('an older server without official keeps every item in the form', () {
+      final performance = PerformanceModel.fromJson({'items': [item(1)]});
 
-      expect(model.elements, isEmpty);
-      expect(model.ratingMin, 1);
-      expect(model.ratingMax, 5);
+      expect(performance.extraItems, isEmpty);
+      expect(performance.officialItems.single.weight, 10);
+    });
+  });
+
+  group('PortfolioElementsModel', () {
+    const teacherForm = [
+      {'key': 'duties', 'title': 'أداء الواجبات الوظيفية', 'number': 1, 'weight': 10},
+      {'key': 'learning_plan', 'title': 'إعداد وتنفيذ خطة التعلم', 'number': 3, 'weight': 10},
+    ];
+    const kindergartenForm = [
+      {'key': 'duties', 'title': 'أداء الواجبات الوظيفية', 'number': 1, 'weight': 5},
+      {'key': 'play_corners', 'title': 'أركان التعلم', 'number': 2, 'weight': 5},
+    ];
+    final model = PortfolioElementsModel.fromJson({
+      'data': [
+        {'role': 'teacher', 'label': 'معلم', 'form': teacherForm},
+        {'role': 'kindergarten_teacher', 'label': 'معلمة روضة', 'form': kindergartenForm},
+        {'role': 'principal', 'label': 'مدير', 'form': []},
+      ],
+      'elements': [
+        {'key': 'activity_plan', 'title': 'خطة النشاط', 'number': null, 'weight': null},
+      ],
+    });
+
+    test('reads each role\'s form', () {
+      expect(model.forms.keys, ['teacher', 'kindergarten_teacher', 'principal']);
+      expect(model.forms['kindergarten_teacher']!.last.number, 2);
+      expect(model.forms['principal'], isEmpty);
+    });
+
+    test('lists the role\'s form in order', () {
+      final options = model.optionsFor('kindergarten_teacher', 'play_corners');
+
+      expect(options.map((e) => e.key), ['duties', 'play_corners']);
+      expect(options.first.weight, 5);
+    });
+
+    test('no portfolio shows the teacher\'s form', () {
+      expect(model.optionsFor(null, null).map((e) => e.key), ['duties', 'learning_plan']);
+    });
+
+    test('a current element outside the form is added at the end, without a number', () {
+      final options = model.optionsFor('kindergarten_teacher', 'learning_plan');
+
+      expect(options.map((e) => e.key), ['duties', 'play_corners', 'learning_plan']);
+      expect(options.last.title, 'إعداد وتنفيذ خطة التعلم');
+      expect(options.last.number, isNull);
+    });
+
+    test('names an unknown key from elements, or by the key itself', () {
+      expect(model.optionsFor('teacher', 'activity_plan').last.title, 'خطة النشاط');
+      expect(model.optionsFor('teacher', 'gone').last.title, 'gone');
+    });
+
+    test('an old response without forms lists its flat elements', () {
+      final old = PortfolioElementsModel.fromJson({
+        'data': [
+          {'role': 'teacher', 'label': 'معلم'},
+        ],
+        'elements': [
+          {'key': 'duties', 'title': 'أداء الواجبات الوظيفية', 'number': 1, 'weight': 10},
+        ],
+      });
+
+      expect(old.forms, isEmpty);
+      expect(old.optionsFor('kindergarten_teacher', null).single.key, 'duties');
     });
   });
 }

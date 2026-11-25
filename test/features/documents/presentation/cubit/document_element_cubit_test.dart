@@ -6,6 +6,7 @@ import 'package:moean/features/documents/data/models/document_model.dart';
 import 'package:moean/features/documents/data/repositories/documents_repository.dart';
 import 'package:moean/features/documents/presentation/cubit/document_element_cubit.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_element_model.dart';
+import 'package:moean/features/portfolio/data/models/portfolio_model.dart';
 import 'package:moean/features/portfolio/data/repositories/portfolio_repository.dart';
 
 class MockDocumentsRepository extends Mock implements DocumentsRepository {}
@@ -20,10 +21,26 @@ DocumentModel _document(String? element) => DocumentModel.fromJson({
       'element': element,
     });
 
-const _elements = PortfolioElementsModel(elements: [
-  PortfolioElementModel(key: 'teaching_strategies', title: 'التنويع في استراتيجيات التدريس', number: 4, weight: 10),
-  PortfolioElementModel(key: 'learner_results', title: 'تحسين نتائج المتعلمين', number: 5, weight: 10),
-]);
+const _elements = PortfolioElementsModel(elements: [], forms: {
+  'teacher': [
+    PortfolioElementModel(key: 'teaching_strategies', title: 'التنويع في استراتيجيات التدريس', number: 4, weight: 10),
+    PortfolioElementModel(key: 'learner_results', title: 'تحسين نتائج المتعلمين', number: 5, weight: 10),
+  ],
+  'health_guide': [
+    PortfolioElementModel(key: 'health_awareness', title: 'التوعية الصحية', number: 12, weight: 15),
+  ],
+  'activity_leader': [
+    PortfolioElementModel(key: 'activity_plan', title: 'خطة النشاط', number: 12, weight: 5),
+  ],
+});
+
+PortfolioModel _portfolio(String role, String updatedAt) => PortfolioModel.fromJson({
+      'id': 1,
+      'title': 'ملف',
+      'role': role,
+      'role_label': role,
+      'updated_at': updatedAt,
+    });
 
 void main() {
   late MockDocumentsRepository documents;
@@ -33,6 +50,7 @@ void main() {
     documents = MockDocumentsRepository();
     portfolios = MockPortfolioRepository();
     when(() => portfolios.getElements()).thenAnswer((_) async => const Right(_elements));
+    when(() => portfolios.getPortfolios()).thenAnswer((_) async => const Right([]));
   });
 
   DocumentElementCubit cubit({String? element, bool known = false}) => DocumentElementCubit(
@@ -51,6 +69,52 @@ void main() {
 
     expect(c.state.status, DocumentElementStatus.ready);
     expect(c.state.current?.number, 4);
+    await c.close();
+  });
+
+  test('no portfolio lists the teacher\'s form', () async {
+    final c = cubit(known: true);
+
+    await c.load();
+
+    expect(c.state.options.map((e) => e.key), ['teaching_strategies', 'learner_results']);
+    await c.close();
+  });
+
+  test('lists the form of the most recently updated portfolio\'s role', () async {
+    when(() => portfolios.getPortfolios()).thenAnswer((_) async => Right([
+          _portfolio('activity_leader', '2026-10-01T08:00:00+00:00'),
+          _portfolio('health_guide', '2026-11-20T08:00:00+00:00'),
+          _portfolio('teacher', '2026-09-01T08:00:00+00:00'),
+        ]));
+    final c = cubit(known: true);
+
+    await c.load();
+
+    expect(c.state.options.map((e) => e.key), ['health_awareness']);
+    await c.close();
+  });
+
+  test('keeps the current element at the end when it isn\'t in the form', () async {
+    when(() => portfolios.getPortfolios())
+        .thenAnswer((_) async => Right([_portfolio('health_guide', '2026-11-20T08:00:00+00:00')]));
+    final c = cubit(element: 'learner_results', known: true);
+
+    await c.load();
+
+    expect(c.state.options.map((e) => e.key), ['health_awareness', 'learner_results']);
+    expect(c.state.current?.title, 'تحسين نتائج المتعلمين');
+    expect(c.state.current?.number, isNull);
+    await c.close();
+  });
+
+  test('a failed portfolios request shows the error', () async {
+    when(() => portfolios.getPortfolios()).thenAnswer((_) async => const Left(ServerFailure('network_error')));
+    final c = cubit(known: true);
+
+    await c.load();
+
+    expect(c.state.status, DocumentElementStatus.failure);
     await c.close();
   });
 

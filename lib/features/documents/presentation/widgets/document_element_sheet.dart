@@ -104,13 +104,7 @@ class DocumentElementSheet extends StatelessWidget {
                     shrinkWrap: true,
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
                     children: [
-                      DocumentElementOptionTile(
-                        title: appTranslation().get('document_element_none'),
-                        isSelected: state.element == null,
-                        enabled: !state.isSaving,
-                        onTap: () => cubit.change(null),
-                      ),
-                      for (final element in state.elements.elements)
+                      for (final element in state.options)
                         DocumentElementOptionTile(
                           title: element.title,
                           number: element.number,
@@ -118,6 +112,12 @@ class DocumentElementSheet extends StatelessWidget {
                           enabled: !state.isSaving,
                           onTap: () => cubit.change(element.key),
                         ),
+                      DocumentElementOptionTile(
+                        title: appTranslation().get('document_element_none'),
+                        isSelected: state.element == null,
+                        enabled: !state.isSaving,
+                        onTap: () => cubit.change(null),
+                      ),
                     ],
                   ),
                 ),

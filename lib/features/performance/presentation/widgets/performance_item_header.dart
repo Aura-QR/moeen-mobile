@@ -15,17 +15,17 @@ class PerformanceItemHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final badge = [
+      if (item.number != null) elementNumberLabel(item.number!),
+      if (item.weight != null) appTranslation().get('performance_weight').replaceAll('{n}', '${item.weight}'),
+    ].join(' · ');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          [
-            if (item.number != null) elementNumberLabel(item.number!),
-            if (item.weight != null) appTranslation().get('performance_weight').replaceAll('{n}', '${item.weight}'),
-          ].join(' · '),
-          style: TextStylesManager.bold13.copyWith(color: ColorsManager.primaryColor),
-        ),
-        verticalSpace4,
+        if (badge.isNotEmpty) ...[
+          Text(badge, style: TextStylesManager.bold13.copyWith(color: ColorsManager.primaryColor)),
+          verticalSpace4,
+        ],
         Text(item.title, style: TextStylesManager.bold18.copyWith(color: ColorsManager.mainText)),
         verticalSpace8,
         PerformanceStateChip(state: item.state, count: item.evidenceCount),

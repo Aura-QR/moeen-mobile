@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moean/core/models/ui_feedback.dart';
 import 'package:moean/features/documents/data/repositories/documents_repository.dart';
 import 'package:moean/features/portfolio/data/models/portfolio_element_model.dart';
+import 'package:moean/features/portfolio/data/models/portfolio_model.dart';
 import 'package:moean/features/portfolio/data/repositories/portfolio_repository.dart';
 
 part 'document_element_state.dart';
@@ -29,24 +30,41 @@ class DocumentElementCubit extends Cubit<DocumentElementState> {
   final PortfolioRepository _portfolios;
   final bool _elementKnown;
 
+  /// Lists the form of the role of the teacher's most recently updated
+  /// portfolio (the teacher's form when there's none).
   Future<void> load() async {
     emit(state.copyWith(status: DocumentElementStatus.loading));
     final elementsRequest = _portfolios.getElements();
+    final portfoliosRequest = _portfolios.getPortfolios();
     final documentRequest = _elementKnown ? null : _documents.getDocument(documentId);
     final elements = await elementsRequest;
+    final portfolios = await portfoliosRequest;
     final document = await documentRequest;
     if (isClosed) return;
 
-    final failure = elements.fold((f) => f, (_) => null) ?? document?.fold((f) => f, (_) => null);
+    final failure = elements.fold((f) => f, (_) => null) ??
+        portfolios.fold((f) => f, (_) => null) ??
+        document?.fold((f) => f, (_) => null);
     if (failure != null) {
       emit(state.copyWith(status: DocumentElementStatus.failure, errorMessage: failure.message));
       return;
     }
+    final element = document == null ? state.element : document.fold((_) => null, (doc) => doc.element);
+    final role = _latestRole(portfolios.getOrElse(() => const []));
     emit(DocumentElementState(
       status: DocumentElementStatus.ready,
-      elements: elements.fold((_) => const PortfolioElementsModel(elements: []), (e) => e),
-      element: document == null ? state.element : document.fold((_) => null, (doc) => doc.element),
+      options: elements.fold((_) => const [], (e) => e.optionsFor(role, element)),
+      element: element,
     ));
+  }
+
+  String? _latestRole(List<PortfolioModel> portfolios) {
+    if (portfolios.isEmpty) return null;
+    final epoch = DateTime.fromMillisecondsSinceEpoch(0);
+    final latest = portfolios.reduce(
+      (a, b) => (b.updatedAt ?? epoch).isAfter(a.updatedAt ?? epoch) ? b : a,
+    );
+    return latest.role;
   }
 
   /// [element] null keeps the document out of the performance file.

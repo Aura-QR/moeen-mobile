@@ -62,6 +62,12 @@ class PerformanceModel {
 
   PerformanceItemModel? itemById(int id) => items.where((item) => item.id == id).firstOrNull;
 
+  /// The role's evaluation-form elements, in the server's order.
+  List<PerformanceItemModel> get officialItems => items.where((item) => item.official).toList();
+
+  /// Items outside the role's form, shown after it.
+  List<PerformanceItemModel> get extraItems => items.where((item) => !item.official).toList();
+
   factory PerformanceModel.fromJson(Map<String, dynamic> json) {
     final cv = json['cv'];
     final scale = json['rating_scale'];
@@ -137,6 +143,11 @@ class PerformanceRatingModel {
 class PerformanceItemModel {
   final int id;
   final String? itemKey;
+
+  /// Whether the item is in the evaluation form of the portfolio's role.
+  final bool official;
+
+  /// Both null for an item outside the role's form.
   final int? number;
   final int? weight;
   final String title;
@@ -153,6 +164,7 @@ class PerformanceItemModel {
   const PerformanceItemModel({
     required this.id,
     required this.itemKey,
+    required this.official,
     required this.number,
     required this.weight,
     required this.title,
@@ -171,11 +183,14 @@ class PerformanceItemModel {
   factory PerformanceItemModel.fromJson(Map<String, dynamic> json) {
     final files = json['files'];
     final documents = json['documents'];
+    // Older servers don't send `official`: every item was then in the form.
+    final official = json['official'] != false;
     return PerformanceItemModel(
       id: _asInt(json['id']) ?? 0,
       itemKey: json['item_key']?.toString(),
-      number: _asInt(json['number']),
-      weight: _asInt(json['weight']),
+      official: official,
+      number: official ? _asInt(json['number']) : null,
+      weight: official ? _asInt(json['weight']) : null,
       title: json['title']?.toString() ?? '',
       description: json['description']?.toString(),
       included: json['included'] != false,
@@ -194,6 +209,7 @@ class PerformanceItemModel {
   PerformanceItemModel copyWith({int? selfRating, bool clearRating = false}) => PerformanceItemModel(
         id: id,
         itemKey: itemKey,
+        official: official,
         number: number,
         weight: weight,
         title: title,
